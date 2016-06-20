@@ -3,13 +3,12 @@
 namespace yiiunit\framework\db\pgsql;
 
 use yii\db\Schema;
-use yiiunit\framework\db\QueryBuilderTest;
 
 /**
  * @group db
  * @group pgsql
  */
-class PostgreSQLQueryBuilderTest extends QueryBuilderTest
+class QueryBuilderTest extends \yiiunit\framework\db\QueryBuilderTest
 {
     public $driverName = 'pgsql';
 

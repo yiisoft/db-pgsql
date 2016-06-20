@@ -1,14 +1,14 @@
 <?php
+
 namespace yiiunit\framework\db\pgsql;
 
 use yii\db\Transaction;
-use yiiunit\framework\db\ConnectionTest;
 
 /**
  * @group db
  * @group pgsql
  */
-class PostgreSQLConnectionTest extends ConnectionTest
+class ConnectionTest extends \yiiunit\framework\db\ConnectionTest
 {
     protected $driverName = 'pgsql';
 

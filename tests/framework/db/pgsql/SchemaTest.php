@@ -6,13 +6,12 @@ use yii\db\Expression;
 use yii\db\pgsql\Schema;
 use yiiunit\data\ar\ActiveRecord;
 use yiiunit\data\ar\Type;
-use yiiunit\framework\db\SchemaTest;
 
 /**
  * @group db
  * @group pgsql
  */
-class PostgreSQLSchemaTest extends SchemaTest
+class SchemaTest extends \yiiunit\framework\db\SchemaTest
 {
     public $driverName = 'pgsql';
 

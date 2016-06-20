@@ -1,13 +1,12 @@
 <?php
-namespace yii\tests\unit\framework\db\pgsql;
 
-use yiiunit\framework\db\CommandTest;
+namespace yii\tests\unit\framework\db\pgsql;
 
 /**
  * @group db
  * @group pgsql
  */
-class PostgreSQLCommandTest extends CommandTest
+class CommandTest extends \yiiunit\framework\db\CommandTest
 {
     public $driverName = 'pgsql';
 
