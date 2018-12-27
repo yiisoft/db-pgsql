@@ -1,9 +1,9 @@
 <?php
 
-namespace yiiunit\framework\db\pgsql;
+namespace yii\db\pgsql\tests;
 
 use yii\db\pgsql\ArrayParser;
-use yiiunit\TestCase;
+use yii\tests\TestCase;
 
 class ArrayParserTest extends TestCase
 {

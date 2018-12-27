@@ -5,7 +5,7 @@
  * @license http://www.yiiframework.com/license/
  */
 
-namespace yiiunit\framework\db\pgsql;
+namespace yii\db\pgsql\tests;
 
 use yii\base\DynamicModel;
 use yii\db\Expression;
@@ -20,7 +20,7 @@ use yiiunit\data\base\TraversableObject;
  * @group db
  * @group pgsql
  */
-class QueryBuilderTest extends \yiiunit\framework\db\QueryBuilderTest
+class QueryBuilderTest extends \yii\db\tests\unit\QueryBuilderTest
 {
     public $driverName = 'pgsql';
 

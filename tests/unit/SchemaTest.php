@@ -5,18 +5,18 @@
  * @license http://www.yiiframework.com/license/
  */
 
-namespace yiiunit\framework\db\pgsql;
+namespace yii\db\pgsql\tests;
 
 use yii\db\conditions\ExistsConditionBuilder;
 use yii\db\Expression;
-use yiiunit\data\ar\ActiveRecord;
-use yiiunit\data\ar\Type;
+use yii\activerecord\tests\data\ActiveRecord;
+use yii\activerecord\tests\data\Type;
 
 /**
  * @group db
  * @group pgsql
  */
-class SchemaTest extends \yiiunit\framework\db\SchemaTest
+class SchemaTest extends \yii\db\tests\unit\SchemaTest
 {
     public $driverName = 'pgsql';
 
