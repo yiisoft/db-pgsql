@@ -5,14 +5,14 @@
  * @license http://www.yiiframework.com/license/
  */
 
-namespace yiiunit\framework\db\pgsql;
+namespace yii\db\pgsql\tests;
 
 /**
  * @group db
  * @group pgsql
  * @group validators
  */
-class UniqueValidatorTest extends \yiiunit\framework\validators\UniqueValidatorTest
+class UniqueValidatorTest extends \yii\db\tests\unit\validators\UniqueValidatorTest
 {
     public $driverName = 'pgsql';
 }

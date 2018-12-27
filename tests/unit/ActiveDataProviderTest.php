@@ -5,14 +5,14 @@
  * @license http://www.yiiframework.com/license/
  */
 
-namespace yiiunit\framework\db\pgsql;
+namespace yii\db\pgsql\tests;
 
 /**
  * @group db
  * @group pgsql
  * @group data
  */
-class ActiveDataProviderTest extends \yiiunit\framework\data\ActiveDataProviderTest
+class ActiveDataProviderTest extends \yii\activerecord\tests\unit\ActiveDataProviderTest
 {
     public $driverName = 'pgsql';
 }

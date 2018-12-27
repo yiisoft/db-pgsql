@@ -5,7 +5,7 @@
  * @license http://www.yiiframework.com/license/
  */
 
-namespace yiiunit\framework\db\pgsql;
+namespace yii\db\pgsql\tests;
 
 use yii\behaviors\TimestampBehavior;
 use yii\db\ArrayExpression;
@@ -14,16 +14,16 @@ use yii\db\ExpressionInterface;
 use yii\db\JsonExpression;
 use yii\db\pgsql\Schema;
 use yii\helpers\Json;
-use yiiunit\data\ar\ActiveRecord;
-use yiiunit\data\ar\DefaultPk;
-use yiiunit\framework\ar\ActiveRecordTestTrait;
-use yiiunit\TestCase;
+use yii\activerecord\tests\data\ActiveRecord;
+use yii\activerecord\tests\data\DefaultPk;
+use yii\activerecord\tests\unit\ActiveRecordTestTrait;
+use yii\tests\TestCase;
 
 /**
  * @group db
  * @group pgsql
  */
-class ActiveRecordTest extends \yiiunit\framework\db\ActiveRecordTest
+class ActiveRecordTest extends \yii\activerecord\tests\unit\ActiveRecordTest
 {
     protected $driverName = 'pgsql';
 

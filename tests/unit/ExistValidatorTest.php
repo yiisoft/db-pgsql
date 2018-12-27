@@ -5,7 +5,7 @@
  * @license http://www.yiiframework.com/license/
  */
 
-namespace yiiunit\framework\db\pgsql;
+namespace yii\db\pgsql\tests;
 
 use yii\validators\ExistValidator;
 
@@ -14,7 +14,7 @@ use yii\validators\ExistValidator;
  * @group pgsql
  * @group validators
  */
-class ExistValidatorTest extends \yiiunit\framework\validators\ExistValidatorTest
+class ExistValidatorTest extends \yii\db\tests\unit\validators\ExistValidatorTest
 {
     public $driverName = 'pgsql';
 
@@ -37,14 +37,14 @@ class ExistValidatorTest extends \yiiunit\framework\validators\ExistValidatorTes
     }
 }
 
-class ValidatorTestRefModel extends \yiiunit\data\validators\models\ValidatorTestRefModel
+class ValidatorTestRefModel extends \yii\tests\data\validators\models\ValidatorTestRefModel
 {
     public static function tableName()
     {
         return 'validatorRef';
     }
 }
-class ValidatorTestMainModel extends \yiiunit\data\validators\models\ValidatorTestRefModel
+class ValidatorTestMainModel extends \yii\tests\data\validators\models\ValidatorTestRefModel
 {
     public static function tableName()
     {

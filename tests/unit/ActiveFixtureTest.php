@@ -5,14 +5,14 @@
  * @license http://www.yiiframework.com/license/
  */
 
-namespace yiiunit\framework\db\pgsql;
+namespace yii\db\pgsql\tests;
 
 /**
  * @group db
  * @group pgsql
  * @group test
  */
-class ActiveFixtureTest extends \yiiunit\framework\test\ActiveFixtureTest
+class ActiveFixtureTest extends \yii\tests\framework\test\ActiveFixtureTest
 {
     public $driverName = 'pgsql';
 }

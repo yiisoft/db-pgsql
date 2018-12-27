@@ -5,7 +5,7 @@
  * @license http://www.yiiframework.com/license/
  */
 
-namespace yii\tests\unit\framework\db\pgsql;
+namespace yii\db\pgsql\tests;
 
 use yii\db\ArrayExpression;
 use yii\db\JsonExpression;
@@ -14,7 +14,7 @@ use yii\db\JsonExpression;
  * @group db
  * @group pgsql
  */
-class CommandTest extends \yiiunit\framework\db\CommandTest
+class CommandTest extends \yii\db\tests\unit\CommandTest
 {
     public $driverName = 'pgsql';
 

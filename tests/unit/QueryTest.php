@@ -5,7 +5,7 @@
  * @license http://www.yiiframework.com/license/
  */
 
-namespace yiiunit\framework\db\pgsql;
+namespace yii\db\pgsql\tests;
 
 use yii\db\Query;
 
@@ -13,7 +13,7 @@ use yii\db\Query;
  * @group db
  * @group pgsql
  */
-class QueryTest extends \yiiunit\framework\db\QueryTest
+class QueryTest extends \yii\db\tests\unit\QueryTest
 {
     public $driverName = 'pgsql';
 
