@@ -7,7 +7,7 @@
 
 namespace yii\db\pgsql;
 
-use yii\base\NotSupportedException;
+use yii\exceptions\NotSupportedException;
 use yii\db\CheckConstraint;
 use yii\db\Constraint;
 use yii\db\ConstraintFinderInterface;
