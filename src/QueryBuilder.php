@@ -7,7 +7,7 @@
 
 namespace yii\db\pgsql;
 
-use yii\base\InvalidArgumentException;
+use yii\exceptions\InvalidArgumentException;
 use yii\db\Constraint;
 use yii\db\Expression;
 use yii\db\ExpressionInterface;
