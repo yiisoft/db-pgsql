@@ -75,7 +75,7 @@ class SchemaTest extends \yii\db\tests\unit\SchemaTest
         $columns['bool_col2']['precision'] = null;
         $columns['bool_col2']['scale'] = null;
         $columns['bool_col2']['defaultValue'] = true;
-        $columns['ts_default']['defaultValue'] = new Expression('now()');
+        $columns['ts_default']['defaultValue'] = 'CURRENT_TIMESTAMP';
         $columns['bit_col']['dbType'] = 'bit';
         $columns['bit_col']['size'] = 8;
         $columns['bit_col']['precision'] = null;
