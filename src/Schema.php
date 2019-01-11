@@ -18,6 +18,7 @@ use yii\db\IndexConstraint;
 use yii\db\TableSchema;
 use yii\db\ViewFinderTrait;
 use yii\helpers\ArrayHelper;
+use yii\helpers\Yii;
 
 /**
  * Schema is the class for retrieving metadata from a PostgreSQL database
@@ -246,7 +247,7 @@ SQL;
         $indexes = ArrayHelper::index($indexes, null, 'name');
         $result = [];
         foreach ($indexes as $name => $index) {
-            $result[] = new IndexConstraint([
+            $result[] = Yii::createObject(['__class' =>  IndexConstraint::class, 
                 'isPrimary' => (bool) $index[0]['index_is_primary'],
                 'isUnique' => (bool) $index[0]['index_is_unique'],
                 'name' => $name,
@@ -683,13 +684,13 @@ SQL;
             foreach ($names as $name => $constraint) {
                 switch ($type) {
                     case 'p':
-                        $result['primaryKey'] = new Constraint([
+                        $result['primaryKey'] = Yii::createObject(['__class' => Constraint::class,
                             'name' => $name,
                             'columnNames' => ArrayHelper::getColumn($constraint, 'column_name'),
                         ]);
                         break;
                     case 'f':
-                        $result['foreignKeys'][] = new ForeignKeyConstraint([
+                        $result['foreignKeys'][] = Yii::createObject(['__class' => ForeignKeyConstraint::class,
                             'name' => $name,
                             'columnNames' => array_keys(array_count_values(ArrayHelper::getColumn($constraint, 'column_name'))),
                             'foreignSchemaName' => $constraint[0]['foreign_table_schema'],
@@ -700,13 +701,13 @@ SQL;
                         ]);
                         break;
                     case 'u':
-                        $result['uniques'][] = new Constraint([
+                        $result['uniques'][] = Yii::createObject(['__class' => Constraint::class,
                             'name' => $name,
                             'columnNames' => ArrayHelper::getColumn($constraint, 'column_name'),
                         ]);
                         break;
                     case 'c':
-                        $result['checks'][] = new CheckConstraint([
+                        $result['checks'][] = Yii::createObject(['__class' => CheckConstraint::class,
                             'name' => $name,
                             'columnNames' => ArrayHelper::getColumn($constraint, 'column_name'),
                             'expression' => $constraint[0]['check_expr'],
