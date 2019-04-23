@@ -1,16 +1,16 @@
 <?php
 /**
  * @link http://www.yiiframework.com/
+ *
  * @copyright Copyright (c) 2008 Yii Software LLC
  * @license http://www.yiiframework.com/license/
  */
 
 namespace yii\db\pgsql\tests;
 
-use yii\db\conditions\ExistsConditionBuilder;
-use yii\db\Expression;
 use yii\activerecord\tests\data\ActiveRecord;
 use yii\activerecord\tests\data\Type;
+use yii\db\Expression;
 
 /**
  * @group db
@@ -80,81 +80,81 @@ class SchemaTest extends \yii\db\tests\unit\SchemaTest
         $columns['bit_col']['size'] = 8;
         $columns['bit_col']['precision'] = null;
         $columns['bigint_col'] = [
-            'type' => 'bigint',
-            'dbType' => 'int8',
-            'phpType' => 'integer',
-            'allowNull' => true,
+            'type'          => 'bigint',
+            'dbType'        => 'int8',
+            'phpType'       => 'integer',
+            'allowNull'     => true,
             'autoIncrement' => false,
-            'enumValues' => null,
-            'size' => null,
-            'precision' => 64,
-            'scale' => 0,
-            'defaultValue' => null,
+            'enumValues'    => null,
+            'size'          => null,
+            'precision'     => 64,
+            'scale'         => 0,
+            'defaultValue'  => null,
         ];
         $columns['intarray_col'] = [
-            'type' => 'integer',
-            'dbType' => 'int4',
-            'phpType' => 'integer',
-            'allowNull' => true,
+            'type'          => 'integer',
+            'dbType'        => 'int4',
+            'phpType'       => 'integer',
+            'allowNull'     => true,
             'autoIncrement' => false,
-            'enumValues' => null,
-            'size' => null,
-            'precision' => null,
-            'scale' => null,
-            'defaultValue' => null,
-            'dimension' => 1
+            'enumValues'    => null,
+            'size'          => null,
+            'precision'     => null,
+            'scale'         => null,
+            'defaultValue'  => null,
+            'dimension'     => 1,
         ];
         $columns['textarray2_col'] = [
-            'type' => 'text',
-            'dbType' => 'text',
-            'phpType' => 'string',
-            'allowNull' => true,
+            'type'          => 'text',
+            'dbType'        => 'text',
+            'phpType'       => 'string',
+            'allowNull'     => true,
             'autoIncrement' => false,
-            'enumValues' => null,
-            'size' => null,
-            'precision' => null,
-            'scale' => null,
-            'defaultValue' => null,
-            'dimension' => 2
+            'enumValues'    => null,
+            'size'          => null,
+            'precision'     => null,
+            'scale'         => null,
+            'defaultValue'  => null,
+            'dimension'     => 2,
         ];
         $columns['json_col'] = [
-            'type' => 'json',
-            'dbType' => 'json',
-            'phpType' => 'array',
-            'allowNull' => true,
+            'type'          => 'json',
+            'dbType'        => 'json',
+            'phpType'       => 'array',
+            'allowNull'     => true,
             'autoIncrement' => false,
-            'enumValues' => null,
-            'size' => null,
-            'precision' => null,
-            'scale' => null,
-            'defaultValue' => ["a" => 1],
-            'dimension' => 0
+            'enumValues'    => null,
+            'size'          => null,
+            'precision'     => null,
+            'scale'         => null,
+            'defaultValue'  => ['a' => 1],
+            'dimension'     => 0,
         ];
         $columns['jsonb_col'] = [
-            'type' => 'json',
-            'dbType' => 'jsonb',
-            'phpType' => 'array',
-            'allowNull' => true,
+            'type'          => 'json',
+            'dbType'        => 'jsonb',
+            'phpType'       => 'array',
+            'allowNull'     => true,
             'autoIncrement' => false,
-            'enumValues' => null,
-            'size' => null,
-            'precision' => null,
-            'scale' => null,
-            'defaultValue' => null,
-            'dimension' => 0
+            'enumValues'    => null,
+            'size'          => null,
+            'precision'     => null,
+            'scale'         => null,
+            'defaultValue'  => null,
+            'dimension'     => 0,
         ];
         $columns['jsonarray_col'] = [
-            'type' => 'json',
-            'dbType' => 'json',
-            'phpType' => 'array',
-            'allowNull' => true,
+            'type'          => 'json',
+            'dbType'        => 'json',
+            'phpType'       => 'array',
+            'allowNull'     => true,
             'autoIncrement' => false,
-            'enumValues' => null,
-            'size' => null,
-            'precision' => null,
-            'scale' => null,
-            'defaultValue' => null,
-            'dimension' => 1
+            'enumValues'    => null,
+            'size'          => null,
+            'precision'     => null,
+            'scale'         => null,
+            'defaultValue'  => null,
+            'dimension'     => 1,
         ];
 
         return $columns;
@@ -226,6 +226,7 @@ class SchemaTest extends \yii\db\tests\unit\SchemaTest
 
     /**
      * @dataProvider bigintValueProvider
+     *
      * @param int $bigint
      */
     public function testBigintValue($bigint)
@@ -258,7 +259,7 @@ class SchemaTest extends \yii\db\tests\unit\SchemaTest
         }
 
         $db->createCommand()->createTable('test_default_parenthesis', [
-            'id' => 'pk',
+            'id'            => 'pk',
             'user_timezone' => 'numeric(5,2) DEFAULT (0)::numeric NOT NULL',
         ])->execute();
 
@@ -283,7 +284,7 @@ class SchemaTest extends \yii\db\tests\unit\SchemaTest
         }
 
         $db->createCommand()->createTable('test_timestamp_default_null', [
-            'id' => 'pk',
+            'id'        => 'pk',
             'timestamp' => 'timestamp DEFAULT NULL',
         ])->execute();
 
@@ -299,6 +300,7 @@ class SchemaTest extends \yii\db\tests\unit\SchemaTest
 
         $result['3: foreign key'][2][0]->foreignSchemaName = 'public';
         $result['3: index'][2] = [];
+
         return $result;
     }
 }

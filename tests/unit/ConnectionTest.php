@@ -1,6 +1,7 @@
 <?php
 /**
  * @link http://www.yiiframework.com/
+ *
  * @copyright Copyright (c) 2008 Yii Software LLC
  * @license http://www.yiiframework.com/license/
  */
@@ -98,7 +99,7 @@ class ConnectionTest extends \yii\db\tests\unit\ConnectionTest
         $transaction->commit();
 
         $transaction = $connection->beginTransaction();
-        $transaction->setIsolationLevel(Transaction::SERIALIZABLE . ' READ ONLY DEFERRABLE');
+        $transaction->setIsolationLevel(Transaction::SERIALIZABLE.' READ ONLY DEFERRABLE');
         $transaction->commit();
 
         $this->assertTrue(true); // No error occurred – assert passed.

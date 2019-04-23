@@ -1,6 +1,7 @@
 <?php
 /**
  * @link http://www.yiiframework.com/
+ *
  * @copyright Copyright (c) 2008 Yii Software LLC
  * @license http://www.yiiframework.com/license/
  */
@@ -60,7 +61,7 @@ class ColumnSchema extends \yii\db\ColumnSchema
                     $val = $this->phpTypecastValue($val);
                 });
             } elseif ($value === null) {
-                return null;
+                return;
             }
 
             return new ArrayExpression($value, $this->dbType, $this->dimension);
@@ -73,12 +74,13 @@ class ColumnSchema extends \yii\db\ColumnSchema
      * Casts $value after retrieving from the DBMS to PHP representation.
      *
      * @param string|null $value
+     *
      * @return bool|mixed|null
      */
     protected function phpTypecastValue($value)
     {
         if ($value === null) {
-            return null;
+            return;
         }
 
         switch ($this->type) {
@@ -91,6 +93,7 @@ class ColumnSchema extends \yii\db\ColumnSchema
                     case 'false':
                         return false;
                 }
+
                 return (bool) $value;
             case Schema::TYPE_JSON:
                 return json_decode($value, true);
@@ -100,7 +103,7 @@ class ColumnSchema extends \yii\db\ColumnSchema
     }
 
     /**
-     * Creates instance of ArrayParser
+     * Creates instance of ArrayParser.
      *
      * @return ArrayParser
      */
