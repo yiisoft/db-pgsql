@@ -13,7 +13,7 @@ use yii\db\Expression;
 use yii\db\ExpressionInterface;
 use yii\db\Query;
 use yii\db\PdoValue;
-use yii\helpers\StringHelper;
+use Yiisoft\Strings\StringHelper;
 
 /**
  * QueryBuilder is the query builder for PostgreSQL databases.
