@@ -8,9 +8,6 @@
 
 namespace yii\db\pgsql\tests;
 
-use Yiisoft\ActiveRecord\Tests\Data\ActiveRecord;
-use Yiisoft\ActiveRecord\Tests\Data\DefaultPk;
-use Yiisoft\ActiveRecord\Tests\Unit\ActiveRecordTestTrait;
 use yii\behaviors\TimestampBehavior;
 use yii\db\ArrayExpression;
 use yii\db\Expression;
@@ -18,6 +15,9 @@ use yii\db\JsonExpression;
 use yii\db\pgsql\Schema;
 use yii\helpers\Json;
 use yii\tests\TestCase;
+use Yiisoft\ActiveRecord\Tests\Data\ActiveRecord;
+use Yiisoft\ActiveRecord\Tests\Data\DefaultPk;
+use Yiisoft\ActiveRecord\Tests\Unit\ActiveRecordTestTrait;
 
 /**
  * @group db

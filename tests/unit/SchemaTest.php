@@ -8,9 +8,9 @@
 
 namespace yii\db\pgsql\tests;
 
+use yii\db\Expression;
 use Yiisoft\ActiveRecord\Tests\Data\ActiveRecord;
 use Yiisoft\ActiveRecord\Tests\Data\Type;
-use yii\db\Expression;
 
 /**
  * @group db
