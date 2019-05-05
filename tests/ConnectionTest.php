@@ -6,15 +6,15 @@
  * @license http://www.yiiframework.com/license/
  */
 
-namespace yii\db\pgsql\tests;
+namespace Yiisoft\Db\Pgsql\Tests;
 
-use yii\db\Transaction;
+use Yiisoft\Db\Transaction;
 
 /**
  * @group db
  * @group pgsql
  */
-class ConnectionTest extends \yii\db\tests\unit\ConnectionTest
+class ConnectionTest extends \Yiisoft\Db\Tests\ConnectionTest
 {
     protected $driverName = 'pgsql';
 

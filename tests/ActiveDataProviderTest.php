@@ -6,14 +6,14 @@
  * @license http://www.yiiframework.com/license/
  */
 
-namespace yii\db\pgsql\tests;
+namespace Yiisoft\Db\Pgsql\Tests;
 
 /**
  * @group db
  * @group pgsql
- * @group validators
+ * @group data
  */
-class UniqueValidatorTest extends \yii\db\tests\unit\validators\UniqueValidatorTest
+class ActiveDataProviderTest extends \Yiisoft\ActiveRecord\Tests\Unit\ActiveDataProviderTest
 {
     public $driverName = 'pgsql';
 }

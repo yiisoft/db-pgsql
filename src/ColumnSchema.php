@@ -6,18 +6,18 @@
  * @license http://www.yiiframework.com/license/
  */
 
-namespace yii\db\pgsql;
+namespace Yiisoft\Db\pgsql;
 
-use yii\db\ArrayExpression;
-use yii\db\ExpressionInterface;
-use yii\db\JsonExpression;
+use Yiisoft\Db\ArrayExpression;
+use Yiisoft\Db\ExpressionInterface;
+use Yiisoft\Db\JsonExpression;
 
 /**
  * Class ColumnSchema for PostgreSQL database.
  *
  * @author Dmytro Naumenko <d.naumenko.a@gmail.com>
  */
-class ColumnSchema extends \yii\db\ColumnSchema
+class ColumnSchema extends \Yiisoft\Db\ColumnSchema
 {
     /**
      * @var int the dimension of array. Defaults to 0, means this column is not an array.

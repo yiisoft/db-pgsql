@@ -6,14 +6,14 @@
  * @license http://www.yiiframework.com/license/
  */
 
-namespace yii\db\pgsql\tests;
+namespace Yiisoft\Db\Pgsql\Tests;
 
 use yii\base\DynamicModel;
-use yii\db\ArrayExpression;
-use yii\db\Expression;
-use yii\db\JsonExpression;
-use yii\db\Query;
-use yii\db\Schema;
+use Yiisoft\Db\ArrayExpression;
+use Yiisoft\Db\Expression;
+use Yiisoft\Db\JsonExpression;
+use Yiisoft\Db\Query;
+use Yiisoft\Db\Schema;
 use yii\helpers\Json;
 use yii\tests\data\base\TraversableObject;
 
@@ -21,7 +21,7 @@ use yii\tests\data\base\TraversableObject;
  * @group db
  * @group pgsql
  */
-class QueryBuilderTest extends \yii\db\tests\unit\QueryBuilderTest
+class QueryBuilderTest extends \Yiisoft\Db\Tests\QueryBuilderTest
 {
     public $driverName = 'pgsql';
 

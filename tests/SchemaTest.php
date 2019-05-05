@@ -6,9 +6,9 @@
  * @license http://www.yiiframework.com/license/
  */
 
-namespace yii\db\pgsql\tests;
+namespace Yiisoft\Db\Pgsql\Tests;
 
-use yii\db\Expression;
+use Yiisoft\Db\Expression;
 use Yiisoft\ActiveRecord\Tests\Data\ActiveRecord;
 use Yiisoft\ActiveRecord\Tests\Data\Type;
 
@@ -16,7 +16,7 @@ use Yiisoft\ActiveRecord\Tests\Data\Type;
  * @group db
  * @group pgsql
  */
-class SchemaTest extends \yii\db\tests\unit\SchemaTest
+class SchemaTest extends \Yiisoft\Db\Tests\SchemaTest
 {
     public $driverName = 'pgsql';
 

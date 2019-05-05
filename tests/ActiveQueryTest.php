@@ -6,13 +6,13 @@
  * @license http://www.yiiframework.com/license/
  */
 
-namespace yii\db\pgsql\tests;
+namespace Yiisoft\Db\Pgsql\Tests;
 
 /**
  * @group db
  * @group pgsql
  */
-class BatchQueryResultTest extends \yii\db\tests\unit\BatchQueryResultTest
+class ActiveQueryTest extends \Yiisoft\ActiveRecord\Tests\Unit\ActiveQueryTest
 {
     public $driverName = 'pgsql';
 }

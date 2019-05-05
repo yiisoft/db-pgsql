@@ -6,9 +6,9 @@
  * @license http://www.yiiframework.com/license/
  */
 
-namespace yii\db\pgsql\tests;
+namespace Yiisoft\Db\Pgsql\Tests;
 
-use yii\db\ColumnSchemaBuilder;
+use Yiisoft\Db\ColumnSchemaBuilder;
 
 /**
  * ColumnSchemaBuilderTest tests ColumnSchemaBuilder for Oracle.
@@ -16,7 +16,7 @@ use yii\db\ColumnSchemaBuilder;
  * @group db
  * @group pgsql
  */
-class ColumnSchemaBuilderTest extends \yii\db\tests\unit\ColumnSchemaBuilderTest
+class ColumnSchemaBuilderTest extends \Yiisoft\Db\Tests\ColumnSchemaBuilderTest
 {
     public $driverName = 'pgsql';
 

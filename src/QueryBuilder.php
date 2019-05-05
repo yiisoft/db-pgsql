@@ -6,13 +6,13 @@
  * @license http://www.yiiframework.com/license/
  */
 
-namespace yii\db\pgsql;
+namespace Yiisoft\Db\pgsql;
 
-use yii\db\Constraint;
-use yii\db\Expression;
-use yii\db\ExpressionInterface;
-use yii\db\PdoValue;
-use yii\db\Query;
+use Yiisoft\Db\Constraint;
+use Yiisoft\Db\Expression;
+use Yiisoft\Db\ExpressionInterface;
+use Yiisoft\Db\PdoValue;
+use Yiisoft\Db\Query;
 use yii\exceptions\InvalidArgumentException;
 use Yiisoft\Strings\StringHelper;
 
@@ -23,7 +23,7 @@ use Yiisoft\Strings\StringHelper;
  *
  * @since 2.0
  */
-class QueryBuilder extends \yii\db\QueryBuilder
+class QueryBuilder extends \Yiisoft\Db\QueryBuilder
 {
     /**
      * Defines a UNIQUE index for [[createIndex()]].
@@ -90,10 +90,10 @@ class QueryBuilder extends \yii\db\QueryBuilder
     protected function defaultConditionClasses()
     {
         return array_merge(parent::defaultConditionClasses(), [
-            'ILIKE'        => \yii\db\conditions\LikeCondition::class,
-            'NOT ILIKE'    => \yii\db\conditions\LikeCondition::class,
-            'OR ILIKE'     => \yii\db\conditions\LikeCondition::class,
-            'OR NOT ILIKE' => \yii\db\conditions\LikeCondition::class,
+            'ILIKE'        => \Yiisoft\Db\Conditions\LikeCondition::class,
+            'NOT ILIKE'    => \Yiisoft\Db\Conditions\LikeCondition::class,
+            'OR ILIKE'     => \Yiisoft\Db\Conditions\LikeCondition::class,
+            'OR NOT ILIKE' => \Yiisoft\Db\Conditions\LikeCondition::class,
         ]);
     }
 
@@ -103,8 +103,8 @@ class QueryBuilder extends \yii\db\QueryBuilder
     protected function defaultExpressionBuilders()
     {
         return array_merge(parent::defaultExpressionBuilders(), [
-            \yii\db\ArrayExpression::class => ArrayExpressionBuilder::class,
-            \yii\db\JsonExpression::class  => JsonExpressionBuilder::class,
+            \Yiisoft\Db\ArrayExpression::class => ArrayExpressionBuilder::class,
+            \Yiisoft\Db\JsonExpression::class  => JsonExpressionBuilder::class,
         ]);
     }
 
@@ -469,8 +469,8 @@ class QueryBuilder extends \yii\db\QueryBuilder
      *
      * @param string      $table   the table that data will be saved into.
      * @param array|Query $columns the column data (name => value) to be saved into the table or instance
-     *                             of [[yii\db\Query|Query]] to perform INSERT INTO ... SELECT SQL statement.
-     *                             Passing of [[yii\db\Query|Query]] is available since version 2.0.11.
+     *                             of [[Yiisoft\Db\Query|Query]] to perform INSERT INTO ... SELECT SQL statement.
+     *                             Passing of [[Yiisoft\Db\Query|Query]] is available since version 2.0.11.
      *
      * @return array normalized columns
      *

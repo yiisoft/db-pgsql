@@ -6,15 +6,15 @@
  * @license http://www.yiiframework.com/license/
  */
 
-namespace yii\db\pgsql\tests;
+namespace Yiisoft\Db\Pgsql\Tests;
 
-use yii\db\Query;
+use Yiisoft\Db\Query;
 
 /**
  * @group db
  * @group pgsql
  */
-class QueryTest extends \yii\db\tests\unit\QueryTest
+class QueryTest extends \Yiisoft\Db\Tests\QueryTest
 {
     public $driverName = 'pgsql';
 

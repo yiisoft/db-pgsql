@@ -6,7 +6,7 @@
  * @license http://www.yiiframework.com/license/
  */
 
-namespace yii\db\pgsql\tests;
+namespace Yiisoft\Db\Pgsql\Tests;
 
 use yii\validators\ExistValidator;
 
@@ -15,7 +15,7 @@ use yii\validators\ExistValidator;
  * @group pgsql
  * @group validators
  */
-class ExistValidatorTest extends \yii\db\tests\unit\validators\ExistValidatorTest
+class ExistValidatorTest extends \Yiisoft\Db\Tests\Validators\ExistValidatorTest
 {
     public $driverName = 'pgsql';
 

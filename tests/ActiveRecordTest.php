@@ -6,13 +6,13 @@
  * @license http://www.yiiframework.com/license/
  */
 
-namespace yii\db\pgsql\tests;
+namespace Yiisoft\Db\Pgsql\Tests;
 
 use yii\behaviors\TimestampBehavior;
-use yii\db\ArrayExpression;
-use yii\db\Expression;
-use yii\db\JsonExpression;
-use yii\db\pgsql\Schema;
+use Yiisoft\Db\ArrayExpression;
+use Yiisoft\Db\Expression;
+use Yiisoft\Db\JsonExpression;
+use Yiisoft\Db\pgsql\Schema;
 use yii\helpers\Json;
 use yii\tests\TestCase;
 use Yiisoft\ActiveRecord\Tests\Data\ActiveRecord;
@@ -29,7 +29,7 @@ class ActiveRecordTest extends \Yiisoft\ActiveRecord\Tests\Unit\ActiveRecordTest
 
     public function testBooleanAttribute()
     {
-        /* @var $customerClass \yii\db\ActiveRecordInterface */
+        /* @var $customerClass \Yiisoft\Db\ActiveRecordInterface */
         $customerClass = $this->getCustomerClass();
         /* @var $this TestCase|ActiveRecordTestTrait */
         $customer = new $customerClass();
@@ -56,7 +56,7 @@ class ActiveRecordTest extends \Yiisoft\ActiveRecord\Tests\Unit\ActiveRecordTest
 
     public function testFindAsArray()
     {
-        /* @var $customerClass \yii\db\ActiveRecordInterface */
+        /* @var $customerClass \Yiisoft\Db\ActiveRecordInterface */
         $customerClass = $this->getCustomerClass();
 
         // asArray
