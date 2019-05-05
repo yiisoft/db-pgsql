@@ -6,7 +6,7 @@
  * @license http://www.yiiframework.com/license/
  */
 
-namespace Yiisoft\Db\pgsql;
+namespace Yiisoft\Db\Pgsql;
 
 use Yiisoft\Db\CheckConstraint;
 use Yiisoft\Db\Constraint;
@@ -43,7 +43,7 @@ class Schema extends \Yiisoft\Db\Schema implements ConstraintFinderInterface
     /**
      * {@inheritdoc}
      */
-    public $columnSchemaClass = 'Yiisoft\Db\pgsql\ColumnSchema';
+    public $columnSchemaClass = 'Yiisoft\Db\Pgsql\ColumnSchema';
     /**
      * @var array mapping from physical column types (keys) to abstract
      *            column types (values)

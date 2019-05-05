@@ -6,7 +6,7 @@
  * @license http://www.yiiframework.com/license/
  */
 
-namespace Yiisoft\Db\pgsql;
+namespace Yiisoft\Db\Pgsql;
 
 use Yiisoft\Db\Constraint;
 use Yiisoft\Db\Expression;

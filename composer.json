@@ -83,12 +83,12 @@
     },
     "autoload": {
         "psr-4": {
-            "yii\\db\\pgsql\\": "src"
+            "Yiisoft\\Db\\Pgsql\\": "src"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "yii\\db\\pgsql\\tests\\": "tests"
+            "Yiisoft\\Db\\Pgsql\\Tests\\": "tests"
         }
     },
     "extra": {
