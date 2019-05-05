@@ -8,9 +8,9 @@
 
 namespace yii\db\pgsql\tests;
 
-use yii\activerecord\tests\data\ActiveRecord;
-use yii\activerecord\tests\data\DefaultPk;
-use yii\activerecord\tests\unit\ActiveRecordTestTrait;
+use Yiisoft\ActiveRecord\Tests\Data\ActiveRecord;
+use Yiisoft\ActiveRecord\Tests\Data\DefaultPk;
+use Yiisoft\ActiveRecord\Tests\Unit\ActiveRecordTestTrait;
 use yii\behaviors\TimestampBehavior;
 use yii\db\ArrayExpression;
 use yii\db\Expression;
@@ -23,7 +23,7 @@ use yii\tests\TestCase;
  * @group db
  * @group pgsql
  */
-class ActiveRecordTest extends \yii\activerecord\tests\unit\ActiveRecordTest
+class ActiveRecordTest extends \Yiisoft\ActiveRecord\Tests\Unit\ActiveRecordTest
 {
     protected $driverName = 'pgsql';
 

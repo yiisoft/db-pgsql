@@ -12,7 +12,7 @@ namespace yii\db\pgsql\tests;
  * @group db
  * @group pgsql
  */
-class ActiveQueryTest extends \yii\activerecord\tests\unit\ActiveQueryTest
+class ActiveQueryTest extends \Yiisoft\ActiveRecord\Tests\Unit\ActiveQueryTest
 {
     public $driverName = 'pgsql';
 }
