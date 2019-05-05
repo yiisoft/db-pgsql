@@ -2,8 +2,8 @@
 
 namespace Yiisoft\Db\Pgsql\Tests;
 
-use Yiisoft\Db\pgsql\ArrayParser;
 use yii\tests\TestCase;
+use Yiisoft\Db\pgsql\ArrayParser;
 
 class ArrayParserTest extends TestCase
 {

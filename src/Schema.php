@@ -8,6 +8,9 @@
 
 namespace Yiisoft\Db\pgsql;
 
+use yii\exceptions\NotSupportedException;
+use yii\helpers\Yii;
+use Yiisoft\Arrays\ArrayHelper;
 use Yiisoft\Db\CheckConstraint;
 use Yiisoft\Db\Constraint;
 use Yiisoft\Db\ConstraintFinderInterface;
@@ -17,9 +20,6 @@ use Yiisoft\Db\ForeignKeyConstraint;
 use Yiisoft\Db\IndexConstraint;
 use Yiisoft\Db\TableSchema;
 use Yiisoft\Db\ViewFinderTrait;
-use yii\exceptions\NotSupportedException;
-use yii\helpers\Yii;
-use Yiisoft\Arrays\ArrayHelper;
 
 /**
  * Schema is the class for retrieving metadata from a PostgreSQL database
