@@ -8,12 +8,12 @@
 
 namespace Yiisoft\Db\Pgsql;
 
+use yii\exceptions\InvalidArgumentException;
 use Yiisoft\Db\Constraint;
 use Yiisoft\Db\Expression;
 use Yiisoft\Db\ExpressionInterface;
 use Yiisoft\Db\PdoValue;
 use Yiisoft\Db\Query;
-use yii\exceptions\InvalidArgumentException;
 use Yiisoft\Strings\StringHelper;
 
 /**

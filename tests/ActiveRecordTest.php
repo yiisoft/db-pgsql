@@ -9,15 +9,15 @@
 namespace Yiisoft\Db\Pgsql\Tests;
 
 use yii\behaviors\TimestampBehavior;
-use Yiisoft\Db\ArrayExpression;
-use Yiisoft\Db\Expression;
-use Yiisoft\Db\JsonExpression;
-use Yiisoft\Db\Pgsql\Schema;
 use yii\helpers\Json;
 use yii\tests\TestCase;
 use Yiisoft\ActiveRecord\Tests\Data\ActiveRecord;
 use Yiisoft\ActiveRecord\Tests\Data\DefaultPk;
 use Yiisoft\ActiveRecord\Tests\Unit\ActiveRecordTestTrait;
+use Yiisoft\Db\ArrayExpression;
+use Yiisoft\Db\Expression;
+use Yiisoft\Db\JsonExpression;
+use Yiisoft\Db\Pgsql\Schema;
 
 /**
  * @group db
