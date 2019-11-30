@@ -99,5 +99,8 @@
             "common": "config/common.php",
             "tests": "config/tests.php"
         }
+    },
+    "config": {
+        "sort-packages": true
     }
 }
