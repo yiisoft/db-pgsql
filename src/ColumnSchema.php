@@ -1,28 +1,27 @@
 <?php
-/**
- * @link http://www.yiiframework.com/
- *
- * @copyright Copyright (c) 2008 Yii Software LLC
- * @license http://www.yiiframework.com/license/
- */
+
+declare(strict_types=1);
 
 namespace Yiisoft\Db\Pgsql;
 
-use Yiisoft\Db\ArrayExpression;
-use Yiisoft\Db\ExpressionInterface;
-use Yiisoft\Db\JsonExpression;
+use Yiisoft\Db\Expressions\ArrayExpression;
+use Yiisoft\Db\Expressions\ExpressionInterface;
+use Yiisoft\Db\Expressions\JsonExpression;
 
 /**
- * Class ColumnSchema for PostgreSQL database.
- *
- * @author Dmytro Naumenko <d.naumenko.a@gmail.com>
+ * Class ColumnSchema for Postgres SQL database.
  */
-class ColumnSchema extends \Yiisoft\Db\ColumnSchema
+class ColumnSchema extends \Yiisoft\Db\Schemas\ColumnSchema
 {
     /**
      * @var int the dimension of array. Defaults to 0, means this column is not an array.
      */
-    public $dimension = 0;
+    public int $dimension = 0;
+
+    /**
+     * @var string name of associated sequence if column is auto-incremental.
+     */
+    public ?string $sequenceName = null;
 
     /**
      * {@inheritdoc}
@@ -38,9 +37,12 @@ class ColumnSchema extends \Yiisoft\Db\ColumnSchema
         }
 
         if ($this->dimension > 0) {
-            return new ArrayExpression($value, $this->dbType, $this->dimension);
+            return $this->disableArraySupport
+                ? (string) $value
+                : new ArrayExpression($value, $this->dbType, $this->dimension);
         }
-        if (in_array($this->dbType, [Schema::TYPE_JSON, Schema::TYPE_JSONB], true)) {
+
+        if (\in_array($this->dbType, [Schema::TYPE_JSON, Schema::TYPE_JSONB], true)) {
             return new JsonExpression($value, $this->dbType);
         }
 
@@ -53,6 +55,9 @@ class ColumnSchema extends \Yiisoft\Db\ColumnSchema
     public function phpTypecast($value)
     {
         if ($this->dimension > 0) {
+            if ($this->disableArraySupport) {
+                return $value;
+            }
             if (!is_array($value)) {
                 $value = $this->getArrayParser()->parse($value);
             }
@@ -61,10 +66,12 @@ class ColumnSchema extends \Yiisoft\Db\ColumnSchema
                     $val = $this->phpTypecastValue($val);
                 });
             } elseif ($value === null) {
-                return;
+                return null;
             }
 
-            return new ArrayExpression($value, $this->dbType, $this->dimension);
+            return $this->deserializeArrayColumnToArrayExpression
+                ? new ArrayExpression($value, $this->dbType, $this->dimension)
+                : $value;
         }
 
         return $this->phpTypecastValue($value);
@@ -80,7 +87,7 @@ class ColumnSchema extends \Yiisoft\Db\ColumnSchema
     protected function phpTypecastValue($value)
     {
         if ($value === null) {
-            return;
+            return null;
         }
 
         switch ($this->type) {
@@ -93,21 +100,20 @@ class ColumnSchema extends \Yiisoft\Db\ColumnSchema
                     case 'false':
                         return false;
                 }
-
                 return (bool) $value;
             case Schema::TYPE_JSON:
-                return json_decode($value, true);
+                return \json_decode($value, true);
         }
 
         return parent::phpTypecast($value);
     }
 
     /**
-     * Creates instance of ArrayParser.
+     * Creates instance of ArrayParser
      *
      * @return ArrayParser
      */
-    protected function getArrayParser()
+    protected function getArrayParser(): ArrayParser
     {
         static $parser = null;
 
