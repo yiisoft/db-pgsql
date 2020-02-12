@@ -1,26 +1,18 @@
 <?php
-/**
- * @link http://www.yiiframework.com/
- *
- * @copyright Copyright (c) 2008 Yii Software LLC
- * @license http://www.yiiframework.com/license/
- */
+
+declare(strict_types=1);
 
 namespace Yiisoft\Db\Pgsql;
 
-use Yiisoft\Db\ArrayExpression;
-use Yiisoft\Db\ExpressionBuilderInterface;
-use Yiisoft\Db\ExpressionBuilderTrait;
-use Yiisoft\Db\ExpressionInterface;
-use Yiisoft\Db\JsonExpression;
-use Yiisoft\Db\Query;
+use Yiisoft\Db\Expressions\ArrayExpression;
+use Yiisoft\Db\Expressions\ExpressionBuilderInterface;
+use Yiisoft\Db\Expressions\ExpressionBuilderTrait;
+use Yiisoft\Db\Expressions\ExpressionInterface;
+use Yiisoft\Db\Expressions\JsonExpression;
+use Yiisoft\Db\Querys\Query;
 
 /**
- * Class ArrayExpressionBuilder builds [[ArrayExpression]] for PostgreSQL DBMS.
- *
- * @author Dmytro Naumenko <d.naumenko.a@gmail.com>
- *
- * @since 2.0.14
+ * Class ArrayExpressionBuilder builds {@see ArrayExpression} for Postgres SQL DBMS.
  */
 class ArrayExpressionBuilder implements ExpressionBuilderInterface
 {
@@ -39,30 +31,29 @@ class ArrayExpressionBuilder implements ExpressionBuilderInterface
         }
 
         if ($value instanceof Query) {
-            list($sql, $params) = $this->queryBuilder->build($value, $params);
-
+            [$sql, $params] = $this->queryBuilder->build($value, $params);
             return $this->buildSubqueryArray($sql, $expression);
         }
 
         $placeholders = $this->buildPlaceholders($expression, $params);
 
-        return 'ARRAY['.implode(', ', $placeholders).']'.$this->getTypehint($expression);
+        return 'ARRAY[' . implode(', ', $placeholders) . ']' . $this->getTypehint($expression);
     }
 
     /**
-     * Builds placeholders array out of $expression values.
+     * Builds placeholders array out of $expression values
      *
      * @param ExpressionInterface|ArrayExpression $expression
-     * @param array                               $params     the binding parameters.
+     * @param array $params the binding parameters.
      *
      * @return array
      */
-    protected function buildPlaceholders(ExpressionInterface $expression, &$params)
+    protected function buildPlaceholders(ExpressionInterface $expression, &$params): array
     {
         $value = $expression->getValue();
 
         $placeholders = [];
-        if ($value === null || !is_array($value) && !$value instanceof \Traversable) {
+        if ($value === null || (!is_array($value) && !$value instanceof \Traversable)) {
             return $placeholders;
         }
 
@@ -70,7 +61,6 @@ class ArrayExpressionBuilder implements ExpressionBuilderInterface
             foreach ($value as $item) {
                 $placeholders[] = $this->build($this->unnestArrayExpression($expression, $item), $params);
             }
-
             return $placeholders;
         }
 
@@ -95,11 +85,11 @@ class ArrayExpressionBuilder implements ExpressionBuilderInterface
 
     /**
      * @param ArrayExpression $expression
-     * @param mixed           $value
+     * @param mixed $value
      *
      * @return ArrayExpression
      */
-    private function unnestArrayExpression(ArrayExpression $expression, $value)
+    private function unnestArrayExpression(ArrayExpression $expression, $value): ArrayExpression
     {
         $expressionClass = get_class($expression);
 
@@ -109,15 +99,15 @@ class ArrayExpressionBuilder implements ExpressionBuilderInterface
     /**
      * @param ArrayExpression $expression
      *
-     * @return string the typecast expression based on [[type]].
+     * @return string the typecast expression based on {@see type}
      */
-    protected function getTypehint(ArrayExpression $expression)
+    protected function getTypehint(ArrayExpression $expression): string
     {
         if ($expression->getType() === null) {
             return '';
         }
 
-        $result = '::'.$expression->getType();
+        $result = '::' . $expression->getType();
         $result .= str_repeat('[]', $expression->getDimension());
 
         return $result;
@@ -126,23 +116,23 @@ class ArrayExpressionBuilder implements ExpressionBuilderInterface
     /**
      * Build an array expression from a subquery SQL.
      *
-     * @param string          $sql        the subquery SQL.
-     * @param ArrayExpression $expression
+     * @param string $sql the subquery SQL.
+     * @param ArrayExpression $expression.
      *
      * @return string the subquery array expression.
      */
-    protected function buildSubqueryArray($sql, ArrayExpression $expression)
+    protected function buildSubqueryArray($sql, ArrayExpression $expression): string
     {
-        return 'ARRAY('.$sql.')'.$this->getTypehint($expression);
+        return 'ARRAY(' . $sql . ')' . $this->getTypehint($expression);
     }
 
     /**
-     * Casts $value to use in $expression.
+     * Casts $value to use in $expression
      *
      * @param ArrayExpression $expression
-     * @param mixed           $value
+     * @param mixed $value
      *
-     * @return JsonExpression
+     * @return int|JsonExpression
      */
     protected function typecastValue(ArrayExpression $expression, $value)
     {

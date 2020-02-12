@@ -1,26 +1,18 @@
 <?php
-/**
- * @link http://www.yiiframework.com/
- *
- * @copyright Copyright (c) 2008 Yii Software LLC
- * @license http://www.yiiframework.com/license/
- */
 
-namespace Yiisoft\Db\Pgsql\Tests;
+declare(strict_types=1);
 
-use Yiisoft\ActiveRecord\Tests\Data\ActiveRecord;
-use Yiisoft\ActiveRecord\Tests\Data\Type;
-use Yiisoft\Db\Expression;
+namespace Yiisoft\Db\Tests\Pgsql;
 
-/**
- * @group db
- * @group pgsql
- */
-class SchemaTest extends \Yiisoft\Db\Tests\SchemaTest
+use Yiisoft\Db\Conditions\ExistsConditionBuilder;
+use Yiisoft\Db\Expressions\Expression;
+use Yiisoft\Db\Tests\SchemaTest as AbstractSchemaTest;
+
+final class SchemaTest extends AbstractSchemaTest
 {
-    public $driverName = 'pgsql';
+    public ?string $driverName = 'pgsql';
 
-    protected $expectedSchemas = [
+    protected array $expectedSchemas = [
         'public',
     ];
 
@@ -80,81 +72,81 @@ class SchemaTest extends \Yiisoft\Db\Tests\SchemaTest
         $columns['bit_col']['size'] = 8;
         $columns['bit_col']['precision'] = null;
         $columns['bigint_col'] = [
-            'type'          => 'bigint',
-            'dbType'        => 'int8',
-            'phpType'       => 'integer',
-            'allowNull'     => true,
+            'type' => 'bigint',
+            'dbType' => 'int8',
+            'phpType' => 'integer',
+            'allowNull' => true,
             'autoIncrement' => false,
-            'enumValues'    => null,
-            'size'          => null,
-            'precision'     => 64,
-            'scale'         => 0,
-            'defaultValue'  => null,
+            'enumValues' => null,
+            'size' => null,
+            'precision' => 64,
+            'scale' => 0,
+            'defaultValue' => null,
         ];
         $columns['intarray_col'] = [
-            'type'          => 'integer',
-            'dbType'        => 'int4',
-            'phpType'       => 'integer',
-            'allowNull'     => true,
+            'type' => 'integer',
+            'dbType' => 'int4',
+            'phpType' => 'integer',
+            'allowNull' => true,
             'autoIncrement' => false,
-            'enumValues'    => null,
-            'size'          => null,
-            'precision'     => null,
-            'scale'         => null,
-            'defaultValue'  => null,
-            'dimension'     => 1,
+            'enumValues' => null,
+            'size' => null,
+            'precision' => null,
+            'scale' => null,
+            'defaultValue' => null,
+            'dimension' => 1
         ];
         $columns['textarray2_col'] = [
-            'type'          => 'text',
-            'dbType'        => 'text',
-            'phpType'       => 'string',
-            'allowNull'     => true,
+            'type' => 'text',
+            'dbType' => 'text',
+            'phpType' => 'string',
+            'allowNull' => true,
             'autoIncrement' => false,
-            'enumValues'    => null,
-            'size'          => null,
-            'precision'     => null,
-            'scale'         => null,
-            'defaultValue'  => null,
-            'dimension'     => 2,
+            'enumValues' => null,
+            'size' => null,
+            'precision' => null,
+            'scale' => null,
+            'defaultValue' => null,
+            'dimension' => 2
         ];
         $columns['json_col'] = [
-            'type'          => 'json',
-            'dbType'        => 'json',
-            'phpType'       => 'array',
-            'allowNull'     => true,
+            'type' => 'json',
+            'dbType' => 'json',
+            'phpType' => 'array',
+            'allowNull' => true,
             'autoIncrement' => false,
-            'enumValues'    => null,
-            'size'          => null,
-            'precision'     => null,
-            'scale'         => null,
-            'defaultValue'  => ['a' => 1],
-            'dimension'     => 0,
+            'enumValues' => null,
+            'size' => null,
+            'precision' => null,
+            'scale' => null,
+            'defaultValue' => ["a" => 1],
+            'dimension' => 0
         ];
         $columns['jsonb_col'] = [
-            'type'          => 'json',
-            'dbType'        => 'jsonb',
-            'phpType'       => 'array',
-            'allowNull'     => true,
+            'type' => 'json',
+            'dbType' => 'jsonb',
+            'phpType' => 'array',
+            'allowNull' => true,
             'autoIncrement' => false,
-            'enumValues'    => null,
-            'size'          => null,
-            'precision'     => null,
-            'scale'         => null,
-            'defaultValue'  => null,
-            'dimension'     => 0,
+            'enumValues' => null,
+            'size' => null,
+            'precision' => null,
+            'scale' => null,
+            'defaultValue' => null,
+            'dimension' => 0
         ];
         $columns['jsonarray_col'] = [
-            'type'          => 'json',
-            'dbType'        => 'json',
-            'phpType'       => 'array',
-            'allowNull'     => true,
+            'type' => 'json',
+            'dbType' => 'json',
+            'phpType' => 'array',
+            'allowNull' => true,
             'autoIncrement' => false,
-            'enumValues'    => null,
-            'size'          => null,
-            'precision'     => null,
-            'scale'         => null,
-            'defaultValue'  => null,
-            'dimension'     => 1,
+            'enumValues' => null,
+            'size' => null,
+            'precision' => null,
+            'scale' => null,
+            'defaultValue' => null,
+            'dimension' => 1
         ];
 
         return $columns;
@@ -162,7 +154,7 @@ class SchemaTest extends \Yiisoft\Db\Tests\SchemaTest
 
     public function testCompositeFk()
     {
-        $schema = $this->getConnection()->schema;
+        $schema = $this->getConnection()->getSchema();
 
         $table = $schema->getTableSchema('composite_fk');
 
@@ -187,7 +179,7 @@ class SchemaTest extends \Yiisoft\Db\Tests\SchemaTest
             [$fp = fopen(__FILE__, 'rb'), \PDO::PARAM_LOB],
         ];
 
-        $schema = $this->getConnection()->schema;
+        $schema = $this->getConnection()->getSchema();
 
         foreach ($values as $value) {
             $this->assertEquals($value[1], $schema->getPdoType($value[0]));
@@ -197,16 +189,67 @@ class SchemaTest extends \Yiisoft\Db\Tests\SchemaTest
 
     public function testBooleanDefaultValues()
     {
-        $schema = $this->getConnection()->schema;
+        $schema = $this->getConnection()->getSchema();
 
         $table = $schema->getTableSchema('bool_values');
         $this->assertTrue($table->getColumn('default_true')->defaultValue);
         $this->assertFalse($table->getColumn('default_false')->defaultValue);
     }
 
+    public function testSequenceName()
+    {
+        $connection = $this->getConnection();
+
+        $sequenceName = $connection->getSchema()->getTableSchema('item')->sequenceName;
+
+        $connection->createCommand(
+            'ALTER TABLE "item" ALTER COLUMN "id" SET DEFAULT nextval(\'item_id_seq_2\')'
+        )->execute();
+
+        $connection->getSchema()->refreshTableSchema('item');
+        $this->assertEquals('item_id_seq_2', $connection->getSchema()->getTableSchema('item')->sequenceName);
+
+        $connection->createCommand(
+            'ALTER TABLE "item" ALTER COLUMN "id" SET DEFAULT nextval(\'' .  $sequenceName . '\')'
+        )->execute();
+
+        $connection->getSchema()->refreshTableSchema('item');
+        $this->assertEquals($sequenceName, $connection->getSchema()->getTableSchema('item')->sequenceName);
+    }
+
+    public function testGeneratedValues()
+    {
+        if (version_compare($this->getConnection(false)->getServerVersion(), '12.0', '<')) {
+            $this->markTestSkipped('PostgreSQL < 12.0 does not support GENERATED AS IDENTITY columns.');
+        }
+
+        $config = $this->database;
+        unset($config['fixture']);
+        $this->prepareDatabase($config, realpath(__DIR__ . '/../../../data') . '/postgres12.sql');
+
+        $table = $this->getConnection(false)->getSchema()->getTableSchema('generated');
+        $this->assertTrue($table->getColumn('id_always')->autoIncrement);
+        $this->assertTrue($table->getColumn('id_primary')->autoIncrement);
+        $this->assertTrue($table->getColumn('id_primary')->isPrimaryKey);
+        $this->assertTrue($table->getColumn('id_default')->autoIncrement);
+    }
+
+    public function testPartitionedTable()
+    {
+        if (version_compare($this->getConnection(false)->getServerVersion(), '10.0', '<')) {
+            $this->markTestSkipped('PostgreSQL < 10.0 does not support PARTITION BY clause.');
+        }
+
+        $config = $this->database;
+        unset($config['fixture']);
+        $this->prepareDatabase($config, realpath(__DIR__ . '/../../../data') . '/postgres10.sql');
+
+        $this->assertNotNull($this->getConnection(false)->getSchema()->getTableSchema('partitioned'));
+    }
+
     public function testFindSchemaNames()
     {
-        $schema = $this->getConnection()->schema;
+        $schema = $this->getConnection()->getSchema();
 
         $this->assertCount(3, $schema->getSchemaNames());
     }
@@ -225,46 +268,22 @@ class SchemaTest extends \Yiisoft\Db\Tests\SchemaTest
     }
 
     /**
-     * @dataProvider bigintValueProvider
-     *
-     * @param int $bigint
-     */
-    public function testBigintValue($bigint)
-    {
-        $this->mockApplication();
-        ActiveRecord::$db = $this->getConnection();
-
-        Type::deleteAll();
-
-        $type = new Type();
-        $type->setAttributes([
-            'bigint_col' => $bigint,
-            // whatever just to satisfy NOT NULL columns
-            'int_col' => 1, 'char_col' => 'a', 'float_col' => 0.1, 'bool_col' => true,
-        ], false);
-        $type->save(false);
-
-        $actual = Type::find()->one();
-        $this->assertEquals($bigint, $actual->bigint_col);
-    }
-
-    /**
      * @see https://github.com/yiisoft/yii2/issues/12483
      */
     public function testParenthesisDefaultValue()
     {
         $db = $this->getConnection(false);
-        if ($db->schema->getTableSchema('test_default_parenthesis') !== null) {
+        if ($db->getSchema()->getTableSchema('test_default_parenthesis') !== null) {
             $db->createCommand()->dropTable('test_default_parenthesis')->execute();
         }
 
         $db->createCommand()->createTable('test_default_parenthesis', [
-            'id'            => 'pk',
+            'id' => 'pk',
             'user_timezone' => 'numeric(5,2) DEFAULT (0)::numeric NOT NULL',
         ])->execute();
 
-        $db->schema->refreshTableSchema('test_default_parenthesis');
-        $tableSchema = $db->schema->getTableSchema('test_default_parenthesis');
+        $db->getSchema()->refreshTableSchema('test_default_parenthesis');
+        $tableSchema = $db->getSchema()->getTableSchema('test_default_parenthesis');
         $this->assertNotNull($tableSchema);
         $column = $tableSchema->getColumn('user_timezone');
         $this->assertNotNull($column);
@@ -279,26 +298,26 @@ class SchemaTest extends \Yiisoft\Db\Tests\SchemaTest
     public function testTimestampNullDefaultValue()
     {
         $db = $this->getConnection(false);
-        if ($db->schema->getTableSchema('test_timestamp_default_null') !== null) {
+        if ($db->getSchema()->getTableSchema('test_timestamp_default_null') !== null) {
             $db->createCommand()->dropTable('test_timestamp_default_null')->execute();
         }
 
         $db->createCommand()->createTable('test_timestamp_default_null', [
-            'id'        => 'pk',
+            'id' => 'pk',
             'timestamp' => 'timestamp DEFAULT NULL',
         ])->execute();
 
-        $db->schema->refreshTableSchema('test_timestamp_default_null');
-        $tableSchema = $db->schema->getTableSchema('test_timestamp_default_null');
+        $db->getSchema()->refreshTableSchema('test_timestamp_default_null');
+        $tableSchema = $db->getSchema()->getTableSchema('test_timestamp_default_null');
         $this->assertNull($tableSchema->getColumn('timestamp')->defaultValue);
     }
 
-    public function constraintsProvider()
+    public function constraintsProvider(): array
     {
         $result = parent::constraintsProvider();
-        $result['1: check'][2][0]->expression = '(("C_check")::text <> \'\'::text)';
 
-        $result['3: foreign key'][2][0]->foreignSchemaName = 'public';
+        $result['1: check'][2][0]->setExpression('CHECK ((("C_check")::text <> \'\'::text))');
+        //$result['3: foreign key'][2][0]->setForeignSchemaName('public');
         $result['3: index'][2] = [];
 
         return $result;

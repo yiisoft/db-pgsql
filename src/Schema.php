@@ -1,138 +1,118 @@
 <?php
-/**
- * @link http://www.yiiframework.com/
- *
- * @copyright Copyright (c) 2008 Yii Software LLC
- * @license http://www.yiiframework.com/license/
- */
+
+declare(strict_types=1);
 
 namespace Yiisoft\Db\Pgsql;
 
-use yii\exceptions\NotSupportedException;
-use yii\helpers\Yii;
+use Yiisoft\Db\Constraints\CheckConstraint;
+use Yiisoft\Db\Constraints\Constraint;
+use Yiisoft\Db\Constraints\ConstraintFinderInterface;
+use Yiisoft\Db\Constraints\ConstraintFinderTrait;
+use Yiisoft\Db\Constraints\ForeignKeyConstraint;
+use Yiisoft\Db\Constraints\IndexConstraint;
+use Yiisoft\Db\Exceptions\NotSupportedException;
+use Yiisoft\Db\Expressions\Expression;
+use Yiisoft\Db\Schemas\TableSchema;
+use Yiisoft\Db\Views\ViewFinderTrait;
 use Yiisoft\Arrays\ArrayHelper;
-use Yiisoft\Db\CheckConstraint;
-use Yiisoft\Db\Constraint;
-use Yiisoft\Db\ConstraintFinderInterface;
-use Yiisoft\Db\ConstraintFinderTrait;
-use Yiisoft\Db\Expression;
-use Yiisoft\Db\ForeignKeyConstraint;
-use Yiisoft\Db\IndexConstraint;
-use Yiisoft\Db\TableSchema;
-use Yiisoft\Db\ViewFinderTrait;
 
 /**
- * Schema is the class for retrieving metadata from a PostgreSQL database
+ * Schema is the class for retrieving metadata from a Postgres SQL database
  * (version 9.x and above).
- *
- * @author Gevik Babakhani <gevikb@gmail.com>
- *
- * @since 2.0
  */
-class Schema extends \Yiisoft\Db\Schema implements ConstraintFinderInterface
+class Schema extends \Yiisoft\Db\Schemas\Schema implements ConstraintFinderInterface
 {
     use ViewFinderTrait;
     use ConstraintFinderTrait;
 
-    const TYPE_JSONB = 'jsonb';
+    public const TYPE_JSONB = 'jsonb';
 
     /**
      * @var string the default schema used for the current session.
      */
-    public $defaultSchema = 'public';
+    public ?string $defaultSchema = 'public';
+
     /**
      * {@inheritdoc}
      */
-    public $columnSchemaClass = 'Yiisoft\Db\Pgsql\ColumnSchema';
+    public string $columnSchemaClass = ColumnSchema::class;
+
     /**
      * @var array mapping from physical column types (keys) to abstract
-     *            column types (values)
+     * column types (values)
      *
-     * @see http://www.postgresql.org/docs/current/static/datatype.html#DATATYPE-TABLE
+     * {@see http://www.postgresql.org/docs/current/static/datatype.html#DATATYPE-TABLE}
      */
-    public $typeMap = [
-        'bit'         => self::TYPE_INTEGER,
+    public array $typeMap = [
+        'bit' => self::TYPE_INTEGER,
         'bit varying' => self::TYPE_INTEGER,
-        'varbit'      => self::TYPE_INTEGER,
-
-        'bool'    => self::TYPE_BOOLEAN,
+        'varbit' => self::TYPE_INTEGER,
+        'bool' => self::TYPE_BOOLEAN,
         'boolean' => self::TYPE_BOOLEAN,
-
-        'box'     => self::TYPE_STRING,
-        'circle'  => self::TYPE_STRING,
-        'point'   => self::TYPE_STRING,
-        'line'    => self::TYPE_STRING,
-        'lseg'    => self::TYPE_STRING,
+        'box' => self::TYPE_STRING,
+        'circle' => self::TYPE_STRING,
+        'point' => self::TYPE_STRING,
+        'line' => self::TYPE_STRING,
+        'lseg' => self::TYPE_STRING,
         'polygon' => self::TYPE_STRING,
-        'path'    => self::TYPE_STRING,
-
-        'character'         => self::TYPE_CHAR,
-        'char'              => self::TYPE_CHAR,
-        'bpchar'            => self::TYPE_CHAR,
+        'path' => self::TYPE_STRING,
+        'character' => self::TYPE_CHAR,
+        'char' => self::TYPE_CHAR,
+        'bpchar' => self::TYPE_CHAR,
         'character varying' => self::TYPE_STRING,
-        'varchar'           => self::TYPE_STRING,
-        'text'              => self::TYPE_TEXT,
-
+        'varchar' => self::TYPE_STRING,
+        'text' => self::TYPE_TEXT,
         'bytea' => self::TYPE_BINARY,
-
-        'cidr'    => self::TYPE_STRING,
-        'inet'    => self::TYPE_STRING,
+        'cidr' => self::TYPE_STRING,
+        'inet' => self::TYPE_STRING,
         'macaddr' => self::TYPE_STRING,
-
-        'real'             => self::TYPE_FLOAT,
-        'float4'           => self::TYPE_FLOAT,
+        'real' => self::TYPE_FLOAT,
+        'float4' => self::TYPE_FLOAT,
         'double precision' => self::TYPE_DOUBLE,
-        'float8'           => self::TYPE_DOUBLE,
-        'decimal'          => self::TYPE_DECIMAL,
-        'numeric'          => self::TYPE_DECIMAL,
-
+        'float8' => self::TYPE_DOUBLE,
+        'decimal' => self::TYPE_DECIMAL,
+        'numeric' => self::TYPE_DECIMAL,
         'money' => self::TYPE_MONEY,
-
         'smallint' => self::TYPE_SMALLINT,
-        'int2'     => self::TYPE_SMALLINT,
-        'int4'     => self::TYPE_INTEGER,
-        'int'      => self::TYPE_INTEGER,
-        'integer'  => self::TYPE_INTEGER,
-        'bigint'   => self::TYPE_BIGINT,
-        'int8'     => self::TYPE_BIGINT,
-        'oid'      => self::TYPE_BIGINT, // should not be used. it's pg internal!
-
+        'int2' => self::TYPE_SMALLINT,
+        'int4' => self::TYPE_INTEGER,
+        'int' => self::TYPE_INTEGER,
+        'integer' => self::TYPE_INTEGER,
+        'bigint' => self::TYPE_BIGINT,
+        'int8' => self::TYPE_BIGINT,
+        'oid' => self::TYPE_BIGINT, // should not be used. it's pg internal!
         'smallserial' => self::TYPE_SMALLINT,
-        'serial2'     => self::TYPE_SMALLINT,
-        'serial4'     => self::TYPE_INTEGER,
-        'serial'      => self::TYPE_INTEGER,
-        'bigserial'   => self::TYPE_BIGINT,
-        'serial8'     => self::TYPE_BIGINT,
-        'pg_lsn'      => self::TYPE_BIGINT,
-
-        'date'                        => self::TYPE_DATE,
-        'interval'                    => self::TYPE_STRING,
-        'time without time zone'      => self::TYPE_TIME,
-        'time'                        => self::TYPE_TIME,
-        'time with time zone'         => self::TYPE_TIME,
-        'timetz'                      => self::TYPE_TIME,
+        'serial2' => self::TYPE_SMALLINT,
+        'serial4' => self::TYPE_INTEGER,
+        'serial' => self::TYPE_INTEGER,
+        'bigserial' => self::TYPE_BIGINT,
+        'serial8' => self::TYPE_BIGINT,
+        'pg_lsn' => self::TYPE_BIGINT,
+        'date' => self::TYPE_DATE,
+        'interval' => self::TYPE_STRING,
+        'time without time zone' => self::TYPE_TIME,
+        'time' => self::TYPE_TIME,
+        'time with time zone' => self::TYPE_TIME,
+        'timetz' => self::TYPE_TIME,
         'timestamp without time zone' => self::TYPE_TIMESTAMP,
-        'timestamp'                   => self::TYPE_TIMESTAMP,
-        'timestamp with time zone'    => self::TYPE_TIMESTAMP,
-        'timestamptz'                 => self::TYPE_TIMESTAMP,
-        'abstime'                     => self::TYPE_TIMESTAMP,
-
-        'tsquery'       => self::TYPE_STRING,
-        'tsvector'      => self::TYPE_STRING,
+        'timestamp' => self::TYPE_TIMESTAMP,
+        'timestamp with time zone' => self::TYPE_TIMESTAMP,
+        'timestamptz' => self::TYPE_TIMESTAMP,
+        'abstime' => self::TYPE_TIMESTAMP,
+        'tsquery' => self::TYPE_STRING,
+        'tsvector' => self::TYPE_STRING,
         'txid_snapshot' => self::TYPE_STRING,
-
         'unknown' => self::TYPE_STRING,
-
-        'uuid'  => self::TYPE_STRING,
-        'json'  => self::TYPE_JSON,
+        'uuid' => self::TYPE_STRING,
+        'json' => self::TYPE_JSON,
         'jsonb' => self::TYPE_JSON,
-        'xml'   => self::TYPE_STRING,
+        'xml' => self::TYPE_STRING,
     ];
 
     /**
      * {@inheritdoc}
      */
-    protected $tableQuoteCharacter = '"';
+    protected string $tableQuoteCharacter = '"';
 
     /**
      * {@inheritdoc}
@@ -141,6 +121,7 @@ class Schema extends \Yiisoft\Db\Schema implements ConstraintFinderInterface
     {
         $resolvedName = new TableSchema();
         $parts = explode('.', str_replace('"', '', $name));
+
         if (isset($parts[1])) {
             $resolvedName->schemaName = $parts[0];
             $resolvedName->name = $parts[1];
@@ -148,8 +129,7 @@ class Schema extends \Yiisoft\Db\Schema implements ConstraintFinderInterface
             $resolvedName->schemaName = $this->defaultSchema;
             $resolvedName->name = $name;
         }
-        $resolvedName->fullName = ($resolvedName->schemaName !== $this->defaultSchema ? $resolvedName->schemaName.'.' : '').$resolvedName->name;
-
+        $resolvedName->fullName = ($resolvedName->schemaName !== $this->defaultSchema ? $resolvedName->schemaName . '.' : '') . $resolvedName->name;
         return $resolvedName;
     }
 
@@ -180,10 +160,9 @@ SQL;
 SELECT c.relname AS table_name
 FROM pg_class c
 INNER JOIN pg_namespace ns ON ns.oid = c.relnamespace
-WHERE ns.nspname = :schemaName AND c.relkind IN ('r','v','m','f')
+WHERE ns.nspname = :schemaName AND c.relkind IN ('r','v','m','f', 'p')
 ORDER BY c.relname
 SQL;
-
         return $this->db->createCommand($sql, [':schemaName' => $schema])->queryColumn();
     }
 
@@ -194,11 +173,13 @@ SQL;
     {
         $table = new TableSchema();
         $this->resolveTableNames($table, $name);
+
         if ($this->findColumns($table)) {
             $this->findConstraints($table);
-
             return $table;
         }
+
+        return null;
     }
 
     /**
@@ -242,20 +223,25 @@ ORDER BY "ia"."attnum" ASC
 SQL;
 
         $resolvedName = $this->resolveTableName($tableName);
+
         $indexes = $this->db->createCommand($sql, [
             ':schemaName' => $resolvedName->schemaName,
-            ':tableName'  => $resolvedName->name,
+            ':tableName' => $resolvedName->name,
         ])->queryAll();
+
         $indexes = $this->normalizePdoRowKeyCase($indexes, true);
         $indexes = ArrayHelper::index($indexes, null, 'name');
         $result = [];
+
         foreach ($indexes as $name => $index) {
-            $result[] = Yii::createObject(['__class' => IndexConstraint::class,
-                'isPrimary'                          => (bool) $index[0]['index_is_primary'],
-                'isUnique'                           => (bool) $index[0]['index_is_unique'],
-                'name'                               => $name,
-                'columnNames'                        => ArrayHelper::getColumn($index, 'column_name'),
-            ]);
+            $ic = new IndexConstraint();
+
+            $ic->setName($name);
+            $ic->setColumnNames(ArrayHelper::getColumn($index, 'column_name'));
+            $ic->setIsPrimary((bool) $index[0]['index_is_primary']);
+            $ic->setIsUnique((bool) $index[0]['index_is_unique']);
+
+            $result[] = $ic;
         }
 
         return $result;
@@ -299,9 +285,9 @@ SQL;
 
     /**
      * Resolves the table name and schema name (if any).
+     * @param TableSchema $table the table metadata object.
      *
-     * @param TableSchema $table the table metadata object
-     * @param string      $name  the table name
+     * @param string $name the table name
      */
     protected function resolveTableNames($table, $name)
     {
@@ -315,11 +301,11 @@ SQL;
             $table->name = $parts[0];
         }
 
-        $table->fullName = $table->schemaName !== $this->defaultSchema ? $table->schemaName.'.'.$table->name : $table->name;
+        $table->fullName = $table->schemaName !== $this->defaultSchema ? $table->schemaName . '.' . $table->name : $table->name;
     }
 
     /**
-     * {@inheritdoc].
+     * {@inheritdoc]
      */
     protected function findViewNames($schema = '')
     {
@@ -333,7 +319,6 @@ INNER JOIN pg_namespace ns ON ns.oid = c.relnamespace
 WHERE ns.nspname = :schemaName AND (c.relkind = 'v' OR c.relkind = 'm')
 ORDER BY c.relname
 SQL;
-
         return $this->db->createCommand($sql, [':schemaName' => $schema])->queryColumn();
     }
 
@@ -376,12 +361,13 @@ order by
 SQL;
 
         $constraints = [];
+
         foreach ($this->db->createCommand($sql)->queryAll() as $constraint) {
-            if ($this->db->slavePdo->getAttribute(\PDO::ATTR_CASE) === \PDO::CASE_UPPER) {
+            if ($this->db->getSlavePdo()->getAttribute(\PDO::ATTR_CASE) === \PDO::CASE_UPPER) {
                 $constraint = array_change_key_case($constraint, CASE_LOWER);
             }
             if ($constraint['foreign_table_schema'] !== $this->defaultSchema) {
-                $foreignTable = $constraint['foreign_table_schema'].'.'.$constraint['foreign_table_name'];
+                $foreignTable = $constraint['foreign_table_schema'] . '.' . $constraint['foreign_table_name'];
             } else {
                 $foreignTable = $constraint['foreign_table_name'];
             }
@@ -389,11 +375,12 @@ SQL;
             if (!isset($constraints[$name])) {
                 $constraints[$name] = [
                     'tableName' => $foreignTable,
-                    'columns'   => [],
+                    'columns' => [],
                 ];
             }
             $constraints[$name]['columns'][$constraint['column_name']] = $constraint['foreign_column_name'];
         }
+
         foreach ($constraints as $name => $constraint) {
             $table->foreignKeys[$name] = array_merge([$constraint['tableName']], $constraint['columns']);
         }
@@ -426,7 +413,7 @@ SQL;
 
         return $this->db->createCommand($sql, [
             ':schemaName' => $table->schemaName,
-            ':tableName'  => $table->name,
+            ':tableName' => $table->name,
         ])->queryAll();
     }
 
@@ -443,7 +430,6 @@ SQL;
      * ```
      *
      * @param TableSchema $table the table metadata
-     *
      * @return array all unique indexes for the given table.
      */
     public function findUniqueIndexes($table)
@@ -451,7 +437,7 @@ SQL;
         $uniqueIndexes = [];
 
         foreach ($this->getUniqueIndexInformation($table) as $row) {
-            if ($this->db->slavePdo->getAttribute(\PDO::ATTR_CASE) === \PDO::CASE_UPPER) {
+            if ($this->db->getSlavePdo()->getAttribute(\PDO::ATTR_CASE) === \PDO::CASE_UPPER) {
                 $row = array_change_key_case($row, CASE_LOWER);
             }
             $column = $row['columnname'];
@@ -473,10 +459,16 @@ SQL;
      *
      * @return bool whether the table exists in the database
      */
-    protected function findColumns($table)
+    protected function findColumns($table): bool
     {
         $tableName = $this->db->quoteValue($table->name);
         $schemaName = $this->db->quoteValue($table->schemaName);
+
+        $orIdentity = '';
+        if (version_compare($this->db->getServerVersion(), '12.0', '>=')) {
+            $orIdentity = 'OR attidentity != \'\'';
+        }
+
         $sql = <<<SQL
 SELECT
     d.nspname AS table_schema,
@@ -489,7 +481,8 @@ SELECT
     a.atttypmod AS modifier,
     a.attnotnull = false AS is_nullable,
     CAST(pg_get_expr(ad.adbin, ad.adrelid) AS varchar) AS column_default,
-    coalesce(pg_get_expr(ad.adbin, ad.adrelid) ~ 'nextval',false) AS is_autoinc,
+    coalesce(pg_get_expr(ad.adbin, ad.adrelid) ~ 'nextval',false) {$orIdentity} AS is_autoinc,
+    pg_get_serial_sequence(quote_ident(d.nspname) || '.' || quote_ident(c.relname), a.attname) AS sequence_name,
     CASE WHEN COALESCE(td.typtype, tb.typtype, t.typtype) = 'e'::char
         THEN array_to_string((SELECT array_agg(enumlabel) FROM pg_enum WHERE enumtypid = COALESCE(td.oid, tb.oid, a.atttypid))::varchar[], ',')
         ELSE NULL
@@ -532,7 +525,7 @@ FROM
     LEFT JOIN pg_namespace d ON d.oid = c.relnamespace
     LEFT JOIN pg_constraint ct ON ct.conrelid = c.oid AND ct.contype = 'p'
 WHERE
-    a.attnum > 0 AND t.typname != ''
+    a.attnum > 0 AND t.typname != '' AND NOT a.attisdropped
     AND c.relname = {$tableName}
     AND d.nspname = {$schemaName}
 ORDER BY
@@ -543,15 +536,15 @@ SQL;
             return false;
         }
         foreach ($columns as $column) {
-            if ($this->db->slavePdo->getAttribute(\PDO::ATTR_CASE) === \PDO::CASE_UPPER) {
+            if ($this->db->getSlavePdo()->getAttribute(\PDO::ATTR_CASE) === \PDO::CASE_UPPER) {
                 $column = array_change_key_case($column, CASE_LOWER);
             }
             $column = $this->loadColumnSchema($column);
             $table->columns[$column->name] = $column;
             if ($column->isPrimaryKey) {
                 $table->primaryKey[] = $column->name;
-                if ($table->sequenceName === null && preg_match("/nextval\\('\"?\\w+\"?\.?\"?\\w+\"?'(::regclass)?\\)/", $column->defaultValue) === 1) {
-                    $table->sequenceName = preg_replace(['/nextval/', '/::/', '/regclass/', '/\'\)/', '/\(\'/'], '', $column->defaultValue);
+                if ($table->sequenceName === null) {
+                    $table->sequenceName = $column->sequenceName;
                 }
                 $column->defaultValue = null;
             } elseif ($column->defaultValue) {
@@ -559,6 +552,8 @@ SQL;
                     $column->defaultValue = new Expression($column->defaultValue);
                 } elseif ($column->type === 'boolean') {
                     $column->defaultValue = ($column->defaultValue === 'true');
+                } elseif (preg_match("/^B'(.*?)'::/", $column->defaultValue, $matches)) {
+                    $column->defaultValue = bindec($matches[1]);
                 } elseif (strncasecmp($column->dbType, 'bit', 3) === 0 || strncasecmp($column->dbType, 'varbit', 6) === 0) {
                     $column->defaultValue = bindec(trim($column->defaultValue, 'B\''));
                 } elseif (preg_match("/^'(.*?)'::/", $column->defaultValue, $matches)) {
@@ -579,13 +574,13 @@ SQL;
     }
 
     /**
-     * Loads the column information into a [[ColumnSchema]] object.
+     * Loads the column information into a {@see ColumnSchema} object.
      *
      * @param array $info column information
      *
      * @return ColumnSchema the column schema object
      */
-    protected function loadColumnSchema($info)
+    protected function loadColumnSchema($info): ColumnSchema
     {
         /** @var ColumnSchema $column */
         $column = $this->createColumnSchema();
@@ -596,12 +591,19 @@ SQL;
         $column->defaultValue = $info['column_default'];
         $column->enumValues = ($info['enum_values'] !== null) ? explode(',', str_replace(["''"], ["'"], $info['enum_values'])) : null;
         $column->unsigned = false; // has no meaning in PG
-        $column->isPrimaryKey = $info['is_pkey'];
+        $column->isPrimaryKey = (bool) $info['is_pkey'];
         $column->name = $info['column_name'];
         $column->precision = $info['numeric_precision'];
         $column->scale = $info['numeric_scale'];
         $column->size = $info['size'] === null ? null : (int) $info['size'];
-        $column->dimension = (int) $info['dimension'];
+        $column->dimension = (int)$info['dimension'];
+        // pg_get_serial_sequence() doesn't track DEFAULT value change. GENERATED BY IDENTITY columns always have null default value
+        if (isset($column->defaultValue) && preg_match("/nextval\\('\"?\\w+\"?\.?\"?\\w+\"?'(::regclass)?\\)/", $column->defaultValue) === 1) {
+            $column->sequenceName = preg_replace(['/nextval/', '/::/', '/regclass/', '/\'\)/', '/\(\'/'], '', $column->defaultValue);
+        } elseif (isset($info['sequence_name'])) {
+            $column->sequenceName = $this->resolveTableName($info['sequence_name'])->fullName;
+        }
+
         if (isset($this->typeMap[$column->dbType])) {
             $column->type = $this->typeMap[$column->dbType];
         } else {
@@ -625,7 +627,7 @@ SQL;
             foreach ((array) $returnColumns as $name) {
                 $returning[] = $this->quoteColumnName($name);
             }
-            $sql .= ' RETURNING '.implode(', ', $returning);
+            $sql .= ' RETURNING ' . implode(', ', $returning);
         }
 
         $command = $this->db->createCommand($sql, $params);
@@ -638,12 +640,12 @@ SQL;
     /**
      * Loads multiple types of constraints and returns the specified ones.
      *
-     * @param string $tableName  table name.
+     * @param string $tableName table name.
      * @param string $returnType return type:
-     *                           - primaryKey
-     *                           - foreignKeys
-     *                           - uniques
-     *                           - checks
+     * - primaryKey
+     * - foreignKeys
+     * - uniques
+     * - checks
      *
      * @return mixed constraints.
      */
@@ -659,7 +661,7 @@ SELECT
     "fa"."attname" AS "foreign_column_name",
     "c"."confupdtype" AS "on_update",
     "c"."confdeltype" AS "on_delete",
-    "c"."consrc" AS "check_expr"
+    pg_get_constraintdef("c"."oid") AS "check_expr"
 FROM "pg_class" AS "tc"
 INNER JOIN "pg_namespace" AS "tcns"
     ON "tcns"."oid" = "tc"."relnamespace"
@@ -687,48 +689,52 @@ SQL;
         $resolvedName = $this->resolveTableName($tableName);
         $constraints = $this->db->createCommand($sql, [
             ':schemaName' => $resolvedName->schemaName,
-            ':tableName'  => $resolvedName->name,
+            ':tableName' => $resolvedName->name,
         ])->queryAll();
         $constraints = $this->normalizePdoRowKeyCase($constraints, true);
         $constraints = ArrayHelper::index($constraints, null, ['type', 'name']);
         $result = [
-            'primaryKey'  => null,
+            'primaryKey' => null,
             'foreignKeys' => [],
-            'uniques'     => [],
-            'checks'      => [],
+            'uniques' => [],
+            'checks' => [],
         ];
         foreach ($constraints as $type => $names) {
             foreach ($names as $name => $constraint) {
                 switch ($type) {
                     case 'p':
-                        $result['primaryKey'] = Yii::createObject(['__class' => Constraint::class,
-                            'name'                                           => $name,
-                            'columnNames'                                    => ArrayHelper::getColumn($constraint, 'column_name'),
-                        ]);
+                        $ct = new Constraint();
+                        $ct->setName($name);
+                        $ct->setColumnNames(ArrayHelper::getColumn($constraint, 'column_name'));
+
+                        $result['primaryKey'] = $ct;
                         break;
                     case 'f':
-                        $result['foreignKeys'][] = Yii::createObject(['__class' => ForeignKeyConstraint::class,
-                            'name'                                              => $name,
-                            'columnNames'                                       => array_keys(array_count_values(ArrayHelper::getColumn($constraint, 'column_name'))),
-                            'foreignSchemaName'                                 => $constraint[0]['foreign_table_schema'],
-                            'foreignTableName'                                  => $constraint[0]['foreign_table_name'],
-                            'foreignColumnNames'                                => array_keys(array_count_values(ArrayHelper::getColumn($constraint, 'foreign_column_name'))),
-                            'onDelete'                                          => $actionTypes[$constraint[0]['on_delete']] ?? null,
-                            'onUpdate'                                          => $actionTypes[$constraint[0]['on_update']] ?? null,
-                        ]);
+                        $fk = new ForeignKeyConstraint();
+                        $fk->setName($name);
+                        $fk->setColumnNames(array_values(array_unique(ArrayHelper::getColumn($constraint, 'column_name'))));
+                        $fk->setForeignColumnNames($constraint[0]['foreign_table_schema']);
+                        $fk->setForeignTableName($constraint[0]['foreign_table_name']);
+                        $fk->setForeignColumnNames(array_values(array_unique(ArrayHelper::getColumn($constraint, 'foreign_column_name'))));
+                        $fk->setOnDelete($actionTypes[$constraint[0]['on_delete']] ?? null);
+                        $fk->setOnUpdate($actionTypes[$constraint[0]['on_update']] ?? null);
+
+                        $result['foreignKeys'][] = $fk;
                         break;
                     case 'u':
-                        $result['uniques'][] = Yii::createObject(['__class' => Constraint::class,
-                            'name'                                          => $name,
-                            'columnNames'                                   => ArrayHelper::getColumn($constraint, 'column_name'),
-                        ]);
+                        $ct = new Constraint();
+                        $ct->setName($name);
+                        $ct->setColumnNames(ArrayHelper::getColumn($constraint, 'column_name'));
+
+                        $result['uniques'][] = $ct;
                         break;
                     case 'c':
-                        $result['checks'][] = Yii::createObject(['__class' => CheckConstraint::class,
-                            'name'                                         => $name,
-                            'columnNames'                                  => ArrayHelper::getColumn($constraint, 'column_name'),
-                            'expression'                                   => $constraint[0]['check_expr'],
-                        ]);
+                        $ck = new CheckConstraint();
+                        $ck->setName($name);
+                        $ck->setColumnNames(ArrayHelper::getColumn($constraint, 'column_name'));
+                        $ck->setExpression($constraint[0]['check_expr']);
+
+                        $result['checks'][] = $ck;
                         break;
                 }
             }
