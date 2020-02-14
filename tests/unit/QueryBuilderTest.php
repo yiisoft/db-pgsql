@@ -1,75 +1,68 @@
 <?php
-/**
- * @link http://www.yiiframework.com/
- *
- * @copyright Copyright (c) 2008 Yii Software LLC
- * @license http://www.yiiframework.com/license/
- */
 
-namespace Yiisoft\Db\Pgsql\Tests;
+declare(strict_types=1);
 
-use yii\base\DynamicModel;
-use yii\helpers\Json;
-use yii\tests\data\base\TraversableObject;
-use Yiisoft\Db\ArrayExpression;
-use Yiisoft\Db\Expression;
-use Yiisoft\Db\JsonExpression;
-use Yiisoft\Db\Query;
-use Yiisoft\Db\Schema;
+namespace Yiisoft\Db\Tests\Pgsql;
 
-/**
- * @group db
- * @group pgsql
- */
-class QueryBuilderTest extends \Yiisoft\Db\Tests\QueryBuilderTest
+use Yiisoft\Db\Expressions\ArrayExpression;
+use Yiisoft\Db\Expressions\Expression;
+use Yiisoft\Db\Expressions\JsonExpression;
+use Yiisoft\Db\Querys\Query;
+use Yiisoft\Db\Schemas\Schema;
+use Yiisoft\Db\Tests\TraversableObject;
+use Yiisoft\Db\Tests\QueryBuilderTest as AbstractQueryBuilderTest;
+
+final class QueryBuilderTest extends AbstractQueryBuilderTest
 {
-    public $driverName = 'pgsql';
+    public ?string $driverName = 'pgsql';
 
-    public function columnTypes()
+    public function columnTypes(): array
     {
         $columns = [
             [
-                Schema::TYPE_BOOLEAN.' NOT NULL DEFAULT TRUE',
+                Schema::TYPE_BOOLEAN . ' NOT NULL DEFAULT TRUE',
                 $this->boolean()->notNull()->defaultValue(true),
                 'boolean NOT NULL DEFAULT TRUE',
             ],
             [
-                Schema::TYPE_CHAR.' CHECK (value LIKE \'test%\')',
+                Schema::TYPE_CHAR . ' CHECK (value LIKE \'test%\')',
                 $this->char()->check('value LIKE \'test%\''),
                 'char(1) CHECK (value LIKE \'test%\')',
             ],
             [
-                Schema::TYPE_CHAR.'(6) CHECK (value LIKE \'test%\')',
+                Schema::TYPE_CHAR . '(6) CHECK (value LIKE \'test%\')',
                 $this->char(6)->check('value LIKE \'test%\''),
                 'char(6) CHECK (value LIKE \'test%\')',
             ],
             [
-                Schema::TYPE_CHAR.'(6)',
+                Schema::TYPE_CHAR . '(6)',
                 $this->char(6)->unsigned(),
                 'char(6)',
             ],
             [
-                Schema::TYPE_INTEGER.'(8)',
+                Schema::TYPE_INTEGER . '(8)',
                 $this->integer(8)->unsigned(),
                 'integer',
             ],
             [
-                Schema::TYPE_TIMESTAMP.'(4)',
+                Schema::TYPE_TIMESTAMP . '(4)',
                 $this->timestamp(4),
                 'timestamp(4)',
             ],
             [
                 Schema::TYPE_JSON,
                 $this->json(),
-                'jsonb',
+                "jsonb",
             ],
         ];
 
         return array_merge(parent::columnTypes(), $columns);
     }
 
-    public function conditionProvider()
+    public function conditionProvider(): array
     {
+        $db = $this->createConnection();
+
         return array_merge(parent::conditionProvider(), [
             // adding conditions for ILIKE i.e. case insensitive LIKE
             // http://www.postgresql.org/docs/8.3/static/functions-matching.html#FUNCTIONS-LIKE
@@ -94,17 +87,17 @@ class QueryBuilderTest extends \Yiisoft\Db\Tests\QueryBuilderTest
 
             // array condition corner cases
             [['@>', 'id', new ArrayExpression([1])], '"id" @> ARRAY[:qp0]', [':qp0' => 1]],
-            'scalar can not be converted to array #1'  => [['@>', 'id', new ArrayExpression(1)], '"id" @> ARRAY[]', []],
+            'scalar can not be converted to array #1' => [['@>', 'id', new ArrayExpression(1)], '"id" @> ARRAY[]', []],
             ['scalar can not be converted to array #2' => ['@>', 'id', new ArrayExpression(false)], '"id" @> ARRAY[]', []],
             [['&&', 'price', new ArrayExpression([12, 14], 'float')], '"price" && ARRAY[:qp0, :qp1]::float[]', [':qp0' => 12, ':qp1' => 14]],
             [['@>', 'id', new ArrayExpression([2, 3])], '"id" @> ARRAY[:qp0, :qp1]', [':qp0' => 2, ':qp1' => 3]],
-            'array of arrays' => [['@>', 'id', new ArrayExpression([[1, 2], [3, 4]], 'float', 2)], '"id" @> ARRAY[ARRAY[:qp0, :qp1]::float[], ARRAY[:qp2, :qp3]::float[]\\]::float[][]', [':qp0' => 1, ':qp1' => 2, ':qp2' => 3, ':qp3' => 4]],
+            'array of arrays' => [['@>', 'id', new ArrayExpression([[1,2], [3,4]], 'float', 2)], '"id" @> ARRAY[ARRAY[:qp0, :qp1]::float[], ARRAY[:qp2, :qp3]::float[]\\]::float[][]', [':qp0' => 1, ':qp1' => 2, ':qp2' => 3, ':qp3' => 4]],
             [['@>', 'id', new ArrayExpression([])], '"id" @> ARRAY[]', []],
-            'array can contain nulls'           => [['@>', 'id', new ArrayExpression([null])], '"id" @> ARRAY[:qp0]', [':qp0' => null]],
+            'array can contain nulls' => [['@>', 'id', new ArrayExpression([null])], '"id" @> ARRAY[:qp0]', [':qp0' => null]],
             'traversable objects are supported' => [['@>', 'id', new ArrayExpression(new TraversableObject([1, 2, 3]))], '[[id]] @> ARRAY[:qp0, :qp1, :qp2]', [':qp0' => 1, ':qp1' => 2, ':qp2' => 3]],
             [['@>', 'time', new ArrayExpression([new Expression('now()')])], '[[time]] @> ARRAY[now()]', []],
-            [['@>', 'id', new ArrayExpression((new Query())->select('id')->from('users')->where(['active' => 1]))], '[[id]] @> ARRAY(SELECT [[id]] FROM [[users]] WHERE [[active]]=:qp0)', [':qp0' => 1]],
-            [['@>', 'id', new ArrayExpression([(new Query())->select('id')->from('users')->where(['active' => 1])], 'integer')], '[[id]] @> ARRAY[ARRAY(SELECT [[id]] FROM [[users]] WHERE [[active]]=:qp0)::integer[]]::integer[]', [':qp0' => 1]],
+            [['@>', 'id', new ArrayExpression((new Query($db))->select('id')->from('users')->where(['active' => 1]))], '[[id]] @> ARRAY(SELECT [[id]] FROM [[users]] WHERE [[active]]=:qp0)', [':qp0' => 1]],
+            [['@>', 'id', new ArrayExpression([(new Query($db))->select('id')->from('users')->where(['active' => 1])], 'integer')], '[[id]] @> ARRAY[ARRAY(SELECT [[id]] FROM [[users]] WHERE [[active]]=:qp0)::integer[]]::integer[]', [':qp0' => 1]],
 
             // json conditions
             [['=', 'jsoncol', new JsonExpression(['lang' => 'uk', 'country' => 'UA'])], '[[jsoncol]] = :qp0', [':qp0' => '{"lang":"uk","country":"UA"}']],
@@ -112,25 +105,25 @@ class QueryBuilderTest extends \Yiisoft\Db\Tests\QueryBuilderTest
             [['=', 'prices', new JsonExpression(['seeds' => 15, 'apples' => 25], 'jsonb')], '[[prices]] = :qp0::jsonb', [':qp0' => '{"seeds":15,"apples":25}']],
             'nested json' => [
                 ['=', 'data', new JsonExpression(['user' => ['login' => 'silverfire', 'password' => 'c4ny0ur34d17?'], 'props' => ['mood' => 'good']])],
-                '"data" = :qp0', [':qp0' => '{"user":{"login":"silverfire","password":"c4ny0ur34d17?"},"props":{"mood":"good"}}'],
+                '"data" = :qp0', [':qp0' => '{"user":{"login":"silverfire","password":"c4ny0ur34d17?"},"props":{"mood":"good"}}']
             ],
-            'null value'           => [['=', 'jsoncol', new JsonExpression(null)], '"jsoncol" = :qp0', [':qp0' => 'null']],
-            'null as array value'  => [['=', 'jsoncol', new JsonExpression([null])], '"jsoncol" = :qp0', [':qp0' => '[null]']],
+            'null value' => [['=', 'jsoncol', new JsonExpression(null)], '"jsoncol" = :qp0', [':qp0' => 'null']],
+            'null as array value' => [['=', 'jsoncol', new JsonExpression([null])], '"jsoncol" = :qp0', [':qp0' => '[null]']],
             'null as object value' => [['=', 'jsoncol', new JsonExpression(['nil' => null])], '"jsoncol" = :qp0', [':qp0' => '{"nil":null}']],
 
-            [['=', 'jsoncol', new JsonExpression(new DynamicModel(['a' => 1, 'b' => 2]))], '[[jsoncol]] = :qp0', [':qp0' => '{"a":1,"b":2}']],
-            'query'           => [['=', 'jsoncol', new JsonExpression((new Query())->select('params')->from('user')->where(['id' => 1]))], '[[jsoncol]] = (SELECT [[params]] FROM [[user]] WHERE [[id]]=:qp0)', [':qp0' => 1]],
-            'query with type' => [['=', 'jsoncol', new JsonExpression((new Query())->select('params')->from('user')->where(['id' => 1]), 'jsonb')], '[[jsoncol]] = (SELECT [[params]] FROM [[user]] WHERE [[id]]=:qp0)::jsonb', [':qp0' => 1]],
+            //[['=', 'jsoncol', new JsonExpression(new DynamicModel(['a' => 1, 'b' => 2]))], '[[jsoncol]] = :qp0', [':qp0' => '{"a":1,"b":2}']],
+            'query' => [['=', 'jsoncol', new JsonExpression((new Query($db))->select('params')->from('user')->where(['id' => 1]))], '[[jsoncol]] = (SELECT [[params]] FROM [[user]] WHERE [[id]]=:qp0)', [':qp0' => 1]],
+            'query with type' => [['=', 'jsoncol', new JsonExpression((new Query($db))->select('params')->from('user')->where(['id' => 1]), 'jsonb')], '[[jsoncol]] = (SELECT [[params]] FROM [[user]] WHERE [[id]]=:qp0)::jsonb', [':qp0' => 1]],
 
             'array of json expressions' => [
                 ['=', 'colname', new ArrayExpression([new JsonExpression(['a' => null, 'b' => 123, 'c' => [4, 5]]), new JsonExpression([true])])],
                 '"colname" = ARRAY[:qp0, :qp1]',
-                [':qp0' => '{"a":null,"b":123,"c":[4,5]}', ':qp1' => '[true]'],
+                [':qp0' => '{"a":null,"b":123,"c":[4,5]}', ':qp1' => '[true]']
             ],
             'Items in ArrayExpression of type json should be casted to Json' => [
                 ['=', 'colname', new ArrayExpression([['a' => null, 'b' => 123, 'c' => [4, 5]], [true]], 'json')],
                 '"colname" = ARRAY[:qp0, :qp1]::json[]',
-                [':qp0' => '{"a":null,"b":123,"c":[4,5]}', ':qp1' => '[true]'],
+                [':qp0' => '{"a":null,"b":123,"c":[4,5]}', ':qp1' => '[true]']
             ],
             'Two dimension array of text' => [
                 ['=', 'colname', new ArrayExpression([['text1', 'text2'], ['text3', 'text4'], [null, 'text5']], 'text', 2)],
@@ -156,7 +149,7 @@ class QueryBuilderTest extends \Yiisoft\Db\Tests\QueryBuilderTest
         ]);
     }
 
-    public function testAlterColumn()
+    public function testAlterColumn(): void
     {
         $qb = $this->getQueryBuilder();
 
@@ -177,6 +170,7 @@ class QueryBuilderTest extends \Yiisoft\Db\Tests\QueryBuilderTest
         $this->assertEquals($expected, $sql);
 
         $expected = 'ALTER TABLE "foo1" ALTER COLUMN "bar" TYPE varchar(255), ALTER COLUMN "bar" DROP DEFAULT, ALTER COLUMN "bar" DROP NOT NULL';
+
         $sql = $qb->alterColumn('foo1', 'bar', $this->string(255));
         $this->assertEquals($expected, $sql);
 
@@ -186,6 +180,10 @@ class QueryBuilderTest extends \Yiisoft\Db\Tests\QueryBuilderTest
 
         $expected = 'ALTER TABLE "foo1" ALTER COLUMN "bar" TYPE varchar(255), ALTER COLUMN "bar" DROP DEFAULT, ALTER COLUMN "bar" DROP NOT NULL, ADD CONSTRAINT foo1_bar_check CHECK (char_length(bar) > 5)';
         $sql = $qb->alterColumn('foo1', 'bar', $this->string(255)->check('char_length(bar) > 5'));
+        $this->assertEquals($expected, $sql);
+
+        $expected = 'ALTER TABLE "foo1" ALTER COLUMN "bar" TYPE varchar(255), ALTER COLUMN "bar" SET DEFAULT \'\', ALTER COLUMN "bar" DROP NOT NULL';
+        $sql = $qb->alterColumn('foo1', 'bar', $this->string(255)->defaultValue(''));
         $this->assertEquals($expected, $sql);
 
         $expected = 'ALTER TABLE "foo1" ALTER COLUMN "bar" TYPE varchar(255), ALTER COLUMN "bar" SET DEFAULT \'AbCdE\', ALTER COLUMN "bar" DROP NOT NULL';
@@ -201,7 +199,7 @@ class QueryBuilderTest extends \Yiisoft\Db\Tests\QueryBuilderTest
         $this->assertEquals($expected, $sql);
     }
 
-    public function indexesProvider()
+    public function indexesProvider(): array
     {
         $result = parent::indexesProvider();
         $result['drop'][0] = 'DROP INDEX [[CN_constraints_2_single]]';
@@ -209,12 +207,12 @@ class QueryBuilderTest extends \Yiisoft\Db\Tests\QueryBuilderTest
         return $result;
     }
 
-    public function defaultValuesProvider()
+    public function defaultValuesProvider(): void
     {
         $this->markTestSkipped('Adding/dropping default constraints is not supported in PostgreSQL.');
     }
 
-    public function testCommentColumn()
+    public function testCommentColumn(): void
     {
         $qb = $this->getQueryBuilder();
 
@@ -227,7 +225,7 @@ class QueryBuilderTest extends \Yiisoft\Db\Tests\QueryBuilderTest
         $this->assertEquals($this->replaceQuotes($expected), $sql);
     }
 
-    public function testCommentTable()
+    public function testCommentTable(): void
     {
         $qb = $this->getQueryBuilder();
 
@@ -240,7 +238,7 @@ class QueryBuilderTest extends \Yiisoft\Db\Tests\QueryBuilderTest
         $this->assertEquals($this->replaceQuotes($expected), $sql);
     }
 
-    public function batchInsertProvider()
+    public function batchInsertProvider(): array
     {
         $data = parent::batchInsertProvider();
 
@@ -251,7 +249,7 @@ class QueryBuilderTest extends \Yiisoft\Db\Tests\QueryBuilderTest
         return $data;
     }
 
-    public function testResetSequence()
+    public function testResetSequence(): void
     {
         $qb = $this->getQueryBuilder();
 
@@ -264,7 +262,28 @@ class QueryBuilderTest extends \Yiisoft\Db\Tests\QueryBuilderTest
         $this->assertEquals($expected, $sql);
     }
 
-    public function upsertProvider()
+    public function testResetSequencePostgres12(): void
+    {
+        if (version_compare($this->getConnection(false)->getServerVersion(), '12.0', '<')) {
+            $this->markTestSkipped('PostgreSQL < 12.0 does not support GENERATED AS IDENTITY columns.');
+        }
+
+        $config = $this->database;
+        unset($config['fixture']);
+        $this->prepareDatabase($config, realpath(__DIR__ . '/../../../data') . '/postgres12.sql');
+
+        $qb = $this->getQueryBuilder(false);
+
+        $expected = "SELECT SETVAL('\"item_12_id_seq\"',(SELECT COALESCE(MAX(\"id\"),0) FROM \"item_12\")+1,false)";
+        $sql = $qb->resetSequence('item_12');
+        $this->assertEquals($expected, $sql);
+
+        $expected = "SELECT SETVAL('\"item_12_id_seq\"',4,false)";
+        $sql = $qb->resetSequence('item_12', 4);
+        $this->assertEquals($expected, $sql);
+    }
+
+    public function upsertProvider(): array
     {
         $concreteData = [
             'regular values' => [
@@ -350,16 +369,21 @@ class QueryBuilderTest extends \Yiisoft\Db\Tests\QueryBuilderTest
                     'INSERT INTO {{%T_upsert}} ("email", [[time]]) SELECT :phEmail AS "email", now() AS [[time]] ON CONFLICT ("email") DO UPDATE SET "ts"=:qp1, [[orders]]=T_upsert.orders + 1',
                 ],
             ],
+            'no columns to update' => [
+                3 => [
+                    'WITH "EXCLUDED" ("a") AS (VALUES (CAST(:qp0 AS int2))) INSERT INTO "T_upsert_1" ("a") SELECT "a" FROM "EXCLUDED" WHERE NOT EXISTS (SELECT 1 FROM "T_upsert_1" WHERE (("T_upsert_1"."a"="EXCLUDED"."a")))',
+                    'INSERT INTO "T_upsert_1" ("a") VALUES (:qp0) ON CONFLICT DO NOTHING',
+                ],
+            ],
         ];
         $newData = parent::upsertProvider();
         foreach ($concreteData as $testName => $data) {
             $newData[$testName] = array_replace($newData[$testName], $data);
         }
-
         return $newData;
     }
 
-    public function updateProvider()
+    public function updateProvider(): array
     {
         $items = parent::updateProvider();
 
@@ -379,5 +403,30 @@ class QueryBuilderTest extends \Yiisoft\Db\Tests\QueryBuilderTest
         ];
 
         return $items;
+    }
+
+    public function testDropIndex(): void
+    {
+        $qb = $this->getQueryBuilder();
+
+        $expected = 'DROP INDEX "index"';
+        $sql = $qb->dropIndex('index', '{{table}}');
+        $this->assertEquals($expected, $sql);
+
+        $expected = 'DROP INDEX "schema"."index"';
+        $sql = $qb->dropIndex('index', '{{schema.table}}');
+        $this->assertEquals($expected, $sql);
+
+        $expected = 'DROP INDEX "schema"."index"';
+        $sql = $qb->dropIndex('schema.index', '{{schema2.table}}');
+        $this->assertEquals($expected, $sql);
+
+        $expected = 'DROP INDEX "schema"."index"';
+        $sql = $qb->dropIndex('index', '{{schema.%table}}');
+        $this->assertEquals($expected, $sql);
+
+        $expected = 'DROP INDEX {{%schema.index}}';
+        $sql = $qb->dropIndex('index', '{{%schema.table}}');
+        $this->assertEquals($expected, $sql);
     }
 }
