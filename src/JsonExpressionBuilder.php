@@ -1,27 +1,19 @@
 <?php
-/**
- * @link http://www.yiiframework.com/
- *
- * @copyright Copyright (c) 2008 Yii Software LLC
- * @license http://www.yiiframework.com/license/
- */
+
+declare(strict_types=1);
 
 namespace Yiisoft\Db\Pgsql;
 
-use yii\helpers\Json;
-use Yiisoft\Db\ArrayExpression;
-use Yiisoft\Db\ExpressionBuilderInterface;
-use Yiisoft\Db\ExpressionBuilderTrait;
-use Yiisoft\Db\ExpressionInterface;
-use Yiisoft\Db\JsonExpression;
-use Yiisoft\Db\Query;
+use Yiisoft\Db\Expressions\ArrayExpression;
+use Yiisoft\Db\Expressions\ExpressionBuilderInterface;
+use Yiisoft\Db\Expressions\ExpressionBuilderTrait;
+use Yiisoft\Db\Expressions\ExpressionInterface;
+use Yiisoft\Db\Expressions\JsonExpression;
+use Yiisoft\Db\Querys\Query;
+use Yiisoft\Json\Json;
 
 /**
- * Class JsonExpressionBuilder builds [[JsonExpression]] for PostgreSQL DBMS.
- *
- * @author Dmytro Naumenko <d.naumenko.a@gmail.com>
- *
- * @since 2.0.14
+ * Class JsonExpressionBuilder builds {@see JsonExpression} for PostgreSQL DBMS.
  */
 class JsonExpressionBuilder implements ExpressionBuilderInterface
 {
@@ -37,17 +29,16 @@ class JsonExpressionBuilder implements ExpressionBuilderInterface
         $value = $expression->getValue();
 
         if ($value instanceof Query) {
-            list($sql, $params) = $this->queryBuilder->build($value, $params);
-
-            return "($sql)".$this->getTypecast($expression);
+            [$sql, $params] = $this->queryBuilder->build($value, $params);
+            return "($sql)" . $this->getTypecast($expression);
         }
         if ($value instanceof ArrayExpression) {
-            $placeholder = 'array_to_json('.$this->queryBuilder->buildExpression($value, $params).')';
+            $placeholder = 'array_to_json(' . $this->queryBuilder->buildExpression($value, $params) . ')';
         } else {
             $placeholder = $this->queryBuilder->bindParam(Json::encode($value), $params);
         }
 
-        return $placeholder.$this->getTypecast($expression);
+        return $placeholder . $this->getTypecast($expression);
     }
 
     /**
@@ -55,12 +46,12 @@ class JsonExpressionBuilder implements ExpressionBuilderInterface
      *
      * @return string the typecast expression based on [[type]].
      */
-    protected function getTypecast(JsonExpression $expression)
+    protected function getTypecast(JsonExpression $expression): string
     {
         if ($expression->getType() === null) {
             return '';
         }
 
-        return '::'.$expression->getType();
+        return '::' . $expression->getType();
     }
 }
