@@ -55,13 +55,10 @@ class ColumnSchema extends \Yiisoft\Db\Schemas\ColumnSchema
     public function phpTypecast($value)
     {
         if ($this->dimension > 0) {
-            if ($this->disableArraySupport) {
-                return $value;
-            }
-            if (!is_array($value)) {
+            if (!\is_array($value)) {
                 $value = $this->getArrayParser()->parse($value);
             }
-            if (is_array($value)) {
+            if (\is_array($value)) {
                 array_walk_recursive($value, function (&$val, $key) {
                     $val = $this->phpTypecastValue($val);
                 });
@@ -69,9 +66,7 @@ class ColumnSchema extends \Yiisoft\Db\Schemas\ColumnSchema
                 return null;
             }
 
-            return $this->deserializeArrayColumnToArrayExpression
-                ? new ArrayExpression($value, $this->dbType, $this->dimension)
-                : $value;
+            return $value;
         }
 
         return $this->phpTypecastValue($value);
@@ -92,7 +87,9 @@ class ColumnSchema extends \Yiisoft\Db\Schemas\ColumnSchema
 
         switch ($this->type) {
             case Schema::TYPE_BOOLEAN:
-                switch (strtolower($value)) {
+                $value = \is_string($value) ? strtolower($value) : $value;
+
+                switch ($value) {
                     case 't':
                     case 'true':
                         return true;
@@ -100,6 +97,7 @@ class ColumnSchema extends \Yiisoft\Db\Schemas\ColumnSchema
                     case 'false':
                         return false;
                 }
+
                 return (bool) $value;
             case Schema::TYPE_JSON:
                 return \json_decode($value, true);
