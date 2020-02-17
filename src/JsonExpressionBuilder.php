@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Yiisoft\Db\Pgsql;
 
+use Yiisoft\Db\Exceptions\InvalidArgumentException;
 use Yiisoft\Db\Expressions\ArrayExpression;
 use Yiisoft\Db\Expressions\ExpressionBuilderInterface;
 use Yiisoft\Db\Expressions\ExpressionBuilderTrait;
@@ -23,6 +24,9 @@ class JsonExpressionBuilder implements ExpressionBuilderInterface
      * {@inheritdoc}
      *
      * @param JsonExpression|ExpressionInterface $expression the expression to be built
+     * @param array $params
+     *
+     * @return string
      */
     public function build(ExpressionInterface $expression, array &$params = [])
     {
