@@ -7,7 +7,7 @@
 		convertWarningsToExceptions="true"
 		stopOnFailure="false">
 		<testsuites>
-			<testsuite name="Yii Extensions Db Pgsql Tests">
+			<testsuite name="Yii Db Pgsql Tests">
 				<directory>./tests</directory>
 			</testsuite>
 		</testsuites>
