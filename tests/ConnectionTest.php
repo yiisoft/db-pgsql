@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Yiisoft\Db\Tests\Pgsql;
+namespace Yiisoft\Db\Pgsql\Tests;
 
 use Yiisoft\Db\Transactions\Transaction;
 use Yiisoft\Db\Tests\ConnectionTest as AbstractConnectionTest;
 
-final class ConnectionTest extends AbstractConnectionTest
+class ConnectionTest extends AbstractConnectionTest
 {
     protected ?string $driverName = 'pgsql';
 

@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Yiisoft\Db\Tests\Pgsql;
+namespace Yiisoft\Db\Pgsql\Tests;
 
 use Yiisoft\Db\Conditions\ExistsConditionBuilder;
 use Yiisoft\Db\Expressions\Expression;
 use Yiisoft\Db\Tests\SchemaTest as AbstractSchemaTest;
 
-final class SchemaTest extends AbstractSchemaTest
+class SchemaTest extends AbstractSchemaTest
 {
     public ?string $driverName = 'pgsql';
 
