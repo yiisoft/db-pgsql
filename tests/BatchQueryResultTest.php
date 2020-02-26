@@ -8,5 +8,5 @@ use Yiisoft\Db\Tests\BatchQueryResultTest as AbstractBatchQueryResultTest;
 
 final class BatchQueryResultTest extends AbstractBatchQueryResultTest
 {
-    public ?string $driverName = 'pgsql';
+    protected ?string $driverName = 'pgsql';
 }
