@@ -9,7 +9,7 @@ use Yiisoft\Db\Tests\ColumnSchemaBuilderTest as AbstractColumnSchemaBuilderTest;
 
 class ColumnSchemaBuilderTest extends AbstractColumnSchemaBuilderTest
 {
-    public ?string $driverName = 'pgsql';
+    protected ?string $driverName = 'pgsql';
 
     /**
      * @param string $type

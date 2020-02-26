@@ -10,7 +10,7 @@ use Yiisoft\Db\Tests\CommandTest as AbstractCommandTest;
 
 class CommandTest extends AbstractCommandTest
 {
-    public ?string $driverName = 'pgsql';
+    protected ?string $driverName = 'pgsql';
 
     public function testAutoQuoting(): void
     {

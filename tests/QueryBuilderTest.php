@@ -14,7 +14,7 @@ use Yiisoft\Db\Tests\QueryBuilderTest as AbstractQueryBuilderTest;
 
 class QueryBuilderTest extends AbstractQueryBuilderTest
 {
-    public ?string $driverName = 'pgsql';
+    protected ?string $driverName = 'pgsql';
 
     public function columnTypes(): array
     {
