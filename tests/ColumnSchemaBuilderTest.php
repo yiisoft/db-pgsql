@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace yiiunit\framework\db\pgsql;
+namespace Yiisoft\Db\Pgsql\Tests;
 
 use Yiisoft\Db\Schemas\ColumnSchemaBuilder;
 use Yiisoft\Db\Tests\ColumnSchemaBuilderTest as AbstractColumnSchemaBuilderTest;
 
-final class ColumnSchemaBuilderTest extends AbstractColumnSchemaBuilderTest
+class ColumnSchemaBuilderTest extends AbstractColumnSchemaBuilderTest
 {
     public ?string $driverName = 'pgsql';
 

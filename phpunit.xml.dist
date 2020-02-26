@@ -7,8 +7,8 @@
 		convertWarningsToExceptions="true"
 		stopOnFailure="false">
 		<testsuites>
-			<testsuite name="Test Suite">
-				<directory>./tests/unit</directory>
+			<testsuite name="Yii Db Pgsql Tests">
+				<directory>./tests</directory>
 			</testsuite>
 		</testsuites>
 </phpunit>

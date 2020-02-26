@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Yiisoft\Db\Tests\Pgsql;
+namespace Yiisoft\Db\Pgsql\Tests;
 
 use Yiisoft\Db\Querys\Query;
 use Yiisoft\Db\Tests\QueryTest as AbstractQueryTest;
 
-final class QueryTest extends AbstractQueryTest
+class QueryTest extends AbstractQueryTest
 {
     public ?string $driverName = 'pgsql';
 

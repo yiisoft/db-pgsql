@@ -2,17 +2,17 @@
 
 declare(strict_types=1);
 
-namespace Yiisoft\Db\Tests\Pgsql;
+namespace Yiisoft\Db\Pgsql\Tests;
 
 use Yiisoft\Db\Expressions\ArrayExpression;
 use Yiisoft\Db\Expressions\Expression;
 use Yiisoft\Db\Expressions\JsonExpression;
 use Yiisoft\Db\Querys\Query;
-use Yiisoft\Db\Schemas\Schema;
+use Yiisoft\Db\Pgsql\Schema;
 use Yiisoft\Db\Tests\TraversableObject;
 use Yiisoft\Db\Tests\QueryBuilderTest as AbstractQueryBuilderTest;
 
-final class QueryBuilderTest extends AbstractQueryBuilderTest
+class QueryBuilderTest extends AbstractQueryBuilderTest
 {
     public ?string $driverName = 'pgsql';
 
