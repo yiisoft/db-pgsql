@@ -9,7 +9,7 @@ use Yiisoft\Db\Tests\QueryTest as AbstractQueryTest;
 
 class QueryTest extends AbstractQueryTest
 {
-    public ?string $driverName = 'pgsql';
+    protected ?string $driverName = 'pgsql';
 
     public function testBooleanValues(): void
     {

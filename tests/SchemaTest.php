@@ -10,7 +10,7 @@ use Yiisoft\Db\Tests\SchemaTest as AbstractSchemaTest;
 
 class SchemaTest extends AbstractSchemaTest
 {
-    public ?string $driverName = 'pgsql';
+    protected ?string $driverName = 'pgsql';
 
     protected array $expectedSchemas = [
         'public',
