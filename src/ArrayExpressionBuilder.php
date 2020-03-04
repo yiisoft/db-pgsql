@@ -23,7 +23,7 @@ class ArrayExpressionBuilder implements ExpressionBuilderInterface
      *
      * @param ArrayExpression|ExpressionInterface $expression the expression to be built
      */
-    public function build(ExpressionInterface $expression, array &$params = [])
+    public function build(ExpressionInterface $expression, array &$params = []): string
     {
         $value = $expression->getValue();
         if ($value === null) {
