@@ -158,7 +158,8 @@ class CommandTest extends AbstractCommandTest
         ])->execute();
         $this->assertSame(1, $inserted);
 
-        $found = $db->createCommand(<<<PGSQL
+        $found = $db->createCommand(
+            <<<PGSQL
             SELECT *
             FROM array_and_json_types
             WHERE jsonb_col @> '{"Some not existing key": "random value"}'
@@ -166,7 +167,8 @@ PGSQL
         )->execute();
         $this->assertSame(0, $found);
 
-        $found = $db->createCommand(<<<PGSQL
+        $found = $db->createCommand(
+            <<<PGSQL
             SELECT *
             FROM array_and_json_types
             WHERE jsonb_col @> '{"Solution date": "13.01.2011"}'

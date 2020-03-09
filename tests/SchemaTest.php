@@ -210,7 +210,7 @@ class SchemaTest extends AbstractSchemaTest
         $this->assertEquals('item_id_seq_2', $connection->getSchema()->getTableSchema('item')->sequenceName);
 
         $connection->createCommand(
-            'ALTER TABLE "item" ALTER COLUMN "id" SET DEFAULT nextval(\'' .  $sequenceName . '\')'
+            'ALTER TABLE "item" ALTER COLUMN "id" SET DEFAULT nextval(\'' . $sequenceName . '\')'
         )->execute();
 
         $connection->getSchema()->refreshTableSchema('item');
