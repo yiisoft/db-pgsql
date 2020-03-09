@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Yiisoft\Db\Pgsql\Tests;
 
-use Yiisoft\Db\Expressions\ArrayExpression;
-use Yiisoft\Db\Expressions\JsonExpression;
+use Yiisoft\Db\Expression\ArrayExpression;
+use Yiisoft\Db\Expression\JsonExpression;
 use Yiisoft\Db\Tests\CommandTest as AbstractCommandTest;
 
 class CommandTest extends AbstractCommandTest

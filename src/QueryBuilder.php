@@ -4,21 +4,21 @@ declare(strict_types=1);
 
 namespace Yiisoft\Db\Pgsql;
 
-use Yiisoft\Db\Constraints\Constraint;
-use Yiisoft\Db\Exceptions\InvalidArgumentException;
-use Yiisoft\Db\Expressions\ArrayExpression;
-use Yiisoft\Db\Expressions\JsonExpression;
-use Yiisoft\Db\Expressions\Expression;
-use Yiisoft\Db\Expressions\ExpressionInterface;
-use Yiisoft\Db\Querys\Query;
-use Yiisoft\Db\Querys\Conditions\LikeCondition;
+use Yiisoft\Db\Constraint\Constraint;
+use Yiisoft\Db\Exception\InvalidArgumentException;
+use Yiisoft\Db\Expression\ArrayExpression;
+use Yiisoft\Db\Expression\JsonExpression;
+use Yiisoft\Db\Expression\Expression;
+use Yiisoft\Db\Expression\ExpressionInterface;
+use Yiisoft\Db\Query\Query;
+use Yiisoft\Db\Query\Conditions\LikeCondition;
 use Yiisoft\Db\Pdo\PdoValue;
 use Yiisoft\Strings\StringHelper;
 
 /**
  * QueryBuilder is the query builder for PostgreSQL databases.
  */
-class QueryBuilder extends \Yiisoft\Db\Querys\QueryBuilder
+class QueryBuilder extends \Yiisoft\Db\Query\QueryBuilder
 {
     /**
      * Defines a UNIQUE index for {@see createIndex()}.
@@ -48,7 +48,7 @@ class QueryBuilder extends \Yiisoft\Db\Querys\QueryBuilder
     /**
      * @var array mapping from abstract column types (keys) to physical column types (values).
      */
-    public array $typeMap = [
+    protected array $typeMap = [
         Schema::TYPE_PK => 'serial NOT NULL PRIMARY KEY',
         Schema::TYPE_UPK => 'serial NOT NULL PRIMARY KEY',
         Schema::TYPE_BIGPK => 'bigserial NOT NULL PRIMARY KEY',

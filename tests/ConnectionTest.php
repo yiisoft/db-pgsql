@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Yiisoft\Db\Pgsql\Tests;
 
-use Yiisoft\Db\Drivers\Connection;
+use Yiisoft\Db\Connection\Connection;
 use Yiisoft\Db\Helper\Dsn;
-use Yiisoft\Db\Transactions\Transaction;
+use Yiisoft\Db\Transaction\Transaction;
 use Yiisoft\Db\Tests\ConnectionTest as AbstractConnectionTest;
 
 class ConnectionTest extends AbstractConnectionTest
