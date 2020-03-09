@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Yiisoft\Db\Pgsql\Tests;
 
 use Yiisoft\Db\Conditions\ExistsConditionBuilder;
-use Yiisoft\Db\Expressions\Expression;
+use Yiisoft\Db\Expression\Expression;
 use Yiisoft\Db\Tests\SchemaTest as AbstractSchemaTest;
 
 class SchemaTest extends AbstractSchemaTest
@@ -210,7 +210,7 @@ class SchemaTest extends AbstractSchemaTest
         $this->assertEquals('item_id_seq_2', $connection->getSchema()->getTableSchema('item')->sequenceName);
 
         $connection->createCommand(
-            'ALTER TABLE "item" ALTER COLUMN "id" SET DEFAULT nextval(\'' .  $sequenceName . '\')'
+            'ALTER TABLE "item" ALTER COLUMN "id" SET DEFAULT nextval(\'' . $sequenceName . '\')'
         )->execute();
 
         $connection->getSchema()->refreshTableSchema('item');

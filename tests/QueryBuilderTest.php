@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Yiisoft\Db\Pgsql\Tests;
 
-use Yiisoft\Db\Expressions\ArrayExpression;
-use Yiisoft\Db\Expressions\Expression;
-use Yiisoft\Db\Expressions\JsonExpression;
-use Yiisoft\Db\Querys\Query;
+use Yiisoft\Db\Expression\ArrayExpression;
+use Yiisoft\Db\Expression\Expression;
+use Yiisoft\Db\Expression\JsonExpression;
+use Yiisoft\Db\Query\Query;
 use Yiisoft\Db\Pgsql\Schema;
 use Yiisoft\Db\Tests\TraversableObject;
 use Yiisoft\Db\Tests\QueryBuilderTest as AbstractQueryBuilderTest;
@@ -111,7 +111,6 @@ class QueryBuilderTest extends AbstractQueryBuilderTest
             'null as array value' => [['=', 'jsoncol', new JsonExpression([null])], '"jsoncol" = :qp0', [':qp0' => '[null]']],
             'null as object value' => [['=', 'jsoncol', new JsonExpression(['nil' => null])], '"jsoncol" = :qp0', [':qp0' => '{"nil":null}']],
 
-            //[['=', 'jsoncol', new JsonExpression(new DynamicModel(['a' => 1, 'b' => 2]))], '[[jsoncol]] = :qp0', [':qp0' => '{"a":1,"b":2}']],
             'query' => [['=', 'jsoncol', new JsonExpression((new Query($db))->select('params')->from('user')->where(['id' => 1]))], '[[jsoncol]] = (SELECT [[params]] FROM [[user]] WHERE [[id]]=:qp0)', [':qp0' => 1]],
             'query with type' => [['=', 'jsoncol', new JsonExpression((new Query($db))->select('params')->from('user')->where(['id' => 1]), 'jsonb')], '[[jsoncol]] = (SELECT [[params]] FROM [[user]] WHERE [[id]]=:qp0)::jsonb', [':qp0' => 1]],
 

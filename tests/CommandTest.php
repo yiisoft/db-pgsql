@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Yiisoft\Db\Pgsql\Tests;
 
-use Yiisoft\Db\Expressions\ArrayExpression;
-use Yiisoft\Db\Expressions\JsonExpression;
+use Yiisoft\Db\Expression\ArrayExpression;
+use Yiisoft\Db\Expression\JsonExpression;
 use Yiisoft\Db\Tests\CommandTest as AbstractCommandTest;
 
 class CommandTest extends AbstractCommandTest
@@ -158,7 +158,8 @@ class CommandTest extends AbstractCommandTest
         ])->execute();
         $this->assertSame(1, $inserted);
 
-        $found = $db->createCommand(<<<PGSQL
+        $found = $db->createCommand(
+            <<<PGSQL
             SELECT *
             FROM array_and_json_types
             WHERE jsonb_col @> '{"Some not existing key": "random value"}'
@@ -166,7 +167,8 @@ PGSQL
         )->execute();
         $this->assertSame(0, $found);
 
-        $found = $db->createCommand(<<<PGSQL
+        $found = $db->createCommand(
+            <<<PGSQL
             SELECT *
             FROM array_and_json_types
             WHERE jsonb_col @> '{"Solution date": "13.01.2011"}'
