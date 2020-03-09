@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Yiisoft\Db\Pgsql;
 
-use Yiisoft\Db\Expressions\ArrayExpression;
-use Yiisoft\Db\Expressions\ExpressionInterface;
-use Yiisoft\Db\Expressions\JsonExpression;
+use Yiisoft\Db\Expression\ArrayExpression;
+use Yiisoft\Db\Expression\ExpressionInterface;
+use Yiisoft\Db\Expression\JsonExpression;
 
 /**
  * Class ColumnSchema for Postgres SQL database.
  */
-class ColumnSchema extends \Yiisoft\Db\Schemas\ColumnSchema
+class ColumnSchema extends \Yiisoft\Db\Schema\ColumnSchema
 {
     /**
      * @var int the dimension of array. Defaults to 0, means this column is not an array.

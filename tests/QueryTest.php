@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Yiisoft\Db\Pgsql\Tests;
 
-use Yiisoft\Db\Querys\Query;
+use Yiisoft\Db\Query\Query;
 use Yiisoft\Db\Tests\QueryTest as AbstractQueryTest;
 
 class QueryTest extends AbstractQueryTest

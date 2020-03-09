@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Yiisoft\Db\Pgsql;
 
-use Yiisoft\Db\Exceptions\InvalidArgumentException;
-use Yiisoft\Db\Expressions\ArrayExpression;
-use Yiisoft\Db\Expressions\ExpressionBuilderInterface;
-use Yiisoft\Db\Expressions\ExpressionBuilderTrait;
-use Yiisoft\Db\Expressions\ExpressionInterface;
-use Yiisoft\Db\Expressions\JsonExpression;
-use Yiisoft\Db\Querys\Query;
+use Yiisoft\Db\Exception\InvalidArgumentException;
+use Yiisoft\Db\Expression\ArrayExpression;
+use Yiisoft\Db\Expression\ExpressionBuilderInterface;
+use Yiisoft\Db\Expression\ExpressionBuilderTrait;
+use Yiisoft\Db\Expression\ExpressionInterface;
+use Yiisoft\Db\Expression\JsonExpression;
+use Yiisoft\Db\Query\Query;
 use Yiisoft\Json\Json;
 
 /**
