@@ -645,7 +645,7 @@ SQL;
         $command->prepare(false);
         $result = $command->queryOne();
 
-        return !$command->pdoStatement->rowCount() ? false : $result;
+        return !$command->getPdoStatement()->rowCount() ? false : $result;
     }
 
     /**
