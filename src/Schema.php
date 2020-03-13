@@ -544,32 +544,32 @@ SQL;
                 $column = \array_change_key_case($column, CASE_LOWER);
             }
             $column = $this->loadColumnSchema($column);
-            $table->columns[$column->name] = $column;
-            if ($column->isPrimaryKey) {
-                $table->primaryKey[] = $column->name;
+            $table->columns[$column->getName()] = $column;
+            if ($column->getIsPrimaryKey()) {
+                $table->primaryKey[] = $column->getName();
                 if ($table->sequenceName === null) {
                     $table->sequenceName = $column->sequenceName;
                 }
-                $column->defaultValue = null;
-            } elseif ($column->defaultValue) {
-                if ($column->type === 'timestamp' && $column->defaultValue === 'now()') {
-                    $column->defaultValue = new Expression($column->defaultValue);
-                } elseif ($column->type === 'boolean') {
-                    $column->defaultValue = ($column->defaultValue === 'true');
-                } elseif (\preg_match("/^B'(.*?)'::/", $column->defaultValue, $matches)) {
-                    $column->defaultValue = \bindec($matches[1]);
-                } elseif (\strncasecmp($column->dbType, 'bit', 3) === 0 || \strncasecmp($column->dbType, 'varbit', 6) === 0) {
-                    $column->defaultValue = \bindec(\trim($column->defaultValue, 'B\''));
-                } elseif (\preg_match("/^'(.*?)'::/", $column->defaultValue, $matches)) {
-                    $column->defaultValue = $column->phpTypecast($matches[1]);
-                } elseif (\preg_match('/^(\()?(.*?)(?(1)\))(?:::.+)?$/', $column->defaultValue, $matches)) {
+                $column->defaultValue(null);
+            } elseif ($column->getDefaultValue()) {
+                if ($column->getType() === 'timestamp' && $column->getDefaultValue() === 'now()') {
+                    $column->defaultValue(new Expression($column->getDefaultValue()));
+                } elseif ($column->getType() === 'boolean') {
+                    $column->defaultValue(($column->getDefaultValue() === 'true'));
+                } elseif (\preg_match("/^B'(.*?)'::/", $column->getDefaultValue(), $matches)) {
+                    $column->defaultValue(\bindec($matches[1]));
+                } elseif (\strncasecmp($column->getDbType(), 'bit', 3) === 0 || \strncasecmp($column->getDbType(), 'varbit', 6) === 0) {
+                    $column->defaultValue(\bindec(\trim($column->getDefaultValue(), 'B\'')));
+                } elseif (\preg_match("/^'(.*?)'::/", $column->getDefaultValue(), $matches)) {
+                    $column->defaultValue($column->phpTypecast($matches[1]));
+                } elseif (\preg_match('/^(\()?(.*?)(?(1)\))(?:::.+)?$/', $column->getDefaultValue(), $matches)) {
                     if ($matches[2] === 'NULL') {
-                        $column->defaultValue = null;
+                        $column->defaultValue(null);
                     } else {
-                        $column->defaultValue = $column->phpTypecast($matches[2]);
+                        $column->defaultValue($column->phpTypecast($matches[2]));
                     }
                 } else {
-                    $column->defaultValue = $column->phpTypecast($column->defaultValue);
+                    $column->defaultValue($column->phpTypecast($column->defaultValue));
                 }
             }
         }
@@ -588,39 +588,43 @@ SQL;
     {
         /** @var ColumnSchema $column */
         $column = $this->createColumnSchema();
-        $column->allowNull = $info['is_nullable'];
-        $column->autoIncrement = $info['is_autoinc'];
-        $column->comment = $info['column_comment'];
-        $column->dbType = $info['data_type'];
-        $column->defaultValue = $info['column_default'];
-        $column->enumValues = ($info['enum_values'] !== null) ? \explode(',', \str_replace(["''"], ["'"], $info['enum_values'])) : null;
-        $column->unsigned = false; // has no meaning in PG
-        $column->isPrimaryKey = (bool) $info['is_pkey'];
-        $column->name = $info['column_name'];
-        $column->precision = $info['numeric_precision'];
-        $column->scale = $info['numeric_scale'];
-        $column->size = $info['size'] === null ? null : (int) $info['size'];
-        $column->dimension = (int)$info['dimension'];
+        $column->allowNull($info['is_nullable']);
+        $column->autoIncrement($info['is_autoinc']);
+        $column->comment($info['column_comment']);
+        $column->dbType($info['data_type']);
+        $column->defaultValue($info['column_default']);
+        $column->enumValues(($info['enum_values'] !== null)
+            ? \explode(',', \str_replace(["''"], ["'"], $info['enum_values'])) : null);
+        $column->unsigned(false); // has no meaning in PG
+        $column->isPrimaryKey((bool) $info['is_pkey']);
+        $column->name($info['column_name']);
+        $column->precision($info['numeric_precision']);
+        $column->scale($info['numeric_scale']);
+        $column->size($info['size'] === null ? null : (int) $info['size']);
+        $column->dimension = (int) $info['dimension'];
+
         /**
          * pg_get_serial_sequence() doesn't track DEFAULT value change. GENERATED BY IDENTITY columns always have null
          * default value
          */
-        if (isset($column->defaultValue) && \preg_match("/nextval\\('\"?\\w+\"?\.?\"?\\w+\"?'(::regclass)?\\)/", $column->defaultValue) === 1) {
+
+        $defaultValue = $column->getDefaultValue();
+        if (isset($defaultValue) && \preg_match("/nextval\\('\"?\\w+\"?\.?\"?\\w+\"?'(::regclass)?\\)/", $defaultValue) === 1) {
             $column->sequenceName = \preg_replace(
                 ['/nextval/', '/::/', '/regclass/', '/\'\)/', '/\(\'/'],
                 '',
-                $column->defaultValue
+                $defaultValue
             );
         } elseif (isset($info['sequence_name'])) {
             $column->sequenceName = $this->resolveTableName($info['sequence_name'])->fullName;
         }
 
-        if (isset($this->typeMap[$column->dbType])) {
-            $column->type = $this->typeMap[$column->dbType];
+        if (isset($this->typeMap[$column->getDbType()])) {
+            $column->type($this->typeMap[$column->getDbType()]);
         } else {
-            $column->type = self::TYPE_STRING;
+            $column->type(self::TYPE_STRING);
         }
-        $column->phpType = $this->getColumnPhpType($column);
+        $column->phpType($this->getColumnPhpType($column));
 
         return $column;
     }

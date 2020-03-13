@@ -527,7 +527,7 @@ class QueryBuilder extends \Yiisoft\Db\Query\QueryBuilder
         if (($tableSchema = $this->db->getSchema()->getTableSchema($table)) !== null) {
             $columnSchemas = $tableSchema->columns;
             foreach ($columns as $name => $value) {
-                if (isset($columnSchemas[$name]) && $columnSchemas[$name]->type === Schema::TYPE_BINARY && \is_string($value)) {
+                if (isset($columnSchemas[$name]) && $columnSchemas[$name]->getType() === Schema::TYPE_BINARY && \is_string($value)) {
                     /** explicitly setup PDO param type for binary column */
                     $columns[$name] = new PdoValue($value, \PDO::PARAM_LOB);
                 }
