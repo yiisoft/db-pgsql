@@ -192,8 +192,8 @@ class SchemaTest extends AbstractSchemaTest
         $schema = $this->getConnection()->getSchema();
 
         $table = $schema->getTableSchema('bool_values');
-        $this->assertTrue($table->getColumn('default_true')->defaultValue);
-        $this->assertFalse($table->getColumn('default_false')->defaultValue);
+        $this->assertTrue($table->getColumn('default_true')->getDefaultValue());
+        $this->assertFalse($table->getColumn('default_false')->getDefaultValue());
     }
 
     public function testSequenceName()
@@ -287,9 +287,9 @@ class SchemaTest extends AbstractSchemaTest
         $this->assertNotNull($tableSchema);
         $column = $tableSchema->getColumn('user_timezone');
         $this->assertNotNull($column);
-        $this->assertFalse($column->allowNull);
-        $this->assertEquals('numeric', $column->dbType);
-        $this->assertEquals(0, $column->defaultValue);
+        $this->assertFalse($column->getAllowNull());
+        $this->assertEquals('numeric', $column->getDbType());
+        $this->assertEquals(0, $column->getDefaultValue());
     }
 
     /**
@@ -309,7 +309,7 @@ class SchemaTest extends AbstractSchemaTest
 
         $db->getSchema()->refreshTableSchema('test_timestamp_default_null');
         $tableSchema = $db->getSchema()->getTableSchema('test_timestamp_default_null');
-        $this->assertNull($tableSchema->getColumn('timestamp')->defaultValue);
+        $this->assertNull($tableSchema->getColumn('timestamp')->getDefaultValue());
     }
 
     public function constraintsProvider(): array

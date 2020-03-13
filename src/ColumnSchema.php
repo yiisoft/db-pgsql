@@ -39,11 +39,11 @@ class ColumnSchema extends \Yiisoft\Db\Schema\ColumnSchema
         if ($this->dimension > 0) {
             return $this->disableArraySupport
                 ? (string) $value
-                : new ArrayExpression($value, $this->dbType, $this->dimension);
+                : new ArrayExpression($value, $this->getDbType(), $this->dimension);
         }
 
-        if (\in_array($this->dbType, [Schema::TYPE_JSON, Schema::TYPE_JSONB], true)) {
-            return new JsonExpression($value, $this->dbType);
+        if (\in_array($this->getDbType(), [Schema::TYPE_JSON, Schema::TYPE_JSONB], true)) {
+            return new JsonExpression($value, $this->getDbType());
         }
 
         return $this->typecast($value);
@@ -85,7 +85,7 @@ class ColumnSchema extends \Yiisoft\Db\Schema\ColumnSchema
             return null;
         }
 
-        switch ($this->type) {
+        switch ($this->getType()) {
             case Schema::TYPE_BOOLEAN:
                 $value = \is_string($value) ? strtolower($value) : $value;
 
