@@ -8,7 +8,7 @@ use Yiisoft\Db\Expression\ArrayExpression;
 use Yiisoft\Db\Expression\Expression;
 use Yiisoft\Db\Expression\JsonExpression;
 use Yiisoft\Db\Query\Query;
-use Yiisoft\Db\Pgsql\Schema;
+use Yiisoft\Db\Pgsql\Schema\Schema;
 use Yiisoft\Db\Tests\TraversableObject;
 use Yiisoft\Db\Tests\QueryBuilderTest as AbstractQueryBuilderTest;
 

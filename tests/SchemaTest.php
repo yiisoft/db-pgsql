@@ -158,11 +158,12 @@ class SchemaTest extends AbstractSchemaTest
 
         $table = $schema->getTableSchema('composite_fk');
 
-        $this->assertCount(1, $table->foreignKeys);
-        $this->assertTrue(isset($table->foreignKeys['fk_composite_fk_order_item']));
-        $this->assertEquals('order_item', $table->foreignKeys['fk_composite_fk_order_item'][0]);
-        $this->assertEquals('order_id', $table->foreignKeys['fk_composite_fk_order_item']['order_id']);
-        $this->assertEquals('item_id', $table->foreignKeys['fk_composite_fk_order_item']['item_id']);
+        $fk = $table->getForeignKeys();
+        $this->assertCount(1, $fk);
+        $this->assertTrue(isset($fk['fk_composite_fk_order_item']));
+        $this->assertEquals('order_item', $fk['fk_composite_fk_order_item'][0]);
+        $this->assertEquals('order_id', $fk['fk_composite_fk_order_item']['order_id']);
+        $this->assertEquals('item_id', $fk['fk_composite_fk_order_item']['item_id']);
     }
 
     public function testGetPDOType()
@@ -200,21 +201,21 @@ class SchemaTest extends AbstractSchemaTest
     {
         $connection = $this->getConnection();
 
-        $sequenceName = $connection->getSchema()->getTableSchema('item')->sequenceName;
+        $sequenceName = $connection->getSchema()->getTableSchema('item')->getSequenceName();
 
         $connection->createCommand(
             'ALTER TABLE "item" ALTER COLUMN "id" SET DEFAULT nextval(\'item_id_seq_2\')'
         )->execute();
 
         $connection->getSchema()->refreshTableSchema('item');
-        $this->assertEquals('item_id_seq_2', $connection->getSchema()->getTableSchema('item')->sequenceName);
+        $this->assertEquals('item_id_seq_2', $connection->getSchema()->getTableSchema('item')->getSequenceName());
 
         $connection->createCommand(
             'ALTER TABLE "item" ALTER COLUMN "id" SET DEFAULT nextval(\'' . $sequenceName . '\')'
         )->execute();
 
         $connection->getSchema()->refreshTableSchema('item');
-        $this->assertEquals($sequenceName, $connection->getSchema()->getTableSchema('item')->sequenceName);
+        $this->assertEquals($sequenceName, $connection->getSchema()->getTableSchema('item')->getSequenceName());
     }
 
     public function testGeneratedValues()
