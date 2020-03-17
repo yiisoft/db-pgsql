@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Yiisoft\Db\Pgsql;
+namespace Yiisoft\Db\Pgsql\Query;
 
 use Yiisoft\Db\Constraint\Constraint;
 use Yiisoft\Db\Exception\InvalidArgumentException;
@@ -10,15 +10,19 @@ use Yiisoft\Db\Expression\ArrayExpression;
 use Yiisoft\Db\Expression\JsonExpression;
 use Yiisoft\Db\Expression\Expression;
 use Yiisoft\Db\Expression\ExpressionInterface;
-use Yiisoft\Db\Query\Query;
-use Yiisoft\Db\Query\Conditions\LikeCondition;
+use Yiisoft\Db\Pgsql\Expression\ArrayExpressionBuilder;
+use Yiisoft\Db\Pgsql\Expression\JsonExpressionBuilder;
+use Yiisoft\Db\Pgsql\Schema\Schema;
 use Yiisoft\Db\Pdo\PdoValue;
+use Yiisoft\Db\Query\Query;
+use Yiisoft\Db\Query\QueryBuilder as AbstractQueryBuilder;
+use Yiisoft\Db\Query\Conditions\LikeCondition;
 use Yiisoft\Strings\StringHelper;
 
 /**
  * QueryBuilder is the query builder for PostgreSQL databases.
  */
-class QueryBuilder extends \Yiisoft\Db\Query\QueryBuilder
+class QueryBuilder extends AbstractQueryBuilder
 {
     /**
      * Defines a UNIQUE index for {@see createIndex()}.
@@ -191,12 +195,13 @@ class QueryBuilder extends \Yiisoft\Db\Query\QueryBuilder
     public function resetSequence(string $tableName, $value = null): string
     {
         $table = $this->db->getTableSchema($tableName);
-        if ($table !== null && $table->sequenceName !== null) {
+        if ($table !== null && $table->getSequenceName() !== null) {
             /** c.f. http://www.postgresql.org/docs/8.1/static/functions-sequence.html */
-            $sequence = $this->db->quoteTableName($table->sequenceName);
+            $sequence = $this->db->quoteTableName($table->getSequenceName());
             $tableName = $this->db->quoteTableName($tableName);
             if ($value === null) {
-                $key = $this->db->quoteColumnName(reset($table->primaryKey));
+                $pk = $table->getPrimaryKey();
+                $key = $this->db->quoteColumnName(reset($pk));
                 $value = "(SELECT COALESCE(MAX({$key}),0) FROM {$tableName})+1";
             } else {
                 $value = (int) $value;
@@ -525,7 +530,7 @@ class QueryBuilder extends \Yiisoft\Db\Query\QueryBuilder
         }
 
         if (($tableSchema = $this->db->getSchema()->getTableSchema($table)) !== null) {
-            $columnSchemas = $tableSchema->columns;
+            $columnSchemas = $tableSchema->getColumns();
             foreach ($columns as $name => $value) {
                 if (isset($columnSchemas[$name]) && $columnSchemas[$name]->getType() === Schema::TYPE_BINARY && \is_string($value)) {
                     /** explicitly setup PDO param type for binary column */
@@ -548,7 +553,7 @@ class QueryBuilder extends \Yiisoft\Db\Query\QueryBuilder
 
         $schema = $this->db->getSchema();
         if (($tableSchema = $schema->getTableSchema($table)) !== null) {
-            $columnSchemas = $tableSchema->columns;
+            $columnSchemas = $tableSchema->getColumns();
         } else {
             $columnSchemas = [];
         }
