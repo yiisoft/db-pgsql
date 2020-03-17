@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Yiisoft\Db\Pgsql;
+namespace Yiisoft\Db\Pgsql\Query;
 
 /**
  * The class converts Postgres SQL array representation to PHP array

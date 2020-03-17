@@ -2,16 +2,18 @@
 
 declare(strict_types=1);
 
-namespace Yiisoft\Db\Pgsql;
+namespace Yiisoft\Db\Pgsql\Schema;
 
 use Yiisoft\Db\Expression\ArrayExpression;
 use Yiisoft\Db\Expression\ExpressionInterface;
 use Yiisoft\Db\Expression\JsonExpression;
+use Yiisoft\Db\Pgsql\Query\ArrayParser;
+use Yiisoft\Db\Schema\ColumnSchema as AbstractColumnSchema;
 
 /**
  * Class ColumnSchema for Postgres SQL database.
  */
-class ColumnSchema extends \Yiisoft\Db\Schema\ColumnSchema
+class ColumnSchema extends AbstractColumnSchema
 {
     /**
      * @var int the dimension of array. Defaults to 0, means this column is not an array.

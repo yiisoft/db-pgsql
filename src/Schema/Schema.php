@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Yiisoft\Db\Pgsql;
+namespace Yiisoft\Db\Pgsql\Schema;
 
 use Yiisoft\Db\Constraint\CheckConstraint;
 use Yiisoft\Db\Constraint\Constraint;
@@ -12,7 +12,8 @@ use Yiisoft\Db\Constraint\ForeignKeyConstraint;
 use Yiisoft\Db\Constraint\IndexConstraint;
 use Yiisoft\Db\Exception\NotSupportedException;
 use Yiisoft\Db\Expression\Expression;
-use Yiisoft\Db\Schema\TableSchema;
+use Yiisoft\Db\Pgsql\Query\QueryBuilder;
+use Yiisoft\Db\Schema\Schema as AbstractSchema;
 use Yiisoft\Db\View\ViewFinderTrait;
 use Yiisoft\Arrays\ArrayHelper;
 
@@ -20,7 +21,7 @@ use Yiisoft\Arrays\ArrayHelper;
  * Schema is the class for retrieving metadata from a Postgres SQL database
  * (version 9.x and above).
  */
-class Schema extends \Yiisoft\Db\Schema\Schema implements ConstraintFinderInterface
+class Schema extends AbstractSchema implements ConstraintFinderInterface
 {
     use ViewFinderTrait;
     use ConstraintFinderTrait;
@@ -30,20 +31,15 @@ class Schema extends \Yiisoft\Db\Schema\Schema implements ConstraintFinderInterf
     /**
      * @var string the default schema used for the current session.
      */
-    public ?string $defaultSchema = 'public';
+    protected ?string $defaultSchema = 'public';
+    protected string $tableQuoteCharacter = '"';
 
     /**
-     * {@inheritdoc}
-     */
-    public string $columnSchemaClass = ColumnSchema::class;
-
-    /**
-     * @var array mapping from physical column types (keys) to abstract
-     * column types (values)
+     * @var array mapping from physical column types (keys) to abstract column types (values).
      *
      * {@see http://www.postgresql.org/docs/current/static/datatype.html#DATATYPE-TABLE}
      */
-    public array $typeMap = [
+    private array $typeMap = [
         'bit' => self::TYPE_INTEGER,
         'bit varying' => self::TYPE_INTEGER,
         'varbit' => self::TYPE_INTEGER,
@@ -109,34 +105,23 @@ class Schema extends \Yiisoft\Db\Schema\Schema implements ConstraintFinderInterf
         'xml' => self::TYPE_STRING,
     ];
 
-    /**
-     * {@inheritdoc}
-     */
-    protected string $tableQuoteCharacter = '"';
-
-    /**
-     * {@inheritdoc}
-     */
     protected function resolveTableName($name)
     {
         $resolvedName = new TableSchema();
         $parts = \explode('.', \str_replace('"', '', $name));
 
         if (isset($parts[1])) {
-            $resolvedName->schemaName = $parts[0];
-            $resolvedName->name = $parts[1];
+            $resolvedName->schemaName($parts[0]);
+            $resolvedName->name($parts[1]);
         } else {
-            $resolvedName->schemaName = $this->defaultSchema;
-            $resolvedName->name = $name;
+            $resolvedName->schemaName($this->defaultSchema);
+            $resolvedName->name($name);
         }
-        $resolvedName->fullName = ($resolvedName->schemaName !== $this->defaultSchema ? $resolvedName->schemaName . '.' : '')
-            . $resolvedName->name;
+        $resolvedName->fullName(($resolvedName->getSchemaName() !== $this->defaultSchema ? $resolvedName->getSchemaName() . '.' : '')
+            . $resolvedName->getName());
         return $resolvedName;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     protected function findSchemaNames()
     {
         static $sql = <<<'SQL'
@@ -146,7 +131,7 @@ WHERE "ns"."nspname" != 'information_schema' AND "ns"."nspname" NOT LIKE 'pg_%'
 ORDER BY "ns"."nspname" ASC
 SQL;
 
-        return $this->db->createCommand($sql)->queryColumn();
+        return $this->getDb()->createCommand($sql)->queryColumn();
     }
 
     /**
@@ -164,12 +149,9 @@ INNER JOIN pg_namespace ns ON ns.oid = c.relnamespace
 WHERE ns.nspname = :schemaName AND c.relkind IN ('r','v','m','f', 'p')
 ORDER BY c.relname
 SQL;
-        return $this->db->createCommand($sql, [':schemaName' => $schema])->queryColumn();
+        return $this->getDb()->createCommand($sql, [':schemaName' => $schema])->queryColumn();
     }
 
-    /**
-     * {@inheritdoc}
-     */
     protected function loadTableSchema(string $name): ?TableSchema
     {
         $table = new TableSchema();
@@ -183,25 +165,16 @@ SQL;
         return null;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     protected function loadTablePrimaryKey($tableName)
     {
         return $this->loadTableConstraints($tableName, 'primaryKey');
     }
 
-    /**
-     * {@inheritdoc}
-     */
     protected function loadTableForeignKeys($tableName)
     {
         return $this->loadTableConstraints($tableName, 'foreignKeys');
     }
 
-    /**
-     * {@inheritdoc}
-     */
     protected function loadTableIndexes($tableName)
     {
         static $sql = <<<'SQL'
@@ -225,9 +198,9 @@ SQL;
 
         $resolvedName = $this->resolveTableName($tableName);
 
-        $indexes = $this->db->createCommand($sql, [
-            ':schemaName' => $resolvedName->schemaName,
-            ':tableName' => $resolvedName->name,
+        $indexes = $this->getDb()->createCommand($sql, [
+            ':schemaName' => $resolvedName->getSchemaName(),
+            ':tableName' => $resolvedName->getName(),
         ])->queryAll();
 
         $indexes = $this->normalizePdoRowKeyCase($indexes, true);
@@ -248,27 +221,16 @@ SQL;
         return $result;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     protected function loadTableUniques($tableName)
     {
         return $this->loadTableConstraints($tableName, 'uniques');
     }
 
-    /**
-     * {@inheritdoc}
-     */
     protected function loadTableChecks($tableName)
     {
         return $this->loadTableConstraints($tableName, 'checks');
     }
 
-    /**
-     * {@inheritdoc}
-     *
-     * @throws NotSupportedException if this method is called.
-     */
     protected function loadTableDefaultValues($tableName)
     {
         throw new NotSupportedException('PostgreSQL does not support default value constraints.');
@@ -281,7 +243,7 @@ SQL;
      */
     public function createQueryBuilder()
     {
-        return new QueryBuilder($this->db);
+        return new QueryBuilder($this->getDb());
     }
 
     /**
@@ -295,15 +257,15 @@ SQL;
         $parts = \explode('.', \str_replace('"', '', $name));
 
         if (isset($parts[1])) {
-            $table->schemaName = $parts[0];
-            $table->name = $parts[1];
+            $table->schemaName($parts[0]);
+            $table->name($parts[1]);
         } else {
-            $table->schemaName = $this->defaultSchema;
-            $table->name = $parts[0];
+            $table->schemaName($this->defaultSchema);
+            $table->name($parts[0]);
         }
 
-        $table->fullName = $table->schemaName !== $this->defaultSchema ? $table->schemaName . '.'
-            . $table->name : $table->name;
+        $table->fullName($table->getSchemaName() !== $this->defaultSchema ? $table->getSchemaName() . '.'
+            . $table->name : $table->getName());
     }
 
     /**
@@ -321,7 +283,7 @@ INNER JOIN pg_namespace ns ON ns.oid = c.relnamespace
 WHERE ns.nspname = :schemaName AND (c.relkind = 'v' OR c.relkind = 'm')
 ORDER BY c.relname
 SQL;
-        return $this->db->createCommand($sql, [':schemaName' => $schema])->queryColumn();
+        return $this->getDb()->createCommand($sql, [':schemaName' => $schema])->queryColumn();
     }
 
     /**
@@ -331,8 +293,8 @@ SQL;
      */
     protected function findConstraints($table)
     {
-        $tableName = $this->quoteValue($table->name);
-        $tableSchema = $this->quoteValue($table->schemaName);
+        $tableName = $this->quoteValue($table->getName());
+        $tableSchema = $this->quoteValue($table->getSchemaName());
 
         //We need to extract the constraints de hard way since:
         //http://www.postgresql.org/message-id/26677.1086673982@sss.pgh.pa.us
@@ -364,8 +326,8 @@ SQL;
 
         $constraints = [];
 
-        foreach ($this->db->createCommand($sql)->queryAll() as $constraint) {
-            if ($this->db->getSlavePdo()->getAttribute(\PDO::ATTR_CASE) === \PDO::CASE_UPPER) {
+        foreach ($this->getDb()->createCommand($sql)->queryAll() as $constraint) {
+            if ($this->getDb()->getSlavePdo()->getAttribute(\PDO::ATTR_CASE) === \PDO::CASE_UPPER) {
                 $constraint = \array_change_key_case($constraint, CASE_LOWER);
             }
             if ($constraint['foreign_table_schema'] !== $this->defaultSchema) {
@@ -384,7 +346,7 @@ SQL;
         }
 
         foreach ($constraints as $name => $constraint) {
-            $table->foreignKeys[$name] = \array_merge([$constraint['tableName']], $constraint['columns']);
+            $table->foreignKey($name, \array_merge([$constraint['tableName']], $constraint['columns']));
         }
     }
 
@@ -413,9 +375,9 @@ AND c.relname = :tableName AND ns.nspname = :schemaName
 ORDER BY i.relname, k
 SQL;
 
-        return $this->db->createCommand($sql, [
-            ':schemaName' => $table->schemaName,
-            ':tableName' => $table->name,
+        return $this->getDb()->createCommand($sql, [
+            ':schemaName' => $table->getSchemaName(),
+            ':tableName' => $table->getName(),
         ])->queryAll();
     }
 
@@ -439,7 +401,7 @@ SQL;
         $uniqueIndexes = [];
 
         foreach ($this->getUniqueIndexInformation($table) as $row) {
-            if ($this->db->getSlavePdo()->getAttribute(\PDO::ATTR_CASE) === \PDO::CASE_UPPER) {
+            if ($this->getDb()->getSlavePdo()->getAttribute(\PDO::ATTR_CASE) === \PDO::CASE_UPPER) {
                 $row = \array_change_key_case($row, CASE_LOWER);
             }
             $column = $row['columnname'];
@@ -465,11 +427,11 @@ SQL;
      */
     protected function findColumns($table): bool
     {
-        $tableName = $this->db->quoteValue($table->name);
-        $schemaName = $this->db->quoteValue($table->schemaName);
+        $tableName = $this->getDb()->quoteValue($table->getName());
+        $schemaName = $this->getDb()->quoteValue($table->getSchemaName());
 
         $orIdentity = '';
-        if (\version_compare($this->db->getServerVersion(), '12.0', '>=')) {
+        if (\version_compare($this->getDb()->getServerVersion(), '12.0', '>=')) {
             $orIdentity = 'OR attidentity != \'\'';
         }
 
@@ -535,20 +497,20 @@ WHERE
 ORDER BY
     a.attnum;
 SQL;
-        $columns = $this->db->createCommand($sql)->queryAll();
+        $columns = $this->getDb()->createCommand($sql)->queryAll();
         if (empty($columns)) {
             return false;
         }
         foreach ($columns as $column) {
-            if ($this->db->getSlavePdo()->getAttribute(\PDO::ATTR_CASE) === \PDO::CASE_UPPER) {
+            if ($this->getDb()->getSlavePdo()->getAttribute(\PDO::ATTR_CASE) === \PDO::CASE_UPPER) {
                 $column = \array_change_key_case($column, CASE_LOWER);
             }
             $column = $this->loadColumnSchema($column);
-            $table->columns[$column->getName()] = $column;
+            $table->columns($column->getName(), $column);
             if ($column->getIsPrimaryKey()) {
-                $table->primaryKey[] = $column->getName();
-                if ($table->sequenceName === null) {
-                    $table->sequenceName = $column->sequenceName;
+                $table->primaryKey($column->getName());
+                if ($table->getSequenceName() === null) {
+                    $table->sequenceName($column->sequenceName);
                 }
                 $column->defaultValue(null);
             } elseif ($column->getDefaultValue()) {
@@ -616,7 +578,7 @@ SQL;
                 $defaultValue
             );
         } elseif (isset($info['sequence_name'])) {
-            $column->sequenceName = $this->resolveTableName($info['sequence_name'])->fullName;
+            $column->sequenceName = $this->resolveTableName($info['sequence_name'])->getFullName();
         }
 
         if (isset($this->typeMap[$column->getDbType()])) {
@@ -635,8 +597,8 @@ SQL;
     public function insert($table, $columns)
     {
         $params = [];
-        $sql = $this->db->getQueryBuilder()->insert($table, $columns, $params);
-        $returnColumns = $this->getTableSchema($table)->primaryKey;
+        $sql = $this->getDb()->getQueryBuilder()->insert($table, $columns, $params);
+        $returnColumns = $this->getTableSchema($table)->getPrimaryKeys();
         if (!empty($returnColumns)) {
             $returning = [];
             foreach ((array) $returnColumns as $name) {
@@ -645,7 +607,7 @@ SQL;
             $sql .= ' RETURNING ' . \implode(', ', $returning);
         }
 
-        $command = $this->db->createCommand($sql, $params);
+        $command = $this->getDb()->createCommand($sql, $params);
         $command->prepare(false);
         $result = $command->queryOne();
 
@@ -702,9 +664,9 @@ SQL;
         ];
 
         $resolvedName = $this->resolveTableName($tableName);
-        $constraints = $this->db->createCommand($sql, [
-            ':schemaName' => $resolvedName->schemaName,
-            ':tableName' => $resolvedName->name,
+        $constraints = $this->getDb()->createCommand($sql, [
+            ':schemaName' => $resolvedName->getSchemaName(),
+            ':tableName' => $resolvedName->getName(),
         ])->queryAll();
         $constraints = $this->normalizePdoRowKeyCase($constraints, true);
         $constraints = ArrayHelper::index($constraints, null, ['type', 'name']);
@@ -763,5 +725,17 @@ SQL;
         }
 
         return $result[$returnType];
+    }
+
+    /**
+     * Creates a column schema for the database.
+     *
+     * This method may be overridden by child classes to create a DBMS-specific column schema.
+     *
+     * @return ColumnSchema column schema instance.
+     */
+    protected function createColumnSchema(): ColumnSchema
+    {
+        return new ColumnSchema();
     }
 }
