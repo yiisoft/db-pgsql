@@ -507,7 +507,7 @@ SQL;
             }
             $column = $this->loadColumnSchema($column);
             $table->columns($column->getName(), $column);
-            if ($column->getIsPrimaryKey()) {
+            if ($column->isPrimaryKey()) {
                 $table->primaryKey($column->getName());
                 if ($table->getSequenceName() === null) {
                     $table->sequenceName($column->sequenceName);
@@ -558,7 +558,7 @@ SQL;
         $column->enumValues(($info['enum_values'] !== null)
             ? \explode(',', \str_replace(["''"], ["'"], $info['enum_values'])) : null);
         $column->unsigned(false); // has no meaning in PG
-        $column->isPrimaryKey((bool) $info['is_pkey']);
+        $column->primaryKey((bool) $info['is_pkey']);
         $column->name($info['column_name']);
         $column->precision($info['numeric_precision']);
         $column->scale($info['numeric_scale']);
