@@ -598,7 +598,7 @@ SQL;
     {
         $params = [];
         $sql = $this->getDb()->getQueryBuilder()->insert($table, $columns, $params);
-        $returnColumns = $this->getTableSchema($table)->getPrimaryKeys();
+        $returnColumns = $this->getTableSchema($table)->getPrimaryKey();
         if (!empty($returnColumns)) {
             $returning = [];
             foreach ((array) $returnColumns as $name) {
