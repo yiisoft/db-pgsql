@@ -288,7 +288,7 @@ class SchemaTest extends AbstractSchemaTest
         $this->assertNotNull($tableSchema);
         $column = $tableSchema->getColumn('user_timezone');
         $this->assertNotNull($column);
-        $this->assertFalse($column->getAllowNull());
+        $this->assertFalse($column->isAllowNull());
         $this->assertEquals('numeric', $column->getDbType());
         $this->assertEquals(0, $column->getDefaultValue());
     }
