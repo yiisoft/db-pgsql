@@ -11,13 +11,7 @@ class ColumnSchemaBuilderTest extends AbstractColumnSchemaBuilderTest
 {
     protected ?string $driverName = 'pgsql';
 
-    /**
-     * @param string $type
-     * @param int $length
-     *
-     * @return ColumnSchemaBuilder
-     */
-    public function getColumnSchemaBuilder($type, $length = null)
+    public function getColumnSchemaBuilder($type, $length = null): ColumnSchemaBuilder
     {
         return new ColumnSchemaBuilder($type, $length, $this->getConnection());
     }

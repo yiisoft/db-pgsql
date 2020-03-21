@@ -4,9 +4,6 @@ declare(strict_types=1);
 
 namespace Yiisoft\Db\Pgsql\Query;
 
-/**
- * The class converts Postgres SQL array representation to PHP array
- */
 class ArrayParser
 {
     /**
@@ -21,7 +18,7 @@ class ArrayParser
      *
      * @return array|null
      */
-    public function parse($value): ?array
+    public function parse(string $value): ?array
     {
         if ($value === null) {
             return null;
@@ -42,7 +39,7 @@ class ArrayParser
      *
      * @return array
      */
-    private function parseArray($value, &$i = 0): array
+    private function parseArray(string $value, int &$i = 0): array
     {
         $result = [];
         $len = \strlen($value);
@@ -76,14 +73,14 @@ class ArrayParser
      * @param string $value
      * @param int $i parse starting position
      *
-     * @return null|string
+     * @return string|null
      */
-    private function parseString($value, &$i): ?string
+    private function parseString(string $value, int &$i): ?string
     {
         $isQuoted = $value[$i] === '"';
         $stringEndChars = $isQuoted ? ['"'] : [$this->delimiter, '}'];
         $result = '';
-        $len = strlen($value);
+        $len = \strlen($value);
 
         for ($i += $isQuoted ? 1 : 0; $i < $len; ++$i) {
             if (\in_array($value[$i], ['\\', '"'], true) && \in_array($value[$i + 1], [$value[$i], '"'], true)) {
