@@ -10,23 +10,27 @@ use Yiisoft\Db\Expression\JsonExpression;
 use Yiisoft\Db\Pgsql\Query\ArrayParser;
 use Yiisoft\Db\Schema\ColumnSchema as AbstractColumnSchema;
 
-/**
- * Class ColumnSchema for Postgres SQL database.
- */
 class ColumnSchema extends AbstractColumnSchema
 {
     /**
      * @var int the dimension of array. Defaults to 0, means this column is not an array.
      */
-    public int $dimension = 0;
+    private int $dimension = 0;
 
     /**
      * @var string name of associated sequence if column is auto-incremental.
      */
-    public ?string $sequenceName = null;
+    private ?string $sequenceName = null;
 
     /**
-     * {@inheritdoc}
+     * Converts the input value according to {@see type} and {@see dbType} for use in a db query.
+     *
+     * If the value is null or an {@see Expression}, it will not be converted.
+     *
+     * @param mixed $value input value
+     *
+     * @return mixed converted value. This may also be an array containing the value as the first element and the PDO
+     * type as the second element.
      */
     public function dbTypecast($value)
     {
@@ -52,7 +56,13 @@ class ColumnSchema extends AbstractColumnSchema
     }
 
     /**
-     * {@inheritdoc}
+     * Converts the input value according to {@see phpType} after retrieval from the database.
+     *
+     * If the value is null or an {@see Expression}, it will not be converted.
+     *
+     * @param mixed $value input value
+     *
+     * @return mixed converted value
      */
     public function phpTypecast($value)
     {
@@ -61,7 +71,7 @@ class ColumnSchema extends AbstractColumnSchema
                 $value = $this->getArrayParser()->parse($value);
             }
             if (\is_array($value)) {
-                array_walk_recursive($value, function (&$val, $key) {
+                \array_walk_recursive($value, function (&$val, $key) {
                     $val = $this->phpTypecastValue($val);
                 });
             } elseif ($value === null) {
@@ -81,7 +91,7 @@ class ColumnSchema extends AbstractColumnSchema
      *
      * @return bool|mixed|null
      */
-    protected function phpTypecastValue($value)
+    protected function phpTypecastValue(?string $value)
     {
         if ($value === null) {
             return null;
@@ -89,7 +99,7 @@ class ColumnSchema extends AbstractColumnSchema
 
         switch ($this->getType()) {
             case Schema::TYPE_BOOLEAN:
-                $value = \is_string($value) ? strtolower($value) : $value;
+                $value = \is_string($value) ? \strtolower($value) : $value;
 
                 switch ($value) {
                     case 't':
@@ -102,7 +112,7 @@ class ColumnSchema extends AbstractColumnSchema
 
                 return (bool) $value;
             case Schema::TYPE_JSON:
-                return \json_decode($value, true);
+                return \json_decode($value, true, 512, JSON_THROW_ON_ERROR);
         }
 
         return parent::phpTypecast($value);
@@ -122,5 +132,25 @@ class ColumnSchema extends AbstractColumnSchema
         }
 
         return $parser;
+    }
+
+    public function getDimension(): int
+    {
+        return $this->dimension;
+    }
+
+    public function getSequenceName(): ?string
+    {
+        return $this->sequenceName;
+    }
+
+    public function dimension(int $dimension): void
+    {
+        $this->dimension = $dimension;
+    }
+
+    public function sequenceName(?string $sequenceName): void
+    {
+        $this->sequenceName = $sequenceName;
     }
 }
