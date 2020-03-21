@@ -4,6 +4,10 @@ declare(strict_types=1);
 
 namespace Yiisoft\Db\Pgsql\Expression;
 
+use Yiisoft\Db\Exception\Exception;
+use Yiisoft\Db\Exception\InvalidArgumentException;
+use Yiisoft\Db\Exception\InvalidConfigException;
+use Yiisoft\Db\Exception\NotSupportedException;
 use Yiisoft\Db\Expression\ArrayExpression;
 use Yiisoft\Db\Expression\ExpressionBuilderInterface;
 use Yiisoft\Db\Expression\ExpressionBuilderTrait;
@@ -12,17 +16,22 @@ use Yiisoft\Db\Expression\JsonExpression;
 use Yiisoft\Db\Pgsql\Schema\Schema;
 use Yiisoft\Db\Query\Query;
 
-/**
- * Class ArrayExpressionBuilder builds {@see ArrayExpression} for Postgres SQL DBMS.
- */
 class ArrayExpressionBuilder implements ExpressionBuilderInterface
 {
     use ExpressionBuilderTrait;
 
     /**
-     * {@inheritdoc}
+     * Method builds the raw SQL from the $expression that will not be additionally escaped or quoted.
      *
-     * @param ArrayExpression|ExpressionInterface $expression the expression to be built
+     * @param ExpressionInterface $expression the expression to be built.
+     * @param array $params the binding parameters.
+     *
+     * @throws Exception
+     * @throws InvalidArgumentException
+     * @throws InvalidConfigException
+     * @throws NotSupportedException
+     *
+     * @return string the raw SQL that will not be additionally escaped or quoted.
      */
     public function build(ExpressionInterface $expression, array &$params = []): string
     {
@@ -42,10 +51,15 @@ class ArrayExpressionBuilder implements ExpressionBuilderInterface
     }
 
     /**
-     * Builds placeholders array out of $expression values
+     * Builds placeholders array out of $expression values.
      *
-     * @param ExpressionInterface|ArrayExpression $expression
+     * @param ExpressionInterface $expression
      * @param array $params the binding parameters.
+     *
+     * @throws Exception
+     * @throws InvalidArgumentException
+     * @throws InvalidConfigException
+     * @throws NotSupportedException
      *
      * @return array
      */
@@ -67,7 +81,7 @@ class ArrayExpressionBuilder implements ExpressionBuilderInterface
 
         foreach ($value as $item) {
             if ($item instanceof Query) {
-                list($sql, $params) = $this->queryBuilder->build($item, $params);
+                [$sql, $params] = $this->queryBuilder->build($item, $params);
                 $placeholders[] = $this->buildSubqueryArray($sql, $expression);
                 continue;
             }
@@ -84,12 +98,6 @@ class ArrayExpressionBuilder implements ExpressionBuilderInterface
         return $placeholders;
     }
 
-    /**
-     * @param ArrayExpression $expression
-     * @param mixed $value
-     *
-     * @return ArrayExpression
-     */
     private function unnestArrayExpression(ArrayExpression $expression, $value): ArrayExpression
     {
         $expressionClass = \get_class($expression);
@@ -97,11 +105,6 @@ class ArrayExpressionBuilder implements ExpressionBuilderInterface
         return new $expressionClass($value, $expression->getType(), $expression->getDimension() - 1);
     }
 
-    /**
-     * @param ArrayExpression $expression
-     *
-     * @return string the typecast expression based on {@see type}
-     */
     protected function getTypehint(ArrayExpression $expression): string
     {
         if ($expression->getType() === null) {
@@ -118,17 +121,17 @@ class ArrayExpressionBuilder implements ExpressionBuilderInterface
      * Build an array expression from a subquery SQL.
      *
      * @param string $sql the subquery SQL.
-     * @param ArrayExpression $expression.
+     * @param ArrayExpression $expression
      *
      * @return string the subquery array expression.
      */
-    protected function buildSubqueryArray($sql, ArrayExpression $expression): string
+    protected function buildSubqueryArray(string $sql, ArrayExpression $expression): string
     {
         return 'ARRAY(' . $sql . ')' . $this->getTypehint($expression);
     }
 
     /**
-     * Casts $value to use in $expression
+     * Casts $value to use in $expression.
      *
      * @param ArrayExpression $expression
      * @param mixed $value

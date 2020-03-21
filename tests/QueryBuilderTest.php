@@ -64,28 +64,31 @@ class QueryBuilderTest extends AbstractQueryBuilderTest
         $db = $this->createConnection();
 
         return array_merge(parent::conditionProvider(), [
-            // adding conditions for ILIKE i.e. case insensitive LIKE
-            // http://www.postgresql.org/docs/8.3/static/functions-matching.html#FUNCTIONS-LIKE
+            /**
+             * adding conditions for ILIKE i.e. case insensitive LIKE.
+             *
+             * {@see http://www.postgresql.org/docs/8.3/static/functions-matching.html#FUNCTIONS-LIKE}
+             */
 
-            // empty values
+            /** empty values */
             [['ilike', 'name', []], '0=1', []],
             [['not ilike', 'name', []], '', []],
             [['or ilike', 'name', []], '0=1', []],
             [['or not ilike', 'name', []], '', []],
 
-            // simple ilike
+            /** simple ilike */
             [['ilike', 'name', 'heyho'], '"name" ILIKE :qp0', [':qp0' => '%heyho%']],
             [['not ilike', 'name', 'heyho'], '"name" NOT ILIKE :qp0', [':qp0' => '%heyho%']],
             [['or ilike', 'name', 'heyho'], '"name" ILIKE :qp0', [':qp0' => '%heyho%']],
             [['or not ilike', 'name', 'heyho'], '"name" NOT ILIKE :qp0', [':qp0' => '%heyho%']],
 
-            // ilike for many values
+            /** ilike for many values */
             [['ilike', 'name', ['heyho', 'abc']], '"name" ILIKE :qp0 AND "name" ILIKE :qp1', [':qp0' => '%heyho%', ':qp1' => '%abc%']],
             [['not ilike', 'name', ['heyho', 'abc']], '"name" NOT ILIKE :qp0 AND "name" NOT ILIKE :qp1', [':qp0' => '%heyho%', ':qp1' => '%abc%']],
             [['or ilike', 'name', ['heyho', 'abc']], '"name" ILIKE :qp0 OR "name" ILIKE :qp1', [':qp0' => '%heyho%', ':qp1' => '%abc%']],
             [['or not ilike', 'name', ['heyho', 'abc']], '"name" NOT ILIKE :qp0 OR "name" NOT ILIKE :qp1', [':qp0' => '%heyho%', ':qp1' => '%abc%']],
 
-            // array condition corner cases
+            /** array condition corner cases */
             [['@>', 'id', new ArrayExpression([1])], '"id" @> ARRAY[:qp0]', [':qp0' => 1]],
             'scalar can not be converted to array #1' => [['@>', 'id', new ArrayExpression(1)], '"id" @> ARRAY[]', []],
             ['scalar can not be converted to array #2' => ['@>', 'id', new ArrayExpression(false)], '"id" @> ARRAY[]', []],
@@ -99,7 +102,7 @@ class QueryBuilderTest extends AbstractQueryBuilderTest
             [['@>', 'id', new ArrayExpression((new Query($db))->select('id')->from('users')->where(['active' => 1]))], '[[id]] @> ARRAY(SELECT [[id]] FROM [[users]] WHERE [[active]]=:qp0)', [':qp0' => 1]],
             [['@>', 'id', new ArrayExpression([(new Query($db))->select('id')->from('users')->where(['active' => 1])], 'integer')], '[[id]] @> ARRAY[ARRAY(SELECT [[id]] FROM [[users]] WHERE [[active]]=:qp0)::integer[]]::integer[]', [':qp0' => 1]],
 
-            // json conditions
+            /** json conditions */
             [['=', 'jsoncol', new JsonExpression(['lang' => 'uk', 'country' => 'UA'])], '[[jsoncol]] = :qp0', [':qp0' => '{"lang":"uk","country":"UA"}']],
             [['=', 'jsoncol', new JsonExpression([false])], '[[jsoncol]] = :qp0', [':qp0' => '[false]']],
             [['=', 'prices', new JsonExpression(['seeds' => 15, 'apples' => 25], 'jsonb')], '[[prices]] = :qp0::jsonb', [':qp0' => '{"seeds":15,"apples":25}']],
@@ -135,7 +138,7 @@ class QueryBuilderTest extends AbstractQueryBuilderTest
                 [':qp0' => true, ':qp1' => false, ':qp2' => null, ':qp3' => false, ':qp4' => true, ':qp5' => false, ':qp6' => 't', ':qp7' => 'f'],
             ],
 
-            // Checks to verity that operators work correctly
+            /** Checks to verity that operators work correctly */
             [['@>', 'id', new ArrayExpression([1])], '"id" @> ARRAY[:qp0]', [':qp0' => 1]],
             [['<@', 'id', new ArrayExpression([1])], '"id" <@ ARRAY[:qp0]', [':qp0' => 1]],
             [['=', 'id',  new ArrayExpression([1])], '"id" = ARRAY[:qp0]', [':qp0' => 1]],
@@ -269,7 +272,7 @@ class QueryBuilderTest extends AbstractQueryBuilderTest
 
         $config = $this->database;
         unset($config['fixture']);
-        $this->prepareDatabase($config, realpath(__DIR__ . '/../../../data') . '/postgres12.sql');
+        $this->prepareDatabase($config, \realpath(__DIR__ . '/../../../data') . '/postgres12.sql');
 
         $qb = $this->getQueryBuilder(false);
 
@@ -377,7 +380,7 @@ class QueryBuilderTest extends AbstractQueryBuilderTest
         ];
         $newData = parent::upsertProvider();
         foreach ($concreteData as $testName => $data) {
-            $newData[$testName] = array_replace($newData[$testName], $data);
+            $newData[$testName] = \array_replace($newData[$testName], $data);
         }
         return $newData;
     }

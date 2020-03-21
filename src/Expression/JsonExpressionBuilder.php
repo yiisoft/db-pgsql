@@ -4,7 +4,10 @@ declare(strict_types=1);
 
 namespace Yiisoft\Db\Pgsql\Expression;
 
+use Yiisoft\Db\Exception\Exception;
 use Yiisoft\Db\Exception\InvalidArgumentException;
+use Yiisoft\Db\Exception\InvalidConfigException;
+use Yiisoft\Db\Exception\NotSupportedException;
 use Yiisoft\Db\Expression\ArrayExpression;
 use Yiisoft\Db\Expression\ExpressionBuilderInterface;
 use Yiisoft\Db\Expression\ExpressionBuilderTrait;
@@ -13,20 +16,23 @@ use Yiisoft\Db\Expression\JsonExpression;
 use Yiisoft\Db\Query\Query;
 use Yiisoft\Json\Json;
 
-/**
- * Class JsonExpressionBuilder builds {@see JsonExpression} for PostgreSQL DBMS.
- */
 class JsonExpressionBuilder implements ExpressionBuilderInterface
 {
     use ExpressionBuilderTrait;
 
     /**
-     * {@inheritdoc}
+     * Method builds the raw SQL from the $expression that will not be additionally escaped or quoted.
      *
-     * @param JsonExpression|ExpressionInterface $expression the expression to be built
-     * @param array $params
+     * @param ExpressionInterface $expression the expression to be built.
+     * @param array $params the binding parameters.
      *
-     * @return string
+     * @throws Exception
+     * @throws \JsonException
+     * @throws InvalidArgumentException
+     * @throws InvalidConfigException
+     * @throws NotSupportedException
+     *
+     * @return string the raw SQL that will not be additionally escaped or quoted.
      */
     public function build(ExpressionInterface $expression, array &$params = []): string
     {
@@ -45,11 +51,6 @@ class JsonExpressionBuilder implements ExpressionBuilderInterface
         return $placeholder . $this->getTypecast($expression);
     }
 
-    /**
-     * @param JsonExpression $expression
-     *
-     * @return string the typecast expression based on [[type]].
-     */
     protected function getTypecast(JsonExpression $expression): string
     {
         if ($expression->getType() === null) {
