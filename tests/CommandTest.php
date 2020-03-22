@@ -81,7 +81,7 @@ class CommandTest extends AbstractCommandTest
     }
 
     /**
-     * @see https://github.com/yiisoft/yii2/issues/11498
+     * {@see https://github.com/yiisoft/yii2/issues/11498}
      */
     public function testSaveSerializedObject(): void
     {
@@ -147,7 +147,7 @@ class CommandTest extends AbstractCommandTest
     }
 
     /**
-     * @see https://github.com/yiisoft/yii2/issues/15827
+     * {@see https://github.com/yiisoft/yii2/issues/15827}
      */
     public function testIssue15827(): void
     {

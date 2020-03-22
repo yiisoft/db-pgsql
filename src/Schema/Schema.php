@@ -4,23 +4,23 @@ declare(strict_types=1);
 
 namespace Yiisoft\Db\Pgsql\Schema;
 
+use Yiisoft\Arrays\ArrayHelper;
 use Yiisoft\Db\Constraint\CheckConstraint;
 use Yiisoft\Db\Constraint\Constraint;
 use Yiisoft\Db\Constraint\ConstraintFinderInterface;
 use Yiisoft\Db\Constraint\ConstraintFinderTrait;
+use Yiisoft\Db\Constraint\DefaultValueConstraint;
 use Yiisoft\Db\Constraint\ForeignKeyConstraint;
 use Yiisoft\Db\Constraint\IndexConstraint;
+use Yiisoft\Db\Exception\Exception;
+use Yiisoft\Db\Exception\InvalidArgumentException;
+use Yiisoft\Db\Exception\InvalidConfigException;
 use Yiisoft\Db\Exception\NotSupportedException;
 use Yiisoft\Db\Expression\Expression;
 use Yiisoft\Db\Pgsql\Query\QueryBuilder;
 use Yiisoft\Db\Schema\Schema as AbstractSchema;
 use Yiisoft\Db\View\ViewFinderTrait;
-use Yiisoft\Arrays\ArrayHelper;
 
-/**
- * Schema is the class for retrieving metadata from a Postgres SQL database
- * (version 9.x and above).
- */
 class Schema extends AbstractSchema implements ConstraintFinderInterface
 {
     use ViewFinderTrait;
@@ -105,7 +105,16 @@ class Schema extends AbstractSchema implements ConstraintFinderInterface
         'xml' => self::TYPE_STRING,
     ];
 
-    protected function resolveTableName($name)
+    /**
+     * Resolves the table name and schema name (if any).
+     *
+     * @param string $name the table name.
+     *
+     * @return TableSchema with resolved table, schema, etc. names.
+     *
+     * {@see \Yiisoft\Db\Schema\TableSchema}
+     */
+    protected function resolveTableName(string $name): TableSchema
     {
         $resolvedName = new TableSchema();
         $parts = \explode('.', \str_replace('"', '', $name));
@@ -122,7 +131,19 @@ class Schema extends AbstractSchema implements ConstraintFinderInterface
         return $resolvedName;
     }
 
-    protected function findSchemaNames()
+    /**
+     * Returns all schema names in the database, including the default one but not system schemas.
+     *
+     * This method should be overridden by child classes in order to support this feature because the default
+     * implementation simply throws an exception.
+     *
+     * @throws Exception
+     * @throws InvalidArgumentException
+     * @throws InvalidConfigException
+     *
+     * @return array all schema names in the database, except system schemas.
+     */
+    protected function findSchemaNames(): array
     {
         static $sql = <<<'SQL'
 SELECT "ns"."nspname"
@@ -135,13 +156,25 @@ SQL;
     }
 
     /**
-     * {@inheritdoc}
+     * Returns all table names in the database.
+     *
+     * This method should be overridden by child classes in order to support this feature because the default
+     * implementation simply throws an exception.
+     *
+     * @param string $schema the schema of the tables. Defaults to empty string, meaning the current or default schema.
+     *
+     * @throws Exception
+     * @throws InvalidArgumentException
+     * @throws InvalidConfigException
+     *
+     * @return array all table names in the database. The names have NO schema name prefix.
      */
-    protected function findTableNames($schema = '')
+    protected function findTableNames(string $schema = ''): array
     {
         if ($schema === '') {
             $schema = $this->defaultSchema;
         }
+
         $sql = <<<'SQL'
 SELECT c.relname AS table_name
 FROM pg_class c
@@ -152,9 +185,22 @@ SQL;
         return $this->getDb()->createCommand($sql, [':schemaName' => $schema])->queryColumn();
     }
 
+    /**
+     * Loads the metadata for the specified table.
+     *
+     * @param string $name table name.
+     *
+     * @throws Exception
+     * @throws InvalidArgumentException
+     * @throws InvalidConfigException
+     * @throws NotSupportedException
+     *
+     * @return TableSchema|null DBMS-dependent table metadata, `null` if the table does not exist.
+     */
     protected function loadTableSchema(string $name): ?TableSchema
     {
         $table = new TableSchema();
+
         $this->resolveTableNames($table, $name);
 
         if ($this->findColumns($table)) {
@@ -165,17 +211,50 @@ SQL;
         return null;
     }
 
-    protected function loadTablePrimaryKey($tableName)
+    /**
+     * Loads a primary key for the given table.
+     *
+     * @param string $tableName table name.
+     *
+     * @throws Exception
+     * @throws InvalidArgumentException
+     * @throws InvalidConfigException
+     *
+     * @return Constraint|null primary key for the given table, `null` if the table has no primary key.
+     */
+    protected function loadTablePrimaryKey(string $tableName): ?Constraint
     {
         return $this->loadTableConstraints($tableName, 'primaryKey');
     }
 
-    protected function loadTableForeignKeys($tableName)
+    /**
+     * Loads all foreign keys for the given table.
+     *
+     * @param string $tableName table name.
+     *
+     * @throws Exception
+     * @throws InvalidArgumentException
+     * @throws InvalidConfigException
+     *
+     * @return ForeignKeyConstraint[] foreign keys for the given table.
+     */
+    protected function loadTableForeignKeys($tableName): array
     {
         return $this->loadTableConstraints($tableName, 'foreignKeys');
     }
 
-    protected function loadTableIndexes($tableName)
+    /**
+     * Loads all indexes for the given table.
+     *
+     * @param string $tableName table name.
+     *
+     * @throws Exception
+     * @throws InvalidArgumentException
+     * @throws InvalidConfigException
+     *
+     * @return IndexConstraint[] indexes for the given table.
+     */
+    protected function loadTableIndexes(string $tableName): array
     {
         static $sql = <<<'SQL'
 SELECT
@@ -221,17 +300,48 @@ SQL;
         return $result;
     }
 
-    protected function loadTableUniques($tableName)
+    /**
+     * Loads all unique constraints for the given table.
+     *
+     * @param string $tableName table name.
+     *
+     * @throws Exception
+     * @throws InvalidArgumentException
+     * @throws InvalidConfigException
+     *
+     * @return Constraint[] unique constraints for the given table.
+     */
+    protected function loadTableUniques(string $tableName): array
     {
         return $this->loadTableConstraints($tableName, 'uniques');
     }
 
-    protected function loadTableChecks($tableName)
+    /**
+     * Loads all check constraints for the given table.
+     *
+     * @param string $tableName table name.
+     *
+     * @throws Exception
+     * @throws InvalidArgumentException
+     * @throws InvalidConfigException
+     *
+     * @return CheckConstraint[] check constraints for the given table.
+     */
+    protected function loadTableChecks(string $tableName): array
     {
         return $this->loadTableConstraints($tableName, 'checks');
     }
 
-    protected function loadTableDefaultValues($tableName)
+    /**
+     * Loads all default value constraints for the given table.
+     *
+     * @param string $tableName table name.
+     *
+     * @throws NotSupportedException
+     *
+     * @return DefaultValueConstraint[] default value constraints for the given table.
+     */
+    protected function loadTableDefaultValues($tableName): array
     {
         throw new NotSupportedException('PostgreSQL does not support default value constraints.');
     }
@@ -241,18 +351,18 @@ SQL;
      *
      * @return QueryBuilder query builder instance
      */
-    public function createQueryBuilder()
+    public function createQueryBuilder(): QueryBuilder
     {
         return new QueryBuilder($this->getDb());
     }
 
     /**
      * Resolves the table name and schema name (if any).
-     * @param TableSchema $table the table metadata object.
      *
+     * @param TableSchema $table the table metadata object.
      * @param string $name the table name
      */
-    protected function resolveTableNames($table, $name)
+    protected function resolveTableNames(TableSchema $table, string $name): void
     {
         $parts = \explode('.', \str_replace('"', '', $name));
 
@@ -265,13 +375,10 @@ SQL;
         }
 
         $table->fullName($table->getSchemaName() !== $this->defaultSchema ? $table->getSchemaName() . '.'
-            . $table->name : $table->getName());
+            . $table->getName() : $table->getName());
     }
 
-    /**
-     * {@inheritdoc]
-     */
-    protected function findViewNames($schema = '')
+    protected function findViewNames(string $schema = '')
     {
         if ($schema === '') {
             $schema = $this->defaultSchema;
@@ -290,14 +397,20 @@ SQL;
      * Collects the foreign key column details for the given table.
      *
      * @param TableSchema $table the table metadata
+     *
+     * @throws Exception
+     * @throws InvalidArgumentException
+     * @throws InvalidConfigException
      */
-    protected function findConstraints($table)
+    protected function findConstraints(TableSchema $table)
     {
         $tableName = $this->quoteValue($table->getName());
         $tableSchema = $this->quoteValue($table->getSchemaName());
 
-        //We need to extract the constraints de hard way since:
-        //http://www.postgresql.org/message-id/26677.1086673982@sss.pgh.pa.us
+        /**
+         * We need to extract the constraints de hard way since:
+         * {@see http://www.postgresql.org/message-id/26677.1086673982@sss.pgh.pa.us}
+         */
 
         $sql = <<<SQL
 select
@@ -355,9 +468,13 @@ SQL;
      *
      * @param TableSchema $table the table metadata
      *
+     * @throws Exception
+     * @throws InvalidArgumentException
+     * @throws InvalidConfigException
+     *
      * @return array with index and column names
      */
-    protected function getUniqueIndexInformation($table)
+    protected function getUniqueIndexInformation(TableSchema $table): array
     {
         $sql = <<<'SQL'
 SELECT
@@ -394,9 +511,14 @@ SQL;
      * ```
      *
      * @param TableSchema $table the table metadata
+     *
+     * @throws Exception
+     * @throws InvalidArgumentException
+     * @throws InvalidConfigException
+     *
      * @return array all unique indexes for the given table.
      */
-    public function findUniqueIndexes($table)
+    public function findUniqueIndexes($table): array
     {
         $uniqueIndexes = [];
 
@@ -407,8 +529,9 @@ SQL;
             $column = $row['columnname'];
             if (!empty($column) && $column[0] === '"') {
                 /**
-                 * postgres will quote names that are not lowercase-only
-                 * https://github.com/yiisoft/yii2/issues/10613
+                 * postgres will quote names that are not lowercase-only.
+                 *
+                 * {@see https://github.com/yiisoft/yii2/issues/10613}
                  */
                 $column = \substr($column, 1, -1);
             }
@@ -423,9 +546,14 @@ SQL;
      *
      * @param TableSchema $table the table metadata
      *
+     * @throws Exception
+     * @throws InvalidArgumentException
+     * @throws InvalidConfigException
+     * @throws NotSupportedException
+     *
      * @return bool whether the table exists in the database
      */
-    protected function findColumns($table): bool
+    protected function findColumns(TableSchema $table): bool
     {
         $tableName = $this->getDb()->quoteValue($table->getName());
         $schemaName = $this->getDb()->quoteValue($table->getSchemaName());
@@ -507,10 +635,10 @@ SQL;
             }
             $column = $this->loadColumnSchema($column);
             $table->columns($column->getName(), $column);
-            if ($column->getIsPrimaryKey()) {
+            if ($column->isPrimaryKey()) {
                 $table->primaryKey($column->getName());
                 if ($table->getSequenceName() === null) {
-                    $table->sequenceName($column->sequenceName);
+                    $table->sequenceName($column->getSequenceName());
                 }
                 $column->defaultValue(null);
             } elseif ($column->getDefaultValue()) {
@@ -531,7 +659,7 @@ SQL;
                         $column->defaultValue($column->phpTypecast($matches[2]));
                     }
                 } else {
-                    $column->defaultValue($column->phpTypecast($column->defaultValue));
+                    $column->defaultValue($column->phpTypecast($column->getDefaultValue()));
                 }
             }
         }
@@ -546,7 +674,7 @@ SQL;
      *
      * @return ColumnSchema the column schema object
      */
-    protected function loadColumnSchema($info): ColumnSchema
+    protected function loadColumnSchema(array $info): ColumnSchema
     {
         /** @var ColumnSchema $column */
         $column = $this->createColumnSchema();
@@ -558,12 +686,12 @@ SQL;
         $column->enumValues(($info['enum_values'] !== null)
             ? \explode(',', \str_replace(["''"], ["'"], $info['enum_values'])) : null);
         $column->unsigned(false); // has no meaning in PG
-        $column->isPrimaryKey((bool) $info['is_pkey']);
+        $column->primaryKey((bool) $info['is_pkey']);
         $column->name($info['column_name']);
         $column->precision($info['numeric_precision']);
         $column->scale($info['numeric_scale']);
         $column->size($info['size'] === null ? null : (int) $info['size']);
-        $column->dimension = (int) $info['dimension'];
+        $column->dimension((int) $info['dimension']);
 
         /**
          * pg_get_serial_sequence() doesn't track DEFAULT value change. GENERATED BY IDENTITY columns always have null
@@ -572,13 +700,13 @@ SQL;
 
         $defaultValue = $column->getDefaultValue();
         if (isset($defaultValue) && \preg_match("/nextval\\('\"?\\w+\"?\.?\"?\\w+\"?'(::regclass)?\\)/", $defaultValue) === 1) {
-            $column->sequenceName = \preg_replace(
+            $column->sequenceName(\preg_replace(
                 ['/nextval/', '/::/', '/regclass/', '/\'\)/', '/\(\'/'],
                 '',
                 $defaultValue
-            );
+            ));
         } elseif (isset($info['sequence_name'])) {
-            $column->sequenceName = $this->resolveTableName($info['sequence_name'])->getFullName();
+            $column->sequenceName($this->resolveTableName($info['sequence_name'])->getFullName());
         }
 
         if (isset($this->typeMap[$column->getDbType()])) {
@@ -592,13 +720,23 @@ SQL;
     }
 
     /**
-     * {@inheritdoc}
+     * Executes the INSERT command, returning primary key values.
+     *
+     * @param string $table the table that new rows will be inserted into.
+     * @param array $columns the column data (name => value) to be inserted into the table.
+     *
+     * @throws Exception
+     * @throws InvalidArgumentException
+     * @throws InvalidConfigException
+     * @throws NotSupportedException
+     *
+     * @return array|false primary key values or false if the command fails.
      */
-    public function insert($table, $columns)
+    public function insert(string $table, array $columns)
     {
         $params = [];
         $sql = $this->getDb()->getQueryBuilder()->insert($table, $columns, $params);
-        $returnColumns = $this->getTableSchema($table)->getPrimaryKeys();
+        $returnColumns = $this->getTableSchema($table)->getPrimaryKey();
         if (!empty($returnColumns)) {
             $returning = [];
             foreach ((array) $returnColumns as $name) {
@@ -624,9 +762,13 @@ SQL;
      * - uniques
      * - checks
      *
+     * @throws Exception
+     * @throws InvalidArgumentException
+     * @throws InvalidConfigException
+     *
      * @return mixed constraints.
      */
-    private function loadTableConstraints($tableName, $returnType)
+    private function loadTableConstraints(string $tableName, string $returnType)
     {
         static $sql = <<<'SQL'
 SELECT

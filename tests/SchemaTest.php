@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Yiisoft\Db\Pgsql\Tests;
 
-use Yiisoft\Db\Conditions\ExistsConditionBuilder;
 use Yiisoft\Db\Expression\Expression;
 use Yiisoft\Db\Tests\SchemaTest as AbstractSchemaTest;
 
@@ -226,13 +225,13 @@ class SchemaTest extends AbstractSchemaTest
 
         $config = $this->database;
         unset($config['fixture']);
-        $this->prepareDatabase($config, realpath(__DIR__ . '/../../../data') . '/postgres12.sql');
+        $this->prepareDatabase($config, \realpath(__DIR__ . '/../../../data') . '/postgres12.sql');
 
         $table = $this->getConnection(false)->getSchema()->getTableSchema('generated');
-        $this->assertTrue($table->getColumn('id_always')->autoIncrement);
-        $this->assertTrue($table->getColumn('id_primary')->autoIncrement);
-        $this->assertTrue($table->getColumn('id_primary')->isPrimaryKey);
-        $this->assertTrue($table->getColumn('id_default')->autoIncrement);
+        $this->assertTrue($table->getColumn('id_always')->getAutoIncrement());
+        $this->assertTrue($table->getColumn('id_primary')->getAutoIncrement());
+        $this->assertTrue($table->getColumn('id_primary')->getAutoIncrement());
+        $this->assertTrue($table->getColumn('id_default')->getAutoIncrement());
     }
 
     public function testPartitionedTable()
@@ -288,7 +287,7 @@ class SchemaTest extends AbstractSchemaTest
         $this->assertNotNull($tableSchema);
         $column = $tableSchema->getColumn('user_timezone');
         $this->assertNotNull($column);
-        $this->assertFalse($column->getAllowNull());
+        $this->assertFalse($column->isAllowNull());
         $this->assertEquals('numeric', $column->getDbType());
         $this->assertEquals(0, $column->getDefaultValue());
     }
