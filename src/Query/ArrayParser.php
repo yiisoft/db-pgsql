@@ -18,7 +18,7 @@ class ArrayParser
      *
      * @return array|null
      */
-    public function parse(string $value): ?array
+    public function parse(?string $value): ?array
     {
         if ($value === null) {
             return null;

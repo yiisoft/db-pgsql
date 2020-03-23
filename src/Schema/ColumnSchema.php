@@ -87,11 +87,11 @@ class ColumnSchema extends AbstractColumnSchema
     /**
      * Casts $value after retrieving from the DBMS to PHP representation.
      *
-     * @param string|null $value
+     * @param string|int|null $value
      *
      * @return bool|mixed|null
      */
-    protected function phpTypecastValue(?string $value)
+    protected function phpTypecastValue($value)
     {
         if ($value === null) {
             return null;
