@@ -287,12 +287,11 @@ SQL;
         $result = [];
 
         foreach ($indexes as $name => $index) {
-            $ic = new IndexConstraint();
-
-            $ic->name($name);
-            $ic->columnNames(ArrayHelper::getColumn($index, 'column_name'));
-            $ic->primary((bool) $index[0]['index_is_primary']);
-            $ic->unique((bool) $index[0]['index_is_unique']);
+            $ic = (new IndexConstraint())
+                ->name($name)
+                ->columnNames(ArrayHelper::getColumn($index, 'column_name'))
+                ->primary((bool) $index[0]['index_is_primary'])
+                ->unique((bool) $index[0]['index_is_unique']);
 
             $result[] = $ic;
         }
@@ -822,40 +821,40 @@ SQL;
             foreach ($names as $name => $constraint) {
                 switch ($type) {
                     case 'p':
-                        $ct = new Constraint();
-                        $ct->name($name);
-                        $ct->columnNames(ArrayHelper::getColumn($constraint, 'column_name'));
+                        $ct = (new Constraint())
+                            ->name($name)
+                            ->columnNames(ArrayHelper::getColumn($constraint, 'column_name'));
 
                         $result['primaryKey'] = $ct;
                         break;
                     case 'f':
-                        $fk = new ForeignKeyConstraint();
-                        $fk->name($name);
-                        $fk->columnNames(\array_values(
-                            \array_unique(ArrayHelper::getColumn($constraint, 'column_name'))
-                        ));
-                        $fk->foreignColumnNames($constraint[0]['foreign_table_schema']);
-                        $fk->foreignTableName($constraint[0]['foreign_table_name']);
-                        $fk->foreignColumnNames(\array_values(
-                            \array_unique(ArrayHelper::getColumn($constraint, 'foreign_column_name'))
-                        ));
-                        $fk->onDelete($actionTypes[$constraint[0]['on_delete']] ?? null);
-                        $fk->onUpdate($actionTypes[$constraint[0]['on_update']] ?? null);
+                        $fk = (new ForeignKeyConstraint())
+                            ->name($name)
+                            ->columnNames(\array_values(
+                                \array_unique(ArrayHelper::getColumn($constraint, 'column_name'))
+                            ))
+                            ->foreignColumnNames($constraint[0]['foreign_table_schema'])
+                            ->foreignTableName($constraint[0]['foreign_table_name'])
+                            ->foreignColumnNames(\array_values(
+                                \array_unique(ArrayHelper::getColumn($constraint, 'foreign_column_name'))
+                            ))
+                            ->onDelete($actionTypes[$constraint[0]['on_delete']] ?? null)
+                            ->onUpdate($actionTypes[$constraint[0]['on_update']] ?? null);
 
                         $result['foreignKeys'][] = $fk;
                         break;
                     case 'u':
-                        $ct = new Constraint();
-                        $ct->name($name);
-                        $ct->columnNames(ArrayHelper::getColumn($constraint, 'column_name'));
+                        $ct = (new Constraint())
+                            ->name($name)
+                            ->columnNames(ArrayHelper::getColumn($constraint, 'column_name'));
 
                         $result['uniques'][] = $ct;
                         break;
                     case 'c':
-                        $ck = new CheckConstraint();
-                        $ck->name($name);
-                        $ck->columnNames(ArrayHelper::getColumn($constraint, 'column_name'));
-                        $ck->expression($constraint[0]['check_expr']);
+                        $ck = (new CheckConstraint())
+                            ->name($name)
+                            ->columnNames(ArrayHelper::getColumn($constraint, 'column_name'))
+                            ->expression($constraint[0]['check_expr']);
 
                         $result['checks'][] = $ck;
                         break;
