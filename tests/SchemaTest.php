@@ -316,7 +316,7 @@ class SchemaTest extends AbstractSchemaTest
     {
         $result = parent::constraintsProvider();
 
-        $result['1: check'][2][0]->setExpression('CHECK ((("C_check")::text <> \'\'::text))');
+        $result['1: check'][2][0]->expression('CHECK ((("C_check")::text <> \'\'::text))');
         //$result['3: foreign key'][2][0]->setForeignSchemaName('public');
         $result['3: index'][2] = [];
 
