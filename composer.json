@@ -25,8 +25,8 @@
         "yiisoft/strings": "^3.0@dev"
     },
     "require-dev": {
-        "yiisoft/composer-config-plugin": "^1.0@dev",
         "phpunit/phpunit": "^9.0",
+        "yiisoft/composer-config-plugin": "^1.0@dev",
         "yiisoft/aliases": "^3.0@dev",
         "yiisoft/cache": "^3.0@dev",
         "yiisoft/di": "^3.0@dev",
