@@ -9,7 +9,16 @@ env:
 jobs:
   build:
     runs-on: ubuntu-latest
-
+    services:
+      postgres:
+        image: postgres:9.6
+        env:
+          POSTGRES_USER: root
+          POSTGRES_PASSWORD: root
+          POSTGRES_DB: yiitest
+        ports:
+          - 5432:5432
+        options: --name=postgres --health-cmd="pg_isready" --health-interval=10s --health-timeout=5s --health-retries=3
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -19,13 +28,6 @@ jobs:
           php-version: 7.4
           extensions: apc, curl, mbstring, dom, intl, pgsql, pdo, imagick
           ini-values: date.timezone='UTC'
-      - name: Install Postgres
-        uses: harmon758/postgresql-action@v1
-        with:
-          postgresql version: 9.6
-          postgresql db: yiitest
-          postgresql user: root
-          postgresql password: root
       - name: Get composer cache directory
         id: composer-cache
         run: echo "::set-output name=dir::$(composer config cache-files-dir)"
