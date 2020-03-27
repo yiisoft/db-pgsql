@@ -43,9 +43,7 @@ class ColumnSchema extends AbstractColumnSchema
         }
 
         if ($this->dimension > 0) {
-            return $this->disableArraySupport
-                ? (string) $value
-                : new ArrayExpression($value, $this->getDbType(), $this->dimension);
+            return new ArrayExpression($value, $this->getDbType(), $this->dimension);
         }
 
         if (\in_array($this->getDbType(), [Schema::TYPE_JSON, Schema::TYPE_JSONB], true)) {
