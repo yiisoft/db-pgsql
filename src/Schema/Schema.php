@@ -377,7 +377,7 @@ SQL;
             . $table->getName() : $table->getName());
     }
 
-    protected function findViewNames(string $schema = '')
+    protected function findViewNames(string $schema = ''): array
     {
         if ($schema === '') {
             $schema = $this->defaultSchema;
