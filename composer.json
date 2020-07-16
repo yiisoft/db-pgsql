@@ -22,6 +22,7 @@
         "ext-json": "*",
         "yiisoft/arrays": "^3.0@dev",
         "yiisoft/db": "^3.0@dev",
+        "yiisoft/json": "^3.0@dev",
         "yiisoft/strings": "^3.0@dev"
     },
     "require-dev": {
@@ -30,7 +31,6 @@
         "yiisoft/aliases": "^1.0",
         "yiisoft/cache": "^3.0@dev",
         "yiisoft/di": "^3.0@dev",
-        "yiisoft/json": "^3.0@dev",
         "yiisoft/log": "^3.0@dev",
         "yiisoft/log-target-file": "^3.0@dev"
     },
