@@ -223,9 +223,9 @@ class SchemaTest extends AbstractSchemaTest
             $this->markTestSkipped('PostgreSQL < 12.0 does not support GENERATED AS IDENTITY columns.');
         }
 
-        $config = $this->database;
-        unset($config['fixture']);
-        $this->prepareDatabase($config, \realpath(__DIR__ . '/../../../data') . '/postgres12.sql');
+        $this->databases['fixture'] = '@fixture/postgres12.sql';
+
+        $this->prepareDatabase(true, true, $this->databases);
 
         $table = $this->getConnection(false)->getSchema()->getTableSchema('generated');
         $this->assertTrue($table->getColumn('id_always')->getAutoIncrement());
@@ -240,9 +240,9 @@ class SchemaTest extends AbstractSchemaTest
             $this->markTestSkipped('PostgreSQL < 10.0 does not support PARTITION BY clause.');
         }
 
-        $config = $this->database;
-        unset($config['fixture']);
-        $this->prepareDatabase($config, realpath(__DIR__ . '/../../../data') . '/postgres10.sql');
+        $this->databases['fixture'] = '@fixture/postgres10.sql';
+
+        $this->prepareDatabase(true, true, $this->databases);
 
         $this->assertNotNull($this->getConnection(false)->getSchema()->getTableSchema('partitioned'));
     }

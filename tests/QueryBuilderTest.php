@@ -270,9 +270,9 @@ class QueryBuilderTest extends AbstractQueryBuilderTest
             $this->markTestSkipped('PostgreSQL < 12.0 does not support GENERATED AS IDENTITY columns.');
         }
 
-        $config = $this->database;
-        unset($config['fixture']);
-        $this->prepareDatabase($config, \realpath(__DIR__ . '/../../../data') . '/postgres12.sql');
+        $this->databases['fixture'] = '@fixture/postgres12.sql';
+
+        $this->prepareDatabase(true, true, $this->databases);
 
         $qb = $this->getQueryBuilder(false);
 
