@@ -223,7 +223,7 @@ class SchemaTest extends AbstractSchemaTest
             $this->markTestSkipped('PostgreSQL < 12.0 does not support GENERATED AS IDENTITY columns.');
         }
 
-        $this->databases['fixture'] = '@fixture/postgres12.sql';
+        $this->databases['fixture'] = '@data/postgres12.sql';
 
         $this->prepareDatabase(true, true, $this->databases);
 
@@ -240,7 +240,7 @@ class SchemaTest extends AbstractSchemaTest
             $this->markTestSkipped('PostgreSQL < 10.0 does not support PARTITION BY clause.');
         }
 
-        $this->databases['fixture'] = '@fixture/postgres10.sql';
+        $this->databases['fixture'] = '@data/postgres10.sql';
 
         $this->prepareDatabase(true, true, $this->databases);
 
