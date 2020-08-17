@@ -662,19 +662,16 @@ SQL;
                     $column->defaultValue(new Expression($column->getDefaultValue()));
                 } elseif ($column->getType() === 'boolean') {
                     $column->defaultValue(($column->getDefaultValue() === 'true'));
-                } elseif (
-                    preg_match("/^B'(.*?)'::/", $column->getDefaultValue(), $matches) &&
-                    preg_match("#^'(\d+)'::\"bit\"$#", $matches[1], $value)
-                ) {
-                    $column->defaultValue(bindec($value[1]));
+                } elseif (preg_match("/^B'(.*?)'::/", $column->getDefaultValue(), $matches)) {
+                    $column->defaultValue(bindec($matches[1]));
                 } elseif (
                     (
                         strncasecmp($column->getDbType(), 'bit', 3) === 0 ||
                         strncasecmp($column->getDbType(), 'varbit', 6) === 0
                     ) &&
-                    preg_match("#^'(\d+)'::\"bit\"$#", $column->getDefaultValue(), $value)
+                    preg_match("#^'(\d+)'::\"bit\"$#", $column->getDefaultValue(), $matches)
                 ) {
-                    $column->defaultValue(bindec($value[1]));
+                    $column->defaultValue(bindec($matches[1]));
                 } elseif (\preg_match("/^'(.*?)'::/", $column->getDefaultValue(), $matches)) {
                     $column->defaultValue($column->phpTypecast($matches[1]));
                 } elseif (\preg_match('/^(\()?(.*?)(?(1)\))(?:::.+)?$/', $column->getDefaultValue(), $matches)) {
