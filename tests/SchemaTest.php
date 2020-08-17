@@ -233,10 +233,10 @@ class SchemaTest extends AbstractSchemaTest
         $this->prepareDatabase(true, true, $this->databases);
 
         $table = $this->getConnection(false)->getSchema()->getTableSchema('generated');
-        $this->assertTrue($table->getColumn('id_always')->getAutoIncrement());
-        $this->assertTrue($table->getColumn('id_primary')->getAutoIncrement());
-        $this->assertTrue($table->getColumn('id_primary')->getAutoIncrement());
-        $this->assertTrue($table->getColumn('id_default')->getAutoIncrement());
+        $this->assertTrue($table->getColumn('id_always')->isAutoIncrement());
+        $this->assertTrue($table->getColumn('id_primary')->isAutoIncrement());
+        $this->assertTrue($table->getColumn('id_primary')->isAutoIncrement());
+        $this->assertTrue($table->getColumn('id_default')->isAutoIncrement());
     }
 
     public function testPartitionedTable()
