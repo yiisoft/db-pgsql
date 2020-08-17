@@ -558,8 +558,9 @@ SQL;
         $schemaName = $this->getDb()->quoteValue($table->getSchemaName());
 
         $orIdentity = '';
-        if (\version_compare($this->getDb()->getServerVersion(), '12.0', '>=')) {
-            $orIdentity = 'OR attidentity != \'\'';
+
+        if (version_compare($this->getDb()->getServerVersion(), '12.0', '>=')) {
+            $orIdentity = 'OR a.attidentity != \'\'';
         }
 
         $sql = <<<SQL
@@ -624,31 +625,56 @@ WHERE
 ORDER BY
     a.attnum;
 SQL;
+
         $columns = $this->getDb()->createCommand($sql)->queryAll();
+
         if (empty($columns)) {
             return false;
         }
+
         foreach ($columns as $column) {
             if ($this->getDb()->getSlavePdo()->getAttribute(\PDO::ATTR_CASE) === \PDO::CASE_UPPER) {
-                $column = \array_change_key_case($column, CASE_LOWER);
+                $column = array_change_key_case($column, CASE_LOWER);
             }
+
             $column = $this->loadColumnSchema($column);
             $table->columns($column->getName(), $column);
+
             if ($column->isPrimaryKey()) {
                 $table->primaryKey($column->getName());
+
                 if ($table->getSequenceName() === null) {
                     $table->sequenceName($column->getSequenceName());
                 }
+
                 $column->defaultValue(null);
             } elseif ($column->getDefaultValue()) {
-                if ($column->getType() === 'timestamp' && $column->getDefaultValue() === 'now()') {
+                if (
+                    in_array(
+                        $column->getType(),
+                        [self::TYPE_TIMESTAMP, self::TYPE_DATE, self::TYPE_TIME]
+                    ) &&
+                    in_array(
+                        $column->getDefaultValue(),
+                        ['now()', 'CURRENT_TIMESTAMP', 'CURRENT_DATE', 'CURRENT_TIME']
+                    )
+                ) {
                     $column->defaultValue(new Expression($column->getDefaultValue()));
                 } elseif ($column->getType() === 'boolean') {
                     $column->defaultValue(($column->getDefaultValue() === 'true'));
-                } elseif (\preg_match("/^B'(.*?)'::/", $column->getDefaultValue(), $matches)) {
-                    $column->defaultValue(\bindec($matches[1]));
-                } elseif (\strncasecmp($column->getDbType(), 'bit', 3) === 0 || \strncasecmp($column->getDbType(), 'varbit', 6) === 0) {
-                    $column->defaultValue(\bindec(\trim($column->getDefaultValue(), 'B\'')));
+                } elseif (
+                    preg_match("/^B'(.*?)'::/", $column->getDefaultValue(), $matches)
+                ) {
+                    $value = preg_replace('/[^0-9]/', '', $column->getDefaultValue());
+                    $column->defaultValue(bindec($value));
+                } elseif (
+                    (
+                        strncasecmp($column->getDbType(), 'bit', 3) === 0 ||
+                        strncasecmp($column->getDbType(), 'varbit', 6) === 0
+                    )
+                ) {
+                    $value = preg_replace('/[^0-9]/', '', $column->getDefaultValue());
+                    $column->defaultValue(bindec($value));
                 } elseif (\preg_match("/^'(.*?)'::/", $column->getDefaultValue(), $matches)) {
                     $column->defaultValue($column->phpTypecast($matches[1]));
                 } elseif (\preg_match('/^(\()?(.*?)(?(1)\))(?:::.+)?$/', $column->getDefaultValue(), $matches)) {

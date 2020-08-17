@@ -17,8 +17,11 @@ class SchemaTest extends AbstractSchemaTest
 
     public function getExpectedColumns()
     {
+        $version = $this->getConnection()->getPDO()->getAttribute(\PDO::ATTR_SERVER_VERSION);
         $columns = parent::getExpectedColumns();
+
         unset($columns['enum_col']);
+
         $columns['int_col']['dbType'] = 'int4';
         $columns['int_col']['size'] = null;
         $columns['int_col']['precision'] = 32;
@@ -66,7 +69,9 @@ class SchemaTest extends AbstractSchemaTest
         $columns['bool_col2']['precision'] = null;
         $columns['bool_col2']['scale'] = null;
         $columns['bool_col2']['defaultValue'] = true;
-        $columns['ts_default']['defaultValue'] = new Expression('now()');
+        if (version_compare($version, '10', '<')) {
+            $columns['ts_default']['defaultValue'] = new Expression('now()');
+        }
         $columns['bit_col']['dbType'] = 'bit';
         $columns['bit_col']['size'] = 8;
         $columns['bit_col']['precision'] = null;
