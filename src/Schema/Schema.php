@@ -665,16 +665,16 @@ SQL;
                 } elseif (
                     preg_match("/^B'(.*?)'::/", $column->getDefaultValue(), $matches)
                 ) {
-                    $value = preg_replace('/[^0-9]/', '', $column->getDefaultValue());
-                    $column->defaultValue(bindec($value));
+                    preg_match("#^'(\d+)'::\"bit\"$#", $column->getDefaultValue(), $value);
+                    $column->defaultValue(bindec($value[1]));
                 } elseif (
                     (
                         strncasecmp($column->getDbType(), 'bit', 3) === 0 ||
                         strncasecmp($column->getDbType(), 'varbit', 6) === 0
                     )
                 ) {
-                    $value = preg_replace('/[^0-9]/', '', $column->getDefaultValue());
-                    $column->defaultValue(bindec($value));
+                    preg_match("#^'(\d+)'::\"bit\"$#", $column->getDefaultValue(), $value);
+                    $column->defaultValue(bindec($value[1]));
                 } elseif (\preg_match("/^'(.*?)'::/", $column->getDefaultValue(), $matches)) {
                     $column->defaultValue($column->phpTypecast($matches[1]));
                 } elseif (\preg_match('/^(\()?(.*?)(?(1)\))(?:::.+)?$/', $column->getDefaultValue(), $matches)) {
