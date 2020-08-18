@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Yiisoft\Db\Pgsql\Expression;
 
+use Traversable;
 use Yiisoft\Db\Exception\Exception;
 use Yiisoft\Db\Exception\InvalidArgumentException;
 use Yiisoft\Db\Exception\InvalidConfigException;
@@ -15,6 +16,12 @@ use Yiisoft\Db\Expression\ExpressionInterface;
 use Yiisoft\Db\Expression\JsonExpression;
 use Yiisoft\Db\Pgsql\Schema\Schema;
 use Yiisoft\Db\Query\Query;
+
+use function get_class;
+use function implode;
+use function in_array;
+use function is_array;
+use function str_repeat;
 
 class ArrayExpressionBuilder implements ExpressionBuilderInterface
 {
@@ -47,7 +54,7 @@ class ArrayExpressionBuilder implements ExpressionBuilderInterface
 
         $placeholders = $this->buildPlaceholders($expression, $params);
 
-        return 'ARRAY[' . \implode(', ', $placeholders) . ']' . $this->getTypehint($expression);
+        return 'ARRAY[' . implode(', ', $placeholders) . ']' . $this->getTypehint($expression);
     }
 
     /**
@@ -68,7 +75,7 @@ class ArrayExpressionBuilder implements ExpressionBuilderInterface
         $value = $expression->getValue();
 
         $placeholders = [];
-        if ($value === null || (!\is_array($value) && !$value instanceof \Traversable)) {
+        if ($value === null || (!is_array($value) && !$value instanceof Traversable)) {
             return $placeholders;
         }
 
@@ -87,6 +94,7 @@ class ArrayExpressionBuilder implements ExpressionBuilderInterface
             }
 
             $item = $this->typecastValue($expression, $item);
+
             if ($item instanceof ExpressionInterface) {
                 $placeholders[] = $this->queryBuilder->buildExpression($item, $params);
                 continue;
@@ -100,34 +108,34 @@ class ArrayExpressionBuilder implements ExpressionBuilderInterface
 
     private function unnestArrayExpression(ArrayExpression $expression, $value): ArrayExpression
     {
-        $expressionClass = \get_class($expression);
+        $expressionClass = get_class($expression);
 
         return new $expressionClass($value, $expression->getType(), $expression->getDimension() - 1);
     }
 
-    protected function getTypehint(ArrayExpression $expression): string
+    protected function getTypeHint(ArrayExpression $expression): string
     {
         if ($expression->getType() === null) {
             return '';
         }
 
         $result = '::' . $expression->getType();
-        $result .= \str_repeat('[]', $expression->getDimension());
+        $result .= str_repeat('[]', $expression->getDimension());
 
         return $result;
     }
 
     /**
-     * Build an array expression from a subquery SQL.
+     * Build an array expression from a subQuery SQL.
      *
-     * @param string $sql the subquery SQL.
+     * @param string $sql the subQuery SQL.
      * @param ArrayExpression $expression
      *
-     * @return string the subquery array expression.
+     * @return string the subQuery array expression.
      */
-    protected function buildSubqueryArray(string $sql, ArrayExpression $expression): string
+    protected function buildSubQueryArray(string $sql, ArrayExpression $expression): string
     {
-        return 'ARRAY(' . $sql . ')' . $this->getTypehint($expression);
+        return 'ARRAY(' . $sql . ')' . $this->getTypeHint($expression);
     }
 
     /**
@@ -144,7 +152,7 @@ class ArrayExpressionBuilder implements ExpressionBuilderInterface
             return $value;
         }
 
-        if (\in_array($expression->getType(), [Schema::TYPE_JSON, Schema::TYPE_JSONB], true)) {
+        if (in_array($expression->getType(), [Schema::TYPE_JSON, Schema::TYPE_JSONB], true)) {
             return new JsonExpression($value);
         }
 

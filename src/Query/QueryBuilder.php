@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Yiisoft\Db\Pgsql\Query;
 
+use PDO;
 use Yiisoft\Db\Constraint\Constraint;
 use Yiisoft\Db\Exception\Exception;
 use Yiisoft\Db\Exception\InvalidArgumentException;
@@ -21,6 +22,21 @@ use Yiisoft\Db\Query\Conditions\LikeCondition;
 use Yiisoft\Db\Query\Query;
 use Yiisoft\Db\Query\QueryBuilder as AbstractQueryBuilder;
 use Yiisoft\Strings\StringHelper;
+
+use function array_diff;
+use function array_merge;
+use function array_unshift;
+use function count;
+use function explode;
+use function implode;
+use function is_bool;
+use function is_float;
+use function is_string;
+use function preg_match;
+use function preg_replace;
+use function reset;
+use function strpos;
+use function version_compare;
 
 class QueryBuilder extends AbstractQueryBuilder
 {
@@ -87,7 +103,7 @@ class QueryBuilder extends AbstractQueryBuilder
      */
     protected function defaultConditionClasses(): array
     {
-        return \array_merge(parent::defaultConditionClasses(), [
+        return array_merge(parent::defaultConditionClasses(), [
             'ILIKE' => LikeCondition::class,
             'NOT ILIKE' => LikeCondition::class,
             'OR ILIKE' => LikeCondition::class,
@@ -105,7 +121,7 @@ class QueryBuilder extends AbstractQueryBuilder
      */
     protected function defaultExpressionBuilders(): array
     {
-        return \array_merge(parent::defaultExpressionBuilders(), [
+        return array_merge(parent::defaultExpressionBuilders(), [
             ArrayExpression::class => ArrayExpressionBuilder::class,
             JsonExpression::class => JsonExpressionBuilder::class,
         ]);
@@ -165,17 +181,17 @@ class QueryBuilder extends AbstractQueryBuilder
      */
     public function dropIndex(string $name, string $table): string
     {
-        if (\strpos($table, '.') !== false && \strpos($name, '.') === false) {
-            if (\strpos($table, '{{') !== false) {
-                $table = \preg_replace('/\\{\\{(.*?)\\}\\}/', '\1', $table);
-                [$schema, $table] = \explode('.', $table);
-                if (\strpos($schema, '%') === false) {
+        if (strpos($table, '.') !== false && strpos($name, '.') === false) {
+            if (strpos($table, '{{') !== false) {
+                $table = preg_replace('/\\{\\{(.*?)\\}\\}/', '\1', $table);
+                [$schema, $table] = explode('.', $table);
+                if (strpos($schema, '%') === false) {
                     $name = $schema . '.' . $name;
                 } else {
                     $name = '{{' . $schema . '.' . $name . '}}';
                 }
             } else {
-                [$schema] = \explode('.', $table);
+                [$schema] = explode('.', $table);
                 $name = $schema . '.' . $name;
             }
         }
@@ -204,8 +220,8 @@ class QueryBuilder extends AbstractQueryBuilder
     /**
      * Creates a SQL statement for resetting the sequence value of a table's primary key.
      *
-     * The sequence will be reset such that the primary key of the next new row inserted will have the specified
-     * value or 1.
+     * The sequence will be reset such that the primary key of the next new row inserted will have the specified value
+     * or 1.
      *
      * @param string $tableName the name of the table whose primary key sequence will be reset.
      * @param mixed $value the value for the primary key of the next new row inserted. If this is not set, the next new
@@ -227,7 +243,7 @@ class QueryBuilder extends AbstractQueryBuilder
             $tableName = $this->db->quoteTableName($tableName);
             if ($value === null) {
                 $pk = $table->getPrimaryKey();
-                $key = $this->db->quoteColumnName(\reset($pk));
+                $key = $this->db->quoteColumnName(reset($pk));
                 $value = "(SELECT COALESCE(MAX({$key}),0) FROM {$tableName})+1";
             } else {
                 $value = (int) $value;
@@ -262,7 +278,7 @@ class QueryBuilder extends AbstractQueryBuilder
         $schema = $schema ?: $this->db->getSchema()->getDefaultSchema();
         $tableNames = $table ? [$table] : $this->db->getSchema()->getTableNames($schema);
         $viewNames = $this->db->getSchema()->getViewNames($schema);
-        $tableNames = \array_diff($tableNames, $viewNames);
+        $tableNames = array_diff($tableNames, $viewNames);
         $command = '';
 
         foreach ($tableNames as $tableName) {
@@ -271,7 +287,7 @@ class QueryBuilder extends AbstractQueryBuilder
         }
 
         /** enable to have ability to alter several tables */
-        $this->db->getMasterPdo()->setAttribute(\PDO::ATTR_EMULATE_PREPARES, true);
+        $this->db->getMasterPdo()->setAttribute(PDO::ATTR_EMULATE_PREPARES, true);
 
         return $command;
     }
@@ -320,47 +336,48 @@ class QueryBuilder extends AbstractQueryBuilder
          * {@see https://github.com/yiisoft/yii2/issues/4492}
          * {@see http://www.postgresql.org/docs/9.1/static/sql-altertable.html}
          */
-        if (\preg_match('/^(DROP|SET|RESET)\s+/i', (string) $type)) {
+        if (preg_match('/^(DROP|SET|RESET)\s+/i', (string) $type)) {
             return "ALTER TABLE {$tableName} ALTER COLUMN {$columnName} {$type}";
         }
 
         $type = 'TYPE ' . $this->getColumnType($type);
-
         $multiAlterStatement = [];
-        $constraintPrefix = \preg_replace('/[^a-z0-9_]/i', '', $table . '_' . $column);
+        $constraintPrefix = preg_replace('/[^a-z0-9_]/i', '', $table . '_' . $column);
 
-        if (\preg_match('/\s+DEFAULT\s+(["\']?\w*["\']?)/i', $type, $matches)) {
-            $type = \preg_replace('/\s+DEFAULT\s+(["\']?\w*["\']?)/i', '', $type);
+        if (preg_match('/\s+DEFAULT\s+(["\']?\w*["\']?)/i', $type, $matches)) {
+            $type = preg_replace('/\s+DEFAULT\s+(["\']?\w*["\']?)/i', '', $type);
             $multiAlterStatement[] = "ALTER COLUMN {$columnName} SET DEFAULT {$matches[1]}";
         } else {
             /** safe to drop default even if there was none in the first place */
             $multiAlterStatement[] = "ALTER COLUMN {$columnName} DROP DEFAULT";
         }
 
-        $type = \preg_replace('/\s+NOT\s+NULL/i', '', $type, -1, $count);
+        $type = preg_replace('/\s+NOT\s+NULL/i', '', $type, -1, $count);
+
         if ($count) {
             $multiAlterStatement[] = "ALTER COLUMN {$columnName} SET NOT NULL";
         } else {
             /** remove additional null if any */
-            $type = \preg_replace('/\s+NULL/i', '', $type);
+            $type = preg_replace('/\s+NULL/i', '', $type);
             /** safe to drop not null even if there was none in the first place */
             $multiAlterStatement[] = "ALTER COLUMN {$columnName} DROP NOT NULL";
         }
 
-        if (\preg_match('/\s+CHECK\s+\((.+)\)/i', $type, $matches)) {
-            $type = \preg_replace('/\s+CHECK\s+\((.+)\)/i', '', $type);
+        if (preg_match('/\s+CHECK\s+\((.+)\)/i', $type, $matches)) {
+            $type = preg_replace('/\s+CHECK\s+\((.+)\)/i', '', $type);
             $multiAlterStatement[] = "ADD CONSTRAINT {$constraintPrefix}_check CHECK ({$matches[1]})";
         }
 
-        $type = \preg_replace('/\s+UNIQUE/i', '', $type, -1, $count);
+        $type = preg_replace('/\s+UNIQUE/i', '', $type, -1, $count);
+
         if ($count) {
             $multiAlterStatement[] = "ADD UNIQUE ({$columnName})";
         }
 
         /** add what's left at the beginning */
-        \array_unshift($multiAlterStatement, "ALTER COLUMN {$columnName} {$type}");
+        array_unshift($multiAlterStatement, "ALTER COLUMN {$columnName} {$type}");
 
-        return 'ALTER TABLE ' . $tableName . ' ' . \implode(', ', $multiAlterStatement);
+        return 'ALTER TABLE ' . $tableName . ' ' . implode(', ', $multiAlterStatement);
     }
 
     /**
@@ -436,10 +453,10 @@ class QueryBuilder extends AbstractQueryBuilder
     {
         $insertColumns = $this->normalizeTableRowData($table, $insertColumns);
 
-        if (!\is_bool($updateColumns)) {
+        if (!is_bool($updateColumns)) {
             $updateColumns = $this->normalizeTableRowData($table, $updateColumns);
         }
-        if (\version_compare($this->db->getServerVersion(), '9.5', '<')) {
+        if (version_compare($this->db->getServerVersion(), '9.5', '<')) {
             return $this->oldUpsert($table, $insertColumns, $updateColumns, $params);
         }
 
@@ -447,7 +464,7 @@ class QueryBuilder extends AbstractQueryBuilder
     }
 
     /**
-     * {@see upsert()} implementation for PostgreSQL 9.5 or higher.
+     * {@see upsert()} implementation for Postgres SQL 9.5 or higher.
      *
      * @param string $table
      * @param array|Query $insertColumns
@@ -489,11 +506,11 @@ class QueryBuilder extends AbstractQueryBuilder
         [$updates, $params] = $this->prepareUpdateSets($table, $updateColumns, $params);
 
         return $insertSql . ' ON CONFLICT (' . implode(', ', $uniqueNames) . ') DO UPDATE SET '
-            . \implode(', ', $updates);
+            . implode(', ', $updates);
     }
 
     /**
-     * {@see upsert()} implementation for PostgreSQL older than 9.5.
+     * {@see upsert()} implementation for Postgres SQL older than 9.5.
      *
      * @param string $table
      * @param array|Query $insertColumns
@@ -538,7 +555,7 @@ class QueryBuilder extends AbstractQueryBuilder
                  * them all
                  */
                 if (isset($columnSchemas[$name])) {
-                    $phName = self::PARAM_PREFIX . \count($params);
+                    $phName = self::PARAM_PREFIX . count($params);
                     $params[$phName] = $value;
                     $insertColumns[$name] = new Expression("CAST($phName AS {$columnSchemas[$name]->getDbType()})");
                 }
@@ -562,8 +579,8 @@ class QueryBuilder extends AbstractQueryBuilder
             $insertCondition[] = $constraintInsertCondition;
         }
 
-        $withSql = 'WITH "EXCLUDED" (' . \implode(', ', $insertNames) . ') AS ('
-            . (!empty($placeholders) ? 'VALUES (' . \implode(', ', $placeholders) . ')' : ltrim($values, ' ')) . ')';
+        $withSql = 'WITH "EXCLUDED" (' . implode(', ', $insertNames) . ') AS ('
+            . (!empty($placeholders) ? 'VALUES (' . implode(', ', $placeholders) . ')' : ltrim($values, ' ')) . ')';
 
         if ($updateColumns === false) {
             $selectSubQuery = (new Query())
@@ -592,7 +609,7 @@ class QueryBuilder extends AbstractQueryBuilder
 
         [$updates, $params] = $this->prepareUpdateSets($table, $updateColumns, $params);
 
-        $updateSql = 'UPDATE ' . $this->db->quoteTableName($table) . ' SET ' . \implode(', ', $updates)
+        $updateSql = 'UPDATE ' . $this->db->quoteTableName($table) . ' SET ' . implode(', ', $updates)
             . ' FROM "EXCLUDED" ' . $this->buildWhere($updateCondition, $params)
             . ' RETURNING ' . $this->db->quoteTableName($table) . '.*';
 
@@ -665,9 +682,13 @@ class QueryBuilder extends AbstractQueryBuilder
         if (($tableSchema = $this->db->getSchema()->getTableSchema($table)) !== null) {
             $columnSchemas = $tableSchema->getColumns();
             foreach ($columns as $name => $value) {
-                if (isset($columnSchemas[$name]) && $columnSchemas[$name]->getType() === Schema::TYPE_BINARY && \is_string($value)) {
+                if (
+                    isset($columnSchemas[$name]) &&
+                    $columnSchemas[$name]->getType() === Schema::TYPE_BINARY &&
+                    is_string($value)
+                ) {
                     /** explicitly setup PDO param type for binary column */
-                    $columns[$name] = new PdoValue($value, \PDO::PARAM_LOB);
+                    $columns[$name] = new PdoValue($value, PDO::PARAM_LOB);
                 }
             }
         }
@@ -724,9 +745,9 @@ class QueryBuilder extends AbstractQueryBuilder
                 if (isset($columns[$i], $columnSchemas[$columns[$i]])) {
                     $value = $columnSchemas[$columns[$i]]->dbTypecast($value);
                 }
-                if (\is_string($value)) {
+                if (is_string($value)) {
                     $value = $schema->quoteValue($value);
-                } elseif (\is_float($value)) {
+                } elseif (is_float($value)) {
                     // ensure type cast always has . as decimal separator in all locales
                     $value = StringHelper::floatToString($value);
                 } elseif ($value === true) {
@@ -740,7 +761,7 @@ class QueryBuilder extends AbstractQueryBuilder
                 }
                 $vs[] = $value;
             }
-            $values[] = '(' . \implode(', ', $vs) . ')';
+            $values[] = '(' . implode(', ', $vs) . ')';
         }
 
         if (empty($values)) {
@@ -752,6 +773,6 @@ class QueryBuilder extends AbstractQueryBuilder
         }
 
         return 'INSERT INTO ' . $schema->quoteTableName($table)
-            . ' (' . \implode(', ', $columns) . ') VALUES ' . \implode(', ', $values);
+            . ' (' . implode(', ', $columns) . ') VALUES ' . implode(', ', $values);
     }
 }

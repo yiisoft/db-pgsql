@@ -24,10 +24,11 @@ jobs:
           - "8.0"
 
         pgsql-version:
-          - "9.6"
-          - "10.14"
-          - "11.9"
-          - "latest"
+          - "9"
+          - "10"
+          - "11"
+          - "12"
+          - "13"
 
     services:
       postgres:
@@ -98,4 +99,4 @@ jobs:
         if: matrix.php-version == '7.4'
         run: |
           wget https://scrutinizer-ci.com/ocular.phar
-          php ocular.phar code-coverage:upload --format=php-clover coverage.clover1
+          php ocular.phar code-coverage:upload --format=php-clover coverage.clover
