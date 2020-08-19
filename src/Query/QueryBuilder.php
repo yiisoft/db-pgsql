@@ -464,7 +464,7 @@ class QueryBuilder extends AbstractQueryBuilder
     }
 
     /**
-     * {@see upsert()} implementation for Postgres SQL 9.5 or higher.
+     * {@see upsert()} implementation for PostgreSQL 9.5 or higher.
      *
      * @param string $table
      * @param array|Query $insertColumns
@@ -510,7 +510,7 @@ class QueryBuilder extends AbstractQueryBuilder
     }
 
     /**
-     * {@see upsert()} implementation for Postgres SQL older than 9.5.
+     * {@see upsert()} implementation for PostgreSQL older than 9.5.
      *
      * @param string $table
      * @param array|Query $insertColumns

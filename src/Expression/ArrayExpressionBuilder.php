@@ -126,14 +126,14 @@ class ArrayExpressionBuilder implements ExpressionBuilderInterface
     }
 
     /**
-     * Build an array expression from a subQuery SQL.
+     * Build an array expression from a subquery SQL.
      *
-     * @param string $sql the subQuery SQL.
+     * @param string $sql the subquery SQL.
      * @param ArrayExpression $expression
      *
-     * @return string the subQuery array expression.
+     * @return string the subquery array expression.
      */
-    protected function buildSubQueryArray(string $sql, ArrayExpression $expression): string
+    protected function buildSubqueryArray(string $sql, ArrayExpression $expression): string
     {
         return 'ARRAY(' . $sql . ')' . $this->getTypeHint($expression);
     }

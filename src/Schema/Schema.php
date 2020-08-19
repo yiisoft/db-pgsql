@@ -688,9 +688,7 @@ SQL;
                     $column->defaultValue(($column->getDefaultValue() === 'true'));
                 } elseif (preg_match("/^B'(.*?)'::/", $column->getDefaultValue(), $matches)) {
                     $column->defaultValue(bindec($matches[1]));
-                } elseif (
-                    preg_match("#^'(\d+)'::\"bit\"$#", $column->getDefaultValue(), $matches)
-                ) {
+                } elseif (preg_match("/^'(\d+)'::\"bit\"$/", $column->getDefaultValue(), $matches)) {
                     $column->defaultValue(bindec($matches[1]));
                 } elseif (preg_match("/^'(.*?)'::/", $column->getDefaultValue(), $matches)) {
                     $column->defaultValue($column->phpTypecast($matches[1]));
