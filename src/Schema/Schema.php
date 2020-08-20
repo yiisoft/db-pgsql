@@ -678,8 +678,8 @@ SQL;
                 if (
                     in_array($column->getType(), [self::TYPE_TIMESTAMP, self::TYPE_DATE, self::TYPE_TIME], true) &&
                     in_array(
-                        $column->getDefaultValue(),
-                        ['now()', 'CURRENT_TIMESTAMP', 'CURRENT_DATE', 'CURRENT_TIME'],
+                        strtoupper($column->getDefaultValue()),
+                        ['NOW()', 'CURRENT_TIMESTAMP', 'CURRENT_DATE', 'CURRENT_TIME'],
                         true
                     )
                 ) {
