@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Yiisoft\Db\Pgsql\Expression;
 
+use JsonException;
 use Yiisoft\Db\Exception\Exception;
 use Yiisoft\Db\Exception\InvalidArgumentException;
 use Yiisoft\Db\Exception\InvalidConfigException;
@@ -27,7 +28,7 @@ class JsonExpressionBuilder implements ExpressionBuilderInterface
      * @param array $params the binding parameters.
      *
      * @throws Exception
-     * @throws \JsonException
+     * @throws JsonException
      * @throws InvalidArgumentException
      * @throws InvalidConfigException
      * @throws NotSupportedException
@@ -42,6 +43,7 @@ class JsonExpressionBuilder implements ExpressionBuilderInterface
             [$sql, $params] = $this->queryBuilder->build($value, $params);
             return "($sql)" . $this->getTypecast($expression);
         }
+
         if ($value instanceof ArrayExpression) {
             $placeholder = 'array_to_json(' . $this->queryBuilder->buildExpression($value, $params) . ')';
         } else {

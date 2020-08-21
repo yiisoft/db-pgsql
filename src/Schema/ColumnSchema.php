@@ -10,6 +10,12 @@ use Yiisoft\Db\Expression\JsonExpression;
 use Yiisoft\Db\Pgsql\Query\ArrayParser;
 use Yiisoft\Db\Schema\ColumnSchema as AbstractColumnSchema;
 
+use function array_walk_recursive;
+use function is_array;
+use function is_string;
+use function json_decode;
+use function strtolower;
+
 class ColumnSchema extends AbstractColumnSchema
 {
     /**
@@ -65,11 +71,11 @@ class ColumnSchema extends AbstractColumnSchema
     public function phpTypecast($value)
     {
         if ($this->dimension > 0) {
-            if (!\is_array($value)) {
+            if (!is_array($value)) {
                 $value = $this->getArrayParser()->parse($value);
             }
-            if (\is_array($value)) {
-                \array_walk_recursive($value, function (&$val, $key) {
+            if (is_array($value)) {
+                array_walk_recursive($value, function (&$val) {
                     $val = $this->phpTypecastValue($val);
                 });
             } elseif ($value === null) {
@@ -97,7 +103,7 @@ class ColumnSchema extends AbstractColumnSchema
 
         switch ($this->getType()) {
             case Schema::TYPE_BOOLEAN:
-                $value = \is_string($value) ? \strtolower($value) : $value;
+                $value = is_string($value) ? strtolower($value) : $value;
 
                 switch ($value) {
                     case 't':
@@ -110,14 +116,14 @@ class ColumnSchema extends AbstractColumnSchema
 
                 return (bool) $value;
             case Schema::TYPE_JSON:
-                return \json_decode($value, true, 512, JSON_THROW_ON_ERROR);
+                return json_decode($value, true, 512, JSON_THROW_ON_ERROR);
         }
 
         return parent::phpTypecast($value);
     }
 
     /**
-     * Creates instance of ArrayParser
+     * Creates instance of ArrayParser.
      *
      * @return ArrayParser
      */
