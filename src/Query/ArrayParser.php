@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace Yiisoft\Db\Pgsql\Query;
 
+use function in_array;
+use function strlen;
+
 class ArrayParser
 {
     /**
@@ -32,17 +35,17 @@ class ArrayParser
     }
 
     /**
-     * Pares PgSQL array encoded in string
+     * Pares PgSQL array encoded in string.
      *
      * @param string $value
-     * @param int $i parse starting position
+     * @param int $i parse starting position.
      *
      * @return array
      */
     private function parseArray(string $value, int &$i = 0): array
     {
         $result = [];
-        $len = \strlen($value);
+        $len = strlen($value);
 
         for (++$i; $i < $len; ++$i) {
             switch ($value[$i]) {
@@ -55,7 +58,7 @@ class ArrayParser
                     if (empty($result)) { // `{}` case
                         $result[] = null;
                     }
-                    if (\in_array($value[$i + 1], [$this->delimiter, '}'], true)) { // `{,}` case
+                    if (in_array($value[$i + 1], [$this->delimiter, '}'], true)) { // `{,}` case
                         $result[] = null;
                     }
                     break;
@@ -68,10 +71,10 @@ class ArrayParser
     }
 
     /**
-     * Parses PgSQL encoded string
+     * Parses PgSQL encoded string.
      *
      * @param string $value
-     * @param int $i parse starting position
+     * @param int $i parse starting position.
      *
      * @return string|null
      */
@@ -80,12 +83,12 @@ class ArrayParser
         $isQuoted = $value[$i] === '"';
         $stringEndChars = $isQuoted ? ['"'] : [$this->delimiter, '}'];
         $result = '';
-        $len = \strlen($value);
+        $len = strlen($value);
 
         for ($i += $isQuoted ? 1 : 0; $i < $len; ++$i) {
-            if (\in_array($value[$i], ['\\', '"'], true) && \in_array($value[$i + 1], [$value[$i], '"'], true)) {
+            if (in_array($value[$i], ['\\', '"'], true) && in_array($value[$i + 1], [$value[$i], '"'], true)) {
                 ++$i;
-            } elseif (\in_array($value[$i], $stringEndChars, true)) {
+            } elseif (in_array($value[$i], $stringEndChars, true)) {
                 break;
             }
 

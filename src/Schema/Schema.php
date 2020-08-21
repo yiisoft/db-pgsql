@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Yiisoft\Db\Pgsql\Schema;
 
+use PDO;
 use Yiisoft\Arrays\ArrayHelper;
 use Yiisoft\Db\Constraint\CheckConstraint;
 use Yiisoft\Db\Constraint\Constraint;
@@ -20,6 +21,19 @@ use Yiisoft\Db\Expression\Expression;
 use Yiisoft\Db\Pgsql\Query\QueryBuilder;
 use Yiisoft\Db\Schema\Schema as AbstractSchema;
 use Yiisoft\Db\View\ViewFinderTrait;
+
+use function array_change_key_case;
+use function array_merge;
+use function array_unique;
+use function array_values;
+use function bindec;
+use function explode;
+use function implode;
+use function preg_match;
+use function preg_replace;
+use function str_replace;
+use function strncasecmp;
+use function substr;
 
 class Schema extends AbstractSchema implements ConstraintFinderInterface
 {
@@ -117,7 +131,7 @@ class Schema extends AbstractSchema implements ConstraintFinderInterface
     protected function resolveTableName(string $name): TableSchema
     {
         $resolvedName = new TableSchema();
-        $parts = \explode('.', \str_replace('"', '', $name));
+        $parts = explode('.', str_replace('"', '', $name));
 
         if (isset($parts[1])) {
             $resolvedName->schemaName($parts[0]);
@@ -126,8 +140,13 @@ class Schema extends AbstractSchema implements ConstraintFinderInterface
             $resolvedName->schemaName($this->defaultSchema);
             $resolvedName->name($name);
         }
-        $resolvedName->fullName(($resolvedName->getSchemaName() !== $this->defaultSchema ? $resolvedName->getSchemaName() . '.' : '')
-            . $resolvedName->getName());
+
+        $resolvedName->fullName(
+            (
+                $resolvedName->getSchemaName() !== $this->defaultSchema ? $resolvedName->getSchemaName() . '.' : ''
+            ) . $resolvedName->getName()
+        );
+
         return $resolvedName;
     }
 
@@ -363,7 +382,7 @@ SQL;
      */
     protected function resolveTableNames(TableSchema $table, string $name): void
     {
-        $parts = \explode('.', \str_replace('"', '', $name));
+        $parts = explode('.', str_replace('"', '', $name));
 
         if (isset($parts[1])) {
             $table->schemaName($parts[0]);
@@ -439,39 +458,43 @@ SQL;
         $constraints = [];
 
         foreach ($this->getDb()->createCommand($sql)->queryAll() as $constraint) {
-            if ($this->getDb()->getSlavePdo()->getAttribute(\PDO::ATTR_CASE) === \PDO::CASE_UPPER) {
-                $constraint = \array_change_key_case($constraint, CASE_LOWER);
+            if ($this->getDb()->getSlavePdo()->getAttribute(PDO::ATTR_CASE) === PDO::CASE_UPPER) {
+                $constraint = array_change_key_case($constraint, CASE_LOWER);
             }
+
             if ($constraint['foreign_table_schema'] !== $this->defaultSchema) {
                 $foreignTable = $constraint['foreign_table_schema'] . '.' . $constraint['foreign_table_name'];
             } else {
                 $foreignTable = $constraint['foreign_table_name'];
             }
+
             $name = $constraint['constraint_name'];
+
             if (!isset($constraints[$name])) {
                 $constraints[$name] = [
                     'tableName' => $foreignTable,
                     'columns' => [],
                 ];
             }
+
             $constraints[$name]['columns'][$constraint['column_name']] = $constraint['foreign_column_name'];
         }
 
         foreach ($constraints as $name => $constraint) {
-            $table->foreignKey($name, \array_merge([$constraint['tableName']], $constraint['columns']));
+            $table->foreignKey($name, array_merge([$constraint['tableName']], $constraint['columns']));
         }
     }
 
     /**
      * Gets information about given table unique indexes.
      *
-     * @param TableSchema $table the table metadata
+     * @param TableSchema $table the table metadata.
      *
      * @throws Exception
      * @throws InvalidArgumentException
      * @throws InvalidConfigException
      *
-     * @return array with index and column names
+     * @return array with index and column names.
      */
     protected function getUniqueIndexInformation(TableSchema $table): array
     {
@@ -522,18 +545,21 @@ SQL;
         $uniqueIndexes = [];
 
         foreach ($this->getUniqueIndexInformation($table) as $row) {
-            if ($this->getDb()->getSlavePdo()->getAttribute(\PDO::ATTR_CASE) === \PDO::CASE_UPPER) {
-                $row = \array_change_key_case($row, CASE_LOWER);
+            if ($this->getDb()->getSlavePdo()->getAttribute(PDO::ATTR_CASE) === PDO::CASE_UPPER) {
+                $row = array_change_key_case($row, CASE_LOWER);
             }
+
             $column = $row['columnname'];
+
             if (!empty($column) && $column[0] === '"') {
                 /**
                  * postgres will quote names that are not lowercase-only.
                  *
                  * {@see https://github.com/yiisoft/yii2/issues/10613}
                  */
-                $column = \substr($column, 1, -1);
+                $column = substr($column, 1, -1);
             }
+
             $uniqueIndexes[$row['indexname']][] = $column;
         }
 
@@ -543,14 +569,14 @@ SQL;
     /**
      * Collects the metadata of table columns.
      *
-     * @param TableSchema $table the table metadata
+     * @param TableSchema $table the table metadata.
      *
      * @throws Exception
      * @throws InvalidArgumentException
      * @throws InvalidConfigException
      * @throws NotSupportedException
      *
-     * @return bool whether the table exists in the database
+     * @return bool whether the table exists in the database.
      */
     protected function findColumns(TableSchema $table): bool
     {
@@ -558,8 +584,9 @@ SQL;
         $schemaName = $this->getDb()->quoteValue($table->getSchemaName());
 
         $orIdentity = '';
-        if (\version_compare($this->getDb()->getServerVersion(), '12.0', '>=')) {
-            $orIdentity = 'OR attidentity != \'\'';
+
+        if (version_compare($this->getDb()->getServerVersion(), '12.0', '>=')) {
+            $orIdentity = 'OR a.attidentity != \'\'';
         }
 
         $sql = <<<SQL
@@ -624,34 +651,48 @@ WHERE
 ORDER BY
     a.attnum;
 SQL;
+
         $columns = $this->getDb()->createCommand($sql)->queryAll();
+
         if (empty($columns)) {
             return false;
         }
+
         foreach ($columns as $column) {
-            if ($this->getDb()->getSlavePdo()->getAttribute(\PDO::ATTR_CASE) === \PDO::CASE_UPPER) {
-                $column = \array_change_key_case($column, CASE_LOWER);
+            if ($this->getDb()->getSlavePdo()->getAttribute(PDO::ATTR_CASE) === PDO::CASE_UPPER) {
+                $column = array_change_key_case($column, CASE_LOWER);
             }
+
             $column = $this->loadColumnSchema($column);
             $table->columns($column->getName(), $column);
+
             if ($column->isPrimaryKey()) {
                 $table->primaryKey($column->getName());
+
                 if ($table->getSequenceName() === null) {
                     $table->sequenceName($column->getSequenceName());
                 }
+
                 $column->defaultValue(null);
             } elseif ($column->getDefaultValue()) {
-                if ($column->getType() === 'timestamp' && $column->getDefaultValue() === 'now()') {
+                if (
+                    in_array($column->getType(), [self::TYPE_TIMESTAMP, self::TYPE_DATE, self::TYPE_TIME], true) &&
+                    in_array(
+                        strtoupper($column->getDefaultValue()),
+                        ['NOW()', 'CURRENT_TIMESTAMP', 'CURRENT_DATE', 'CURRENT_TIME'],
+                        true
+                    )
+                ) {
                     $column->defaultValue(new Expression($column->getDefaultValue()));
                 } elseif ($column->getType() === 'boolean') {
                     $column->defaultValue(($column->getDefaultValue() === 'true'));
-                } elseif (\preg_match("/^B'(.*?)'::/", $column->getDefaultValue(), $matches)) {
-                    $column->defaultValue(\bindec($matches[1]));
-                } elseif (\strncasecmp($column->getDbType(), 'bit', 3) === 0 || \strncasecmp($column->getDbType(), 'varbit', 6) === 0) {
-                    $column->defaultValue(\bindec(\trim($column->getDefaultValue(), 'B\'')));
-                } elseif (\preg_match("/^'(.*?)'::/", $column->getDefaultValue(), $matches)) {
+                } elseif (preg_match("/^B'(.*?)'::/", $column->getDefaultValue(), $matches)) {
+                    $column->defaultValue(bindec($matches[1]));
+                } elseif (preg_match("/^'(\d+)'::\"bit\"$/", $column->getDefaultValue(), $matches)) {
+                    $column->defaultValue(bindec($matches[1]));
+                } elseif (preg_match("/^'(.*?)'::/", $column->getDefaultValue(), $matches)) {
                     $column->defaultValue($column->phpTypecast($matches[1]));
-                } elseif (\preg_match('/^(\()?(.*?)(?(1)\))(?:::.+)?$/', $column->getDefaultValue(), $matches)) {
+                } elseif (preg_match('/^(\()?(.*?)(?(1)\))(?:::.+)?$/', $column->getDefaultValue(), $matches)) {
                     if ($matches[2] === 'NULL') {
                         $column->defaultValue(null);
                     } else {
@@ -669,9 +710,9 @@ SQL;
     /**
      * Loads the column information into a {@see ColumnSchema} object.
      *
-     * @param array $info column information
+     * @param array $info column information.
      *
-     * @return ColumnSchema the column schema object
+     * @return ColumnSchema the column schema object.
      */
     protected function loadColumnSchema(array $info): ColumnSchema
     {
@@ -683,7 +724,7 @@ SQL;
         $column->dbType($info['data_type']);
         $column->defaultValue($info['column_default']);
         $column->enumValues(($info['enum_values'] !== null)
-            ? \explode(',', \str_replace(["''"], ["'"], $info['enum_values'])) : null);
+            ? explode(',', str_replace(["''"], ["'"], $info['enum_values'])) : null);
         $column->unsigned(false); // has no meaning in PG
         $column->primaryKey((bool) $info['is_pkey']);
         $column->name($info['column_name']);
@@ -694,12 +735,15 @@ SQL;
 
         /**
          * pg_get_serial_sequence() doesn't track DEFAULT value change. GENERATED BY IDENTITY columns always have null
-         * default value
+         * default value.
          */
 
         $defaultValue = $column->getDefaultValue();
-        if (isset($defaultValue) && \preg_match("/nextval\\('\"?\\w+\"?\.?\"?\\w+\"?'(::regclass)?\\)/", $defaultValue) === 1) {
-            $column->sequenceName(\preg_replace(
+        if (
+            isset($defaultValue) &&
+            preg_match("/nextval\\('\"?\\w+\"?\.?\"?\\w+\"?'(::regclass)?\\)/", $defaultValue) === 1
+        ) {
+            $column->sequenceName(preg_replace(
                 ['/nextval/', '/::/', '/regclass/', '/\'\)/', '/\(\'/'],
                 '',
                 $defaultValue
@@ -713,6 +757,7 @@ SQL;
         } else {
             $column->type(self::TYPE_STRING);
         }
+
         $column->phpType($this->getColumnPhpType($column));
 
         return $column;
@@ -736,12 +781,13 @@ SQL;
         $params = [];
         $sql = $this->getDb()->getQueryBuilder()->insert($table, $columns, $params);
         $returnColumns = $this->getTableSchema($table)->getPrimaryKey();
+
         if (!empty($returnColumns)) {
             $returning = [];
             foreach ((array) $returnColumns as $name) {
                 $returning[] = $this->quoteColumnName($name);
             }
-            $sql .= ' RETURNING ' . \implode(', ', $returning);
+            $sql .= ' RETURNING ' . implode(', ', $returning);
         }
 
         $command = $this->getDb()->createCommand($sql, $params);
@@ -817,6 +863,7 @@ SQL;
             'uniques' => [],
             'checks' => [],
         ];
+
         foreach ($constraints as $type => $names) {
             foreach ($names as $name => $constraint) {
                 switch ($type) {
@@ -830,13 +877,13 @@ SQL;
                     case 'f':
                         $fk = (new ForeignKeyConstraint())
                             ->name($name)
-                            ->columnNames(\array_values(
-                                \array_unique(ArrayHelper::getColumn($constraint, 'column_name'))
+                            ->columnNames(array_values(
+                                array_unique(ArrayHelper::getColumn($constraint, 'column_name'))
                             ))
                             ->foreignColumnNames($constraint[0]['foreign_table_schema'])
                             ->foreignTableName($constraint[0]['foreign_table_name'])
-                            ->foreignColumnNames(\array_values(
-                                \array_unique(ArrayHelper::getColumn($constraint, 'foreign_column_name'))
+                            ->foreignColumnNames(array_values(
+                                array_unique(ArrayHelper::getColumn($constraint, 'foreign_column_name'))
                             ))
                             ->onDelete($actionTypes[$constraint[0]['on_delete']] ?? null)
                             ->onUpdate($actionTypes[$constraint[0]['on_update']] ?? null);

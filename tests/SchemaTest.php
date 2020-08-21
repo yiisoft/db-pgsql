@@ -17,8 +17,11 @@ class SchemaTest extends AbstractSchemaTest
 
     public function getExpectedColumns()
     {
+        $version = $this->getConnection()->getPDO()->getAttribute(\PDO::ATTR_SERVER_VERSION);
         $columns = parent::getExpectedColumns();
+
         unset($columns['enum_col']);
+
         $columns['int_col']['dbType'] = 'int4';
         $columns['int_col']['size'] = null;
         $columns['int_col']['precision'] = 32;
@@ -66,7 +69,9 @@ class SchemaTest extends AbstractSchemaTest
         $columns['bool_col2']['precision'] = null;
         $columns['bool_col2']['scale'] = null;
         $columns['bool_col2']['defaultValue'] = true;
-        $columns['ts_default']['defaultValue'] = new Expression('now()');
+        if (version_compare($version, '10', '<')) {
+            $columns['ts_default']['defaultValue'] = new Expression('now()');
+        }
         $columns['bit_col']['dbType'] = 'bit';
         $columns['bit_col']['size'] = 8;
         $columns['bit_col']['precision'] = null;
@@ -223,15 +228,15 @@ class SchemaTest extends AbstractSchemaTest
             $this->markTestSkipped('PostgreSQL < 12.0 does not support GENERATED AS IDENTITY columns.');
         }
 
-        $config = $this->database;
-        unset($config['fixture']);
-        $this->prepareDatabase($config, \realpath(__DIR__ . '/../../../data') . '/postgres12.sql');
+        $this->databases['fixture'] = '@data/postgres12.sql';
+
+        $this->prepareDatabase(true, true, $this->databases);
 
         $table = $this->getConnection(false)->getSchema()->getTableSchema('generated');
-        $this->assertTrue($table->getColumn('id_always')->getAutoIncrement());
-        $this->assertTrue($table->getColumn('id_primary')->getAutoIncrement());
-        $this->assertTrue($table->getColumn('id_primary')->getAutoIncrement());
-        $this->assertTrue($table->getColumn('id_default')->getAutoIncrement());
+        $this->assertTrue($table->getColumn('id_always')->isAutoIncrement());
+        $this->assertTrue($table->getColumn('id_primary')->isAutoIncrement());
+        $this->assertTrue($table->getColumn('id_primary')->isAutoIncrement());
+        $this->assertTrue($table->getColumn('id_default')->isAutoIncrement());
     }
 
     public function testPartitionedTable()
@@ -240,9 +245,9 @@ class SchemaTest extends AbstractSchemaTest
             $this->markTestSkipped('PostgreSQL < 10.0 does not support PARTITION BY clause.');
         }
 
-        $config = $this->database;
-        unset($config['fixture']);
-        $this->prepareDatabase($config, realpath(__DIR__ . '/../../../data') . '/postgres10.sql');
+        $this->databases['fixture'] = '@data/postgres10.sql';
+
+        $this->prepareDatabase(true, true, $this->databases);
 
         $this->assertNotNull($this->getConnection(false)->getSchema()->getTableSchema('partitioned'));
     }
