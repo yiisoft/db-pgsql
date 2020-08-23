@@ -43,12 +43,6 @@ class Schema extends AbstractSchema implements ConstraintFinderInterface
     public const TYPE_JSONB = 'jsonb';
 
     /**
-     * @var string the default schema used for the current session.
-     */
-    protected ?string $defaultSchema = 'public';
-    protected string $tableQuoteCharacter = '"';
-
-    /**
      * @var array mapping from physical column types (keys) to abstract column types (values).
      *
      * {@see http://www.postgresql.org/docs/current/static/datatype.html#DATATYPE-TABLE}
@@ -118,6 +112,17 @@ class Schema extends AbstractSchema implements ConstraintFinderInterface
         'jsonb' => self::TYPE_JSON,
         'xml' => self::TYPE_STRING,
     ];
+
+    /**
+     * @var string the default schema used for the current session.
+     */
+    protected ?string $defaultSchema = 'public';
+
+    /**
+     * @var string|string[] character used to quote schema, table, etc. names. An array of 2 characters can be used in
+     * case starting and ending characters are different.
+     */
+    protected $tableQuoteCharacter = '"';
 
     /**
      * Resolves the table name and schema name (if any).
