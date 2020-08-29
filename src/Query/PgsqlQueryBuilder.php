@@ -17,10 +17,10 @@ use Yiisoft\Db\Expression\JsonExpression;
 use Yiisoft\Db\Pdo\PdoValue;
 use Yiisoft\Db\Pgsql\Expression\ArrayExpressionBuilder;
 use Yiisoft\Db\Pgsql\Expression\JsonExpressionBuilder;
-use Yiisoft\Db\Pgsql\Schema\Schema;
+use Yiisoft\Db\Pgsql\Schema\PgsqlSchema;
 use Yiisoft\Db\Query\Conditions\LikeCondition;
 use Yiisoft\Db\Query\Query;
-use Yiisoft\Db\Query\QueryBuilder as AbstractQueryBuilder;
+use Yiisoft\Db\Query\QueryBuilder;
 use Yiisoft\Strings\StringHelper;
 
 use function array_diff;
@@ -38,7 +38,7 @@ use function reset;
 use function strpos;
 use function version_compare;
 
-class QueryBuilder extends AbstractQueryBuilder
+final class PgsqlQueryBuilder extends QueryBuilder
 {
     /**
      * Defines a UNIQUE index for {@see createIndex()}.
@@ -69,28 +69,28 @@ class QueryBuilder extends AbstractQueryBuilder
      * @var array mapping from abstract column types (keys) to physical column types (values).
      */
     protected array $typeMap = [
-        Schema::TYPE_PK => 'serial NOT NULL PRIMARY KEY',
-        Schema::TYPE_UPK => 'serial NOT NULL PRIMARY KEY',
-        Schema::TYPE_BIGPK => 'bigserial NOT NULL PRIMARY KEY',
-        Schema::TYPE_UBIGPK => 'bigserial NOT NULL PRIMARY KEY',
-        Schema::TYPE_CHAR => 'char(1)',
-        Schema::TYPE_STRING => 'varchar(255)',
-        Schema::TYPE_TEXT => 'text',
-        Schema::TYPE_TINYINT => 'smallint',
-        Schema::TYPE_SMALLINT => 'smallint',
-        Schema::TYPE_INTEGER => 'integer',
-        Schema::TYPE_BIGINT => 'bigint',
-        Schema::TYPE_FLOAT => 'double precision',
-        Schema::TYPE_DOUBLE => 'double precision',
-        Schema::TYPE_DECIMAL => 'numeric(10,0)',
-        Schema::TYPE_DATETIME => 'timestamp(0)',
-        Schema::TYPE_TIMESTAMP => 'timestamp(0)',
-        Schema::TYPE_TIME => 'time(0)',
-        Schema::TYPE_DATE => 'date',
-        Schema::TYPE_BINARY => 'bytea',
-        Schema::TYPE_BOOLEAN => 'boolean',
-        Schema::TYPE_MONEY => 'numeric(19,4)',
-        Schema::TYPE_JSON => 'jsonb',
+        PgsqlSchema::TYPE_PK => 'serial NOT NULL PRIMARY KEY',
+        PgsqlSchema::TYPE_UPK => 'serial NOT NULL PRIMARY KEY',
+        PgsqlSchema::TYPE_BIGPK => 'bigserial NOT NULL PRIMARY KEY',
+        PgsqlSchema::TYPE_UBIGPK => 'bigserial NOT NULL PRIMARY KEY',
+        PgsqlSchema::TYPE_CHAR => 'char(1)',
+        PgsqlSchema::TYPE_STRING => 'varchar(255)',
+        PgsqlSchema::TYPE_TEXT => 'text',
+        PgsqlSchema::TYPE_TINYINT => 'smallint',
+        PgsqlSchema::TYPE_SMALLINT => 'smallint',
+        PgsqlSchema::TYPE_INTEGER => 'integer',
+        PgsqlSchema::TYPE_BIGINT => 'bigint',
+        PgsqlSchema::TYPE_FLOAT => 'double precision',
+        PgsqlSchema::TYPE_DOUBLE => 'double precision',
+        PgsqlSchema::TYPE_DECIMAL => 'numeric(10,0)',
+        PgsqlSchema::TYPE_DATETIME => 'timestamp(0)',
+        PgsqlSchema::TYPE_TIMESTAMP => 'timestamp(0)',
+        PgsqlSchema::TYPE_TIME => 'time(0)',
+        PgsqlSchema::TYPE_DATE => 'date',
+        PgsqlSchema::TYPE_BINARY => 'bytea',
+        PgsqlSchema::TYPE_BOOLEAN => 'boolean',
+        PgsqlSchema::TYPE_MONEY => 'numeric(19,4)',
+        PgsqlSchema::TYPE_JSON => 'jsonb',
     ];
 
     /**
@@ -543,7 +543,7 @@ class QueryBuilder extends AbstractQueryBuilder
             $updateColumns = false;
         }
 
-        /** @var Schema $schema */
+        /** @var PgsqlSchema $schema */
         $schema = $this->db->getSchema();
 
         if (!$insertColumns instanceof Query) {
@@ -684,7 +684,7 @@ class QueryBuilder extends AbstractQueryBuilder
             foreach ($columns as $name => $value) {
                 if (
                     isset($columnSchemas[$name]) &&
-                    $columnSchemas[$name]->getType() === Schema::TYPE_BINARY &&
+                    $columnSchemas[$name]->getType() === PgsqlSchema::TYPE_BINARY &&
                     is_string($value)
                 ) {
                     /** explicitly setup PDO param type for binary column */
@@ -732,6 +732,7 @@ class QueryBuilder extends AbstractQueryBuilder
         }
 
         $schema = $this->db->getSchema();
+
         if (($tableSchema = $schema->getTableSchema($table)) !== null) {
             $columnSchemas = $tableSchema->getColumns();
         } else {
@@ -745,6 +746,7 @@ class QueryBuilder extends AbstractQueryBuilder
                 if (isset($columns[$i], $columnSchemas[$columns[$i]])) {
                     $value = $columnSchemas[$columns[$i]]->dbTypecast($value);
                 }
+
                 if (is_string($value)) {
                     $value = $schema->quoteValue($value);
                 } elseif (is_float($value)) {
@@ -759,6 +761,7 @@ class QueryBuilder extends AbstractQueryBuilder
                 } elseif ($value instanceof ExpressionInterface) {
                     $value = $this->buildExpression($value, $params);
                 }
+
                 $vs[] = $value;
             }
             $values[] = '(' . implode(', ', $vs) . ')';

@@ -7,7 +7,7 @@ namespace Yiisoft\Db\Pgsql\Query;
 use function in_array;
 use function strlen;
 
-class ArrayParser
+final class ArrayParser
 {
     /**
      * @var string Character used in array
@@ -55,10 +55,10 @@ class ArrayParser
                 case '}':
                     break 2;
                 case $this->delimiter:
-                    if (empty($result)) { // `{}` case
+                    if (empty($result)) { /* `{}` case */
                         $result[] = null;
                     }
-                    if (in_array($value[$i + 1], [$this->delimiter, '}'], true)) { // `{,}` case
+                    if (in_array($value[$i + 1], [$this->delimiter, '}'], true)) { /* `{,}` case */
                         $result[] = null;
                     }
                     break;

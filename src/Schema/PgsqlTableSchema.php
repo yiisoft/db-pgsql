@@ -6,7 +6,7 @@ namespace Yiisoft\Db\Pgsql\Schema;
 
 use Yiisoft\Db\Schema\TableSchema as AbstractTableSchema;
 
-class TableSchema extends AbstractTableSchema
+final class PgsqlTableSchema extends AbstractTableSchema
 {
     private array $foreignKeys = [];
 

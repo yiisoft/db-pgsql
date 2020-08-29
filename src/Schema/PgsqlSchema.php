@@ -18,8 +18,8 @@ use Yiisoft\Db\Exception\InvalidArgumentException;
 use Yiisoft\Db\Exception\InvalidConfigException;
 use Yiisoft\Db\Exception\NotSupportedException;
 use Yiisoft\Db\Expression\Expression;
-use Yiisoft\Db\Pgsql\Query\QueryBuilder;
-use Yiisoft\Db\Schema\Schema as AbstractSchema;
+use Yiisoft\Db\Pgsql\Query\PgsqlQueryBuilder;
+use Yiisoft\Db\Schema\Schema;
 use Yiisoft\Db\View\ViewFinderTrait;
 
 use function array_change_key_case;
@@ -35,7 +35,7 @@ use function str_replace;
 use function strncasecmp;
 use function substr;
 
-class Schema extends AbstractSchema implements ConstraintFinderInterface
+final class PgsqlSchema extends Schema implements ConstraintFinderInterface
 {
     use ViewFinderTrait;
     use ConstraintFinderTrait;
@@ -129,13 +129,13 @@ class Schema extends AbstractSchema implements ConstraintFinderInterface
      *
      * @param string $name the table name.
      *
-     * @return TableSchema with resolved table, schema, etc. names.
+     * @return PgsqlTableSchema with resolved table, schema, etc. names.
      *
      * {@see \Yiisoft\Db\Schema\TableSchema}
      */
-    protected function resolveTableName(string $name): TableSchema
+    protected function resolveTableName(string $name): PgsqlTableSchema
     {
-        $resolvedName = new TableSchema();
+        $resolvedName = new PgsqlTableSchema();
         $parts = explode('.', str_replace('"', '', $name));
 
         if (isset($parts[1])) {
@@ -219,11 +219,11 @@ SQL;
      * @throws InvalidConfigException
      * @throws NotSupportedException
      *
-     * @return TableSchema|null DBMS-dependent table metadata, `null` if the table does not exist.
+     * @return PgsqlTableSchema|null DBMS-dependent table metadata, `null` if the table does not exist.
      */
-    protected function loadTableSchema(string $name): ?TableSchema
+    protected function loadTableSchema(string $name): ?PgsqlTableSchema
     {
-        $table = new TableSchema();
+        $table = new PgsqlTableSchema();
 
         $this->resolveTableNames($table, $name);
 
@@ -372,20 +372,20 @@ SQL;
     /**
      * Creates a query builder for the PostgreSQL database.
      *
-     * @return QueryBuilder query builder instance
+     * @return PgsqlQueryBuilder query builder instance
      */
-    public function createQueryBuilder(): QueryBuilder
+    public function createQueryBuilder(): PgsqlQueryBuilder
     {
-        return new QueryBuilder($this->getDb());
+        return new PgsqlQueryBuilder($this->getDb());
     }
 
     /**
      * Resolves the table name and schema name (if any).
      *
-     * @param TableSchema $table the table metadata object.
+     * @param PgsqlTableSchema $table the table metadata object.
      * @param string $name the table name
      */
-    protected function resolveTableNames(TableSchema $table, string $name): void
+    protected function resolveTableNames(PgsqlTableSchema $table, string $name): void
     {
         $parts = explode('.', str_replace('"', '', $name));
 
@@ -419,13 +419,13 @@ SQL;
     /**
      * Collects the foreign key column details for the given table.
      *
-     * @param TableSchema $table the table metadata
+     * @param PgsqlTableSchema $table the table metadata
      *
      * @throws Exception
      * @throws InvalidArgumentException
      * @throws InvalidConfigException
      */
-    protected function findConstraints(TableSchema $table)
+    protected function findConstraints(PgsqlTableSchema $table)
     {
         $tableName = $this->quoteValue($table->getName());
         $tableSchema = $this->quoteValue($table->getSchemaName());
@@ -493,7 +493,7 @@ SQL;
     /**
      * Gets information about given table unique indexes.
      *
-     * @param TableSchema $table the table metadata.
+     * @param PgsqlTableSchema $table the table metadata.
      *
      * @throws Exception
      * @throws InvalidArgumentException
@@ -501,7 +501,7 @@ SQL;
      *
      * @return array with index and column names.
      */
-    protected function getUniqueIndexInformation(TableSchema $table): array
+    protected function getUniqueIndexInformation(PgsqlTableSchema $table): array
     {
         $sql = <<<'SQL'
 SELECT
@@ -537,7 +537,7 @@ SQL;
      * ]
      * ```
      *
-     * @param TableSchema $table the table metadata
+     * @param PgsqlTableSchema $table the table metadata
      *
      * @throws Exception
      * @throws InvalidArgumentException
@@ -574,7 +574,7 @@ SQL;
     /**
      * Collects the metadata of table columns.
      *
-     * @param TableSchema $table the table metadata.
+     * @param PgsqlTableSchema $table the table metadata.
      *
      * @throws Exception
      * @throws InvalidArgumentException
@@ -583,7 +583,7 @@ SQL;
      *
      * @return bool whether the table exists in the database.
      */
-    protected function findColumns(TableSchema $table): bool
+    protected function findColumns(PgsqlTableSchema $table): bool
     {
         $tableName = $this->getDb()->quoteValue($table->getName());
         $schemaName = $this->getDb()->quoteValue($table->getSchemaName());
@@ -713,15 +713,15 @@ SQL;
     }
 
     /**
-     * Loads the column information into a {@see ColumnSchema} object.
+     * Loads the column information into a {@see PgsqlColumnSchema} object.
      *
      * @param array $info column information.
      *
-     * @return ColumnSchema the column schema object.
+     * @return PgsqlColumnSchema the column schema object.
      */
-    protected function loadColumnSchema(array $info): ColumnSchema
+    protected function loadColumnSchema(array $info): PgsqlColumnSchema
     {
-        /** @var ColumnSchema $column */
+        /** @var PgsqlColumnSchema $column */
         $column = $this->createColumnSchema();
         $column->allowNull($info['is_nullable']);
         $column->autoIncrement($info['is_autoinc']);
@@ -885,7 +885,7 @@ SQL;
                             ->columnNames(array_values(
                                 array_unique(ArrayHelper::getColumn($constraint, 'column_name'))
                             ))
-                            ->foreignColumnNames($constraint[0]['foreign_table_schema'])
+                            ->foreignSchemaName($constraint[0]['foreign_table_schema'])
                             ->foreignTableName($constraint[0]['foreign_table_name'])
                             ->foreignColumnNames(array_values(
                                 array_unique(ArrayHelper::getColumn($constraint, 'foreign_column_name'))
@@ -925,10 +925,10 @@ SQL;
      *
      * This method may be overridden by child classes to create a DBMS-specific column schema.
      *
-     * @return ColumnSchema column schema instance.
+     * @return PgsqlColumnSchema column schema instance.
      */
-    protected function createColumnSchema(): ColumnSchema
+    protected function createColumnSchema(): PgsqlColumnSchema
     {
-        return new ColumnSchema();
+        return new PgsqlColumnSchema();
     }
 }
