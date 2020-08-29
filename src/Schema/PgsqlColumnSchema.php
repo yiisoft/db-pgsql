@@ -11,6 +11,7 @@ use Yiisoft\Db\Pgsql\Query\ArrayParser;
 use Yiisoft\Db\Schema\ColumnSchema;
 
 use function array_walk_recursive;
+use function in_array;
 use function is_array;
 use function is_string;
 use function json_decode;
@@ -52,7 +53,7 @@ final class PgsqlColumnSchema extends ColumnSchema
             return new ArrayExpression($value, $this->getDbType(), $this->dimension);
         }
 
-        if (\in_array($this->getDbType(), [PgsqlSchema::TYPE_JSON, PgsqlSchema::TYPE_JSONB], true)) {
+        if (in_array($this->getDbType(), [PgsqlSchema::TYPE_JSON, PgsqlSchema::TYPE_JSONB], true)) {
             return new JsonExpression($value, $this->getDbType());
         }
 

@@ -7,9 +7,10 @@ namespace Yiisoft\Db\Pgsql\Connection;
 use PDO;
 use Yiisoft\Db\Connection\Connection;
 use Yiisoft\Db\Command\Command;
+use Yiisoft\Db\Exception\Exception;
+use Yiisoft\Db\Exception\InvalidConfigException;
+use Yiisoft\Db\Exception\NotSupportedException;
 use Yiisoft\Db\Pgsql\Schema\PgsqlSchema;
-
-use function in_array;
 
 /**
  * Database connection class prefilled for PGSQL Server.
@@ -24,8 +25,9 @@ final class PgsqlConnection extends Connection
      * @param string|null $sql the SQL statement to be executed
      * @param array $params the parameters to be bound to the SQL statement
      *
-     * @throws Exception
      * @throws InvalidConfigException
+     * @throws Exception
+     * @throws NotSupportedException
      *
      * @return Command the DB command
      */
@@ -62,7 +64,7 @@ final class PgsqlConnection extends Connection
      *
      * @return PDO the pdo instance
      */
-    protected function createPdoInstance(): \PDO
+    protected function createPdoInstance(): PDO
     {
         return new PDO($this->getDsn(), $this->getUsername(), $this->getPassword(), $this->getAttributes());
     }
@@ -80,14 +82,16 @@ final class PgsqlConnection extends Connection
      */
     protected function initConnection(): void
     {
-        $this->getPdo()->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+        if ($this->getPDO() !== null) {
+            $this->getPDO()->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-        if ($this->getEmulatePrepare() !== null && constant('PDO::ATTR_EMULATE_PREPARES')) {
-            $this->getPdo()->setAttribute(PDO::ATTR_EMULATE_PREPARES, $this->getEmulatePrepare());
-        }
+            if ($this->getEmulatePrepare() !== null && constant('PDO::ATTR_EMULATE_PREPARES')) {
+                $this->getPDO()->setAttribute(PDO::ATTR_EMULATE_PREPARES, $this->getEmulatePrepare());
+            }
 
-        if ($this->getCharset() !== null) {
-            $this->getPdo()->exec('SET NAMES ' . $this->getPdo()->quote($this->getCharset()));
+            if ($this->getCharset() !== null) {
+                $this->getPDO()->exec('SET NAMES ' . $this->getPDO()->quote($this->getCharset()));
+            }
         }
     }
 }

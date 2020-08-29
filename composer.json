@@ -39,7 +39,8 @@
     "autoload": {
         "psr-4": {
             "Yiisoft\\Db\\Pgsql\\": "src"
-        },
+        }
+    },
     "autoload-dev": {
         "psr-4": {
             "Yiisoft\\Db\\Pgsql\\Tests\\": "tests"

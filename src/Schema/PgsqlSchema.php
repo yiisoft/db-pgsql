@@ -32,7 +32,6 @@ use function implode;
 use function preg_match;
 use function preg_replace;
 use function str_replace;
-use function strncasecmp;
 use function substr;
 
 final class PgsqlSchema extends Schema implements ConstraintFinderInterface
@@ -131,11 +130,12 @@ final class PgsqlSchema extends Schema implements ConstraintFinderInterface
      *
      * @return PgsqlTableSchema with resolved table, schema, etc. names.
      *
-     * {@see \Yiisoft\Db\Schema\TableSchema}
+     * {@see PgsqlTableSchema}
      */
     protected function resolveTableName(string $name): PgsqlTableSchema
     {
         $resolvedName = new PgsqlTableSchema();
+
         $parts = explode('.', str_replace('"', '', $name));
 
         if (isset($parts[1])) {
@@ -206,6 +206,7 @@ INNER JOIN pg_namespace ns ON ns.oid = c.relnamespace
 WHERE ns.nspname = :schemaName AND c.relkind IN ('r','v','m','f', 'p')
 ORDER BY c.relname
 SQL;
+
         return $this->getDb()->createCommand($sql, [':schemaName' => $schema])->queryColumn();
     }
 
@@ -406,6 +407,7 @@ SQL;
         if ($schema === '') {
             $schema = $this->defaultSchema;
         }
+
         $sql = <<<'SQL'
 SELECT c.relname AS table_name
 FROM pg_class c
@@ -413,6 +415,7 @@ INNER JOIN pg_namespace ns ON ns.oid = c.relnamespace
 WHERE ns.nspname = :schemaName AND (c.relkind = 'v' OR c.relkind = 'm')
 ORDER BY c.relname
 SQL;
+
         return $this->getDb()->createCommand($sql, [':schemaName' => $schema])->queryColumn();
     }
 
@@ -847,6 +850,7 @@ LEFT JOIN "pg_attribute" "fa"
 WHERE "tcns"."nspname" = :schemaName AND "tc"."relname" = :tableName
 ORDER BY "a"."attnum" ASC, "fa"."attnum" ASC
 SQL;
+
         static $actionTypes = [
             'a' => 'NO ACTION',
             'r' => 'RESTRICT',
