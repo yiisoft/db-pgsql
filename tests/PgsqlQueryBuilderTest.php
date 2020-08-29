@@ -135,7 +135,7 @@ final class PgsqlQueryBuilderTest extends TestCase
 
         $this->prepareDatabase(true, true, $this->databases);
 
-         $qb = $this->getQueryBuilder(false);
+        $qb = $this->getQueryBuilder(false);
 
         $expected = "SELECT SETVAL('\"item_12_id_seq\"',(SELECT COALESCE(MAX(\"id\"),0) FROM \"item_12\")+1,false)";
 
