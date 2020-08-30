@@ -809,14 +809,10 @@ final class PgsqlQueryBuilderTest extends TestCase
      */
     public function testUpsert(string $table, $insertColumns, $updateColumns, $expectedSQL, array $expectedParams): void
     {
-        $db = $this->getConnection();
-
         $actualParams = [];
 
-        $actualSQL = $this->getQueryBuilder(
-            true,
-            $db->getDriverName() === 'sqlite'
-        )->upsert($table, $insertColumns, $updateColumns, $actualParams);
+        $actualSQL = $this->getQueryBuilder()
+            ->upsert($table, $insertColumns, $updateColumns, $actualParams);
 
         if (is_string($expectedSQL)) {
             $this->assertSame($expectedSQL, $actualSQL);
