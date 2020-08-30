@@ -14,7 +14,7 @@ use Yiisoft\Aliases\Aliases;
 use Yiisoft\Cache\ArrayCache;
 use Yiisoft\Cache\Cache;
 use Yiisoft\Cache\CacheInterface;
-use Yiisoft\Db\Connection\Connection;
+use Yiisoft\Db\Connection\ConnectionInterface;
 use Yiisoft\Db\Exception\Exception;
 use Yiisoft\Db\Factory\DatabaseFactory;
 use Yiisoft\Db\Helper\Dsn;
@@ -106,7 +106,7 @@ class TestCase extends AbstractTestCase
         $this->logger = $this->container->get(LoggerInterface::class);
         $this->profiler = $this->container->get(Profiler::class);
         $this->dsn = $this->container->get(Dsn::class);
-        $this->pgsqlConnection = $this->container->get(Connection::class);
+        $this->pgsqlConnection = $this->container->get(ConnectionInterface::class);
 
         DatabaseFactory::initialize($this->container, []);
     }
@@ -290,7 +290,7 @@ class TestCase extends AbstractTestCase
                 );
             },
 
-            Connection::class  => static function (ContainerInterface $container) use ($params) {
+            ConnectionInterface::class  => static function (ContainerInterface $container) use ($params) {
                 $connection = new PgsqlConnection(
                     $container->get(CacheInterface::class),
                     $container->get(LoggerInterface::class),
