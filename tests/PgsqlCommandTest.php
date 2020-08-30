@@ -19,6 +19,39 @@ final class PgsqlCommandTest extends TestCase
 {
     use TestCommandTrait;
 
+    protected $upsertTestCharCast = 'CAST([[address]] AS VARCHAR(255))';
+
+    public function testAddDropCheck(): void
+    {
+        $db = $this->getConnection();
+
+        $tableName = 'test_ck';
+        $name = 'test_ck_constraint';
+
+        $schema = $db->getSchema();
+
+        if ($schema->getTableSchema($tableName) !== null) {
+            $db->createCommand()->dropTable($tableName)->execute();
+        }
+
+        $db->createCommand()->createTable($tableName, [
+            'int1' => 'integer',
+        ])->execute();
+
+        $this->assertEmpty($schema->getTableChecks($tableName, true));
+
+        $db->createCommand()->addCheck($name, $tableName, '[[int1]] > 1')->execute();
+
+        $this->assertMatchesRegularExpression(
+            '/^.*int1.*>.*1.*$/',
+            $schema->getTableChecks($tableName, true)[0]->getExpression()
+        );
+
+        $db->createCommand()->dropCheck($name, $tableName)->execute();
+
+        $this->assertEmpty($schema->getTableChecks($tableName, true));
+    }
+
     public function testAutoQuoting(): void
     {
         $db = $this->getConnection();

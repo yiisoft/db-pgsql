@@ -66,7 +66,6 @@ final class PgsqlConnectionTest extends TestCase
         $db->open();
     }
 
-
     public function testQuoteValue(): void
     {
         $db = $this->getConnection();

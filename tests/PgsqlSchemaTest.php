@@ -7,9 +7,9 @@ namespace Yiisoft\Db\Pgsql\Tests;
 use PDO;
 use Yiisoft\Db\Exception\NotSupportedException;
 use Yiisoft\Db\Expression\Expression;
+use Yiisoft\Db\Pgsql\Schema\PgsqlTableSchema;
 use Yiisoft\Db\TestUtility\AnyValue;
 use Yiisoft\Db\TestUtility\TestSchemaTrait;
-use Yiisoft\Db\Pgsql\Schema\PgsqlTableSchema;
 
 /**
  * @group pgsql
@@ -341,6 +341,19 @@ final class PgsqlSchemaTest extends TestCase
 
         $this->assertTrue($table->getColumn('default_true')->getDefaultValue());
         $this->assertFalse($table->getColumn('default_false')->getDefaultValue());
+    }
+
+    public function testGetSchemaNames(): void
+    {
+        $schema = $this->getConnection()->getSchema();
+
+        $schemas = $schema->getSchemaNames();
+
+        $this->assertNotEmpty($schemas);
+
+        foreach ($this->expectedSchemas as $schema) {
+            $this->assertContains($schema, $schemas);
+        }
     }
 
     public function testSequenceName()
