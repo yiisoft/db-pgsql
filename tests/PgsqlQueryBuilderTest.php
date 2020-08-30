@@ -131,11 +131,9 @@ final class PgsqlQueryBuilderTest extends TestCase
             $this->markTestSkipped('PostgreSQL < 12.0 does not support GENERATED AS IDENTITY columns.');
         }
 
-        $this->databases['fixture'] = '@data/postgres12.sql';
+        $this->prepareDatabase('@data/postgres12.sql');
 
-        $this->prepareDatabase(true, true, $this->databases);
-
-        $qb = $this->getQueryBuilder(false);
+        $qb = $this->getQueryBuilder();
 
         $expected = "SELECT SETVAL('\"item_12_id_seq\"',(SELECT COALESCE(MAX(\"id\"),0) FROM \"item_12\")+1,false)";
 
@@ -183,7 +181,7 @@ final class PgsqlQueryBuilderTest extends TestCase
      */
     public function testAddDropCheck(string $sql, Closure $builder): void
     {
-        $this->assertSame($this->getConnection()->quoteSql($sql), $builder($this->getQueryBuilder(false)));
+        $this->assertSame($this->getConnection()->quoteSql($sql), $builder($this->getQueryBuilder()));
     }
 
     /**
@@ -194,7 +192,7 @@ final class PgsqlQueryBuilderTest extends TestCase
      */
     public function testAddDropForeignKey(string $sql, Closure $builder): void
     {
-        $this->assertSame($this->getConnection()->quoteSql($sql), $builder($this->getQueryBuilder(false)));
+        $this->assertSame($this->getConnection()->quoteSql($sql), $builder($this->getQueryBuilder()));
     }
 
     /**
@@ -216,7 +214,7 @@ final class PgsqlQueryBuilderTest extends TestCase
      */
     public function testAddDropUnique(string $sql, Closure $builder): void
     {
-        $this->assertSame($this->getConnection()->quoteSql($sql), $builder($this->getQueryBuilder(false)));
+        $this->assertSame($this->getConnection()->quoteSql($sql), $builder($this->getQueryBuilder()));
     }
 
     public function batchInsertProvider(): array
@@ -606,7 +604,7 @@ final class PgsqlQueryBuilderTest extends TestCase
      */
     public function testCreateDropIndex(string $sql, Closure $builder): void
     {
-        $this->assertSame($this->getConnection()->quoteSql($sql), $builder($this->getQueryBuilder(false)));
+        $this->assertSame($this->getConnection()->quoteSql($sql), $builder($this->getQueryBuilder()));
     }
 
     /**
