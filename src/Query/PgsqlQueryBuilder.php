@@ -22,7 +22,6 @@ use Yiisoft\Db\Query\Conditions\LikeCondition;
 use Yiisoft\Db\Query\Query;
 use Yiisoft\Db\Query\QueryBuilder;
 use Yiisoft\Strings\NumericHelper;
-use Yiisoft\Strings\StringHelper;
 
 use function array_diff;
 use function array_merge;
