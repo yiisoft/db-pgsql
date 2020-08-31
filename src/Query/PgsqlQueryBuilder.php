@@ -21,6 +21,7 @@ use Yiisoft\Db\Pgsql\Schema\PgsqlSchema;
 use Yiisoft\Db\Query\Conditions\LikeCondition;
 use Yiisoft\Db\Query\Query;
 use Yiisoft\Db\Query\QueryBuilder;
+use Yiisoft\Strings\NumericHelper;
 use Yiisoft\Strings\StringHelper;
 
 use function array_diff;
@@ -754,7 +755,7 @@ final class PgsqlQueryBuilder extends QueryBuilder
                     $value = $schema->quoteValue($value);
                 } elseif (is_float($value)) {
                     /* ensure type cast always has . as decimal separator in all locales */
-                    $value = StringHelper::floatToString($value);
+                    $value = NumericHelper::normalize($value);
                 } elseif ($value === true) {
                     $value = 'TRUE';
                 } elseif ($value === false) {
