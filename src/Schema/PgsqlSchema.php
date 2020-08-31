@@ -19,6 +19,7 @@ use Yiisoft\Db\Exception\InvalidConfigException;
 use Yiisoft\Db\Exception\NotSupportedException;
 use Yiisoft\Db\Expression\Expression;
 use Yiisoft\Db\Pgsql\Query\PgsqlQueryBuilder;
+use Yiisoft\Db\Schema\ColumnSchemaBuilder;
 use Yiisoft\Db\Schema\Schema;
 use Yiisoft\Db\View\ViewFinderTrait;
 
@@ -931,8 +932,23 @@ SQL;
      *
      * @return PgsqlColumnSchema column schema instance.
      */
-    protected function createColumnSchema(): PgsqlColumnSchema
+    private function createColumnSchema(): PgsqlColumnSchema
     {
         return new PgsqlColumnSchema();
+    }
+
+    /**
+     * Create a column schema builder instance giving the type and value precision.
+     *
+     * This method may be overridden by child classes to create a DBMS-specific column schema builder.
+     *
+     * @param string $type type of the column. See {@see ColumnSchemaBuilder::$type}.
+     * @param int|string|array $length length or precision of the column. See {@see ColumnSchemaBuilder::$length}.
+     *
+     * @return ColumnSchemaBuilder column schema builder instance
+     */
+    public function createColumnSchemaBuilder(string $type, $length = null): ColumnSchemaBuilder
+    {
+        return new ColumnSchemaBuilder($type, $length, $this->getDb());
     }
 }

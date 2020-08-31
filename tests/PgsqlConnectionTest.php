@@ -7,7 +7,6 @@ namespace Yiisoft\Db\Pgsql\Tests;
 use PDO;
 use Yiisoft\Db\Exception\Exception;
 use Yiisoft\Db\Exception\InvalidConfigException;
-use Yiisoft\Db\Helper\Dsn;
 use Yiisoft\Db\Pgsql\Connection\PgsqlConnection;
 use Yiisoft\Db\Transaction\Transaction;
 use Yiisoft\Db\TestUtility\TestConnectionTrait;

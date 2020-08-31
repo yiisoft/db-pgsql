@@ -31,7 +31,7 @@ final class PgsqlConnection extends Connection
      *
      * @return Command the DB command
      */
-    public function createCommand(?string $sql = null, $params = []): Command
+    public function createCommand(?string $sql = null, array $params = []): Command
     {
         if ($sql !== null) {
             $sql = $this->quoteSql($sql);

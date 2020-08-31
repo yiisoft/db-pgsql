@@ -5,11 +5,20 @@ declare(strict_types=1);
 namespace Yiisoft\Db\Pgsql\Tests;
 
 use PDO;
+use Yiisoft\Db\Exception\Exception;
+use Yiisoft\Db\Exception\InvalidConfigException;
 use Yiisoft\Db\Exception\NotSupportedException;
 use Yiisoft\Db\Expression\Expression;
 use Yiisoft\Db\Pgsql\Schema\PgsqlTableSchema;
 use Yiisoft\Db\TestUtility\AnyValue;
 use Yiisoft\Db\TestUtility\TestSchemaTrait;
+
+use function array_map;
+use function fclose;
+use function fopen;
+use function trim;
+use function ucfirst;
+use function version_compare;
 
 /**
  * @group pgsql
@@ -18,7 +27,7 @@ final class PgsqlSchemaTest extends TestCase
 {
     use TestSchemaTrait;
 
-    public function getExpectedColumns()
+    public function getExpectedColumns(): array
     {
         $version = $this->getConnection()->getServerVersion();
 
@@ -296,7 +305,7 @@ final class PgsqlSchemaTest extends TestCase
         ];
     }
 
-    public function testCompositeFk()
+    public function testCompositeFk(): void
     {
         $schema = $this->getConnection()->getSchema();
 
@@ -310,18 +319,18 @@ final class PgsqlSchemaTest extends TestCase
         $this->assertEquals('item_id', $fk['fk_composite_fk_order_item']['item_id']);
     }
 
-    public function testGetPDOType()
+    public function testGetPDOType(): void
     {
         $values = [
-            [null, \PDO::PARAM_NULL],
-            ['', \PDO::PARAM_STR],
-            ['hello', \PDO::PARAM_STR],
-            [0, \PDO::PARAM_INT],
-            [1, \PDO::PARAM_INT],
-            [1337, \PDO::PARAM_INT],
-            [true, \PDO::PARAM_BOOL],
-            [false, \PDO::PARAM_BOOL],
-            [$fp = fopen(__FILE__, 'rb'), \PDO::PARAM_LOB],
+            [null, PDO::PARAM_NULL],
+            ['', PDO::PARAM_STR],
+            ['hello', PDO::PARAM_STR],
+            [0, PDO::PARAM_INT],
+            [1, PDO::PARAM_INT],
+            [1337, PDO::PARAM_INT],
+            [true, PDO::PARAM_BOOL],
+            [false, PDO::PARAM_BOOL],
+            [$fp = fopen(__FILE__, 'rb'), PDO::PARAM_LOB],
         ];
 
         $schema = $this->getConnection()->getSchema();
@@ -333,7 +342,7 @@ final class PgsqlSchemaTest extends TestCase
         fclose($fp);
     }
 
-    public function testBooleanDefaultValues()
+    public function testBooleanDefaultValues(): void
     {
         $schema = $this->getConnection()->getSchema();
 
@@ -356,7 +365,7 @@ final class PgsqlSchemaTest extends TestCase
         }
     }
 
-    public function testSequenceName()
+    public function testSequenceName(): void
     {
         $connection = $this->getConnection();
 
@@ -378,7 +387,7 @@ final class PgsqlSchemaTest extends TestCase
         $this->assertEquals($sequenceName, $connection->getSchema()->getTableSchema('item')->getSequenceName());
     }
 
-    public function testGeneratedValues()
+    public function testGeneratedValues(): void
     {
         if (version_compare($this->getConnection()->getServerVersion(), '12.0', '<')) {
             $this->markTestSkipped('PostgreSQL < 12.0 does not support GENERATED AS IDENTITY columns.');
@@ -394,7 +403,7 @@ final class PgsqlSchemaTest extends TestCase
         $this->assertTrue($table->getColumn('id_default')->isAutoIncrement());
     }
 
-    public function testPartitionedTable()
+    public function testPartitionedTable(): void
     {
         if (version_compare($this->getConnection()->getServerVersion(), '10.0', '<')) {
             $this->markTestSkipped('PostgreSQL < 10.0 does not support PARTITION BY clause.');
@@ -405,14 +414,14 @@ final class PgsqlSchemaTest extends TestCase
         $this->assertNotNull($this->getConnection()->getSchema()->getTableSchema('partitioned'));
     }
 
-    public function testFindSchemaNames()
+    public function testFindSchemaNames(): void
     {
         $schema = $this->getConnection()->getSchema();
 
         $this->assertCount(3, $schema->getSchemaNames());
     }
 
-    public function bigintValueProvider()
+    public function bigintValueProvider(): array
     {
         return [
             [8817806877],
@@ -428,7 +437,7 @@ final class PgsqlSchemaTest extends TestCase
     /**
      * @see https://github.com/yiisoft/yii2/issues/12483
      */
-    public function testParenthesisDefaultValue()
+    public function testParenthesisDefaultValue(): void
     {
         $db = $this->getConnection();
 
@@ -458,7 +467,7 @@ final class PgsqlSchemaTest extends TestCase
     /**
      * @see https://github.com/yiisoft/yii2/issues/14192
      */
-    public function testTimestampNullDefaultValue()
+    public function testTimestampNullDefaultValue(): void
     {
         $db = $this->getConnection();
 
@@ -482,6 +491,9 @@ final class PgsqlSchemaTest extends TestCase
      * @dataProvider pdoAttributesProviderTrait
      *
      * @param array $pdoAttributes
+     *
+     * @throws Exception
+     * @throws InvalidConfigException
      */
     public function testGetTableNames(array $pdoAttributes): void
     {
@@ -570,6 +582,9 @@ final class PgsqlSchemaTest extends TestCase
      * @param string $tableName
      * @param string $type
      * @param mixed $expected
+     *
+     * @throws Exception
+     * @throws InvalidConfigException
      */
     public function testTableSchemaConstraintsWithPdoLowercase(string $tableName, string $type, $expected): void
     {
@@ -592,6 +607,9 @@ final class PgsqlSchemaTest extends TestCase
      * @param string $tableName
      * @param string $type
      * @param mixed $expected
+     *
+     * @throws Exception
+     * @throws InvalidConfigException
      */
     public function testTableSchemaConstraintsWithPdoUppercase(string $tableName, string $type, $expected): void
     {

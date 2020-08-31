@@ -4,13 +4,16 @@ declare(strict_types=1);
 
 namespace Yiisoft\Db\Pgsql\Tests;
 
-use ArrayObject;
+use Yiisoft\Db\Exception\Exception;
 use Yiisoft\Db\Exception\InvalidArgumentException;
+use Yiisoft\Db\Exception\InvalidConfigException;
+use Yiisoft\Db\Exception\NotSupportedException;
 use Yiisoft\Db\Expression\ArrayExpression;
-use Yiisoft\Db\Expression\Expression;
 use Yiisoft\Db\Expression\JsonExpression;
 use Yiisoft\Db\Query\Query;
 use Yiisoft\Db\TestUtility\TestCommandTrait;
+
+use function serialize;
 
 /**
  * @group pgsql
@@ -19,7 +22,7 @@ final class PgsqlCommandTest extends TestCase
 {
     use TestCommandTrait;
 
-    protected $upsertTestCharCast = 'CAST([[address]] AS VARCHAR(255))';
+    protected string $upsertTestCharCast = 'CAST([[address]] AS VARCHAR(255))';
 
     public function testAddDropCheck(): void
     {
@@ -249,6 +252,10 @@ PGSQL
      * @param string $expected
      * @param array $expectedParams
      *
+     * @throws Exception
+     * @throws InvalidConfigException
+     * @throws NotSupportedException
+     *
      * {@see https://github.com/yiisoft/yii2/issues/11242}
      */
     public function testBatchInsertSQL(
@@ -276,6 +283,11 @@ PGSQL
      * @dataProvider bindParamsNonWhereProviderTrait
      *
      * @param string $sql
+     *
+     * @throws Exception
+     * @throws InvalidArgumentException
+     * @throws InvalidConfigException
+     * @throws NotSupportedException
      */
     public function testBindParamsNonWhere(string $sql): void
     {
@@ -306,10 +318,14 @@ PGSQL
      * @dataProvider getRawSqlProviderTrait
      *
      * @param string $sql
-     * @param array  $params
+     * @param array $params
      * @param string $expectedRawSql
      *
      * {@see https://github.com/yiisoft/yii2/issues/8592}
+     *
+     * @throws Exception
+     * @throws InvalidConfigException
+     * @throws NotSupportedException
      */
     public function testGetRawSql(string $sql, array $params, string $expectedRawSql): void
     {
@@ -326,6 +342,10 @@ PGSQL
      * @dataProvider invalidSelectColumnsProviderTrait
      *
      * @param mixed $invalidSelectColumns
+     *
+     * @throws Exception
+     * @throws InvalidConfigException
+     * @throws NotSupportedException
      */
     public function testInsertSelectFailed($invalidSelectColumns): void
     {
@@ -353,6 +373,11 @@ PGSQL
      *
      * @param array $firstData
      * @param array $secondData
+     *
+     * @throws InvalidArgumentException
+     * @throws Exception
+     * @throws InvalidConfigException
+     * @throws NotSupportedException
      */
     public function testUpsert(array $firstData, array $secondData): void
     {

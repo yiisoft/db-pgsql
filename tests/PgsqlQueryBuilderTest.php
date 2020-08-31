@@ -6,16 +6,23 @@ namespace Yiisoft\Db\Pgsql\Tests;
 
 use Closure;
 use Yiisoft\Arrays\ArrayHelper;
+use Yiisoft\Db\Exception\Exception;
+use Yiisoft\Db\Exception\InvalidArgumentException;
+use Yiisoft\Db\Exception\InvalidConfigException;
+use Yiisoft\Db\Exception\NotSupportedException;
 use Yiisoft\Db\Expression\ArrayExpression;
 use Yiisoft\Db\Expression\Expression;
 use Yiisoft\Db\Expression\JsonExpression;
+use Yiisoft\Db\Pgsql\Schema\PgsqlColumnSchema;
 use Yiisoft\Db\Query\Query;
-use Yiisoft\Db\Query\Conditions\InCondition;
-use Yiisoft\Db\Query\Conditions\BetweenColumnsCondition;
 use Yiisoft\Db\Pgsql\Query\PgsqlQueryBuilder;
-use Yiisoft\Db\Pgsql\Schema\PgsqlSchema;
 use Yiisoft\Db\TestUtility\TestQueryBuilderTrait;
 use Yiisoft\Db\TestUtility\TraversableObject;
+
+use function array_merge;
+use function array_replace;
+use function is_string;
+use function version_compare;
 
 /**
  * @group pgsql
@@ -240,6 +247,11 @@ final class PgsqlQueryBuilderTest extends TestCase
      * @param array $columns
      * @param array $value
      * @param string $expected
+     *
+     * @throws Exception
+     * @throws InvalidArgumentException
+     * @throws InvalidConfigException
+     * @throws NotSupportedException
      */
     public function testBatchInsert(string $table, array $columns, array $value, string $expected): void
     {
@@ -493,6 +505,11 @@ final class PgsqlQueryBuilderTest extends TestCase
      * @param ExpressionInterface|array $condition
      * @param string $expected
      * @param array $expectedParams
+     *
+     * @throws Exception
+     * @throws InvalidArgumentException
+     * @throws InvalidConfigException
+     * @throws NotSupportedException
      */
     public function testBuildCondition($condition, string $expected, array $expectedParams): void
     {
@@ -512,6 +529,11 @@ final class PgsqlQueryBuilderTest extends TestCase
      * @param array $condition
      * @param string $expected
      * @param array $expectedParams
+     *
+     * @throws Exception
+     * @throws InvalidArgumentException
+     * @throws InvalidConfigException
+     * @throws NotSupportedException
      */
     public function testBuildFilterCondition(array $condition, string $expected, array $expectedParams): void
     {
@@ -546,6 +568,11 @@ final class PgsqlQueryBuilderTest extends TestCase
      * @param object|array $condition
      * @param string $expected
      * @param array $expectedParams
+     *
+     * @throws Exception
+     * @throws InvalidArgumentException
+     * @throws InvalidConfigException
+     * @throws NotSupportedException
      */
     public function testBuildLikeCondition($condition, string $expected, array $expectedParams): void
     {
@@ -564,6 +591,11 @@ final class PgsqlQueryBuilderTest extends TestCase
      *
      * @param string $cond
      * @param string $expectedQuerySql
+     *
+     * @throws Exception
+     * @throws InvalidArgumentException
+     * @throws InvalidConfigException
+     * @throws NotSupportedException
      */
     public function testBuildWhereExists(string $cond, string $expectedQuerySql): void
     {
@@ -614,6 +646,11 @@ final class PgsqlQueryBuilderTest extends TestCase
      * @param array|string $condition
      * @param string $expectedSQL
      * @param array $expectedParams
+     *
+     * @throws Exception
+     * @throws InvalidArgumentException
+     * @throws InvalidConfigException
+     * @throws NotSupportedException
      */
     public function testDelete(string $table, $condition, string $expectedSQL, array $expectedParams): void
     {
@@ -633,6 +670,11 @@ final class PgsqlQueryBuilderTest extends TestCase
      * @param array $params
      * @param string $expectedSQL
      * @param array $expectedParams
+     *
+     * @throws Exception
+     * @throws InvalidArgumentException
+     * @throws InvalidConfigException
+     * @throws NotSupportedException
      */
     public function testInsert(string $table, $columns, array $params, string $expectedSQL, array $expectedParams): void
     {
@@ -674,6 +716,11 @@ final class PgsqlQueryBuilderTest extends TestCase
      * @param array|string $condition
      * @param string $expectedSQL
      * @param array $expectedParams
+     *
+     * @throws Exception
+     * @throws InvalidArgumentException
+     * @throws InvalidConfigException
+     * @throws NotSupportedException
      */
     public function testUpdate(
         string $table,
@@ -799,7 +846,7 @@ final class PgsqlQueryBuilderTest extends TestCase
      * @dataProvider upsertProvider
      *
      * @param string $table
-     * @param ColumnSchema|array $insertColumns
+     * @param PgsqlColumnSchema|array $insertColumns
      * @param array|bool|null $updateColumns
      * @param string|string[] $expectedSQL
      * @param array $expectedParams
