@@ -9,7 +9,7 @@ use Yiisoft\Db\Exception\Exception;
 use Yiisoft\Db\Exception\InvalidConfigException;
 use Yiisoft\Db\Exception\NotSupportedException;
 use Yiisoft\Db\Expression\Expression;
-use Yiisoft\Db\Pgsql\Schema\PgsqlTableSchema;
+use Yiisoft\Db\Pgsql\TableSchema;
 use Yiisoft\Db\TestUtility\AnyValue;
 use Yiisoft\Db\TestUtility\TestSchemaTrait;
 
@@ -23,7 +23,7 @@ use function version_compare;
 /**
  * @group pgsql
  */
-final class PgsqlSchemaTest extends TestCase
+final class SchemaTest extends TestCase
 {
     use TestSchemaTrait;
 
@@ -543,7 +543,7 @@ final class PgsqlSchemaTest extends TestCase
         $this->assertCount(count($schema->getTableNames()), $tables);
 
         foreach ($tables as $table) {
-            $this->assertInstanceOf(PgsqlTableSchema::class, $table);
+            $this->assertInstanceOf(TableSchema::class, $table);
         }
     }
 
@@ -652,7 +652,7 @@ final class PgsqlSchemaTest extends TestCase
 
         $noCacheTable = $schema->getTableSchema($tableName, true);
 
-        $this->assertInstanceOf(PgsqlTableSchema::class, $noCacheTable);
+        $this->assertInstanceOf(TableSchema::class, $noCacheTable);
 
         /* Compare */
         $schema->getDb()->setTablePrefix($testTablePrefix);
@@ -667,7 +667,7 @@ final class PgsqlSchemaTest extends TestCase
 
         $refreshedTable = $schema->getTableSchema($tableName, false);
 
-        $this->assertInstanceOf(PgsqlTableSchema::class, $refreshedTable);
+        $this->assertInstanceOf(TableSchema::class, $refreshedTable);
         $this->assertNotSame($noCacheTable, $refreshedTable);
 
         /* Compare */
@@ -677,7 +677,7 @@ final class PgsqlSchemaTest extends TestCase
 
         $testRefreshedTable = $schema->getTableSchema($testTableName, false);
 
-        $this->assertInstanceOf(PgsqlTableSchema::class, $testRefreshedTable);
+        $this->assertInstanceOf(TableSchema::class, $testRefreshedTable);
         $this->assertEquals($refreshedTable, $testRefreshedTable);
         $this->assertNotSame($testNoCacheTable, $testRefreshedTable);
     }

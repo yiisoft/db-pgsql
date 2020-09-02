@@ -18,7 +18,7 @@ use function serialize;
 /**
  * @group pgsql
  */
-final class PgsqlCommandTest extends TestCase
+final class CommandTest extends TestCase
 {
     use TestCommandTrait;
 

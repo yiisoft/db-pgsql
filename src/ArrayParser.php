@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Yiisoft\Db\Pgsql\Query;
+namespace Yiisoft\Db\Pgsql;
 
 use function in_array;
 use function strlen;

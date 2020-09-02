@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Yiisoft\Db\Pgsql\Schema;
+namespace Yiisoft\Db\Pgsql;
 
 use Yiisoft\Db\Expression\ArrayExpression;
 use Yiisoft\Db\Expression\ExpressionInterface;
 use Yiisoft\Db\Expression\JsonExpression;
-use Yiisoft\Db\Pgsql\Query\ArrayParser;
-use Yiisoft\Db\Schema\ColumnSchema;
+use Yiisoft\Db\Pgsql\ArrayParser;
+use Yiisoft\Db\Schema\ColumnSchema as AbstractColumnSchema;
 
 use function array_walk_recursive;
 use function in_array;
@@ -17,7 +17,7 @@ use function is_string;
 use function json_decode;
 use function strtolower;
 
-final class PgsqlColumnSchema extends ColumnSchema
+final class ColumnSchema extends AbstractColumnSchema
 {
     /**
      * @var int the dimension of array. Defaults to 0, means this column is not an array.
@@ -53,7 +53,7 @@ final class PgsqlColumnSchema extends ColumnSchema
             return new ArrayExpression($value, $this->getDbType(), $this->dimension);
         }
 
-        if (in_array($this->getDbType(), [PgsqlSchema::TYPE_JSON, PgsqlSchema::TYPE_JSONB], true)) {
+        if (in_array($this->getDbType(), [Schema::TYPE_JSON, Schema::TYPE_JSONB], true)) {
             return new JsonExpression($value, $this->getDbType());
         }
 
@@ -103,7 +103,7 @@ final class PgsqlColumnSchema extends ColumnSchema
         }
 
         switch ($this->getType()) {
-            case PgsqlSchema::TYPE_BOOLEAN:
+            case Schema::TYPE_BOOLEAN:
                 $value = is_string($value) ? strtolower($value) : $value;
 
                 switch ($value) {
@@ -116,7 +116,7 @@ final class PgsqlColumnSchema extends ColumnSchema
                 }
 
                 return (bool) $value;
-            case PgsqlSchema::TYPE_JSON:
+            case Schema::TYPE_JSON:
                 return json_decode($value, true, 512, JSON_THROW_ON_ERROR);
         }
 

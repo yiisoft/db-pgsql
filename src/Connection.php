@@ -2,22 +2,22 @@
 
 declare(strict_types=1);
 
-namespace Yiisoft\Db\Pgsql\Connection;
+namespace Yiisoft\Db\Pgsql;
 
 use PDO;
-use Yiisoft\Db\Connection\Connection;
+use Yiisoft\Db\Connection\Connection as AbstractConnection;
 use Yiisoft\Db\Command\Command;
 use Yiisoft\Db\Exception\Exception;
 use Yiisoft\Db\Exception\InvalidConfigException;
 use Yiisoft\Db\Exception\NotSupportedException;
-use Yiisoft\Db\Pgsql\Schema\PgsqlSchema;
+use Yiisoft\Db\Pgsql\Schema;
 
 /**
  * Database connection class prefilled for PGSQL Server.
  */
-final class PgsqlConnection extends Connection
+final class Connection extends AbstractConnection
 {
-    private ?PgsqlSchema $schema = null;
+    private ?Schema $schema = null;
 
     /**
      * Creates a command for execution.
@@ -45,15 +45,15 @@ final class PgsqlConnection extends Connection
     /**
      * Returns the schema information for the database opened by this connection.
      *
-     * @return PgsqlSchema the schema information for the database opened by this connection.
+     * @return Schema the schema information for the database opened by this connection.
      */
-    public function getSchema(): PgsqlSchema
+    public function getSchema(): Schema
     {
         if ($this->schema !== null) {
             return $this->schema;
         }
 
-        return $this->schema = new PgsqlSchema($this);
+        return $this->schema = new Schema($this);
     }
 
     /**

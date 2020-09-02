@@ -9,7 +9,7 @@ use Yiisoft\Db\TestUtility\TestBatchQueryResultTrait;
 /**
  * @group pgsql
  */
-final class PgsqlBatchQueryResultTest extends TestCase
+final class BatchQueryResultTest extends TestCase
 {
     use TestBatchQueryResultTrait;
 }

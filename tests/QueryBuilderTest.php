@@ -13,9 +13,9 @@ use Yiisoft\Db\Exception\NotSupportedException;
 use Yiisoft\Db\Expression\ArrayExpression;
 use Yiisoft\Db\Expression\Expression;
 use Yiisoft\Db\Expression\JsonExpression;
-use Yiisoft\Db\Pgsql\Schema\PgsqlColumnSchema;
+use Yiisoft\Db\Pgsql\ColumnSchema;
+use Yiisoft\Db\Pgsql\QueryBuilder;
 use Yiisoft\Db\Query\Query;
-use Yiisoft\Db\Pgsql\Query\PgsqlQueryBuilder;
 use Yiisoft\Db\TestUtility\TestQueryBuilderTrait;
 use Yiisoft\Db\TestUtility\TraversableObject;
 
@@ -27,16 +27,16 @@ use function version_compare;
 /**
  * @group pgsql
  */
-final class PgsqlQueryBuilderTest extends TestCase
+final class QueryBuilderTest extends TestCase
 {
     use TestQueryBuilderTrait;
 
     /**
-     * @return PgsqlQueryBuilder
+     * @return QueryBuilder
      */
-    protected function getQueryBuilder(): PgsqlQueryBuilder
+    protected function getQueryBuilder(): QueryBuilder
     {
-        return new PgsqlQueryBuilder($this->getConnection());
+        return new QueryBuilder($this->getConnection());
     }
 
     public function testAlterColumn(): void
@@ -846,7 +846,7 @@ final class PgsqlQueryBuilderTest extends TestCase
      * @dataProvider upsertProvider
      *
      * @param string $table
-     * @param PgsqlColumnSchema|array $insertColumns
+     * @param ColumnSchema|array $insertColumns
      * @param array|bool|null $updateColumns
      * @param string|string[] $expectedSQL
      * @param array $expectedParams

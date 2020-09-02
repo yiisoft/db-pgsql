@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Yiisoft\Db\Pgsql\Expression;
+namespace Yiisoft\Db\Pgsql;
 
 use Traversable;
 use Yiisoft\Db\Exception\Exception;
@@ -14,7 +14,7 @@ use Yiisoft\Db\Expression\ExpressionBuilderInterface;
 use Yiisoft\Db\Expression\ExpressionBuilderTrait;
 use Yiisoft\Db\Expression\ExpressionInterface;
 use Yiisoft\Db\Expression\JsonExpression;
-use Yiisoft\Db\Pgsql\Schema\PgsqlSchema;
+use Yiisoft\Db\Pgsql\Schema;
 use Yiisoft\Db\Query\Query;
 
 use function get_class;
@@ -152,7 +152,7 @@ final class ArrayExpressionBuilder implements ExpressionBuilderInterface
             return $value;
         }
 
-        if (in_array($expression->getType(), [PgsqlSchema::TYPE_JSON, PgsqlSchema::TYPE_JSONB], true)) {
+        if (in_array($expression->getType(), [Schema::TYPE_JSON, Schema::TYPE_JSONB], true)) {
             return new JsonExpression($value);
         }
 

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Yiisoft\Db\Pgsql\Schema;
+namespace Yiisoft\Db\Pgsql;
 
 use PDO;
 use Yiisoft\Arrays\ArrayHelper;
@@ -18,9 +18,9 @@ use Yiisoft\Db\Exception\InvalidArgumentException;
 use Yiisoft\Db\Exception\InvalidConfigException;
 use Yiisoft\Db\Exception\NotSupportedException;
 use Yiisoft\Db\Expression\Expression;
-use Yiisoft\Db\Pgsql\Query\PgsqlQueryBuilder;
+use Yiisoft\Db\Pgsql\QueryBuilder;
 use Yiisoft\Db\Schema\ColumnSchemaBuilder;
-use Yiisoft\Db\Schema\Schema;
+use Yiisoft\Db\Schema\Schema as AbstractSchema;
 use Yiisoft\Db\View\ViewFinderTrait;
 
 use function array_change_key_case;
@@ -35,7 +35,7 @@ use function preg_replace;
 use function str_replace;
 use function substr;
 
-final class PgsqlSchema extends Schema implements ConstraintFinderInterface
+final class Schema extends AbstractSchema implements ConstraintFinderInterface
 {
     use ViewFinderTrait;
     use ConstraintFinderTrait;
@@ -129,13 +129,13 @@ final class PgsqlSchema extends Schema implements ConstraintFinderInterface
      *
      * @param string $name the table name.
      *
-     * @return PgsqlTableSchema with resolved table, schema, etc. names.
+     * @return TableSchema with resolved table, schema, etc. names.
      *
-     * {@see PgsqlTableSchema}
+     * {@see TableSchema}
      */
-    protected function resolveTableName(string $name): PgsqlTableSchema
+    protected function resolveTableName(string $name): TableSchema
     {
-        $resolvedName = new PgsqlTableSchema();
+        $resolvedName = new TableSchema();
 
         $parts = explode('.', str_replace('"', '', $name));
 
@@ -221,11 +221,11 @@ SQL;
      * @throws InvalidConfigException
      * @throws NotSupportedException
      *
-     * @return PgsqlTableSchema|null DBMS-dependent table metadata, `null` if the table does not exist.
+     * @return TableSchema|null DBMS-dependent table metadata, `null` if the table does not exist.
      */
-    protected function loadTableSchema(string $name): ?PgsqlTableSchema
+    protected function loadTableSchema(string $name): ?TableSchema
     {
-        $table = new PgsqlTableSchema();
+        $table = new TableSchema();
 
         $this->resolveTableNames($table, $name);
 
@@ -374,20 +374,20 @@ SQL;
     /**
      * Creates a query builder for the PostgreSQL database.
      *
-     * @return PgsqlQueryBuilder query builder instance
+     * @return QueryBuilder query builder instance
      */
-    public function createQueryBuilder(): PgsqlQueryBuilder
+    public function createQueryBuilder(): QueryBuilder
     {
-        return new PgsqlQueryBuilder($this->getDb());
+        return new QueryBuilder($this->getDb());
     }
 
     /**
      * Resolves the table name and schema name (if any).
      *
-     * @param PgsqlTableSchema $table the table metadata object.
+     * @param TableSchema $table the table metadata object.
      * @param string $name the table name
      */
-    protected function resolveTableNames(PgsqlTableSchema $table, string $name): void
+    protected function resolveTableNames(TableSchema $table, string $name): void
     {
         $parts = explode('.', str_replace('"', '', $name));
 
@@ -423,13 +423,13 @@ SQL;
     /**
      * Collects the foreign key column details for the given table.
      *
-     * @param PgsqlTableSchema $table the table metadata
+     * @param TableSchema $table the table metadata
      *
      * @throws Exception
      * @throws InvalidArgumentException
      * @throws InvalidConfigException
      */
-    protected function findConstraints(PgsqlTableSchema $table)
+    protected function findConstraints(TableSchema $table)
     {
         $tableName = $this->quoteValue($table->getName());
         $tableSchema = $this->quoteValue($table->getSchemaName());
@@ -497,7 +497,7 @@ SQL;
     /**
      * Gets information about given table unique indexes.
      *
-     * @param PgsqlTableSchema $table the table metadata.
+     * @param TableSchema $table the table metadata.
      *
      * @throws Exception
      * @throws InvalidArgumentException
@@ -505,7 +505,7 @@ SQL;
      *
      * @return array with index and column names.
      */
-    protected function getUniqueIndexInformation(PgsqlTableSchema $table): array
+    protected function getUniqueIndexInformation(TableSchema $table): array
     {
         $sql = <<<'SQL'
 SELECT
@@ -541,7 +541,7 @@ SQL;
      * ]
      * ```
      *
-     * @param PgsqlTableSchema $table the table metadata
+     * @param TableSchema $table the table metadata
      *
      * @throws Exception
      * @throws InvalidArgumentException
@@ -578,7 +578,7 @@ SQL;
     /**
      * Collects the metadata of table columns.
      *
-     * @param PgsqlTableSchema $table the table metadata.
+     * @param TableSchema $table the table metadata.
      *
      * @throws Exception
      * @throws InvalidArgumentException
@@ -587,7 +587,7 @@ SQL;
      *
      * @return bool whether the table exists in the database.
      */
-    protected function findColumns(PgsqlTableSchema $table): bool
+    protected function findColumns(TableSchema $table): bool
     {
         $tableName = $this->getDb()->quoteValue($table->getName());
         $schemaName = $this->getDb()->quoteValue($table->getSchemaName());
@@ -717,15 +717,15 @@ SQL;
     }
 
     /**
-     * Loads the column information into a {@see PgsqlColumnSchema} object.
+     * Loads the column information into a {@see ColumnSchema} object.
      *
      * @param array $info column information.
      *
-     * @return PgsqlColumnSchema the column schema object.
+     * @return ColumnSchema the column schema object.
      */
-    protected function loadColumnSchema(array $info): PgsqlColumnSchema
+    protected function loadColumnSchema(array $info): ColumnSchema
     {
-        /** @var PgsqlColumnSchema $column */
+        /** @var ColumnSchema $column */
         $column = $this->createColumnSchema();
         $column->allowNull($info['is_nullable']);
         $column->autoIncrement($info['is_autoinc']);
@@ -918,6 +918,7 @@ SQL;
                 }
             }
         }
+
         foreach ($result as $type => $data) {
             $this->setTableMetadata($tableName, $type, $data);
         }
@@ -930,11 +931,11 @@ SQL;
      *
      * This method may be overridden by child classes to create a DBMS-specific column schema.
      *
-     * @return PgsqlColumnSchema column schema instance.
+     * @return ColumnSchema column schema instance.
      */
-    private function createColumnSchema(): PgsqlColumnSchema
+    private function createColumnSchema(): ColumnSchema
     {
-        return new PgsqlColumnSchema();
+        return new ColumnSchema();
     }
 
     /**

@@ -9,7 +9,7 @@ use Yiisoft\Db\TestUtility\TestColumnSchemaBuilderTrait;
 /**
  * @group pgsql
  */
-final class PgsqlColumnSchemaBuilderTest extends TestCase
+final class ColumnSchemaBuilderTest extends TestCase
 {
     use TestColumnSchemaBuilderTrait;
 

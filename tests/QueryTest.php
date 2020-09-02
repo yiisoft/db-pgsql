@@ -10,7 +10,7 @@ use Yiisoft\Db\TestUtility\TestQueryTrait;
 /**
  * @group pgsql
  */
-final class PgsqlQueryTest extends TestCase
+final class QueryTest extends TestCase
 {
     use TestQueryTrait;
 

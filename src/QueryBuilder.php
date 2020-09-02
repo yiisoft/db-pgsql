@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Yiisoft\Db\Pgsql\Query;
+namespace Yiisoft\Db\Pgsql;
 
 use PDO;
 use Yiisoft\Db\Constraint\Constraint;
@@ -15,12 +15,12 @@ use Yiisoft\Db\Expression\Expression;
 use Yiisoft\Db\Expression\ExpressionInterface;
 use Yiisoft\Db\Expression\JsonExpression;
 use Yiisoft\Db\Pdo\PdoValue;
-use Yiisoft\Db\Pgsql\Expression\ArrayExpressionBuilder;
-use Yiisoft\Db\Pgsql\Expression\JsonExpressionBuilder;
-use Yiisoft\Db\Pgsql\Schema\PgsqlSchema;
+use Yiisoft\Db\Pgsql\ArrayExpressionBuilder;
+use Yiisoft\Db\Pgsql\JsonExpressionBuilder;
+use Yiisoft\Db\Pgsql\Schema;
 use Yiisoft\Db\Query\Conditions\LikeCondition;
 use Yiisoft\Db\Query\Query;
-use Yiisoft\Db\Query\QueryBuilder;
+use Yiisoft\Db\Query\QueryBuilder as AbstractQueryBuilder;
 use Yiisoft\Strings\NumericHelper;
 
 use function array_diff;
@@ -39,7 +39,7 @@ use function strpos;
 use function strrpos;
 use function version_compare;
 
-final class PgsqlQueryBuilder extends QueryBuilder
+final class QueryBuilder extends AbstractQueryBuilder
 {
     /**
      * Defines a UNIQUE index for {@see createIndex()}.
@@ -70,28 +70,28 @@ final class PgsqlQueryBuilder extends QueryBuilder
      * @var array mapping from abstract column types (keys) to physical column types (values).
      */
     protected array $typeMap = [
-        PgsqlSchema::TYPE_PK => 'serial NOT NULL PRIMARY KEY',
-        PgsqlSchema::TYPE_UPK => 'serial NOT NULL PRIMARY KEY',
-        PgsqlSchema::TYPE_BIGPK => 'bigserial NOT NULL PRIMARY KEY',
-        PgsqlSchema::TYPE_UBIGPK => 'bigserial NOT NULL PRIMARY KEY',
-        PgsqlSchema::TYPE_CHAR => 'char(1)',
-        PgsqlSchema::TYPE_STRING => 'varchar(255)',
-        PgsqlSchema::TYPE_TEXT => 'text',
-        PgsqlSchema::TYPE_TINYINT => 'smallint',
-        PgsqlSchema::TYPE_SMALLINT => 'smallint',
-        PgsqlSchema::TYPE_INTEGER => 'integer',
-        PgsqlSchema::TYPE_BIGINT => 'bigint',
-        PgsqlSchema::TYPE_FLOAT => 'double precision',
-        PgsqlSchema::TYPE_DOUBLE => 'double precision',
-        PgsqlSchema::TYPE_DECIMAL => 'numeric(10,0)',
-        PgsqlSchema::TYPE_DATETIME => 'timestamp(0)',
-        PgsqlSchema::TYPE_TIMESTAMP => 'timestamp(0)',
-        PgsqlSchema::TYPE_TIME => 'time(0)',
-        PgsqlSchema::TYPE_DATE => 'date',
-        PgsqlSchema::TYPE_BINARY => 'bytea',
-        PgsqlSchema::TYPE_BOOLEAN => 'boolean',
-        PgsqlSchema::TYPE_MONEY => 'numeric(19,4)',
-        PgsqlSchema::TYPE_JSON => 'jsonb',
+        Schema::TYPE_PK => 'serial NOT NULL PRIMARY KEY',
+        Schema::TYPE_UPK => 'serial NOT NULL PRIMARY KEY',
+        Schema::TYPE_BIGPK => 'bigserial NOT NULL PRIMARY KEY',
+        Schema::TYPE_UBIGPK => 'bigserial NOT NULL PRIMARY KEY',
+        Schema::TYPE_CHAR => 'char(1)',
+        Schema::TYPE_STRING => 'varchar(255)',
+        Schema::TYPE_TEXT => 'text',
+        Schema::TYPE_TINYINT => 'smallint',
+        Schema::TYPE_SMALLINT => 'smallint',
+        Schema::TYPE_INTEGER => 'integer',
+        Schema::TYPE_BIGINT => 'bigint',
+        Schema::TYPE_FLOAT => 'double precision',
+        Schema::TYPE_DOUBLE => 'double precision',
+        Schema::TYPE_DECIMAL => 'numeric(10,0)',
+        Schema::TYPE_DATETIME => 'timestamp(0)',
+        Schema::TYPE_TIMESTAMP => 'timestamp(0)',
+        Schema::TYPE_TIME => 'time(0)',
+        Schema::TYPE_DATE => 'date',
+        Schema::TYPE_BINARY => 'bytea',
+        Schema::TYPE_BOOLEAN => 'boolean',
+        Schema::TYPE_MONEY => 'numeric(19,4)',
+        Schema::TYPE_JSON => 'jsonb',
     ];
 
     /**
@@ -289,7 +289,7 @@ final class PgsqlQueryBuilder extends QueryBuilder
             $command .= "ALTER TABLE $tableName $enable TRIGGER ALL; ";
         }
 
-        /** enable to have ability to alter several tables */
+        /* enable to have ability to alter several tables */
         $this->db->getMasterPdo()->setAttribute(PDO::ATTR_EMULATE_PREPARES, true);
 
         return $command;
@@ -362,6 +362,7 @@ final class PgsqlQueryBuilder extends QueryBuilder
         } else {
             /* remove additional null if any */
             $type = preg_replace('/\s+NULL/i', '', $type);
+
             /* safe to drop not null even if there was none in the first place */
             $multiAlterStatement[] = "ALTER COLUMN {$columnName} DROP NOT NULL";
         }
@@ -491,7 +492,7 @@ final class PgsqlQueryBuilder extends QueryBuilder
         }
 
         if ($updateNames === []) {
-            /** there are no columns to update */
+            /* there are no columns to update */
             $updateColumns = false;
         }
 
@@ -542,11 +543,11 @@ final class PgsqlQueryBuilder extends QueryBuilder
         }
 
         if ($updateNames === []) {
-            /** there are no columns to update */
+            /* there are no columns to update */
             $updateColumns = false;
         }
 
-        /** @var PgsqlSchema $schema */
+        /** @var Schema $schema */
         $schema = $this->db->getSchema();
 
         if (!$insertColumns instanceof Query) {
@@ -687,10 +688,10 @@ final class PgsqlQueryBuilder extends QueryBuilder
             foreach ($columns as $name => $value) {
                 if (
                     isset($columnSchemas[$name]) &&
-                    $columnSchemas[$name]->getType() === PgsqlSchema::TYPE_BINARY &&
+                    $columnSchemas[$name]->getType() === Schema::TYPE_BINARY &&
                     is_string($value)
                 ) {
-                    /** explicitly setup PDO param type for binary column */
+                    /* explicitly setup PDO param type for binary column */
                     $columns[$name] = new PdoValue($value, PDO::PARAM_LOB);
                 }
             }

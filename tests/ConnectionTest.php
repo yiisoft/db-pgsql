@@ -7,14 +7,14 @@ namespace Yiisoft\Db\Pgsql\Tests;
 use PDO;
 use Yiisoft\Db\Exception\Exception;
 use Yiisoft\Db\Exception\InvalidConfigException;
-use Yiisoft\Db\Pgsql\Connection\PgsqlConnection;
+use Yiisoft\Db\Pgsql\Connection;
 use Yiisoft\Db\Transaction\Transaction;
 use Yiisoft\Db\TestUtility\TestConnectionTrait;
 
 /**
  * @group pgsql
  */
-final class PgsqlConnectionTest extends TestCase
+final class ConnectionTest extends TestCase
 {
     use TestConnectionTrait;
 
@@ -57,7 +57,7 @@ final class PgsqlConnectionTest extends TestCase
         $this->assertFalse($db->isActive());
         $this->assertNull($db->getPDO());
 
-        $db = new PgsqlConnection($this->cache, $this->logger, $this->profiler, 'unknown::memory:');
+        $db = new Connection($this->cache, $this->logger, $this->profiler, 'unknown::memory:');
 
         $this->expectException(Exception::class);
         $this->expectExceptionMessage('could not find driver');
@@ -174,7 +174,7 @@ final class PgsqlConnectionTest extends TestCase
         $db->setSlaves(
             '1',
             [
-                '__class' => PgsqlConnection::class,
+                '__class' => Connection::class,
                 '__construct()' => [
                     $this->cache,
                     $this->logger,
@@ -209,7 +209,7 @@ final class PgsqlConnectionTest extends TestCase
         $db->setMasters(
             '1',
             [
-                '__class' => PgsqlConnection::class,
+                '__class' => Connection::class,
                 '__construct()' => [
                     $this->cache,
                     $this->logger,
@@ -243,7 +243,7 @@ final class PgsqlConnectionTest extends TestCase
         $db->setMasters(
             '1',
             [
-                '__class' => PgsqlConnection::class,
+                '__class' => Connection::class,
                 '__construct()' => [
                     $this->cache,
                     $this->logger,
@@ -279,7 +279,7 @@ final class PgsqlConnectionTest extends TestCase
         $db->setMasters(
             '1',
             [
-                '__class' => PgsqlConnection::class,
+                '__class' => Connection::class,
                 '__construct()' => [
                     $this->cache,
                     $this->logger,
@@ -310,7 +310,7 @@ final class PgsqlConnectionTest extends TestCase
         $db->setMasters(
             '1',
             [
-                '__class' => PgsqlConnection::class,
+                '__class' => Connection::class,
                 '__construct()' => [
                     $this->cache,
                     $this->logger,
