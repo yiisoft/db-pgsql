@@ -55,10 +55,13 @@ final class ArrayParser
                 case '}':
                     break 2;
                 case $this->delimiter:
-                    if (empty($result)) { /* `{}` case */
+                    /* `{}` case */
+                    if (empty($result)) {
                         $result[] = null;
                     }
-                    if (in_array($value[$i + 1], [$this->delimiter, '}'], true)) { /* `{,}` case */
+
+                    /* `{,}` case */
+                    if (in_array($value[$i + 1], [$this->delimiter, '}'], true)) {
                         $result[] = null;
                     }
                     break;
