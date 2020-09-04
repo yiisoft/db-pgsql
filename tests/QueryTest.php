@@ -5,15 +5,19 @@ declare(strict_types=1);
 namespace Yiisoft\Db\Pgsql\Tests;
 
 use Yiisoft\Db\Query\Query;
-use Yiisoft\Db\Tests\QueryTest as AbstractQueryTest;
+use Yiisoft\Db\TestUtility\TestQueryTrait;
 
-class QueryTest extends AbstractQueryTest
+/**
+ * @group pgsql
+ */
+final class QueryTest extends TestCase
 {
-    protected ?string $driverName = 'pgsql';
+    use TestQueryTrait;
 
     public function testBooleanValues(): void
     {
-        $db = $this->getConnection();
+        $db = $this->getConnection(true);
+
         $command = $db->createCommand();
 
         $command->batchInsert(

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Yiisoft\Db\Pgsql\Expression;
+namespace Yiisoft\Db\Pgsql;
 
 use JsonException;
 use Yiisoft\Db\Exception\Exception;
@@ -17,7 +17,7 @@ use Yiisoft\Db\Expression\JsonExpression;
 use Yiisoft\Db\Query\Query;
 use Yiisoft\Json\Json;
 
-class JsonExpressionBuilder implements ExpressionBuilderInterface
+final class JsonExpressionBuilder implements ExpressionBuilderInterface
 {
     use ExpressionBuilderTrait;
 

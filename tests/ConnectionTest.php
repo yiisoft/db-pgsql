@@ -4,108 +4,331 @@ declare(strict_types=1);
 
 namespace Yiisoft\Db\Pgsql\Tests;
 
-use Yiisoft\Db\Connection\Connection;
-use Yiisoft\Db\Helper\Dsn;
+use PDO;
+use Yiisoft\Db\Exception\Exception;
+use Yiisoft\Db\Exception\InvalidConfigException;
+use Yiisoft\Db\Pgsql\Connection;
 use Yiisoft\Db\Transaction\Transaction;
-use Yiisoft\Db\Tests\ConnectionTest as AbstractConnectionTest;
+use Yiisoft\Db\TestUtility\TestConnectionTrait;
 
-class ConnectionTest extends AbstractConnectionTest
+/**
+ * @group pgsql
+ */
+final class ConnectionTest extends TestCase
 {
-    protected ?string $driverName = 'pgsql';
+    use TestConnectionTrait;
 
     public function testConnection(): void
     {
         $this->assertIsObject($this->getConnection(true));
     }
 
-    public function testDsnHelper(): void
+    public function testConstruct(): void
     {
-        $dsn = new Dsn('pgsql', '127.0.0.1', 'yiitest', '5432');
+        $db = $this->getConnection();
 
-        $connection = new Connection($this->cache, $this->logger, $this->profiler, $dsn->getDsn());
+        $this->assertEquals($this->cache, $db->getSchemaCache());
+        $this->assertEquals($this->logger, $db->getLogger());
+        $this->assertEquals($this->profiler, $db->getProfiler());
+        $this->assertEquals($this->dsn->getDsn(), $db->getDsn());
+    }
 
-        $this->assertEquals('pgsql:host=127.0.0.1;dbname=yiitest;port=5432', $connection->getDsn());
+    public function testGetDriverName(): void
+    {
+        $db = $this->getConnection();
+
+        $this->assertEquals($this->dsn->getDriver(), $db->getDriverName());
+    }
+
+    public function testOpenClose(): void
+    {
+        $db = $this->getConnection();
+
+        $this->assertFalse($db->isActive());
+        $this->assertNull($db->getPDO());
+
+        $db->open();
+
+        $this->assertTrue($db->isActive());
+        $this->assertInstanceOf(PDO::class, $db->getPDO());
+
+        $db->close();
+
+        $this->assertFalse($db->isActive());
+        $this->assertNull($db->getPDO());
+
+        $db = new Connection($this->cache, $this->logger, $this->profiler, 'unknown::memory:');
+
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage('could not find driver');
+
+        $db->open();
     }
 
     public function testQuoteValue(): void
     {
-        $connection = $this->getConnection(false);
-        $this->assertEquals(123, $connection->quoteValue(123));
-        $this->assertEquals("'string'", $connection->quoteValue('string'));
-        $this->assertEquals("'It''s interesting'", $connection->quoteValue("It's interesting"));
+        $db = $this->getConnection();
+
+        $this->assertEquals(123, $db->quoteValue(123));
+        $this->assertEquals("'string'", $db->quoteValue('string'));
+        $this->assertEquals("'It''s interesting'", $db->quoteValue("It's interesting"));
     }
 
     public function testQuoteTableName(): void
     {
-        $connection = $this->getConnection(false);
-        $this->assertEquals('"table"', $connection->quoteTableName('table'));
-        $this->assertEquals('"table"', $connection->quoteTableName('"table"'));
-        $this->assertEquals('"schema"."table"', $connection->quoteTableName('schema.table'));
-        $this->assertEquals('"schema"."table"', $connection->quoteTableName('schema."table"'));
-        $this->assertEquals('"schema"."table"', $connection->quoteTableName('"schema"."table"'));
-        $this->assertEquals('{{table}}', $connection->quoteTableName('{{table}}'));
-        $this->assertEquals('(table)', $connection->quoteTableName('(table)'));
+        $db = $this->getConnection();
+
+        $this->assertEquals('"table"', $db->quoteTableName('table'));
+        $this->assertEquals('"table"', $db->quoteTableName('"table"'));
+        $this->assertEquals('"schema"."table"', $db->quoteTableName('schema.table'));
+        $this->assertEquals('"schema"."table"', $db->quoteTableName('schema."table"'));
+        $this->assertEquals('"schema"."table"', $db->quoteTableName('"schema"."table"'));
+        $this->assertEquals('{{table}}', $db->quoteTableName('{{table}}'));
+        $this->assertEquals('(table)', $db->quoteTableName('(table)'));
     }
 
     public function testQuoteColumnName(): void
     {
-        $connection = $this->getConnection(false);
-        $this->assertEquals('"column"', $connection->quoteColumnName('column'));
-        $this->assertEquals('"column"', $connection->quoteColumnName('"column"'));
-        $this->assertEquals('[[column]]', $connection->quoteColumnName('[[column]]'));
-        $this->assertEquals('{{column}}', $connection->quoteColumnName('{{column}}'));
-        $this->assertEquals('(column)', $connection->quoteColumnName('(column)'));
+        $db = $this->getConnection();
 
-        $this->assertEquals('"column"', $connection->quoteSql('[[column]]'));
-        $this->assertEquals('"column"', $connection->quoteSql('{{column}}'));
+        $this->assertEquals('"column"', $db->quoteColumnName('column'));
+        $this->assertEquals('"column"', $db->quoteColumnName('"column"'));
+        $this->assertEquals('[[column]]', $db->quoteColumnName('[[column]]'));
+        $this->assertEquals('{{column}}', $db->quoteColumnName('{{column}}'));
+        $this->assertEquals('(column)', $db->quoteColumnName('(column)'));
+
+        $this->assertEquals('"column"', $db->quoteSql('[[column]]'));
+        $this->assertEquals('"column"', $db->quoteSql('{{column}}'));
     }
 
     public function testQuoteFullColumnName(): void
     {
-        $connection = $this->getConnection(false, false);
-        $this->assertEquals('"table"."column"', $connection->quoteColumnName('table.column'));
-        $this->assertEquals('"table"."column"', $connection->quoteColumnName('table."column"'));
-        $this->assertEquals('"table"."column"', $connection->quoteColumnName('"table".column'));
-        $this->assertEquals('"table"."column"', $connection->quoteColumnName('"table"."column"'));
+        $db = $this->getConnection();
 
-        $this->assertEquals('[[table.column]]', $connection->quoteColumnName('[[table.column]]'));
-        $this->assertEquals('{{table}}."column"', $connection->quoteColumnName('{{table}}.column'));
-        $this->assertEquals('{{table}}."column"', $connection->quoteColumnName('{{table}}."column"'));
-        $this->assertEquals('{{table}}.[[column]]', $connection->quoteColumnName('{{table}}.[[column]]'));
-        $this->assertEquals('{{%table}}."column"', $connection->quoteColumnName('{{%table}}.column'));
-        $this->assertEquals('{{%table}}."column"', $connection->quoteColumnName('{{%table}}."column"'));
+        $this->assertEquals('"table"."column"', $db->quoteColumnName('table.column'));
+        $this->assertEquals('"table"."column"', $db->quoteColumnName('table."column"'));
+        $this->assertEquals('"table"."column"', $db->quoteColumnName('"table".column'));
+        $this->assertEquals('"table"."column"', $db->quoteColumnName('"table"."column"'));
 
-        $this->assertEquals('"table"."column"', $connection->quoteSql('[[table.column]]'));
-        $this->assertEquals('"table"."column"', $connection->quoteSql('{{table}}.[[column]]'));
-        $this->assertEquals('"table"."column"', $connection->quoteSql('{{table}}."column"'));
-        $this->assertEquals('"table"."column"', $connection->quoteSql('{{%table}}.[[column]]'));
-        $this->assertEquals('"table"."column"', $connection->quoteSql('{{%table}}."column"'));
+        $this->assertEquals('[[table.column]]', $db->quoteColumnName('[[table.column]]'));
+        $this->assertEquals('{{table}}."column"', $db->quoteColumnName('{{table}}.column'));
+        $this->assertEquals('{{table}}."column"', $db->quoteColumnName('{{table}}."column"'));
+        $this->assertEquals('{{table}}.[[column]]', $db->quoteColumnName('{{table}}.[[column]]'));
+        $this->assertEquals('{{%table}}."column"', $db->quoteColumnName('{{%table}}.column'));
+        $this->assertEquals('{{%table}}."column"', $db->quoteColumnName('{{%table}}."column"'));
+
+        $this->assertEquals('"table"."column"', $db->quoteSql('[[table.column]]'));
+        $this->assertEquals('"table"."column"', $db->quoteSql('{{table}}.[[column]]'));
+        $this->assertEquals('"table"."column"', $db->quoteSql('{{table}}."column"'));
+        $this->assertEquals('"table"."column"', $db->quoteSql('{{%table}}.[[column]]'));
+        $this->assertEquals('"table"."column"', $db->quoteSql('{{%table}}."column"'));
     }
 
     public function testTransactionIsolation(): void
     {
-        $connection = $this->getConnection(true);
+        $db = $this->getConnection(true);
 
-        $transaction = $connection->beginTransaction();
+        $transaction = $db->beginTransaction();
+
         $transaction->setIsolationLevel(Transaction::READ_UNCOMMITTED);
+
         $transaction->commit();
 
-        $transaction = $connection->beginTransaction();
+        $transaction = $db->beginTransaction();
+
         $transaction->setIsolationLevel(Transaction::READ_COMMITTED);
+
         $transaction->commit();
 
-        $transaction = $connection->beginTransaction();
+        $transaction = $db->beginTransaction();
+
         $transaction->setIsolationLevel(Transaction::REPEATABLE_READ);
+
         $transaction->commit();
 
-        $transaction = $connection->beginTransaction();
+        $transaction = $db->beginTransaction();
+
         $transaction->setIsolationLevel(Transaction::SERIALIZABLE);
+
         $transaction->commit();
 
-        $transaction = $connection->beginTransaction();
+        $transaction = $db->beginTransaction();
+
         $transaction->setIsolationLevel(Transaction::SERIALIZABLE . ' READ ONLY DEFERRABLE');
+
         $transaction->commit();
 
-        $this->assertTrue(true); // No error occurred – assert passed.
+        /* should not be any exception so far */
+        $this->assertTrue(true);
+    }
+
+    /**
+     * Test whether slave connection is recovered when call `getSlavePdo()` after `close()`.
+     *
+     * {@see https://github.com/yiisoft/yii2/issues/14165}
+     */
+    public function testGetPdoAfterClose(): void
+    {
+        $db = $this->getConnection();
+
+        $db->setSlaves(
+            '1',
+            [
+                '__class' => Connection::class,
+                '__construct()' => [
+                    $this->cache,
+                    $this->logger,
+                    $this->profiler,
+                    $this->dsn->getDsn()
+                ],
+                'setUsername()' => [$db->getUsername()],
+                'setPassword()' => [$db->getPassword()]
+            ]
+        );
+
+        $this->assertNotNull($db->getSlavePdo(false));
+
+        $db->close();
+
+        $masterPdo = $db->getMasterPdo();
+
+        $this->assertNotFalse($masterPdo);
+        $this->assertNotNull($masterPdo);
+
+        $slavePdo = $db->getSlavePdo(false);
+
+        $this->assertNotFalse($slavePdo);
+        $this->assertNotNull($slavePdo);
+        $this->assertNotSame($masterPdo, $slavePdo);
+    }
+
+    public function testServerStatusCacheWorks(): void
+    {
+        $db = $this->getConnection();
+
+        $db->setMasters(
+            '1',
+            [
+                '__class' => Connection::class,
+                '__construct()' => [
+                    $this->cache,
+                    $this->logger,
+                    $this->profiler,
+                    $this->dsn->getDsn()
+                ],
+                'setUsername()' => [$db->getUsername()],
+                'setPassword()' => [$db->getPassword()]
+            ]
+        );
+
+        $db->setShuffleMasters(false);
+
+        $cacheKey = ['Yiisoft\Db\Connection\Connection::openFromPoolSequentially', $db->getDsn()];
+
+        $this->assertFalse($this->cache->has($cacheKey));
+
+        $db->open();
+
+        $this->assertFalse(
+            $this->cache->has($cacheKey),
+            'Connection was successful – cache must not contain information about this DSN'
+        );
+
+        $db->close();
+
+        $db = $this->getConnection();
+
+        $cacheKey = ['Yiisoft\Db\Connection\Connection::openFromPoolSequentially', 'host:invalid'];
+
+        $db->setMasters(
+            '1',
+            [
+                '__class' => Connection::class,
+                '__construct()' => [
+                    $this->cache,
+                    $this->logger,
+                    $this->profiler,
+                    'host:invalid'
+                ],
+                'setUsername()' => [$db->getUsername()],
+                'setPassword()' => [$db->getPassword()]
+            ]
+        );
+
+        $db->setShuffleMasters(true);
+
+        try {
+            $db->open();
+        } catch (InvalidConfigException $e) {
+        }
+
+        $this->assertTrue(
+            $this->cache->has($cacheKey),
+            'Connection was not successful – cache must contain information about this DSN'
+        );
+
+        $db->close();
+    }
+
+    public function testServerStatusCacheCanBeDisabled(): void
+    {
+        $this->cache->clear();
+
+        $db = $this->getConnection();
+
+        $db->setMasters(
+            '1',
+            [
+                '__class' => Connection::class,
+                '__construct()' => [
+                    $this->cache,
+                    $this->logger,
+                    $this->profiler,
+                    $this->dsn->getDsn()
+                ],
+                'setUsername()' => [$db->getUsername()],
+                'setPassword()' => [$db->getPassword()]
+            ]
+        );
+
+        $db->setSchemaCache(null);
+
+        $db->setShuffleMasters(false);
+
+        $cacheKey = ['Yiisoft\Db\Connection\Connection::openFromPoolSequentially', $db->getDsn()];
+
+        $this->assertFalse($this->cache->has($cacheKey));
+
+        $db->open();
+
+        $this->assertFalse($this->cache->has($cacheKey), 'Caching is disabled');
+
+        $db->close();
+
+        $cacheKey = ['Yiisoft\Db\Connection\Connection::openFromPoolSequentially', 'host:invalid'];
+
+        $db->setMasters(
+            '1',
+            [
+                '__class' => Connection::class,
+                '__construct()' => [
+                    $this->cache,
+                    $this->logger,
+                    $this->profiler,
+                    'host:invalid'
+                ],
+                'setUsername()' => [$db->getUsername()],
+                'setPassword()' => [$db->getPassword()]
+            ]
+        );
+
+        try {
+            $db->open();
+        } catch (InvalidConfigException $e) {
+        }
+
+        $this->assertFalse($this->cache->has($cacheKey), 'Caching is disabled');
+
+        $db->close();
     }
 }

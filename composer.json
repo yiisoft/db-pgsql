@@ -18,10 +18,10 @@
     "minimum-stability": "dev",
     "prefer-stable": true,
     "require": {
-        "php": "^7.4|^8.0",
         "ext-json": "*",
         "ext-pdo": "*",
         "ext-pdo_pgsql": "*",
+        "php": "^7.4|^8.0",
         "yiisoft/arrays": "^3.0@dev",
         "yiisoft/db": "^3.0@dev",
         "yiisoft/json": "^1.0",
@@ -38,7 +38,11 @@
     },
     "autoload": {
         "psr-4": {
-            "Yiisoft\\Db\\Pgsql\\": "src",
+            "Yiisoft\\Db\\Pgsql\\": "src"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
             "Yiisoft\\Db\\Pgsql\\Tests\\": "tests"
         }
     },
