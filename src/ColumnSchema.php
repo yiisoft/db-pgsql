@@ -2,21 +2,21 @@
 
 declare(strict_types=1);
 
-namespace Yiisoft\Db\Pgsql\Schema;
+namespace Yiisoft\Db\Pgsql;
 
 use Yiisoft\Db\Expression\ArrayExpression;
 use Yiisoft\Db\Expression\ExpressionInterface;
 use Yiisoft\Db\Expression\JsonExpression;
-use Yiisoft\Db\Pgsql\Query\ArrayParser;
 use Yiisoft\Db\Schema\ColumnSchema as AbstractColumnSchema;
 
 use function array_walk_recursive;
+use function in_array;
 use function is_array;
 use function is_string;
 use function json_decode;
 use function strtolower;
 
-class ColumnSchema extends AbstractColumnSchema
+final class ColumnSchema extends AbstractColumnSchema
 {
     /**
      * @var int the dimension of array. Defaults to 0, means this column is not an array.
@@ -52,7 +52,7 @@ class ColumnSchema extends AbstractColumnSchema
             return new ArrayExpression($value, $this->getDbType(), $this->dimension);
         }
 
-        if (\in_array($this->getDbType(), [Schema::TYPE_JSON, Schema::TYPE_JSONB], true)) {
+        if (in_array($this->getDbType(), [Schema::TYPE_JSON, Schema::TYPE_JSONB], true)) {
             return new JsonExpression($value, $this->getDbType());
         }
 

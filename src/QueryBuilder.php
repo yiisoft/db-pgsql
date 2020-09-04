@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Yiisoft\Db\Pgsql\Query;
+namespace Yiisoft\Db\Pgsql;
 
 use PDO;
 use Yiisoft\Db\Constraint\Constraint;
@@ -15,14 +15,10 @@ use Yiisoft\Db\Expression\Expression;
 use Yiisoft\Db\Expression\ExpressionInterface;
 use Yiisoft\Db\Expression\JsonExpression;
 use Yiisoft\Db\Pdo\PdoValue;
-use Yiisoft\Db\Pgsql\Expression\ArrayExpressionBuilder;
-use Yiisoft\Db\Pgsql\Expression\JsonExpressionBuilder;
-use Yiisoft\Db\Pgsql\Schema\Schema;
 use Yiisoft\Db\Query\Conditions\LikeCondition;
 use Yiisoft\Db\Query\Query;
 use Yiisoft\Db\Query\QueryBuilder as AbstractQueryBuilder;
 use Yiisoft\Strings\NumericHelper;
-use Yiisoft\Strings\StringHelper;
 
 use function array_diff;
 use function array_merge;
@@ -37,9 +33,10 @@ use function preg_match;
 use function preg_replace;
 use function reset;
 use function strpos;
+use function strrpos;
 use function version_compare;
 
-class QueryBuilder extends AbstractQueryBuilder
+final class QueryBuilder extends AbstractQueryBuilder
 {
     /**
      * Defines a UNIQUE index for {@see createIndex()}.
@@ -118,7 +115,7 @@ class QueryBuilder extends AbstractQueryBuilder
      *
      * @return array
      *
-     * See {@see \Yiisoft\Db\Expression\ExpressionBuilder} docs for details.
+     * See {@see ExpressionBuilder} docs for details.
      */
     protected function defaultExpressionBuilders(): array
     {
@@ -184,7 +181,7 @@ class QueryBuilder extends AbstractQueryBuilder
     {
         if (strpos($table, '.') !== false && strpos($name, '.') === false) {
             if (strpos($table, '{{') !== false) {
-                $table = preg_replace('/\\{\\{(.*?)\\}\\}/', '\1', $table);
+                $table = preg_replace('/{{(.*?)}}/', '\1', $table);
                 [$schema, $table] = explode('.', $table);
                 if (strpos($schema, '%') === false) {
                     $name = $schema . '.' . $name;
@@ -239,7 +236,9 @@ class QueryBuilder extends AbstractQueryBuilder
     {
         $table = $this->db->getTableSchema($tableName);
         if ($table !== null && $table->getSequenceName() !== null) {
-            /** c.f. http://www.postgresql.org/docs/8.1/static/functions-sequence.html */
+            /**
+             * {@see http://www.postgresql.org/docs/8.1/static/functions-sequence.html}
+             */
             $sequence = $this->db->quoteTableName($table->getSequenceName());
             $tableName = $this->db->quoteTableName($tableName);
             if ($value === null) {
@@ -287,7 +286,7 @@ class QueryBuilder extends AbstractQueryBuilder
             $command .= "ALTER TABLE $tableName $enable TRIGGER ALL; ";
         }
 
-        /** enable to have ability to alter several tables */
+        /* enable to have ability to alter several tables */
         $this->db->getMasterPdo()->setAttribute(PDO::ATTR_EMULATE_PREPARES, true);
 
         return $command;
@@ -349,7 +348,7 @@ class QueryBuilder extends AbstractQueryBuilder
             $type = preg_replace('/\s+DEFAULT\s+(["\']?\w*["\']?)/i', '', $type);
             $multiAlterStatement[] = "ALTER COLUMN {$columnName} SET DEFAULT {$matches[1]}";
         } else {
-            /** safe to drop default even if there was none in the first place */
+            /* safe to drop default even if there was none in the first place */
             $multiAlterStatement[] = "ALTER COLUMN {$columnName} DROP DEFAULT";
         }
 
@@ -358,9 +357,10 @@ class QueryBuilder extends AbstractQueryBuilder
         if ($count) {
             $multiAlterStatement[] = "ALTER COLUMN {$columnName} SET NOT NULL";
         } else {
-            /** remove additional null if any */
+            /* remove additional null if any */
             $type = preg_replace('/\s+NULL/i', '', $type);
-            /** safe to drop not null even if there was none in the first place */
+
+            /* safe to drop not null even if there was none in the first place */
             $multiAlterStatement[] = "ALTER COLUMN {$columnName} DROP NOT NULL";
         }
 
@@ -375,7 +375,7 @@ class QueryBuilder extends AbstractQueryBuilder
             $multiAlterStatement[] = "ADD UNIQUE ({$columnName})";
         }
 
-        /** add what's left at the beginning */
+        /* add what's left at the beginning */
         array_unshift($multiAlterStatement, "ALTER COLUMN {$columnName} {$type}");
 
         return 'ALTER TABLE ' . $tableName . ' ' . implode(', ', $multiAlterStatement);
@@ -397,8 +397,8 @@ class QueryBuilder extends AbstractQueryBuilder
      *
      * @param string $table the table that new rows will be inserted into.
      * @param array|Query $columns the column data (name => value) to be inserted into the table or instance of
-     * {@see \Yiisoft\Db\Query\Query|Query} to perform INSERT INTO ... SELECT SQL statement. Passing of
-     * {@see \Yiisoft\Db\Query\Query|Query}.
+     * {@see Query|Query} to perform INSERT INTO ... SELECT SQL statement. Passing of
+     * {@see Query|Query}.
      * @param array $params the binding parameters that will be generated by this method. They should be bound to the
      * DB command later.
      *
@@ -489,7 +489,7 @@ class QueryBuilder extends AbstractQueryBuilder
         }
 
         if ($updateNames === []) {
-            /** there are no columns to update */
+            /* there are no columns to update */
             $updateColumns = false;
         }
 
@@ -540,7 +540,7 @@ class QueryBuilder extends AbstractQueryBuilder
         }
 
         if ($updateNames === []) {
-            /** there are no columns to update */
+            /* there are no columns to update */
             $updateColumns = false;
         }
 
@@ -584,11 +584,11 @@ class QueryBuilder extends AbstractQueryBuilder
             . (!empty($placeholders) ? 'VALUES (' . implode(', ', $placeholders) . ')' : ltrim($values, ' ')) . ')';
 
         if ($updateColumns === false) {
-            $selectSubQuery = (new Query())
+            $selectSubQuery = (new Query($this->db))
                 ->select(new Expression('1'))
                 ->from($table)
                 ->where($updateCondition);
-            $insertSelectSubQuery = (new Query())
+            $insertSelectSubQuery = (new Query($this->db))
                 ->select($insertNames)
                 ->from('EXCLUDED')
                 ->where(['not exists', $selectSubQuery]);
@@ -601,7 +601,7 @@ class QueryBuilder extends AbstractQueryBuilder
             $updateColumns = [];
             foreach ($updateNames as $name) {
                 $quotedName = $this->db->quoteColumnName($name);
-                if (\strrpos($quotedName, '.') === false) {
+                if (strrpos($quotedName, '.') === false) {
                     $quotedName = '"EXCLUDED".' . $quotedName;
                 }
                 $updateColumns[$name] = new Expression($quotedName);
@@ -614,12 +614,12 @@ class QueryBuilder extends AbstractQueryBuilder
             . ' FROM "EXCLUDED" ' . $this->buildWhere($updateCondition, $params)
             . ' RETURNING ' . $this->db->quoteTableName($table) . '.*';
 
-        $selectUpsertSubQuery = (new Query())
+        $selectUpsertSubQuery = (new Query($this->db))
             ->select(new Expression('1'))
             ->from('upsert')
             ->where($insertCondition);
 
-        $insertSelectSubQuery = (new Query())
+        $insertSelectSubQuery = (new Query($this->db))
             ->select($insertNames)
             ->from('EXCLUDED')
             ->where(['not exists', $selectUpsertSubQuery]);
@@ -665,8 +665,8 @@ class QueryBuilder extends AbstractQueryBuilder
      *
      * @param string $table the table that data will be saved into.
      * @param array|Query $columns the column data (name => value) to be saved into the table or instance of
-     * {@see \Yiisoft\Db\Query\Query} to perform INSERT INTO ... SELECT SQL statement. Passing of
-     * {@see \Yiisoft\Db\Query\Query}.
+     * {@see Query} to perform INSERT INTO ... SELECT SQL statement. Passing of
+     * {@see Query}.
      *
      * @throws Exception
      * @throws InvalidConfigException
@@ -688,7 +688,7 @@ class QueryBuilder extends AbstractQueryBuilder
                     $columnSchemas[$name]->getType() === Schema::TYPE_BINARY &&
                     is_string($value)
                 ) {
-                    /** explicitly setup PDO param type for binary column */
+                    /* explicitly setup PDO param type for binary column */
                     $columns[$name] = new PdoValue($value, PDO::PARAM_LOB);
                 }
             }
@@ -733,6 +733,7 @@ class QueryBuilder extends AbstractQueryBuilder
         }
 
         $schema = $this->db->getSchema();
+
         if (($tableSchema = $schema->getTableSchema($table)) !== null) {
             $columnSchemas = $tableSchema->getColumns();
         } else {
@@ -746,10 +747,11 @@ class QueryBuilder extends AbstractQueryBuilder
                 if (isset($columns[$i], $columnSchemas[$columns[$i]])) {
                     $value = $columnSchemas[$columns[$i]]->dbTypecast($value);
                 }
+
                 if (is_string($value)) {
                     $value = $schema->quoteValue($value);
                 } elseif (is_float($value)) {
-                    // ensure type cast always has . as decimal separator in all locales
+                    /* ensure type cast always has . as decimal separator in all locales */
                     $value = NumericHelper::normalize($value);
                 } elseif ($value === true) {
                     $value = 'TRUE';
@@ -760,6 +762,7 @@ class QueryBuilder extends AbstractQueryBuilder
                 } elseif ($value instanceof ExpressionInterface) {
                     $value = $this->buildExpression($value, $params);
                 }
+
                 $vs[] = $value;
             }
             $values[] = '(' . implode(', ', $vs) . ')';

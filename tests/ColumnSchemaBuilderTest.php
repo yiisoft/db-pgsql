@@ -4,15 +4,25 @@ declare(strict_types=1);
 
 namespace Yiisoft\Db\Pgsql\Tests;
 
-use Yiisoft\Db\Schema\ColumnSchemaBuilder;
-use Yiisoft\Db\Tests\ColumnSchemaBuilderTest as AbstractColumnSchemaBuilderTest;
+use Yiisoft\Db\TestUtility\TestColumnSchemaBuilderTrait;
 
-class ColumnSchemaBuilderTest extends AbstractColumnSchemaBuilderTest
+/**
+ * @group pgsql
+ */
+final class ColumnSchemaBuilderTest extends TestCase
 {
-    protected ?string $driverName = 'pgsql';
+    use TestColumnSchemaBuilderTrait;
 
-    public function getColumnSchemaBuilder($type, $length = null): ColumnSchemaBuilder
+    /**
+     * @dataProvider typesProviderTrait
+     *
+     * @param string $expected
+     * @param string $type
+     * @param int|null $length
+     * @param mixed $calls
+     */
+    public function testCustomTypes(string $expected, string $type, ?int $length, $calls): void
     {
-        return new ColumnSchemaBuilder($type, $length, $this->getConnection());
+        $this->checkBuildString($expected, $type, $length, $calls);
     }
 }

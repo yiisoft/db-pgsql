@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Yiisoft\Db\Pgsql\Expression;
+namespace Yiisoft\Db\Pgsql;
 
 use Traversable;
 use Yiisoft\Db\Exception\Exception;
@@ -14,7 +14,6 @@ use Yiisoft\Db\Expression\ExpressionBuilderInterface;
 use Yiisoft\Db\Expression\ExpressionBuilderTrait;
 use Yiisoft\Db\Expression\ExpressionInterface;
 use Yiisoft\Db\Expression\JsonExpression;
-use Yiisoft\Db\Pgsql\Schema\Schema;
 use Yiisoft\Db\Query\Query;
 
 use function get_class;
@@ -23,7 +22,7 @@ use function in_array;
 use function is_array;
 use function str_repeat;
 
-class ArrayExpressionBuilder implements ExpressionBuilderInterface
+final class ArrayExpressionBuilder implements ExpressionBuilderInterface
 {
     use ExpressionBuilderTrait;
 

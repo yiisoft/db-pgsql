@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Yiisoft\Db\Pgsql\Schema;
+namespace Yiisoft\Db\Pgsql;
 
 use PDO;
 use Yiisoft\Arrays\ArrayHelper;
@@ -18,7 +18,7 @@ use Yiisoft\Db\Exception\InvalidArgumentException;
 use Yiisoft\Db\Exception\InvalidConfigException;
 use Yiisoft\Db\Exception\NotSupportedException;
 use Yiisoft\Db\Expression\Expression;
-use Yiisoft\Db\Pgsql\Query\QueryBuilder;
+use Yiisoft\Db\Schema\ColumnSchemaBuilder;
 use Yiisoft\Db\Schema\Schema as AbstractSchema;
 use Yiisoft\Db\View\ViewFinderTrait;
 
@@ -32,10 +32,9 @@ use function implode;
 use function preg_match;
 use function preg_replace;
 use function str_replace;
-use function strncasecmp;
 use function substr;
 
-class Schema extends AbstractSchema implements ConstraintFinderInterface
+final class Schema extends AbstractSchema implements ConstraintFinderInterface
 {
     use ViewFinderTrait;
     use ConstraintFinderTrait;
@@ -131,11 +130,12 @@ class Schema extends AbstractSchema implements ConstraintFinderInterface
      *
      * @return TableSchema with resolved table, schema, etc. names.
      *
-     * {@see \Yiisoft\Db\Schema\TableSchema}
+     * {@see TableSchema}
      */
     protected function resolveTableName(string $name): TableSchema
     {
         $resolvedName = new TableSchema();
+
         $parts = explode('.', str_replace('"', '', $name));
 
         if (isset($parts[1])) {
@@ -206,6 +206,7 @@ INNER JOIN pg_namespace ns ON ns.oid = c.relnamespace
 WHERE ns.nspname = :schemaName AND c.relkind IN ('r','v','m','f', 'p')
 ORDER BY c.relname
 SQL;
+
         return $this->getDb()->createCommand($sql, [':schemaName' => $schema])->queryColumn();
     }
 
@@ -406,6 +407,7 @@ SQL;
         if ($schema === '') {
             $schema = $this->defaultSchema;
         }
+
         $sql = <<<'SQL'
 SELECT c.relname AS table_name
 FROM pg_class c
@@ -413,6 +415,7 @@ INNER JOIN pg_namespace ns ON ns.oid = c.relnamespace
 WHERE ns.nspname = :schemaName AND (c.relkind = 'v' OR c.relkind = 'm')
 ORDER BY c.relname
 SQL;
+
         return $this->getDb()->createCommand($sql, [':schemaName' => $schema])->queryColumn();
     }
 
@@ -847,6 +850,7 @@ LEFT JOIN "pg_attribute" "fa"
 WHERE "tcns"."nspname" = :schemaName AND "tc"."relname" = :tableName
 ORDER BY "a"."attnum" ASC, "fa"."attnum" ASC
 SQL;
+
         static $actionTypes = [
             'a' => 'NO ACTION',
             'r' => 'RESTRICT',
@@ -885,7 +889,7 @@ SQL;
                             ->columnNames(array_values(
                                 array_unique(ArrayHelper::getColumn($constraint, 'column_name'))
                             ))
-                            ->foreignColumnNames($constraint[0]['foreign_table_schema'])
+                            ->foreignSchemaName($constraint[0]['foreign_table_schema'])
                             ->foreignTableName($constraint[0]['foreign_table_name'])
                             ->foreignColumnNames(array_values(
                                 array_unique(ArrayHelper::getColumn($constraint, 'foreign_column_name'))
@@ -913,6 +917,7 @@ SQL;
                 }
             }
         }
+
         foreach ($result as $type => $data) {
             $this->setTableMetadata($tableName, $type, $data);
         }
@@ -927,8 +932,23 @@ SQL;
      *
      * @return ColumnSchema column schema instance.
      */
-    protected function createColumnSchema(): ColumnSchema
+    private function createColumnSchema(): ColumnSchema
     {
         return new ColumnSchema();
+    }
+
+    /**
+     * Create a column schema builder instance giving the type and value precision.
+     *
+     * This method may be overridden by child classes to create a DBMS-specific column schema builder.
+     *
+     * @param string $type type of the column. See {@see ColumnSchemaBuilder::$type}.
+     * @param int|string|array $length length or precision of the column. See {@see ColumnSchemaBuilder::$length}.
+     *
+     * @return ColumnSchemaBuilder column schema builder instance
+     */
+    public function createColumnSchemaBuilder(string $type, $length = null): ColumnSchemaBuilder
+    {
+        return new ColumnSchemaBuilder($type, $length, $this->getDb());
     }
 }

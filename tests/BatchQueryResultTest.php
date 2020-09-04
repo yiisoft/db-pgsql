@@ -4,9 +4,12 @@ declare(strict_types=1);
 
 namespace Yiisoft\Db\Pgsql\Tests;
 
-use Yiisoft\Db\Tests\BatchQueryResultTest as AbstractBatchQueryResultTest;
+use Yiisoft\Db\TestUtility\TestBatchQueryResultTrait;
 
-final class BatchQueryResultTest extends AbstractBatchQueryResultTest
+/**
+ * @group pgsql
+ */
+final class BatchQueryResultTest extends TestCase
 {
-    protected ?string $driverName = 'pgsql';
+    use TestBatchQueryResultTrait;
 }
