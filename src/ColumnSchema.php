@@ -7,7 +7,6 @@ namespace Yiisoft\Db\Pgsql;
 use Yiisoft\Db\Expression\ArrayExpression;
 use Yiisoft\Db\Expression\ExpressionInterface;
 use Yiisoft\Db\Expression\JsonExpression;
-use Yiisoft\Db\Pgsql\ArrayParser;
 use Yiisoft\Db\Schema\ColumnSchema as AbstractColumnSchema;
 
 use function array_walk_recursive;

@@ -10,7 +10,6 @@ use Yiisoft\Db\Command\Command;
 use Yiisoft\Db\Exception\Exception;
 use Yiisoft\Db\Exception\InvalidConfigException;
 use Yiisoft\Db\Exception\NotSupportedException;
-use Yiisoft\Db\Pgsql\Schema;
 
 /**
  * Database connection class prefilled for PGSQL Server.

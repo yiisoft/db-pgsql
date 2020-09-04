@@ -55,6 +55,39 @@ final class CommandTest extends TestCase
         $this->assertEmpty($schema->getTableChecks($tableName, true));
     }
 
+    public function testAddDropPrimaryKey(): void
+    {
+        $db = $this->getConnection();
+
+        $tableName = 'test_pk';
+        $name = 'test_pk_constraint';
+
+        $schema = $db->getSchema();
+
+        if ($schema->getTableSchema($tableName) !== null) {
+            $db->createCommand()->dropTable($tableName)->execute();
+        }
+
+        $db->createCommand()->createTable($tableName, [
+            'int1' => 'integer not null',
+            'int2' => 'integer not null',
+        ])->execute();
+
+        $this->assertNull($schema->getTablePrimaryKey($tableName, true));
+
+        $db->createCommand()->addPrimaryKey($name, $tableName, ['int1'])->execute();
+
+        $this->assertEquals(['int1'], $schema->getTablePrimaryKey($tableName, true)->getColumnNames());
+
+        $db->createCommand()->dropPrimaryKey($name, $tableName)->execute();
+
+        $this->assertNull($schema->getTablePrimaryKey($tableName, true));
+
+        $db->createCommand()->addPrimaryKey($name, $tableName, ['int1', 'int2'])->execute();
+
+        $this->assertEquals(['int1', 'int2'], $schema->getTablePrimaryKey($tableName, true)->getColumnNames());
+    }
+
     public function testAutoQuoting(): void
     {
         $db = $this->getConnection();
