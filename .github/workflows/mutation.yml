@@ -10,8 +10,7 @@ jobs:
   mutation:
     name: PHP ${{ matrix.php-version }}-${{ matrix.os }}
     env:
-      COMPOSER_ROOT_VERSION: "dev-master"
-      extensions: curl, mbstring, dom, intl, json, libxml, mysql, pgsql, pdo, pdo_sqlite, xml, xmlwriter
+      extensions: curl, intl, pdo, pdo_pgsql
 
     runs-on: ${{ matrix.os }}
 
@@ -25,7 +24,7 @@ jobs:
 
     services:
       postgres:
-        image: postgres:9.6
+        image: postgres:13
         env:
           POSTGRES_USER: root
           POSTGRES_PASSWORD: root
@@ -62,6 +61,9 @@ jobs:
         run: composer update --prefer-dist --no-interaction --no-progress --optimize-autoloader
 
       - name: Run test mutation infection with coverage
-        run: vendor/bin/infection --no-progress
+        run: |
+          mkdir -p build/logs
+          vendor/bin/phpunit --coverage-xml=build/logs/coverage-xml --log-junit=build/logs/junit.xml
+          vendor/bin/infection --threads=2 --coverage=build/logs --show-mutations --no-progress
         env:
           STRYKER_DASHBOARD_API_KEY: ${{ secrets.STRYKER_DASHBOARD_API_KEY }}
