@@ -50,17 +50,19 @@ use Yiisoft\Db\Pgsql\Connection as PgsqlConnection;
 use Yiisoft\Factory\Definitions\Reference;
 use Yiisoft\Profiler\Profiler;
 
-PgsqlConnection::class => [
-    '__class' => PgsqlConnection::class,
-    '__construct()' => [
-        Reference::to(CacheInterface::class),
-        Reference::to(LoggerInterface::class),
-        Reference::to(Profiler::class),
-        $params['yiisoft/db-mysql']['dsn']
-    ],
-    'setUsername()' => [$params['yiisoft/db-mysql']['username']],
-    'setPassword()' => [$params['yiisoft/db-mysql']['password']]
-],
+return [
+    PgsqlConnection::class => [
+        '__class' => PgsqlConnection::class,
+        '__construct()' => [
+            Reference::to(CacheInterface::class),
+            Reference::to(LoggerInterface::class),
+            Reference::to(Profiler::class),
+            $params['yiisoft/db-mysql']['dsn']
+        ],
+        'setUsername()' => [$params['yiisoft/db-mysql']['username']],
+        'setPassword()' => [$params['yiisoft/db-mysql']['password']]
+    ]
+];
 ```
 
 Params.php
