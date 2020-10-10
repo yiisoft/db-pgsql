@@ -17,7 +17,7 @@ final class ArrayParser
     /**
      * Convert array from PostgreSQL to PHP
      *
-     * @param string $value string to be converted
+     * @param string|null $value string to be converted
      *
      * @return array|null
      */
@@ -55,12 +55,12 @@ final class ArrayParser
                 case '}':
                     break 2;
                 case $this->delimiter:
-                    /* `{}` case */
+                    /** `{}` case */
                     if (empty($result)) {
                         $result[] = null;
                     }
 
-                    /* `{,}` case */
+                    /** `{,}` case */
                     if (in_array($value[$i + 1], [$this->delimiter, '}'], true)) {
                         $result[] = null;
                     }

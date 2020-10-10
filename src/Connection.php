@@ -7,9 +7,6 @@ namespace Yiisoft\Db\Pgsql;
 use PDO;
 use Yiisoft\Db\Connection\Connection as AbstractConnection;
 use Yiisoft\Db\Command\Command;
-use Yiisoft\Db\Exception\Exception;
-use Yiisoft\Db\Exception\InvalidConfigException;
-use Yiisoft\Db\Exception\NotSupportedException;
 
 /**
  * Database connection class prefilled for PGSQL Server.
@@ -23,10 +20,6 @@ final class Connection extends AbstractConnection
      *
      * @param string|null $sql the SQL statement to be executed
      * @param array $params the parameters to be bound to the SQL statement
-     *
-     * @throws InvalidConfigException
-     * @throws Exception
-     * @throws NotSupportedException
      *
      * @return Command the DB command
      */
@@ -48,11 +41,7 @@ final class Connection extends AbstractConnection
      */
     public function getSchema(): Schema
     {
-        if ($this->schema !== null) {
-            return $this->schema;
-        }
-
-        return $this->schema = new Schema($this);
+        return $this->schema ?? ($this->schema = new Schema($this));
     }
 
     /**

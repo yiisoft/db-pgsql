@@ -4,8 +4,11 @@ declare(strict_types=1);
 
 namespace Yiisoft\Db\Pgsql;
 
+use JsonException;
 use PDO;
+use Throwable;
 use Yiisoft\Arrays\ArrayHelper;
+use Yiisoft\Db\Connection\ConnectionInterface;
 use Yiisoft\Db\Constraint\CheckConstraint;
 use Yiisoft\Db\Constraint\Constraint;
 use Yiisoft\Db\Constraint\ConstraintFinderInterface;
@@ -14,7 +17,6 @@ use Yiisoft\Db\Constraint\DefaultValueConstraint;
 use Yiisoft\Db\Constraint\ForeignKeyConstraint;
 use Yiisoft\Db\Constraint\IndexConstraint;
 use Yiisoft\Db\Exception\Exception;
-use Yiisoft\Db\Exception\InvalidArgumentException;
 use Yiisoft\Db\Exception\InvalidConfigException;
 use Yiisoft\Db\Exception\NotSupportedException;
 use Yiisoft\Db\Expression\Expression;
@@ -113,7 +115,7 @@ final class Schema extends AbstractSchema implements ConstraintFinderInterface
     ];
 
     /**
-     * @var string the default schema used for the current session.
+     * @var string|null the default schema used for the current session.
      */
     protected ?string $defaultSchema = 'public';
 
@@ -122,6 +124,16 @@ final class Schema extends AbstractSchema implements ConstraintFinderInterface
      * case starting and ending characters are different.
      */
     protected $tableQuoteCharacter = '"';
+
+    /** @psalm-var Connection $db */
+    private ConnectionInterface $db;
+
+    public function __construct(ConnectionInterface $db)
+    {
+        $this->db = $db;
+
+        parent::__construct($db);
+    }
 
     /**
      * Resolves the table name and schema name (if any).
@@ -161,9 +173,7 @@ final class Schema extends AbstractSchema implements ConstraintFinderInterface
      * This method should be overridden by child classes in order to support this feature because the default
      * implementation simply throws an exception.
      *
-     * @throws Exception
-     * @throws InvalidArgumentException
-     * @throws InvalidConfigException
+     * @throws Exception|InvalidConfigException|Throwable
      *
      * @return array all schema names in the database, except system schemas.
      */
@@ -176,7 +186,7 @@ WHERE "ns"."nspname" != 'information_schema' AND "ns"."nspname" NOT LIKE 'pg_%'
 ORDER BY "ns"."nspname" ASC
 SQL;
 
-        return $this->getDb()->createCommand($sql)->queryColumn();
+        return $this->db->createCommand($sql)->queryColumn();
     }
 
     /**
@@ -187,9 +197,7 @@ SQL;
      *
      * @param string $schema the schema of the tables. Defaults to empty string, meaning the current or default schema.
      *
-     * @throws Exception
-     * @throws InvalidArgumentException
-     * @throws InvalidConfigException
+     * @throws Exception|InvalidConfigException|Throwable
      *
      * @return array all table names in the database. The names have NO schema name prefix.
      */
@@ -207,7 +215,7 @@ WHERE ns.nspname = :schemaName AND c.relkind IN ('r','v','m','f', 'p')
 ORDER BY c.relname
 SQL;
 
-        return $this->getDb()->createCommand($sql, [':schemaName' => $schema])->queryColumn();
+        return $this->db->createCommand($sql, [':schemaName' => $schema])->queryColumn();
     }
 
     /**
@@ -215,10 +223,7 @@ SQL;
      *
      * @param string $name table name.
      *
-     * @throws Exception
-     * @throws InvalidArgumentException
-     * @throws InvalidConfigException
-     * @throws NotSupportedException
+     * @throws Exception|InvalidConfigException
      *
      * @return TableSchema|null DBMS-dependent table metadata, `null` if the table does not exist.
      */
@@ -241,9 +246,7 @@ SQL;
      *
      * @param string $tableName table name.
      *
-     * @throws Exception
-     * @throws InvalidArgumentException
-     * @throws InvalidConfigException
+     * @throws Exception|InvalidConfigException
      *
      * @return Constraint|null primary key for the given table, `null` if the table has no primary key.
      */
@@ -257,13 +260,11 @@ SQL;
      *
      * @param string $tableName table name.
      *
-     * @throws Exception
-     * @throws InvalidArgumentException
-     * @throws InvalidConfigException
+     * @throws Exception|InvalidConfigException
      *
      * @return ForeignKeyConstraint[] foreign keys for the given table.
      */
-    protected function loadTableForeignKeys($tableName): array
+    protected function loadTableForeignKeys(string $tableName): array
     {
         return $this->loadTableConstraints($tableName, 'foreignKeys');
     }
@@ -273,9 +274,7 @@ SQL;
      *
      * @param string $tableName table name.
      *
-     * @throws Exception
-     * @throws InvalidArgumentException
-     * @throws InvalidConfigException
+     * @throws Exception|InvalidConfigException|Throwable
      *
      * @return IndexConstraint[] indexes for the given table.
      */
@@ -302,7 +301,7 @@ SQL;
 
         $resolvedName = $this->resolveTableName($tableName);
 
-        $indexes = $this->getDb()->createCommand($sql, [
+        $indexes = $this->db->createCommand($sql, [
             ':schemaName' => $resolvedName->getSchemaName(),
             ':tableName' => $resolvedName->getName(),
         ])->queryAll();
@@ -329,9 +328,7 @@ SQL;
      *
      * @param string $tableName table name.
      *
-     * @throws Exception
-     * @throws InvalidArgumentException
-     * @throws InvalidConfigException
+     * @throws Exception|InvalidConfigException
      *
      * @return Constraint[] unique constraints for the given table.
      */
@@ -345,9 +342,7 @@ SQL;
      *
      * @param string $tableName table name.
      *
-     * @throws Exception
-     * @throws InvalidArgumentException
-     * @throws InvalidConfigException
+     * @throws Exception|InvalidConfigException
      *
      * @return CheckConstraint[] check constraints for the given table.
      */
@@ -365,7 +360,7 @@ SQL;
      *
      * @return DefaultValueConstraint[] default value constraints for the given table.
      */
-    protected function loadTableDefaultValues($tableName): array
+    protected function loadTableDefaultValues(string $tableName): array
     {
         throw new NotSupportedException('PostgreSQL does not support default value constraints.');
     }
@@ -377,7 +372,7 @@ SQL;
      */
     public function createQueryBuilder(): QueryBuilder
     {
-        return new QueryBuilder($this->getDb());
+        return new QueryBuilder($this->db);
     }
 
     /**
@@ -416,7 +411,7 @@ WHERE ns.nspname = :schemaName AND (c.relkind = 'v' OR c.relkind = 'm')
 ORDER BY c.relname
 SQL;
 
-        return $this->getDb()->createCommand($sql, [':schemaName' => $schema])->queryColumn();
+        return $this->db->createCommand($sql, [':schemaName' => $schema])->queryColumn();
     }
 
     /**
@@ -424,11 +419,9 @@ SQL;
      *
      * @param TableSchema $table the table metadata
      *
-     * @throws Exception
-     * @throws InvalidArgumentException
-     * @throws InvalidConfigException
+     * @throws Exception|InvalidConfigException|Throwable
      */
-    protected function findConstraints(TableSchema $table)
+    protected function findConstraints(TableSchema $table): void
     {
         $tableName = $this->quoteValue($table->getName());
         $tableSchema = $this->quoteValue($table->getSchemaName());
@@ -465,8 +458,8 @@ SQL;
 
         $constraints = [];
 
-        foreach ($this->getDb()->createCommand($sql)->queryAll() as $constraint) {
-            if ($this->getDb()->getSlavePdo()->getAttribute(PDO::ATTR_CASE) === PDO::CASE_UPPER) {
+        foreach ($this->db->createCommand($sql)->queryAll() as $constraint) {
+            if ($this->db->getSlavePdo()->getAttribute(PDO::ATTR_CASE) === PDO::CASE_UPPER) {
                 $constraint = array_change_key_case($constraint, CASE_LOWER);
             }
 
@@ -498,9 +491,7 @@ SQL;
      *
      * @param TableSchema $table the table metadata.
      *
-     * @throws Exception
-     * @throws InvalidArgumentException
-     * @throws InvalidConfigException
+     * @throws Exception|InvalidConfigException|Throwable
      *
      * @return array with index and column names.
      */
@@ -522,7 +513,7 @@ AND c.relname = :tableName AND ns.nspname = :schemaName
 ORDER BY i.relname, k
 SQL;
 
-        return $this->getDb()->createCommand($sql, [
+        return $this->db->createCommand($sql, [
             ':schemaName' => $table->getSchemaName(),
             ':tableName' => $table->getName(),
         ])->queryAll();
@@ -542,18 +533,16 @@ SQL;
      *
      * @param TableSchema $table the table metadata
      *
-     * @throws Exception
-     * @throws InvalidArgumentException
-     * @throws InvalidConfigException
+     * @throws Exception|InvalidConfigException|Throwable
      *
      * @return array all unique indexes for the given table.
      */
-    public function findUniqueIndexes($table): array
+    public function findUniqueIndexes(TableSchema $table): array
     {
         $uniqueIndexes = [];
 
         foreach ($this->getUniqueIndexInformation($table) as $row) {
-            if ($this->getDb()->getSlavePdo()->getAttribute(PDO::ATTR_CASE) === PDO::CASE_UPPER) {
+            if ($this->db->getSlavePdo()->getAttribute(PDO::ATTR_CASE) === PDO::CASE_UPPER) {
                 $row = array_change_key_case($row, CASE_LOWER);
             }
 
@@ -579,21 +568,18 @@ SQL;
      *
      * @param TableSchema $table the table metadata.
      *
-     * @throws Exception
-     * @throws InvalidArgumentException
-     * @throws InvalidConfigException
-     * @throws NotSupportedException
+     * @throws Exception|JsonException|InvalidConfigException|Throwable
      *
      * @return bool whether the table exists in the database.
      */
     protected function findColumns(TableSchema $table): bool
     {
-        $tableName = $this->getDb()->quoteValue($table->getName());
-        $schemaName = $this->getDb()->quoteValue($table->getSchemaName());
+        $tableName = $this->db->quoteValue($table->getName());
+        $schemaName = $this->db->quoteValue($table->getSchemaName());
 
         $orIdentity = '';
 
-        if (version_compare($this->getDb()->getServerVersion(), '12.0', '>=')) {
+        if (version_compare($this->db->getServerVersion(), '12.0', '>=')) {
             $orIdentity = 'OR a.attidentity != \'\'';
         }
 
@@ -660,14 +646,14 @@ ORDER BY
     a.attnum;
 SQL;
 
-        $columns = $this->getDb()->createCommand($sql)->queryAll();
+        $columns = $this->db->createCommand($sql)->queryAll();
 
         if (empty($columns)) {
             return false;
         }
 
         foreach ($columns as $column) {
-            if ($this->getDb()->getSlavePdo()->getAttribute(PDO::ATTR_CASE) === PDO::CASE_UPPER) {
+            if ($this->db->getSlavePdo()->getAttribute(PDO::ATTR_CASE) === PDO::CASE_UPPER) {
                 $column = array_change_key_case($column, CASE_LOWER);
             }
 
@@ -724,7 +710,6 @@ SQL;
      */
     protected function loadColumnSchema(array $info): ColumnSchema
     {
-        /** @var ColumnSchema $column */
         $column = $this->createColumnSchema();
         $column->allowNull($info['is_nullable']);
         $column->autoIncrement($info['is_autoinc']);
@@ -777,17 +762,14 @@ SQL;
      * @param string $table the table that new rows will be inserted into.
      * @param array $columns the column data (name => value) to be inserted into the table.
      *
-     * @throws Exception
-     * @throws InvalidArgumentException
-     * @throws InvalidConfigException
-     * @throws NotSupportedException
+     * @throws Exception|InvalidConfigException|Throwable
      *
      * @return array|false primary key values or false if the command fails.
      */
     public function insert(string $table, array $columns)
     {
         $params = [];
-        $sql = $this->getDb()->getQueryBuilder()->insert($table, $columns, $params);
+        $sql = $this->db->getQueryBuilder()->insert($table, $columns, $params);
         $returnColumns = $this->getTableSchema($table)->getPrimaryKey();
 
         if (!empty($returnColumns)) {
@@ -798,7 +780,7 @@ SQL;
             $sql .= ' RETURNING ' . implode(', ', $returning);
         }
 
-        $command = $this->getDb()->createCommand($sql, $params);
+        $command = $this->db->createCommand($sql, $params);
         $command->prepare(false);
         $result = $command->queryOne();
 
@@ -815,9 +797,7 @@ SQL;
      * - uniques
      * - checks
      *
-     * @throws Exception
-     * @throws InvalidArgumentException
-     * @throws InvalidConfigException
+     * @throws Exception|InvalidConfigException|Throwable
      *
      * @return mixed constraints.
      */
@@ -860,7 +840,7 @@ SQL;
         ];
 
         $resolvedName = $this->resolveTableName($tableName);
-        $constraints = $this->getDb()->createCommand($sql, [
+        $constraints = $this->db->createCommand($sql, [
             ':schemaName' => $resolvedName->getSchemaName(),
             ':tableName' => $resolvedName->getName(),
         ])->queryAll();
@@ -943,12 +923,12 @@ SQL;
      * This method may be overridden by child classes to create a DBMS-specific column schema builder.
      *
      * @param string $type type of the column. See {@see ColumnSchemaBuilder::$type}.
-     * @param int|string|array $length length or precision of the column. See {@see ColumnSchemaBuilder::$length}.
+     * @param int|string|array|null $length length or precision of the column. See {@see ColumnSchemaBuilder::$length}.
      *
      * @return ColumnSchemaBuilder column schema builder instance
      */
     public function createColumnSchemaBuilder(string $type, $length = null): ColumnSchemaBuilder
     {
-        return new ColumnSchemaBuilder($type, $length, $this->getDb());
+        return new ColumnSchemaBuilder($type, $length, $this->db);
     }
 }

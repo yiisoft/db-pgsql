@@ -4,7 +4,10 @@ declare(strict_types=1);
 
 namespace Yiisoft\Db\Pgsql;
 
+use JsonException;
 use PDO;
+use Generator;
+use Yiisoft\Db\Connection\ConnectionInterface;
 use Yiisoft\Db\Constraint\Constraint;
 use Yiisoft\Db\Exception\Exception;
 use Yiisoft\Db\Exception\InvalidArgumentException;
@@ -91,6 +94,16 @@ final class QueryBuilder extends AbstractQueryBuilder
         Schema::TYPE_JSON => 'jsonb',
     ];
 
+    /** @psalm-var Connection $db */
+    private ConnectionInterface $db;
+
+    public function __construct(ConnectionInterface $db)
+    {
+        $this->db = $db;
+
+        parent::__construct($db);
+    }
+
     /**
      * Contains array of default condition classes. Extend this method, if you want to change default condition classes
      * for the query builder.
@@ -139,16 +152,13 @@ final class QueryBuilder extends AbstractQueryBuilder
      * one of the following constants to specify the index method to use: {@see INDEX_B_TREE}, {@see INDEX_HASH},
      * {@see INDEX_GIST}, {@see INDEX_GIN}.
      *
-     * @throws Exception
-     * @throws InvalidArgumentException
-     * @throws InvalidConfigException
-     * @throws NotSupportedException
+     * @throws Exception|InvalidArgumentException
      *
      * @return string the SQL statement for creating a new index.
      *
      * {@see http://www.postgresql.org/docs/8.2/static/sql-createindex.html}
      */
-    public function createIndex(string $name, string $table, $columns, bool $unique = false): string
+    public function createIndex(string $name, string $table, $columns, $unique = false): string
     {
         if ($unique === self::INDEX_UNIQUE || $unique === true) {
             $index = false;
@@ -170,10 +180,6 @@ final class QueryBuilder extends AbstractQueryBuilder
      *
      * @param string $name the name of the index to be dropped. The name will be properly quoted by the method.
      * @param string $table the table whose index is to be dropped. The name will be properly quoted by the method.
-     *
-     * @throws Exception
-     * @throws InvalidConfigException
-     * @throws NotSupportedException
      *
      * @return string the SQL statement for dropping an index.
      */
@@ -203,10 +209,6 @@ final class QueryBuilder extends AbstractQueryBuilder
      * @param string $oldName the table to be renamed. The name will be properly quoted by the method.
      * @param string $newName the new table name. The name will be properly quoted by the method.
      *
-     * @throws Exception
-     * @throws InvalidConfigException
-     * @throws NotSupportedException
-     *
      * @return string the SQL statement for renaming a DB table.
      */
     public function renameTable(string $oldName, string $newName): string
@@ -225,10 +227,8 @@ final class QueryBuilder extends AbstractQueryBuilder
      * @param mixed $value the value for the primary key of the next new row inserted. If this is not set, the next new
      * row's primary key will have a value 1.
      *
-     * @throws Exception
-     * @throws InvalidArgumentException if the table does not exist or there is no sequence associated with the table.
-     * @throws InvalidConfigException
-     * @throws NotSupportedException
+     * @throws Exception|InvalidArgumentException if the table does not exist or there is no sequence associated with
+     * the table.
      *
      * @return string the SQL statement for resetting sequence.
      */
@@ -266,10 +266,6 @@ final class QueryBuilder extends AbstractQueryBuilder
      * @param string $table the table name.
      * @param bool $check whether to turn on or off the integrity check.
      *
-     * @throws Exception
-     * @throws InvalidConfigException
-     * @throws NotSupportedException
-     *
      * @return string the SQL statement for checking integrity.
      */
     public function checkIntegrity(string $schema = '', string $table = '', bool $check = true): string
@@ -286,7 +282,7 @@ final class QueryBuilder extends AbstractQueryBuilder
             $command .= "ALTER TABLE $tableName $enable TRIGGER ALL; ";
         }
 
-        /* enable to have ability to alter several tables */
+        /** enable to have ability to alter several tables */
         $this->db->getMasterPdo()->setAttribute(PDO::ATTR_EMULATE_PREPARES, true);
 
         return $command;
@@ -298,10 +294,6 @@ final class QueryBuilder extends AbstractQueryBuilder
      * Explicitly restarts identity for PGSQL to be consistent with other databases which all do this by default.
      *
      * @param string $table the table to be truncated. The name will be properly quoted by the method.
-     *
-     * @throws Exception
-     * @throws InvalidConfigException
-     * @throws NotSupportedException
      *
      * @return string the SQL statement for truncating a DB table.
      */
@@ -316,14 +308,10 @@ final class QueryBuilder extends AbstractQueryBuilder
      * @param string $table the table whose column is to be changed. The table name will be properly quoted by the
      * method.
      * @param string $column the name of the column to be changed. The name will be properly quoted by the method.
-     * @param string $type the new column type. The {@see getColumnType()} method will be invoked to convert abstract
+     * @param object|string $type the new column type. The {@see getColumnType()} method will be invoked to convert abstract
      * column type (if any) into the physical one. Anything that is not recognized as abstract type will be kept in the
      * generated SQL. For example, 'string' will be turned into 'varchar(255)', while 'string not null' will become
      * 'varchar(255) not null'. You can also use PostgreSQL-specific syntax such as `SET NOT NULL`.
-     *
-     * @throws Exception
-     * @throws InvalidConfigException
-     * @throws NotSupportedException
      *
      * @return string the SQL statement for changing the definition of a column.
      */
@@ -348,7 +336,7 @@ final class QueryBuilder extends AbstractQueryBuilder
             $type = preg_replace('/\s+DEFAULT\s+(["\']?\w*["\']?)/i', '', $type);
             $multiAlterStatement[] = "ALTER COLUMN {$columnName} SET DEFAULT {$matches[1]}";
         } else {
-            /* safe to drop default even if there was none in the first place */
+            /** safe to drop default even if there was none in the first place */
             $multiAlterStatement[] = "ALTER COLUMN {$columnName} DROP DEFAULT";
         }
 
@@ -357,10 +345,10 @@ final class QueryBuilder extends AbstractQueryBuilder
         if ($count) {
             $multiAlterStatement[] = "ALTER COLUMN {$columnName} SET NOT NULL";
         } else {
-            /* remove additional null if any */
+            /** remove additional null if any */
             $type = preg_replace('/\s+NULL/i', '', $type);
 
-            /* safe to drop not null even if there was none in the first place */
+            /** safe to drop not null even if there was none in the first place */
             $multiAlterStatement[] = "ALTER COLUMN {$columnName} DROP NOT NULL";
         }
 
@@ -375,7 +363,7 @@ final class QueryBuilder extends AbstractQueryBuilder
             $multiAlterStatement[] = "ADD UNIQUE ({$columnName})";
         }
 
-        /* add what's left at the beginning */
+        /** add what's left at the beginning */
         array_unshift($multiAlterStatement, "ALTER COLUMN {$columnName} {$type}");
 
         return 'ALTER TABLE ' . $tableName . ' ' . implode(', ', $multiAlterStatement);
@@ -441,9 +429,8 @@ final class QueryBuilder extends AbstractQueryBuilder
      * @param array $params the binding parameters that will be generated by this method.
      * They should be bound to the DB command later.
      *
-     * @throws Exception
-     * @throws InvalidConfigException
-     * @throws NotSupportedException if this is not supported by the underlying DBMS.
+     * @throws Exception|JsonException|InvalidConfigException|NotSupportedException if this is not supported by the
+     * underlying DBMS.
      *
      * @return string the resulting SQL.
      *
@@ -472,10 +459,7 @@ final class QueryBuilder extends AbstractQueryBuilder
      * @param array|bool $updateColumns
      * @param array $params
      *
-     * @throws Exception
-     * @throws InvalidArgumentException
-     * @throws InvalidConfigException
-     * @throws NotSupportedException
+     * @throws Exception|JsonException|InvalidArgumentException|InvalidConfigException|NotSupportedException
      *
      * @return string
      */
@@ -489,7 +473,7 @@ final class QueryBuilder extends AbstractQueryBuilder
         }
 
         if ($updateNames === []) {
-            /* there are no columns to update */
+            /** there are no columns to update */
             $updateColumns = false;
         }
 
@@ -518,10 +502,7 @@ final class QueryBuilder extends AbstractQueryBuilder
      * @param array|bool $updateColumns
      * @param array $params
      *
-     * @throws Exception
-     * @throws InvalidArgumentException
-     * @throws InvalidConfigException
-     * @throws NotSupportedException
+     * @throws Exception|InvalidArgumentException|InvalidConfigException|JsonException|NotSupportedException
      *
      * @return string
      */
@@ -540,7 +521,7 @@ final class QueryBuilder extends AbstractQueryBuilder
         }
 
         if ($updateNames === []) {
-            /* there are no columns to update */
+            /** there are no columns to update */
             $updateColumns = false;
         }
 
@@ -648,10 +629,7 @@ final class QueryBuilder extends AbstractQueryBuilder
      * @param array $params the binding parameters that will be modified by this method so that they can be bound to the
      * DB command later.
      *
-     * @throws Exception
-     * @throws InvalidArgumentException
-     * @throws InvalidConfigException
-     * @throws NotSupportedException
+     * @throws Exception|InvalidArgumentException
      *
      * @return string the UPDATE SQL.
      */
@@ -667,10 +645,6 @@ final class QueryBuilder extends AbstractQueryBuilder
      * @param array|Query $columns the column data (name => value) to be saved into the table or instance of
      * {@see Query} to perform INSERT INTO ... SELECT SQL statement. Passing of
      * {@see Query}.
-     *
-     * @throws Exception
-     * @throws InvalidConfigException
-     * @throws NotSupportedException
      *
      * @return array|object normalized columns
      */
@@ -688,7 +662,7 @@ final class QueryBuilder extends AbstractQueryBuilder
                     $columnSchemas[$name]->getType() === Schema::TYPE_BINARY &&
                     is_string($value)
                 ) {
-                    /* explicitly setup PDO param type for binary column */
+                    /** explicitly setup PDO param type for binary column */
                     $columns[$name] = new PdoValue($value, PDO::PARAM_LOB);
                 }
             }
@@ -719,10 +693,7 @@ final class QueryBuilder extends AbstractQueryBuilder
      * @param array|Generator $rows the rows to be batch inserted into the table.
      * @param array $params the binding parameters. This parameter exists.
      *
-     * @throws Exception
-     * @throws InvalidArgumentException
-     * @throws InvalidConfigException
-     * @throws NotSupportedException
+     * @throws Exception|InvalidArgumentException|InvalidConfigException|NotSupportedException
      *
      * @return string the batch INSERT SQL statement.
      */
@@ -751,7 +722,7 @@ final class QueryBuilder extends AbstractQueryBuilder
                 if (is_string($value)) {
                     $value = $schema->quoteValue($value);
                 } elseif (is_float($value)) {
-                    /* ensure type cast always has . as decimal separator in all locales */
+                    /** ensure type cast always has . as decimal separator in all locales */
                     $value = NumericHelper::normalize((string) $value);
                 } elseif ($value === true) {
                     $value = 'TRUE';
