@@ -39,102 +39,40 @@ composer require yiisoft/db-pgsql
 
 ## Configuration
 
+Using yiisoft/composer-config-plugin automatically get the settings of `CacheInterface::class`, `LoggerInterface::class`, and `Profiler::class`.
+
 Di-Container:
 
 ```php
-use Psr\Container\ContainerInterface;
 use Psr\Log\LoggerInterface;
-use Psr\Log\LogLevel;
-use Yiisoft\Aliases\Aliases;
-use Yiisoft\Cache\ArrayCache;
 use Yiisoft\Cache\CacheInterface;
-use Yiisoft\Db\Connection\ConnectionInterface;
-use Yiisoft\Db\Helper\Dsn;
-use Yiisoft\Db\Pgsql\Connection;
-use Yiisoft\Log\Logger;
-use Yiisoft\Log\Target\File\FileRotator;
-use Yiisoft\Log\Target\File\FileRotatorInterface;
-use Yiisoft\Log\Target\File\FileTarget;
+use Yiisoft\Db\Pgsql\Connection as PgsqlConnection;
+use Yiisoft\Factory\Definitions\Reference;
 use Yiisoft\Profiler\Profiler;
 
-return [
-    Aliases::class => [
-        '@root' => dirname(__DIR__, 1), // directory / packages.
-        '@runtime' => '@root/runtime' 
+PgsqlConnection::class => [
+    '__class' => PgsqlConnection::class,
+    '__construct()' => [
+        Reference::to(CacheInterface::class),
+        Reference::to(LoggerInterface::class),
+        Reference::to(Profiler::class),
+        $params['yiisoft/db-mysql']['dsn']
     ],
-
-    CacheInterface::class => static function () {
-        return new Cache(new ArrayCache());
-    },
-
-    FileRotatorInterface::class => static function () {
-        return new FileRotator(10);
-    },
-
-    LoggerInterface::class => static function (ContainerInterface $container) {
-        $aliases = $container->get(Aliases::class);
-        $fileRotator = $container->get(FileRotatorInterface::class);
-
-        $fileTarget = new FileTarget(
-            $aliases->get('@runtime/logs/app.log'),
-            $fileRotator
-        );
-
-        $fileTarget->setLevels(
-            [
-                LogLevel::EMERGENCY,
-                LogLevel::ERROR,
-                LogLevel::WARNING,
-                LogLevel::INFO,
-                LogLevel::DEBUG
-            ]
-        );
-
-        return new Logger(['file' => $fileTarget]);
-    },
-
-    Profiler::class => static function (ContainerInterface $container) {
-        return new Profiler($container->get(LoggerInterface::class));
-    },
-
-    Dsn::class => static function () use ($params) {
-        return new Dsn(
-            $params['yiisoft/db-pgsql']['dsn']['driver'],
-            $params['yiisoft/db-pgsql']['dsn']['host'],
-            $params['yiisoft/db-pgsql']['dsn']['dbname'],
-            $params['yiisoft/db-pgsql']['dsn']['port'],
-        );
-    },
-
-    ConnectionInterface::class  => static function (ContainerInterface $container) use ($params) {
-        $connection = new Connection(
-            $container->get(CacheInterface::class),
-            $container->get(LoggerInterface::class),
-            $container->get(Profiler::class),
-            $container->get(Dsn::class)->getDsn(),
-        );
-
-        $connection->setUsername($params['yiisoft/db-pgsql']['username']);
-        $connection->setPassword($params['yiisoft/db-pgsql']['password']);
-
-        return $connection;
-    }
-];
+    'setUsername()' => [$params['yiisoft/db-mysql']['username']],
+    'setPassword()' => [$params['yiisoft/db-mysql']['password']]
+],
 ```
 
 Params.php
 
 ```php
+use Yiisoft\Db\Helper\Dsn;
+
 return [
     'yiisoft/db-pgsql' => [
-        'dsn' => [
-            'driver' => 'pgsql',
-            'host' => '127.0.0.1',
-            'dbname' => 'yiitest',
-            'port' => '5432'
-        ],
+        'dsn' => (new Dsn('pgsql', '127.0.0.1', 'yiitest', '5432'))->getDsn(),
         'username' => 'root',
-        'password' => 'root',
+        'password' => 'root'
     ]
 ];
 ```
