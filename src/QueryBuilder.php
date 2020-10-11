@@ -4,7 +4,10 @@ declare(strict_types=1);
 
 namespace Yiisoft\Db\Pgsql;
 
+use JsonException;
 use PDO;
+use Generator;
+use Yiisoft\Db\Connection\ConnectionInterface;
 use Yiisoft\Db\Constraint\Constraint;
 use Yiisoft\Db\Exception\Exception;
 use Yiisoft\Db\Exception\InvalidArgumentException;
@@ -139,16 +142,13 @@ final class QueryBuilder extends AbstractQueryBuilder
      * one of the following constants to specify the index method to use: {@see INDEX_B_TREE}, {@see INDEX_HASH},
      * {@see INDEX_GIST}, {@see INDEX_GIN}.
      *
-     * @throws Exception
-     * @throws InvalidArgumentException
-     * @throws InvalidConfigException
-     * @throws NotSupportedException
+     * @throws Exception|InvalidArgumentException
      *
      * @return string the SQL statement for creating a new index.
      *
      * {@see http://www.postgresql.org/docs/8.2/static/sql-createindex.html}
      */
-    public function createIndex(string $name, string $table, $columns, bool $unique = false): string
+    public function createIndex(string $name, string $table, $columns, $unique = false): string
     {
         if ($unique === self::INDEX_UNIQUE || $unique === true) {
             $index = false;
@@ -159,8 +159,8 @@ final class QueryBuilder extends AbstractQueryBuilder
         }
 
         return ($unique ? 'CREATE UNIQUE INDEX ' : 'CREATE INDEX ')
-            . $this->db->quoteTableName($name) . ' ON '
-            . $this->db->quoteTableName($table)
+            . $this->getDb()->quoteTableName($name) . ' ON '
+            . $this->getDb()->quoteTableName($table)
             . ($index !== false ? " USING $index" : '')
             . ' (' . $this->buildColumns($columns) . ')';
     }
@@ -170,10 +170,6 @@ final class QueryBuilder extends AbstractQueryBuilder
      *
      * @param string $name the name of the index to be dropped. The name will be properly quoted by the method.
      * @param string $table the table whose index is to be dropped. The name will be properly quoted by the method.
-     *
-     * @throws Exception
-     * @throws InvalidConfigException
-     * @throws NotSupportedException
      *
      * @return string the SQL statement for dropping an index.
      */
@@ -194,7 +190,7 @@ final class QueryBuilder extends AbstractQueryBuilder
             }
         }
 
-        return 'DROP INDEX ' . $this->db->quoteTableName($name);
+        return 'DROP INDEX ' . $this->getDb()->quoteTableName($name);
     }
 
     /**
@@ -203,16 +199,12 @@ final class QueryBuilder extends AbstractQueryBuilder
      * @param string $oldName the table to be renamed. The name will be properly quoted by the method.
      * @param string $newName the new table name. The name will be properly quoted by the method.
      *
-     * @throws Exception
-     * @throws InvalidConfigException
-     * @throws NotSupportedException
-     *
      * @return string the SQL statement for renaming a DB table.
      */
     public function renameTable(string $oldName, string $newName): string
     {
-        return 'ALTER TABLE ' . $this->db->quoteTableName($oldName) . ' RENAME TO '
-            . $this->db->quoteTableName($newName);
+        return 'ALTER TABLE ' . $this->getDb()->quoteTableName($oldName) . ' RENAME TO '
+            . $this->getDb()->quoteTableName($newName);
     }
 
     /**
@@ -225,25 +217,23 @@ final class QueryBuilder extends AbstractQueryBuilder
      * @param mixed $value the value for the primary key of the next new row inserted. If this is not set, the next new
      * row's primary key will have a value 1.
      *
-     * @throws Exception
-     * @throws InvalidArgumentException if the table does not exist or there is no sequence associated with the table.
-     * @throws InvalidConfigException
-     * @throws NotSupportedException
+     * @throws Exception|InvalidArgumentException if the table does not exist or there is no sequence associated with
+     * the table.
      *
      * @return string the SQL statement for resetting sequence.
      */
     public function resetSequence(string $tableName, $value = null): string
     {
-        $table = $this->db->getTableSchema($tableName);
+        $table = $this->getDb()->getTableSchema($tableName);
         if ($table !== null && $table->getSequenceName() !== null) {
             /**
              * {@see http://www.postgresql.org/docs/8.1/static/functions-sequence.html}
              */
-            $sequence = $this->db->quoteTableName($table->getSequenceName());
-            $tableName = $this->db->quoteTableName($tableName);
+            $sequence = $this->getDb()->quoteTableName($table->getSequenceName());
+            $tableName = $this->getDb()->quoteTableName($tableName);
             if ($value === null) {
                 $pk = $table->getPrimaryKey();
-                $key = $this->db->quoteColumnName(reset($pk));
+                $key = $this->getDb()->quoteColumnName(reset($pk));
                 $value = "(SELECT COALESCE(MAX({$key}),0) FROM {$tableName})+1";
             } else {
                 $value = (int) $value;
@@ -266,28 +256,27 @@ final class QueryBuilder extends AbstractQueryBuilder
      * @param string $table the table name.
      * @param bool $check whether to turn on or off the integrity check.
      *
-     * @throws Exception
-     * @throws InvalidConfigException
-     * @throws NotSupportedException
-     *
      * @return string the SQL statement for checking integrity.
      */
     public function checkIntegrity(string $schema = '', string $table = '', bool $check = true): string
     {
+        /** @psalm-var Connection $db */
+        $db = $this->getDb();
+
         $enable = $check ? 'ENABLE' : 'DISABLE';
-        $schema = $schema ?: $this->db->getSchema()->getDefaultSchema();
-        $tableNames = $table ? [$table] : $this->db->getSchema()->getTableNames($schema);
-        $viewNames = $this->db->getSchema()->getViewNames($schema);
+        $schema = $schema ?: $db->getSchema()->getDefaultSchema();
+        $tableNames = $table ? [$table] : $db->getSchema()->getTableNames($schema);
+        $viewNames = $db->getSchema()->getViewNames($schema);
         $tableNames = array_diff($tableNames, $viewNames);
         $command = '';
 
         foreach ($tableNames as $tableName) {
-            $tableName = $this->db->quoteTableName("{$schema}.{$tableName}");
+            $tableName = $db->quoteTableName("{$schema}.{$tableName}");
             $command .= "ALTER TABLE $tableName $enable TRIGGER ALL; ";
         }
 
-        /* enable to have ability to alter several tables */
-        $this->db->getMasterPdo()->setAttribute(PDO::ATTR_EMULATE_PREPARES, true);
+        /** enable to have ability to alter several tables */
+        $db->getMasterPdo()->setAttribute(PDO::ATTR_EMULATE_PREPARES, true);
 
         return $command;
     }
@@ -299,15 +288,11 @@ final class QueryBuilder extends AbstractQueryBuilder
      *
      * @param string $table the table to be truncated. The name will be properly quoted by the method.
      *
-     * @throws Exception
-     * @throws InvalidConfigException
-     * @throws NotSupportedException
-     *
      * @return string the SQL statement for truncating a DB table.
      */
     public function truncateTable(string $table): string
     {
-        return 'TRUNCATE TABLE ' . $this->db->quoteTableName($table) . ' RESTART IDENTITY';
+        return 'TRUNCATE TABLE ' . $this->getDb()->quoteTableName($table) . ' RESTART IDENTITY';
     }
 
     /**
@@ -316,21 +301,17 @@ final class QueryBuilder extends AbstractQueryBuilder
      * @param string $table the table whose column is to be changed. The table name will be properly quoted by the
      * method.
      * @param string $column the name of the column to be changed. The name will be properly quoted by the method.
-     * @param string $type the new column type. The {@see getColumnType()} method will be invoked to convert abstract
+     * @param object|string $type the new column type. The {@see getColumnType()} method will be invoked to convert abstract
      * column type (if any) into the physical one. Anything that is not recognized as abstract type will be kept in the
      * generated SQL. For example, 'string' will be turned into 'varchar(255)', while 'string not null' will become
      * 'varchar(255) not null'. You can also use PostgreSQL-specific syntax such as `SET NOT NULL`.
-     *
-     * @throws Exception
-     * @throws InvalidConfigException
-     * @throws NotSupportedException
      *
      * @return string the SQL statement for changing the definition of a column.
      */
     public function alterColumn(string $table, string $column, $type): string
     {
-        $columnName = $this->db->quoteColumnName($column);
-        $tableName = $this->db->quoteTableName($table);
+        $columnName = $this->getDb()->quoteColumnName($column);
+        $tableName = $this->getDb()->quoteTableName($table);
 
         /**
          * {@see https://github.com/yiisoft/yii2/issues/4492}
@@ -348,7 +329,7 @@ final class QueryBuilder extends AbstractQueryBuilder
             $type = preg_replace('/\s+DEFAULT\s+(["\']?\w*["\']?)/i', '', $type);
             $multiAlterStatement[] = "ALTER COLUMN {$columnName} SET DEFAULT {$matches[1]}";
         } else {
-            /* safe to drop default even if there was none in the first place */
+            /** safe to drop default even if there was none in the first place */
             $multiAlterStatement[] = "ALTER COLUMN {$columnName} DROP DEFAULT";
         }
 
@@ -357,10 +338,10 @@ final class QueryBuilder extends AbstractQueryBuilder
         if ($count) {
             $multiAlterStatement[] = "ALTER COLUMN {$columnName} SET NOT NULL";
         } else {
-            /* remove additional null if any */
+            /** remove additional null if any */
             $type = preg_replace('/\s+NULL/i', '', $type);
 
-            /* safe to drop not null even if there was none in the first place */
+            /** safe to drop not null even if there was none in the first place */
             $multiAlterStatement[] = "ALTER COLUMN {$columnName} DROP NOT NULL";
         }
 
@@ -375,7 +356,7 @@ final class QueryBuilder extends AbstractQueryBuilder
             $multiAlterStatement[] = "ADD UNIQUE ({$columnName})";
         }
 
-        /* add what's left at the beginning */
+        /** add what's left at the beginning */
         array_unshift($multiAlterStatement, "ALTER COLUMN {$columnName} {$type}");
 
         return 'ALTER TABLE ' . $tableName . ' ' . implode(', ', $multiAlterStatement);
@@ -441,9 +422,8 @@ final class QueryBuilder extends AbstractQueryBuilder
      * @param array $params the binding parameters that will be generated by this method.
      * They should be bound to the DB command later.
      *
-     * @throws Exception
-     * @throws InvalidConfigException
-     * @throws NotSupportedException if this is not supported by the underlying DBMS.
+     * @throws Exception|JsonException|InvalidConfigException|NotSupportedException if this is not supported by the
+     * underlying DBMS.
      *
      * @return string the resulting SQL.
      *
@@ -457,7 +437,7 @@ final class QueryBuilder extends AbstractQueryBuilder
         if (!is_bool($updateColumns)) {
             $updateColumns = $this->normalizeTableRowData($table, $updateColumns);
         }
-        if (version_compare($this->db->getServerVersion(), '9.5', '<')) {
+        if (version_compare($this->getDb()->getServerVersion(), '9.5', '<')) {
             return $this->oldUpsert($table, $insertColumns, $updateColumns, $params);
         }
 
@@ -472,10 +452,7 @@ final class QueryBuilder extends AbstractQueryBuilder
      * @param array|bool $updateColumns
      * @param array $params
      *
-     * @throws Exception
-     * @throws InvalidArgumentException
-     * @throws InvalidConfigException
-     * @throws NotSupportedException
+     * @throws Exception|JsonException|InvalidArgumentException|InvalidConfigException|NotSupportedException
      *
      * @return string
      */
@@ -489,7 +466,7 @@ final class QueryBuilder extends AbstractQueryBuilder
         }
 
         if ($updateNames === []) {
-            /* there are no columns to update */
+            /** there are no columns to update */
             $updateColumns = false;
         }
 
@@ -500,7 +477,7 @@ final class QueryBuilder extends AbstractQueryBuilder
         if ($updateColumns === true) {
             $updateColumns = [];
             foreach ($updateNames as $name) {
-                $updateColumns[$name] = new Expression('EXCLUDED.' . $this->db->quoteColumnName($name));
+                $updateColumns[$name] = new Expression('EXCLUDED.' . $this->getDb()->quoteColumnName($name));
             }
         }
 
@@ -518,10 +495,7 @@ final class QueryBuilder extends AbstractQueryBuilder
      * @param array|bool $updateColumns
      * @param array $params
      *
-     * @throws Exception
-     * @throws InvalidArgumentException
-     * @throws InvalidConfigException
-     * @throws NotSupportedException
+     * @throws Exception|InvalidArgumentException|InvalidConfigException|JsonException|NotSupportedException
      *
      * @return string
      */
@@ -540,12 +514,12 @@ final class QueryBuilder extends AbstractQueryBuilder
         }
 
         if ($updateNames === []) {
-            /* there are no columns to update */
+            /** there are no columns to update */
             $updateColumns = false;
         }
 
         /** @var Schema $schema */
-        $schema = $this->db->getSchema();
+        $schema = $this->getDb()->getSchema();
 
         if (!$insertColumns instanceof Query) {
             $tableSchema = $schema->getTableSchema($table);
@@ -584,11 +558,11 @@ final class QueryBuilder extends AbstractQueryBuilder
             . (!empty($placeholders) ? 'VALUES (' . implode(', ', $placeholders) . ')' : ltrim($values, ' ')) . ')';
 
         if ($updateColumns === false) {
-            $selectSubQuery = (new Query($this->db))
+            $selectSubQuery = (new Query($this->getDb()))
                 ->select(new Expression('1'))
                 ->from($table)
                 ->where($updateCondition);
-            $insertSelectSubQuery = (new Query($this->db))
+            $insertSelectSubQuery = (new Query($this->getDb()))
                 ->select($insertNames)
                 ->from('EXCLUDED')
                 ->where(['not exists', $selectSubQuery]);
@@ -600,7 +574,7 @@ final class QueryBuilder extends AbstractQueryBuilder
         if ($updateColumns === true) {
             $updateColumns = [];
             foreach ($updateNames as $name) {
-                $quotedName = $this->db->quoteColumnName($name);
+                $quotedName = $this->getDb()->quoteColumnName($name);
                 if (strrpos($quotedName, '.') === false) {
                     $quotedName = '"EXCLUDED".' . $quotedName;
                 }
@@ -610,16 +584,16 @@ final class QueryBuilder extends AbstractQueryBuilder
 
         [$updates, $params] = $this->prepareUpdateSets($table, $updateColumns, $params);
 
-        $updateSql = 'UPDATE ' . $this->db->quoteTableName($table) . ' SET ' . implode(', ', $updates)
+        $updateSql = 'UPDATE ' . $this->getDb()->quoteTableName($table) . ' SET ' . implode(', ', $updates)
             . ' FROM "EXCLUDED" ' . $this->buildWhere($updateCondition, $params)
-            . ' RETURNING ' . $this->db->quoteTableName($table) . '.*';
+            . ' RETURNING ' . $this->getDb()->quoteTableName($table) . '.*';
 
-        $selectUpsertSubQuery = (new Query($this->db))
+        $selectUpsertSubQuery = (new Query($this->getDb()))
             ->select(new Expression('1'))
             ->from('upsert')
             ->where($insertCondition);
 
-        $insertSelectSubQuery = (new Query($this->db))
+        $insertSelectSubQuery = (new Query($this->getDb()))
             ->select($insertNames)
             ->from('EXCLUDED')
             ->where(['not exists', $selectUpsertSubQuery]);
@@ -648,10 +622,7 @@ final class QueryBuilder extends AbstractQueryBuilder
      * @param array $params the binding parameters that will be modified by this method so that they can be bound to the
      * DB command later.
      *
-     * @throws Exception
-     * @throws InvalidArgumentException
-     * @throws InvalidConfigException
-     * @throws NotSupportedException
+     * @throws Exception|InvalidArgumentException
      *
      * @return string the UPDATE SQL.
      */
@@ -668,10 +639,6 @@ final class QueryBuilder extends AbstractQueryBuilder
      * {@see Query} to perform INSERT INTO ... SELECT SQL statement. Passing of
      * {@see Query}.
      *
-     * @throws Exception
-     * @throws InvalidConfigException
-     * @throws NotSupportedException
-     *
      * @return array|object normalized columns
      */
     private function normalizeTableRowData(string $table, $columns)
@@ -680,7 +647,7 @@ final class QueryBuilder extends AbstractQueryBuilder
             return $columns;
         }
 
-        if (($tableSchema = $this->db->getSchema()->getTableSchema($table)) !== null) {
+        if (($tableSchema = $this->getDb()->getSchema()->getTableSchema($table)) !== null) {
             $columnSchemas = $tableSchema->getColumns();
             foreach ($columns as $name => $value) {
                 if (
@@ -688,7 +655,7 @@ final class QueryBuilder extends AbstractQueryBuilder
                     $columnSchemas[$name]->getType() === Schema::TYPE_BINARY &&
                     is_string($value)
                 ) {
-                    /* explicitly setup PDO param type for binary column */
+                    /** explicitly setup PDO param type for binary column */
                     $columns[$name] = new PdoValue($value, PDO::PARAM_LOB);
                 }
             }
@@ -719,10 +686,7 @@ final class QueryBuilder extends AbstractQueryBuilder
      * @param array|Generator $rows the rows to be batch inserted into the table.
      * @param array $params the binding parameters. This parameter exists.
      *
-     * @throws Exception
-     * @throws InvalidArgumentException
-     * @throws InvalidConfigException
-     * @throws NotSupportedException
+     * @throws Exception|InvalidArgumentException|InvalidConfigException|NotSupportedException
      *
      * @return string the batch INSERT SQL statement.
      */
@@ -732,7 +696,7 @@ final class QueryBuilder extends AbstractQueryBuilder
             return '';
         }
 
-        $schema = $this->db->getSchema();
+        $schema = $this->getDb()->getSchema();
 
         if (($tableSchema = $schema->getTableSchema($table)) !== null) {
             $columnSchemas = $tableSchema->getColumns();
@@ -751,7 +715,7 @@ final class QueryBuilder extends AbstractQueryBuilder
                 if (is_string($value)) {
                     $value = $schema->quoteValue($value);
                 } elseif (is_float($value)) {
-                    /* ensure type cast always has . as decimal separator in all locales */
+                    /** ensure type cast always has . as decimal separator in all locales */
                     $value = NumericHelper::normalize((string) $value);
                 } elseif ($value === true) {
                     $value = 'TRUE';

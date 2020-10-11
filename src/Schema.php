@@ -4,8 +4,11 @@ declare(strict_types=1);
 
 namespace Yiisoft\Db\Pgsql;
 
+use JsonException;
 use PDO;
+use Throwable;
 use Yiisoft\Arrays\ArrayHelper;
+use Yiisoft\Db\Connection\ConnectionInterface;
 use Yiisoft\Db\Constraint\CheckConstraint;
 use Yiisoft\Db\Constraint\Constraint;
 use Yiisoft\Db\Constraint\ConstraintFinderInterface;
@@ -14,7 +17,6 @@ use Yiisoft\Db\Constraint\DefaultValueConstraint;
 use Yiisoft\Db\Constraint\ForeignKeyConstraint;
 use Yiisoft\Db\Constraint\IndexConstraint;
 use Yiisoft\Db\Exception\Exception;
-use Yiisoft\Db\Exception\InvalidArgumentException;
 use Yiisoft\Db\Exception\InvalidConfigException;
 use Yiisoft\Db\Exception\NotSupportedException;
 use Yiisoft\Db\Expression\Expression;
@@ -113,7 +115,7 @@ final class Schema extends AbstractSchema implements ConstraintFinderInterface
     ];
 
     /**
-     * @var string the default schema used for the current session.
+     * @var string|null the default schema used for the current session.
      */
     protected ?string $defaultSchema = 'public';
 
@@ -161,9 +163,7 @@ final class Schema extends AbstractSchema implements ConstraintFinderInterface
      * This method should be overridden by child classes in order to support this feature because the default
      * implementation simply throws an exception.
      *
-     * @throws Exception
-     * @throws InvalidArgumentException
-     * @throws InvalidConfigException
+     * @throws Exception|InvalidConfigException|Throwable
      *
      * @return array all schema names in the database, except system schemas.
      */
@@ -187,9 +187,7 @@ SQL;
      *
      * @param string $schema the schema of the tables. Defaults to empty string, meaning the current or default schema.
      *
-     * @throws Exception
-     * @throws InvalidArgumentException
-     * @throws InvalidConfigException
+     * @throws Exception|InvalidConfigException|Throwable
      *
      * @return array all table names in the database. The names have NO schema name prefix.
      */
@@ -215,10 +213,7 @@ SQL;
      *
      * @param string $name table name.
      *
-     * @throws Exception
-     * @throws InvalidArgumentException
-     * @throws InvalidConfigException
-     * @throws NotSupportedException
+     * @throws Exception|InvalidConfigException
      *
      * @return TableSchema|null DBMS-dependent table metadata, `null` if the table does not exist.
      */
@@ -241,9 +236,7 @@ SQL;
      *
      * @param string $tableName table name.
      *
-     * @throws Exception
-     * @throws InvalidArgumentException
-     * @throws InvalidConfigException
+     * @throws Exception|InvalidConfigException
      *
      * @return Constraint|null primary key for the given table, `null` if the table has no primary key.
      */
@@ -257,13 +250,11 @@ SQL;
      *
      * @param string $tableName table name.
      *
-     * @throws Exception
-     * @throws InvalidArgumentException
-     * @throws InvalidConfigException
+     * @throws Exception|InvalidConfigException
      *
      * @return ForeignKeyConstraint[] foreign keys for the given table.
      */
-    protected function loadTableForeignKeys($tableName): array
+    protected function loadTableForeignKeys(string $tableName): array
     {
         return $this->loadTableConstraints($tableName, 'foreignKeys');
     }
@@ -273,9 +264,7 @@ SQL;
      *
      * @param string $tableName table name.
      *
-     * @throws Exception
-     * @throws InvalidArgumentException
-     * @throws InvalidConfigException
+     * @throws Exception|InvalidConfigException|Throwable
      *
      * @return IndexConstraint[] indexes for the given table.
      */
@@ -329,9 +318,7 @@ SQL;
      *
      * @param string $tableName table name.
      *
-     * @throws Exception
-     * @throws InvalidArgumentException
-     * @throws InvalidConfigException
+     * @throws Exception|InvalidConfigException
      *
      * @return Constraint[] unique constraints for the given table.
      */
@@ -345,9 +332,7 @@ SQL;
      *
      * @param string $tableName table name.
      *
-     * @throws Exception
-     * @throws InvalidArgumentException
-     * @throws InvalidConfigException
+     * @throws Exception|InvalidConfigException
      *
      * @return CheckConstraint[] check constraints for the given table.
      */
@@ -365,7 +350,7 @@ SQL;
      *
      * @return DefaultValueConstraint[] default value constraints for the given table.
      */
-    protected function loadTableDefaultValues($tableName): array
+    protected function loadTableDefaultValues(string $tableName): array
     {
         throw new NotSupportedException('PostgreSQL does not support default value constraints.');
     }
@@ -424,11 +409,9 @@ SQL;
      *
      * @param TableSchema $table the table metadata
      *
-     * @throws Exception
-     * @throws InvalidArgumentException
-     * @throws InvalidConfigException
+     * @throws Exception|InvalidConfigException|Throwable
      */
-    protected function findConstraints(TableSchema $table)
+    protected function findConstraints(TableSchema $table): void
     {
         $tableName = $this->quoteValue($table->getName());
         $tableSchema = $this->quoteValue($table->getSchemaName());
@@ -498,9 +481,7 @@ SQL;
      *
      * @param TableSchema $table the table metadata.
      *
-     * @throws Exception
-     * @throws InvalidArgumentException
-     * @throws InvalidConfigException
+     * @throws Exception|InvalidConfigException|Throwable
      *
      * @return array with index and column names.
      */
@@ -542,13 +523,11 @@ SQL;
      *
      * @param TableSchema $table the table metadata
      *
-     * @throws Exception
-     * @throws InvalidArgumentException
-     * @throws InvalidConfigException
+     * @throws Exception|InvalidConfigException|Throwable
      *
      * @return array all unique indexes for the given table.
      */
-    public function findUniqueIndexes($table): array
+    public function findUniqueIndexes(TableSchema $table): array
     {
         $uniqueIndexes = [];
 
@@ -579,10 +558,7 @@ SQL;
      *
      * @param TableSchema $table the table metadata.
      *
-     * @throws Exception
-     * @throws InvalidArgumentException
-     * @throws InvalidConfigException
-     * @throws NotSupportedException
+     * @throws Exception|JsonException|InvalidConfigException|Throwable
      *
      * @return bool whether the table exists in the database.
      */
@@ -724,7 +700,6 @@ SQL;
      */
     protected function loadColumnSchema(array $info): ColumnSchema
     {
-        /** @var ColumnSchema $column */
         $column = $this->createColumnSchema();
         $column->allowNull($info['is_nullable']);
         $column->autoIncrement($info['is_autoinc']);
@@ -777,10 +752,7 @@ SQL;
      * @param string $table the table that new rows will be inserted into.
      * @param array $columns the column data (name => value) to be inserted into the table.
      *
-     * @throws Exception
-     * @throws InvalidArgumentException
-     * @throws InvalidConfigException
-     * @throws NotSupportedException
+     * @throws Exception|InvalidConfigException|Throwable
      *
      * @return array|false primary key values or false if the command fails.
      */
@@ -815,9 +787,7 @@ SQL;
      * - uniques
      * - checks
      *
-     * @throws Exception
-     * @throws InvalidArgumentException
-     * @throws InvalidConfigException
+     * @throws Exception|InvalidConfigException|Throwable
      *
      * @return mixed constraints.
      */
@@ -943,7 +913,7 @@ SQL;
      * This method may be overridden by child classes to create a DBMS-specific column schema builder.
      *
      * @param string $type type of the column. See {@see ColumnSchemaBuilder::$type}.
-     * @param int|string|array $length length or precision of the column. See {@see ColumnSchemaBuilder::$length}.
+     * @param int|string|array|null $length length or precision of the column. See {@see ColumnSchemaBuilder::$length}.
      *
      * @return ColumnSchemaBuilder column schema builder instance
      */
