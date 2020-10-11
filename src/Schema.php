@@ -125,16 +125,6 @@ final class Schema extends AbstractSchema implements ConstraintFinderInterface
      */
     protected $tableQuoteCharacter = '"';
 
-    /** @psalm-var Connection $db */
-    private ConnectionInterface $db;
-
-    public function __construct(ConnectionInterface $db)
-    {
-        $this->db = $db;
-
-        parent::__construct($db);
-    }
-
     /**
      * Resolves the table name and schema name (if any).
      *
@@ -186,7 +176,7 @@ WHERE "ns"."nspname" != 'information_schema' AND "ns"."nspname" NOT LIKE 'pg_%'
 ORDER BY "ns"."nspname" ASC
 SQL;
 
-        return $this->db->createCommand($sql)->queryColumn();
+        return $this->getDb()->createCommand($sql)->queryColumn();
     }
 
     /**
@@ -215,7 +205,7 @@ WHERE ns.nspname = :schemaName AND c.relkind IN ('r','v','m','f', 'p')
 ORDER BY c.relname
 SQL;
 
-        return $this->db->createCommand($sql, [':schemaName' => $schema])->queryColumn();
+        return $this->getDb()->createCommand($sql, [':schemaName' => $schema])->queryColumn();
     }
 
     /**
@@ -301,7 +291,7 @@ SQL;
 
         $resolvedName = $this->resolveTableName($tableName);
 
-        $indexes = $this->db->createCommand($sql, [
+        $indexes = $this->getDb()->createCommand($sql, [
             ':schemaName' => $resolvedName->getSchemaName(),
             ':tableName' => $resolvedName->getName(),
         ])->queryAll();
@@ -372,7 +362,7 @@ SQL;
      */
     public function createQueryBuilder(): QueryBuilder
     {
-        return new QueryBuilder($this->db);
+        return new QueryBuilder($this->getDb());
     }
 
     /**
@@ -411,7 +401,7 @@ WHERE ns.nspname = :schemaName AND (c.relkind = 'v' OR c.relkind = 'm')
 ORDER BY c.relname
 SQL;
 
-        return $this->db->createCommand($sql, [':schemaName' => $schema])->queryColumn();
+        return $this->getDb()->createCommand($sql, [':schemaName' => $schema])->queryColumn();
     }
 
     /**
@@ -458,8 +448,8 @@ SQL;
 
         $constraints = [];
 
-        foreach ($this->db->createCommand($sql)->queryAll() as $constraint) {
-            if ($this->db->getSlavePdo()->getAttribute(PDO::ATTR_CASE) === PDO::CASE_UPPER) {
+        foreach ($this->getDb()->createCommand($sql)->queryAll() as $constraint) {
+            if ($this->getDb()->getSlavePdo()->getAttribute(PDO::ATTR_CASE) === PDO::CASE_UPPER) {
                 $constraint = array_change_key_case($constraint, CASE_LOWER);
             }
 
@@ -513,7 +503,7 @@ AND c.relname = :tableName AND ns.nspname = :schemaName
 ORDER BY i.relname, k
 SQL;
 
-        return $this->db->createCommand($sql, [
+        return $this->getDb()->createCommand($sql, [
             ':schemaName' => $table->getSchemaName(),
             ':tableName' => $table->getName(),
         ])->queryAll();
@@ -542,7 +532,7 @@ SQL;
         $uniqueIndexes = [];
 
         foreach ($this->getUniqueIndexInformation($table) as $row) {
-            if ($this->db->getSlavePdo()->getAttribute(PDO::ATTR_CASE) === PDO::CASE_UPPER) {
+            if ($this->getDb()->getSlavePdo()->getAttribute(PDO::ATTR_CASE) === PDO::CASE_UPPER) {
                 $row = array_change_key_case($row, CASE_LOWER);
             }
 
@@ -574,12 +564,12 @@ SQL;
      */
     protected function findColumns(TableSchema $table): bool
     {
-        $tableName = $this->db->quoteValue($table->getName());
-        $schemaName = $this->db->quoteValue($table->getSchemaName());
+        $tableName = $this->getDb()->quoteValue($table->getName());
+        $schemaName = $this->getDb()->quoteValue($table->getSchemaName());
 
         $orIdentity = '';
 
-        if (version_compare($this->db->getServerVersion(), '12.0', '>=')) {
+        if (version_compare($this->getDb()->getServerVersion(), '12.0', '>=')) {
             $orIdentity = 'OR a.attidentity != \'\'';
         }
 
@@ -646,14 +636,14 @@ ORDER BY
     a.attnum;
 SQL;
 
-        $columns = $this->db->createCommand($sql)->queryAll();
+        $columns = $this->getDb()->createCommand($sql)->queryAll();
 
         if (empty($columns)) {
             return false;
         }
 
         foreach ($columns as $column) {
-            if ($this->db->getSlavePdo()->getAttribute(PDO::ATTR_CASE) === PDO::CASE_UPPER) {
+            if ($this->getDb()->getSlavePdo()->getAttribute(PDO::ATTR_CASE) === PDO::CASE_UPPER) {
                 $column = array_change_key_case($column, CASE_LOWER);
             }
 
@@ -769,7 +759,7 @@ SQL;
     public function insert(string $table, array $columns)
     {
         $params = [];
-        $sql = $this->db->getQueryBuilder()->insert($table, $columns, $params);
+        $sql = $this->getDb()->getQueryBuilder()->insert($table, $columns, $params);
         $returnColumns = $this->getTableSchema($table)->getPrimaryKey();
 
         if (!empty($returnColumns)) {
@@ -780,7 +770,7 @@ SQL;
             $sql .= ' RETURNING ' . implode(', ', $returning);
         }
 
-        $command = $this->db->createCommand($sql, $params);
+        $command = $this->getDb()->createCommand($sql, $params);
         $command->prepare(false);
         $result = $command->queryOne();
 
@@ -840,7 +830,7 @@ SQL;
         ];
 
         $resolvedName = $this->resolveTableName($tableName);
-        $constraints = $this->db->createCommand($sql, [
+        $constraints = $this->getDb()->createCommand($sql, [
             ':schemaName' => $resolvedName->getSchemaName(),
             ':tableName' => $resolvedName->getName(),
         ])->queryAll();
@@ -929,6 +919,6 @@ SQL;
      */
     public function createColumnSchemaBuilder(string $type, $length = null): ColumnSchemaBuilder
     {
-        return new ColumnSchemaBuilder($type, $length, $this->db);
+        return new ColumnSchemaBuilder($type, $length, $this->getDb());
     }
 }
