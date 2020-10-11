@@ -32,16 +32,15 @@ final class ArrayExpressionBuilder implements ExpressionBuilderInterface
      * @param ExpressionInterface $expression the expression to be built.
      * @param array $params the binding parameters.
      *
-     * @throws Exception
-     * @throws InvalidArgumentException
-     * @throws InvalidConfigException
-     * @throws NotSupportedException
+     * @throws Exception|InvalidArgumentException|InvalidConfigException|NotSupportedException
      *
      * @return string the raw SQL that will not be additionally escaped or quoted.
      */
     public function build(ExpressionInterface $expression, array &$params = []): string
     {
+        /** @var ArrayExpression $expression */
         $value = $expression->getValue();
+
         if ($value === null) {
             return 'NULL';
         }
@@ -62,15 +61,13 @@ final class ArrayExpressionBuilder implements ExpressionBuilderInterface
      * @param ExpressionInterface $expression
      * @param array $params the binding parameters.
      *
-     * @throws Exception
-     * @throws InvalidArgumentException
-     * @throws InvalidConfigException
-     * @throws NotSupportedException
+     * @throws Exception|InvalidArgumentException|InvalidConfigException|NotSupportedException
      *
      * @return array
      */
-    protected function buildPlaceholders(ExpressionInterface $expression, &$params): array
+    protected function buildPlaceholders(ExpressionInterface $expression, array &$params): array
     {
+        /** @var ArrayExpression $expression */
         $value = $expression->getValue();
 
         $placeholders = [];
@@ -143,7 +140,7 @@ final class ArrayExpressionBuilder implements ExpressionBuilderInterface
      * @param ArrayExpression $expression
      * @param mixed $value
      *
-     * @return int|JsonExpression
+     * @return int|ExpressionInterface
      */
     protected function typecastValue(ArrayExpression $expression, $value)
     {

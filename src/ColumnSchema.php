@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Yiisoft\Db\Pgsql;
 
+use JsonException;
 use Yiisoft\Db\Expression\ArrayExpression;
 use Yiisoft\Db\Expression\ExpressionInterface;
 use Yiisoft\Db\Expression\JsonExpression;
@@ -24,7 +25,7 @@ final class ColumnSchema extends AbstractColumnSchema
     private int $dimension = 0;
 
     /**
-     * @var string name of associated sequence if column is auto-incremental.
+     * @var string|null name of associated sequence if column is auto-incremental.
      */
     private ?string $sequenceName = null;
 
@@ -41,7 +42,7 @@ final class ColumnSchema extends AbstractColumnSchema
     public function dbTypecast($value)
     {
         if ($value === null) {
-            return $value;
+            return null;
         }
 
         if ($value instanceof ExpressionInterface) {
@@ -66,6 +67,8 @@ final class ColumnSchema extends AbstractColumnSchema
      *
      * @param mixed $value input value
      *
+     * @throws JsonException
+     *
      * @return mixed converted value
      */
     public function phpTypecast($value)
@@ -78,7 +81,7 @@ final class ColumnSchema extends AbstractColumnSchema
                 array_walk_recursive($value, function (&$val) {
                     $val = $this->phpTypecastValue($val);
                 });
-            } elseif ($value === null) {
+            } else {
                 return null;
             }
 
@@ -92,6 +95,8 @@ final class ColumnSchema extends AbstractColumnSchema
      * Casts $value after retrieving from the DBMS to PHP representation.
      *
      * @param string|int|null $value
+     *
+     * @throws JsonException
      *
      * @return bool|mixed|null
      */
