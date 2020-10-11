@@ -20,7 +20,6 @@
     "require": {
         "ext-json": "*",
         "ext-pdo": "*",
-        "ext-pdo_pgsql": "*",
         "php": "^7.4|^8.0",
         "yiisoft/arrays": "^3.0@dev",
         "yiisoft/db": "^3.0@dev",
