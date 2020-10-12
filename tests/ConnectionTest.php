@@ -224,7 +224,7 @@ final class ConnectionTest extends TestCase
         $db->setShuffleMasters(false);
 
         $cacheKey = $this->buildKeyCache(
-            'Yiisoft\Db\Connection\Connection::openFromPoolSequentially::' . $db->getDsn()
+            ['Yiisoft\Db\Connection\Connection::openFromPoolSequentially', $db->getDsn()]
         );
 
         $this->assertFalse($this->cache->has($cacheKey));
@@ -241,7 +241,7 @@ final class ConnectionTest extends TestCase
         $db = $this->getConnection();
 
         $cacheKey = $this->buildKeyCache(
-            'Yiisoft\Db\Connection\Connection::openFromPoolSequentially::host:invalid'
+            ['Yiisoft\Db\Connection\Connection::openFromPoolSequentially', 'host:invalid']
         );
 
         $db->setMasters(
@@ -300,7 +300,7 @@ final class ConnectionTest extends TestCase
         $db->setShuffleMasters(false);
 
         $cacheKey = $this->buildKeyCache(
-            'Yiisoft\Db\Connection\Connection::openFromPoolSequentially::' . $db->getDsn()
+            ['Yiisoft\Db\Connection\Connection::openFromPoolSequentially', $db->getDsn()]
         );
 
         $this->assertFalse($this->cache->has($cacheKey));
@@ -312,7 +312,7 @@ final class ConnectionTest extends TestCase
         $db->close();
 
         $cacheKey = $this->buildKeyCache(
-            'Yiisoft\Db\Connection\Connection::openFromPoolSequentially::host:invalid'
+            ['Yiisoft\Db\Connection\Connection::openFromPoolSequentially', 'host:invalid']
         );
 
         $db->setMasters(
