@@ -111,6 +111,13 @@ class TestCase extends AbstractTestCase
         DatabaseFactory::initialize($this->container, []);
     }
 
+    protected function buildKeyCache(array $key): string
+    {
+        $jsonKey = json_encode($key);
+
+        return md5($jsonKey);
+    }
+
     /**
      * Invokes a inaccessible method.
      *
