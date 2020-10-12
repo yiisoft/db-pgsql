@@ -111,6 +111,11 @@ class TestCase extends AbstractTestCase
         DatabaseFactory::initialize($this->container, []);
     }
 
+    protected function buildKeyCache($key): string
+    {
+        return ctype_alnum($key) && mb_strlen($key, '8bit') <= 32 ? $key : md5($key);
+    }
+
     /**
      * Invokes a inaccessible method.
      *
