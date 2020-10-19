@@ -328,9 +328,6 @@ final class QueryBuilder extends AbstractQueryBuilder
         if (preg_match('/\s+DEFAULT\s+(["\']?\w*["\']?)/i', $type, $matches)) {
             $type = preg_replace('/\s+DEFAULT\s+(["\']?\w*["\']?)/i', '', $type);
             $multiAlterStatement[] = "ALTER COLUMN {$columnName} SET DEFAULT {$matches[1]}";
-        } else {
-            /** safe to drop default even if there was none in the first place */
-            $multiAlterStatement[] = "ALTER COLUMN {$columnName} DROP DEFAULT";
         }
 
         $type = preg_replace('/\s+NOT\s+NULL/i', '', $type, -1, $count);
@@ -339,10 +336,10 @@ final class QueryBuilder extends AbstractQueryBuilder
             $multiAlterStatement[] = "ALTER COLUMN {$columnName} SET NOT NULL";
         } else {
             /** remove additional null if any */
-            $type = preg_replace('/\s+NULL/i', '', $type);
-
-            /** safe to drop not null even if there was none in the first place */
-            $multiAlterStatement[] = "ALTER COLUMN {$columnName} DROP NOT NULL";
+            $type = preg_replace('/\s+NULL/i', '', $type, -1, $count);
+            if($count){
+                $multiAlterStatement[] = "ALTER COLUMN {$columnName} DROP NOT NULL";
+            }
         }
 
         if (preg_match('/\s+CHECK\s+\((.+)\)/i', $type, $matches)) {
