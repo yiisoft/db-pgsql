@@ -337,7 +337,7 @@ final class QueryBuilder extends AbstractQueryBuilder
         } else {
             /** remove additional null if any */
             $type = preg_replace('/\s+NULL/i', '', $type, -1, $count);
-            if($count){
+            if ($count) {
                 $multiAlterStatement[] = "ALTER COLUMN {$columnName} DROP NOT NULL";
             }
         }
