@@ -10,6 +10,7 @@ use Yiisoft\Db\Exception\InvalidConfigException;
 use Yiisoft\Db\Pgsql\Connection;
 use Yiisoft\Db\Transaction\Transaction;
 use Yiisoft\Db\TestUtility\TestConnectionTrait;
+use Yiisoft\Db\Transaction\TransactionInterface;
 
 /**
  * @group pgsql
@@ -130,31 +131,31 @@ final class ConnectionTest extends TestCase
 
         $transaction = $db->beginTransaction();
 
-        $transaction->setIsolationLevel(Transaction::READ_UNCOMMITTED);
+        $transaction->setIsolationLevel(TransactionInterface::READ_UNCOMMITTED);
 
         $transaction->commit();
 
         $transaction = $db->beginTransaction();
 
-        $transaction->setIsolationLevel(Transaction::READ_COMMITTED);
+        $transaction->setIsolationLevel(TransactionInterface::READ_COMMITTED);
 
         $transaction->commit();
 
         $transaction = $db->beginTransaction();
 
-        $transaction->setIsolationLevel(Transaction::REPEATABLE_READ);
+        $transaction->setIsolationLevel(TransactionInterface::REPEATABLE_READ);
 
         $transaction->commit();
 
         $transaction = $db->beginTransaction();
 
-        $transaction->setIsolationLevel(Transaction::SERIALIZABLE);
+        $transaction->setIsolationLevel(TransactionInterface::SERIALIZABLE);
 
         $transaction->commit();
 
         $transaction = $db->beginTransaction();
 
-        $transaction->setIsolationLevel(Transaction::SERIALIZABLE . ' READ ONLY DEFERRABLE');
+        $transaction->setIsolationLevel(TransactionInterface::SERIALIZABLE . ' READ ONLY DEFERRABLE');
 
         $transaction->commit();
 
