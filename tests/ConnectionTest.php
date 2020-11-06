@@ -10,7 +10,6 @@ use Yiisoft\Db\Exception\InvalidConfigException;
 use Yiisoft\Db\Pgsql\Connection;
 use Yiisoft\Db\Transaction\Transaction;
 use Yiisoft\Db\TestUtility\TestConnectionTrait;
-use Yiisoft\Db\Transaction\TransactionInterface;
 
 /**
  * @group pgsql
@@ -31,14 +30,14 @@ final class ConnectionTest extends TestCase
         $this->assertEquals($this->cache, $db->getSchemaCache());
         $this->assertEquals($this->logger, $db->getLogger());
         $this->assertEquals($this->profiler, $db->getProfiler());
-        $this->assertEquals($this->dsn->getDsn(), $db->getDsn());
+        $this->assertEquals($this->params()['yiisoft/db-pgsql']['dsn'], $db->getDsn());
     }
 
     public function testGetDriverName(): void
     {
         $db = $this->getConnection();
 
-        $this->assertEquals($this->dsn->getDriver(), $db->getDriverName());
+        $this->assertEquals('pgsql', $db->getDriverName());
     }
 
     public function testOpenClose(): void
@@ -131,31 +130,31 @@ final class ConnectionTest extends TestCase
 
         $transaction = $db->beginTransaction();
 
-        $transaction->setIsolationLevel(TransactionInterface::READ_UNCOMMITTED);
+        $transaction->setIsolationLevel(Transaction::READ_UNCOMMITTED);
 
         $transaction->commit();
 
         $transaction = $db->beginTransaction();
 
-        $transaction->setIsolationLevel(TransactionInterface::READ_COMMITTED);
+        $transaction->setIsolationLevel(Transaction::READ_COMMITTED);
 
         $transaction->commit();
 
         $transaction = $db->beginTransaction();
 
-        $transaction->setIsolationLevel(TransactionInterface::REPEATABLE_READ);
+        $transaction->setIsolationLevel(Transaction::REPEATABLE_READ);
 
         $transaction->commit();
 
         $transaction = $db->beginTransaction();
 
-        $transaction->setIsolationLevel(TransactionInterface::SERIALIZABLE);
+        $transaction->setIsolationLevel(Transaction::SERIALIZABLE);
 
         $transaction->commit();
 
         $transaction = $db->beginTransaction();
 
-        $transaction->setIsolationLevel(TransactionInterface::SERIALIZABLE . ' READ ONLY DEFERRABLE');
+        $transaction->setIsolationLevel(Transaction::SERIALIZABLE . ' READ ONLY DEFERRABLE');
 
         $transaction->commit();
 
@@ -180,7 +179,7 @@ final class ConnectionTest extends TestCase
                     $this->cache,
                     $this->logger,
                     $this->profiler,
-                    $this->dsn->getDsn()
+                    $this->params()['yiisoft/db-pgsql']['dsn']
                 ],
                 'setUsername()' => [$db->getUsername()],
                 'setPassword()' => [$db->getPassword()]
@@ -215,7 +214,7 @@ final class ConnectionTest extends TestCase
                     $this->cache,
                     $this->logger,
                     $this->profiler,
-                    $this->dsn->getDsn()
+                    $this->params()['yiisoft/db-pgsql']['dsn']
                 ],
                 'setUsername()' => [$db->getUsername()],
                 'setPassword()' => [$db->getPassword()]
@@ -289,7 +288,7 @@ final class ConnectionTest extends TestCase
                     $this->cache,
                     $this->logger,
                     $this->profiler,
-                    $this->dsn->getDsn()
+                    $this->params()['yiisoft/db-pgsql']['dsn']
                 ],
                 'setUsername()' => [$db->getUsername()],
                 'setPassword()' => [$db->getPassword()]
