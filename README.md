@@ -44,23 +44,16 @@ Using yiisoft/composer-config-plugin automatically get the settings of `CacheInt
 Di-Container:
 
 ```php
-use Psr\Log\LoggerInterface;
-use Yiisoft\Cache\CacheInterface;
 use Yiisoft\Db\Pgsql\Connection as PgsqlConnection;
-use Yiisoft\Factory\Definitions\Reference;
-use Yiisoft\Profiler\Profiler;
 
 return [
     PgsqlConnection::class => [
         '__class' => PgsqlConnection::class,
         '__construct()' => [
-            Reference::to(CacheInterface::class),
-            Reference::to(LoggerInterface::class),
-            Reference::to(Profiler::class),
-            $params['yiisoft/db-mysql']['dsn']
+            'dsn' => $params['yiisoft/db-pgsql']['dsn']
         ],
-        'setUsername()' => [$params['yiisoft/db-mysql']['username']],
-        'setPassword()' => [$params['yiisoft/db-mysql']['password']]
+        'setUsername()' => [$params['yiisoft/db-pgsql']['username']],
+        'setPassword()' => [$params['yiisoft/db-pgsql']['password']]
     ]
 ];
 ```
@@ -72,7 +65,7 @@ use Yiisoft\Db\Connection\Dsn;
 
 return [
     'yiisoft/db-pgsql' => [
-        'dsn' => (new Dsn('pgsql', '127.0.0.1', 'yiitest', '5432'))->getDsn(),
+        'dsn' => (new Dsn('pgsql', '127.0.0.1', 'yiitest', '5432'))->asString(),
         'username' => 'root',
         'password' => 'root'
     ]
