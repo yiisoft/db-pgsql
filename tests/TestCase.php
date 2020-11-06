@@ -36,7 +36,6 @@ class TestCase extends AbstractTestCase
     protected Connection $connection;
     protected ContainerInterface $container;
     protected array $dataProvider;
-    protected Dsn $dsn;
     protected array $expectedSchemas = ['public'];
     protected string $likeEscapeCharSql = '';
     protected array $likeParameterReplacements = [];
@@ -62,7 +61,6 @@ class TestCase extends AbstractTestCase
             $this->connection,
             $this->container,
             $this->dataProvider,
-            $this->dsn,
             $this->logger,
             $this->profiler
         );
@@ -105,7 +103,6 @@ class TestCase extends AbstractTestCase
         $this->cache = $this->container->get(CacheInterface::class);
         $this->logger = $this->container->get(LoggerInterface::class);
         $this->profiler = $this->container->get(Profiler::class);
-        $this->dsn = $this->container->get(Dsn::class);
         $this->connection = $this->container->get(ConnectionInterface::class);
 
         DatabaseFactory::initialize($this->container, []);
@@ -263,6 +260,18 @@ class TestCase extends AbstractTestCase
         }
     }
 
+    protected function params(): array
+    {
+        return [
+            'yiisoft/db-pgsql' => [
+                'dsn' => (new Dsn('pgsql', '127.0.0.1', 'yiitest', '5432'))->asString(),
+                'username' => 'root',
+                'password' => 'root',
+                'fixture' => __DIR__ . '/Data/postgres.sql',
+            ]
+        ];
+    }
+
     private function config(): array
     {
         $params = $this->params();
@@ -274,54 +283,22 @@ class TestCase extends AbstractTestCase
                 '@runtime' => '@data/runtime',
             ],
 
-            CacheInterface::class => static function () {
-                return new Cache(new ArrayCache());
-            },
+            CacheInterface::class => [
+                '__class' => Cache::class,
+                '__construct()' => [
+                    Reference::to(ArrayCache::class)
+                ]
+            ],
 
             LoggerInterface::class => Logger::class,
 
-            Profiler::class => static function (ContainerInterface $container) {
-                return new Profiler($container->get(LoggerInterface::class));
-            },
-
-            Dsn::class => static function () use ($params) {
-                return new Dsn(
-                    $params['yiisoft/db-pgsql']['dsn']['driver'],
-                    $params['yiisoft/db-pgsql']['dsn']['host'],
-                    $params['yiisoft/db-pgsql']['dsn']['dbname'],
-                    $params['yiisoft/db-pgsql']['dsn']['port'],
-                );
-            },
-
-            ConnectionInterface::class  => static function (ContainerInterface $container) use ($params) {
-                $connection = new Connection(
-                    $container->get(CacheInterface::class),
-                    $container->get(LoggerInterface::class),
-                    $container->get(Profiler::class),
-                    $container->get(Dsn::class)->getDsn(),
-                );
-
-                $connection->setUsername($params['yiisoft/db-pgsql']['username']);
-                $connection->setPassword($params['yiisoft/db-pgsql']['password']);
-
-                return $connection;
-            }
-        ];
-    }
-
-    private function params(): array
-    {
-        return [
-            'yiisoft/db-pgsql' => [
-                'dsn' => [
-                    'driver' => 'pgsql',
-                    'host' => '127.0.0.1',
-                    'dbname' => 'yiitest',
-                    'port' => '5432'
+            ConnectionInterface::class  => [
+                '__class' => Connection::class,
+                '__construct()' => [
+                    'dsn' => $params['yiisoft/db-pgsql']['dsn']
                 ],
-                'username' => 'root',
-                'password' => 'root',
-                'fixture' => __DIR__ . '/Data/postgres.sql',
+                'setUsername()' => [$params['yiisoft/db-pgsql']['username']],
+                'setPassword()' => [$params['yiisoft/db-pgsql']['password']]
             ]
         ];
     }

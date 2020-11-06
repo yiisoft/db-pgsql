@@ -9,7 +9,7 @@ jobs:
     name: PHP ${{ matrix.php }}-pgsql-${{ matrix.pgsql }}
 
     env:
-      extensions: dom, json, pdo, pdo_pgsql
+      extensions: pdo, pdo_pgsql
       key: cache-v1
 
     runs-on: ${{ matrix.os }}
@@ -43,7 +43,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v2.3.4
 
       - name: Setup cache environment
         id: cache-env
@@ -54,7 +54,7 @@ jobs:
           key: ${{ env.key }}
 
       - name: Cache extensions
-        uses: actions/cache@v1
+        uses: actions/cache@v2
         with:
           path: ${{ steps.cache-env.outputs.dir }}
           key: ${{ steps.cache-env.outputs.key }}
@@ -67,22 +67,23 @@ jobs:
           extensions: ${{ env.extensions }}
           ini-values: date.timezone='UTC'
           coverage: pcov
+          tools: composer:v2
 
       - name: Determine composer cache directory on Linux
         if: matrix.os == 'ubuntu-latest'
-        run: echo "::set-env name=COMPOSER_CACHE_DIR::$(composer config cache-dir)"
+        run: echo "COMPOSER_CACHE_DIR=$(composer config cache-dir)" >> $GITHUB_ENV
 
       - name: Determine composer cache directory on Windows
         if: matrix.os == 'windows-latest'
-        run: ECHO "::set-env name=COMPOSER_CACHE_DIR::~\AppData\Local\Composer"
+        run: echo "COMPOSER_CACHE_DIR=~\AppData\Local\Composer" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
 
       - name: Cache dependencies installed with composer
-        uses: actions/cache@v1
+        uses: actions/cache@v2
         with:
           path: ${{ env.COMPOSER_CACHE_DIR }}
-          key: php${{ matrix.php }}-composer-${{ matrix.dependencies }}-${{ hashFiles('**/composer.json') }}
+          key: php${{ matrix.php }}-composer-${{ hashFiles('**/composer.json') }}
           restore-keys: |
-            php${{ matrix.php }}-composer-${{ matrix.dependencies }}-
+            php${{ matrix.php }}-composer-
 
       - name: Install dependencies with composer php 7.4
         if: matrix.php == '7.4'
@@ -93,15 +94,11 @@ jobs:
         run: composer update --ignore-platform-reqs --prefer-dist --no-interaction --no-progress --optimize-autoloader --ansi
 
       - name: Run tests with phpunit and coverage on Linux php 7.4
-        if: matrix.php == '7.4' && matrix.pgsql == '13'
+        if: matrix.os == 'ubuntu-latest' && matrix.php == '7.4'
         run: vendor/bin/phpunit --coverage-clover=coverage.clover --colors=always
 
-      - name: Run tests with phpunit on Linux php 7.4
-        if: matrix.php == '7.4' && (matrix.pgsql == '9' || matrix.pgsql == '10' || matrix.pgsql == '11' || matrix.pgsql == '12')
-        run: vendor/bin/phpunit --colors=always
-
-      - name: Run tests with phpunit on Linux php 8.0
-        if: matrix.php == '8.0'
+      - name: Run tests with phpunit without coverage
+        if: matrix.os != 'ubuntu-latest' || matrix.php != '7.4'
         run: vendor/bin/phpunit --colors=always
 
       - name: Code coverage
