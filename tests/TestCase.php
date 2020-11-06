@@ -21,6 +21,7 @@ use Yiisoft\Db\Connection\Dsn;
 use Yiisoft\Db\Pgsql\Connection;
 use Yiisoft\Db\TestUtility\IsOneOfAssert;
 use Yiisoft\Di\Container;
+use Yiisoft\Factory\Definitions\Reference;
 use Yiisoft\Log\Logger;
 use Yiisoft\Profiler\Profiler;
 
