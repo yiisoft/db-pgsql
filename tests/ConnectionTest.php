@@ -130,31 +130,31 @@ final class ConnectionTest extends TestCase
 
         $transaction = $db->beginTransaction();
 
-        $transaction->setIsolationLevel(Transaction::READ_UNCOMMITTED);
+        $transaction->setIsolationLevel(Transaction::LEVEL_READ_UNCOMMITTED);
 
         $transaction->commit();
 
         $transaction = $db->beginTransaction();
 
-        $transaction->setIsolationLevel(Transaction::READ_COMMITTED);
+        $transaction->setIsolationLevel(Transaction::LEVEL_READ_COMMITTED);
 
         $transaction->commit();
 
         $transaction = $db->beginTransaction();
 
-        $transaction->setIsolationLevel(Transaction::REPEATABLE_READ);
+        $transaction->setIsolationLevel(Transaction::LEVEL_REPEATABLE_READ);
 
         $transaction->commit();
 
         $transaction = $db->beginTransaction();
 
-        $transaction->setIsolationLevel(Transaction::SERIALIZABLE);
+        $transaction->setIsolationLevel(Transaction::LEVEL_SERIALIZABLE);
 
         $transaction->commit();
 
         $transaction = $db->beginTransaction();
 
-        $transaction->setIsolationLevel(Transaction::SERIALIZABLE . ' READ ONLY DEFERRABLE');
+        $transaction->setIsolationLevel(Transaction::LEVEL_SERIALIZABLE . ' READ ONLY DEFERRABLE');
 
         $transaction->commit();
 
