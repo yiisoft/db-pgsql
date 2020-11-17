@@ -15,7 +15,8 @@ use Yiisoft\Aliases\Aliases;
 use Yiisoft\Cache\ArrayCache;
 use Yiisoft\Cache\Cache;
 use Yiisoft\Cache\CacheInterface;
-use Yiisoft\Db\Cache\ConnectionCache;
+use Yiisoft\Db\Cache\QueryCache;
+use Yiisoft\Db\Cache\SchemaCache;
 use Yiisoft\Db\Connection\ConnectionInterface;
 use Yiisoft\Db\Connection\Dsn;
 use Yiisoft\Db\Exception\Exception;
@@ -37,7 +38,6 @@ class TestCase extends AbstractTestCase
     protected Aliases $aliases;
     protected SimpleCacheInterface $cache;
     protected Connection $connection;
-    protected ConnectionCache $connectionCache;
     protected ContainerInterface $container;
     protected array $dataProvider;
     protected array $expectedSchemas = ['public'];
@@ -45,6 +45,8 @@ class TestCase extends AbstractTestCase
     protected array $likeParameterReplacements = [];
     protected LoggerInterface $logger;
     protected Profiler $profiler;
+    protected QueryCache $queryCache;
+    protected SchemaCache $schemaCache;
 
     protected function setUp(): void
     {
@@ -63,10 +65,11 @@ class TestCase extends AbstractTestCase
             $this->aliases,
             $this->cache,
             $this->connection,
-            $this->connectionCache,
             $this->container,
             $this->dataProvider,
             $this->logger,
+            $this->queryCache,
+            $this->schemaCache,
             $this->profiler
         );
     }
@@ -108,17 +111,11 @@ class TestCase extends AbstractTestCase
         $this->logger = $this->container->get(LoggerInterface::class);
         $this->profiler = $this->container->get(Profiler::class);
         $this->cache = $this->container->get(SimpleCacheInterface::class);
-        $this->connectionCache = $this->container->get(ConnectionCache::class);
         $this->connection = $this->container->get(ConnectionInterface::class);
+        $this->queryCache = $this->container->get(QueryCache::class);
+        $this->schemaCache = $this->container->get(SchemaCache::class);
 
         DatabaseFactory::initialize($this->container, []);
-    }
-
-    protected function buildKeyCache(array $key): string
-    {
-        $jsonKey = json_encode($key, JSON_THROW_ON_ERROR);
-
-        return md5($jsonKey);
     }
 
     /**
