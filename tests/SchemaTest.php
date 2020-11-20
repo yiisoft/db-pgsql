@@ -4,21 +4,20 @@ declare(strict_types=1);
 
 namespace Yiisoft\Db\Pgsql\Tests;
 
+use function array_map;
+use function fclose;
+use function fopen;
 use PDO;
+use function trim;
+use function ucfirst;
+use function version_compare;
+
 use Yiisoft\Db\Exception\Exception;
 use Yiisoft\Db\Exception\InvalidConfigException;
 use Yiisoft\Db\Exception\NotSupportedException;
 use Yiisoft\Db\Expression\Expression;
 use Yiisoft\Db\Pgsql\TableSchema;
-use Yiisoft\Db\TestUtility\AnyValue;
 use Yiisoft\Db\TestUtility\TestSchemaTrait;
-
-use function array_map;
-use function fclose;
-use function fopen;
-use function trim;
-use function ucfirst;
-use function version_compare;
 
 /**
  * @group pgsql
@@ -223,7 +222,7 @@ final class SchemaTest extends TestCase
                 'size' => 8,
                 'precision' => null,
                 'scale' => null,
-                'defaultValue' => 130 //b '10000010'
+                'defaultValue' => 130, //b '10000010'
             ],
             'bigint_col' => [
                 'type' => 'bigint',
@@ -248,7 +247,7 @@ final class SchemaTest extends TestCase
                 'precision' => null,
                 'scale' => null,
                 'defaultValue' => null,
-                'dimension' => 1
+                'dimension' => 1,
             ],
             'textarray2_col' => [
                 'type' => 'text',
@@ -261,7 +260,7 @@ final class SchemaTest extends TestCase
                 'precision' => null,
                 'scale' => null,
                 'defaultValue' => null,
-                'dimension' => 2
+                'dimension' => 2,
             ],
             'json_col' => [
                 'type' => 'json',
@@ -273,8 +272,8 @@ final class SchemaTest extends TestCase
                 'size' => null,
                 'precision' => null,
                 'scale' => null,
-                'defaultValue' => ["a" => 1],
-                'dimension' => 0
+                'defaultValue' => ['a' => 1],
+                'dimension' => 0,
             ],
             'jsonb_col' => [
                 'type' => 'json',
@@ -287,7 +286,7 @@ final class SchemaTest extends TestCase
                 'precision' => null,
                 'scale' => null,
                 'defaultValue' => null,
-                'dimension' => 0
+                'dimension' => 0,
             ],
             'jsonarray_col' => [
                 'type' => 'json',
@@ -300,8 +299,8 @@ final class SchemaTest extends TestCase
                 'precision' => null,
                 'scale' => null,
                 'defaultValue' => null,
-                'dimension' => 1
-            ]
+                'dimension' => 1,
+            ],
         ];
     }
 

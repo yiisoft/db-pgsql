@@ -27,7 +27,7 @@ final class JsonExpressionBuilder implements ExpressionBuilderInterface
      * @param ExpressionInterface $expression the expression to be built.
      * @param array $params the binding parameters.
      *
-     * @throws Exception|JsonException|InvalidArgumentException|InvalidConfigException|NotSupportedException
+     * @throws Exception|InvalidArgumentException|InvalidConfigException|JsonException|NotSupportedException
      *
      * @return string the raw SQL that will not be additionally escaped or quoted.
      */
