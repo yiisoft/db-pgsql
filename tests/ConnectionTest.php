@@ -8,8 +8,8 @@ use PDO;
 use Yiisoft\Db\Exception\Exception;
 use Yiisoft\Db\Exception\InvalidConfigException;
 use Yiisoft\Db\Pgsql\Connection;
-use Yiisoft\Db\Transaction\Transaction;
 use Yiisoft\Db\TestUtility\TestConnectionTrait;
+use Yiisoft\Db\Transaction\Transaction;
 
 /**
  * @group pgsql
@@ -179,10 +179,10 @@ final class ConnectionTest extends TestCase
                     $this->cache,
                     $this->logger,
                     $this->profiler,
-                    $this->params()['yiisoft/db-pgsql']['dsn']
+                    $this->params()['yiisoft/db-pgsql']['dsn'],
                 ],
                 'setUsername()' => [$db->getUsername()],
-                'setPassword()' => [$db->getPassword()]
+                'setPassword()' => [$db->getPassword()],
             ]
         );
 
@@ -214,10 +214,10 @@ final class ConnectionTest extends TestCase
                     $this->cache,
                     $this->logger,
                     $this->profiler,
-                    $this->params()['yiisoft/db-pgsql']['dsn']
+                    $this->params()['yiisoft/db-pgsql']['dsn'],
                 ],
                 'setUsername()' => [$db->getUsername()],
-                'setPassword()' => [$db->getPassword()]
+                'setPassword()' => [$db->getPassword()],
             ]
         );
 
@@ -252,10 +252,10 @@ final class ConnectionTest extends TestCase
                     $this->cache,
                     $this->logger,
                     $this->profiler,
-                    'host:invalid'
+                    'host:invalid',
                 ],
                 'setUsername()' => [$db->getUsername()],
-                'setPassword()' => [$db->getPassword()]
+                'setPassword()' => [$db->getPassword()],
             ]
         );
 
@@ -288,10 +288,10 @@ final class ConnectionTest extends TestCase
                     $this->cache,
                     $this->logger,
                     $this->profiler,
-                    $this->params()['yiisoft/db-pgsql']['dsn']
+                    $this->params()['yiisoft/db-pgsql']['dsn'],
                 ],
                 'setUsername()' => [$db->getUsername()],
-                'setPassword()' => [$db->getPassword()]
+                'setPassword()' => [$db->getPassword()],
             ]
         );
 
@@ -323,10 +323,10 @@ final class ConnectionTest extends TestCase
                     $this->cache,
                     $this->logger,
                     $this->profiler,
-                    'host:invalid'
+                    'host:invalid',
                 ],
                 'setUsername()' => [$db->getUsername()],
-                'setPassword()' => [$db->getPassword()]
+                'setPassword()' => [$db->getPassword()],
             ]
         );
 
