@@ -4,14 +4,25 @@ declare(strict_types=1);
 
 namespace Yiisoft\Db\Pgsql;
 
+use function array_change_key_case;
+use function array_merge;
+use function array_unique;
+use function array_values;
+use function bindec;
+use function explode;
+use function implode;
 use JsonException;
 use PDO;
+use function preg_match;
+use function preg_replace;
+use function str_replace;
+use function substr;
 use Throwable;
 use Yiisoft\Arrays\ArrayHelper;
-use Yiisoft\Db\Connection\ConnectionInterface;
 use Yiisoft\Db\Constraint\CheckConstraint;
 use Yiisoft\Db\Constraint\Constraint;
 use Yiisoft\Db\Constraint\ConstraintFinderInterface;
+
 use Yiisoft\Db\Constraint\ConstraintFinderTrait;
 use Yiisoft\Db\Constraint\DefaultValueConstraint;
 use Yiisoft\Db\Constraint\ForeignKeyConstraint;
@@ -24,22 +35,10 @@ use Yiisoft\Db\Schema\ColumnSchemaBuilder;
 use Yiisoft\Db\Schema\Schema as AbstractSchema;
 use Yiisoft\Db\View\ViewFinderTrait;
 
-use function array_change_key_case;
-use function array_merge;
-use function array_unique;
-use function array_values;
-use function bindec;
-use function explode;
-use function implode;
-use function preg_match;
-use function preg_replace;
-use function str_replace;
-use function substr;
-
 final class Schema extends AbstractSchema implements ConstraintFinderInterface
 {
-    use ViewFinderTrait;
     use ConstraintFinderTrait;
+    use ViewFinderTrait;
 
     public const TYPE_JSONB = 'jsonb';
 
@@ -558,7 +557,7 @@ SQL;
      *
      * @param TableSchema $table the table metadata.
      *
-     * @throws Exception|JsonException|InvalidConfigException|Throwable
+     * @throws Exception|InvalidConfigException|JsonException|Throwable
      *
      * @return bool whether the table exists in the database.
      */
@@ -913,7 +912,7 @@ SQL;
      * This method may be overridden by child classes to create a DBMS-specific column schema builder.
      *
      * @param string $type type of the column. See {@see ColumnSchemaBuilder::$type}.
-     * @param int|string|array|null $length length or precision of the column. See {@see ColumnSchemaBuilder::$length}.
+     * @param array|int|string|null $length length or precision of the column. See {@see ColumnSchemaBuilder::$length}.
      *
      * @return ColumnSchemaBuilder column schema builder instance
      */

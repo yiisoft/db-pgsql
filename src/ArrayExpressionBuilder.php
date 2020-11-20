@@ -4,23 +4,23 @@ declare(strict_types=1);
 
 namespace Yiisoft\Db\Pgsql;
 
+use function get_class;
+use function implode;
+use function in_array;
+use function is_array;
+use function str_repeat;
 use Traversable;
 use Yiisoft\Db\Exception\Exception;
 use Yiisoft\Db\Exception\InvalidArgumentException;
 use Yiisoft\Db\Exception\InvalidConfigException;
 use Yiisoft\Db\Exception\NotSupportedException;
 use Yiisoft\Db\Expression\ArrayExpression;
+
 use Yiisoft\Db\Expression\ExpressionBuilderInterface;
 use Yiisoft\Db\Expression\ExpressionBuilderTrait;
 use Yiisoft\Db\Expression\ExpressionInterface;
 use Yiisoft\Db\Expression\JsonExpression;
 use Yiisoft\Db\Query\Query;
-
-use function get_class;
-use function implode;
-use function in_array;
-use function is_array;
-use function str_repeat;
 
 final class ArrayExpressionBuilder implements ExpressionBuilderInterface
 {
@@ -140,7 +140,7 @@ final class ArrayExpressionBuilder implements ExpressionBuilderInterface
      * @param ArrayExpression $expression
      * @param mixed $value
      *
-     * @return int|ExpressionInterface
+     * @return ExpressionInterface|int
      */
     protected function typecastValue(ArrayExpression $expression, $value)
     {
