@@ -69,7 +69,7 @@ final class QueryBuilderTest extends TestCase
         $sql = $qb->alterColumn('foo1', 'bar', 'varchar(255) USING bar::varchar');
         $this->assertEquals($expected, $sql);
 
-        $expected = 'ALTER TABLE "foo1" ALTER COLUMN "bar" TYPE varchar(255) USING cast("bar" as varchar)';
+        $expected = 'ALTER TABLE "foo1" ALTER COLUMN "bar" TYPE varchar(255) using cast("bar" as varchar)';
 
         $sql = $qb->alterColumn('foo1', 'bar', 'varchar(255) using cast("bar" as varchar)');
         $this->assertEquals($expected, $sql);
