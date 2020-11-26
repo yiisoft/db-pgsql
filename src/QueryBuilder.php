@@ -316,7 +316,7 @@ final class QueryBuilder extends AbstractQueryBuilder
          * {@see https://github.com/yiisoft/yii2/issues/4492}
          * {@see http://www.postgresql.org/docs/9.1/static/sql-altertable.html}
          */
-        if (preg_match('/^(DROP|SET|RESET)\s+/i', (string) $type)) {
+        if (preg_match('/^(DROP|SET|RESET|USING)\s+/i', (string) $type)) {
             return "ALTER TABLE {$tableName} ALTER COLUMN {$columnName} {$type}";
         }
 
