@@ -4,7 +4,11 @@ declare(strict_types=1);
 
 namespace Yiisoft\Db\Pgsql\Tests;
 
+use function array_merge;
+use function array_replace;
 use Closure;
+use function is_string;
+use function version_compare;
 use Yiisoft\Arrays\ArrayHelper;
 use Yiisoft\Db\Exception\Exception;
 use Yiisoft\Db\Exception\InvalidArgumentException;
@@ -14,15 +18,11 @@ use Yiisoft\Db\Expression\ArrayExpression;
 use Yiisoft\Db\Expression\Expression;
 use Yiisoft\Db\Expression\JsonExpression;
 use Yiisoft\Db\Pgsql\ColumnSchema;
+
 use Yiisoft\Db\Pgsql\QueryBuilder;
 use Yiisoft\Db\Query\Query;
 use Yiisoft\Db\TestUtility\TestQueryBuilderTrait;
 use Yiisoft\Db\TestUtility\TraversableObject;
-
-use function array_merge;
-use function array_replace;
-use function is_string;
-use function version_compare;
 
 /**
  * @group pgsql
@@ -62,6 +62,16 @@ final class QueryBuilderTest extends TestCase
         $expected = 'ALTER TABLE "foo1" ALTER COLUMN "bar" TYPE varchar(255)';
 
         $sql = $qb->alterColumn('foo1', 'bar', $this->string(255));
+        $this->assertEquals($expected, $sql);
+
+        $expected = 'ALTER TABLE "foo1" ALTER COLUMN "bar" TYPE varchar(255) USING bar::varchar';
+
+        $sql = $qb->alterColumn('foo1', 'bar', 'varchar(255) USING bar::varchar');
+        $this->assertEquals($expected, $sql);
+
+        $expected = 'ALTER TABLE "foo1" ALTER COLUMN "bar" TYPE varchar(255) using cast("bar" as varchar)';
+
+        $sql = $qb->alterColumn('foo1', 'bar', 'varchar(255) using cast("bar" as varchar)');
         $this->assertEquals($expected, $sql);
 
         $expected = 'ALTER TABLE "foo1" ALTER COLUMN "bar" TYPE varchar(255), ALTER COLUMN "bar" SET NOT NULL';
@@ -236,7 +246,7 @@ final class QueryBuilderTest extends TestCase
     {
         $data = $this->batchInsertProviderTrait();
 
-        $data['escape-danger-chars']['expected'] = "INSERT INTO \"customer\" (\"address\")"
+        $data['escape-danger-chars']['expected'] = 'INSERT INTO "customer" ("address")'
             . " VALUES ('SQL-danger chars are escaped: ''); --')";
 
         $data['bool-false, bool2-null']['expected'] = 'INSERT INTO "type" ("bool_col", "bool_col2")'
@@ -295,21 +305,21 @@ final class QueryBuilderTest extends TestCase
             [
                 ['ilike', 'name', ['heyho', 'abc']],
                 '"name" ILIKE :qp0 AND "name" ILIKE :qp1',
-                [':qp0' => '%heyho%', ':qp1' => '%abc%']
+                [':qp0' => '%heyho%', ':qp1' => '%abc%'],
             ],
             [
                 ['not ilike', 'name', ['heyho', 'abc']],
                 '"name" NOT ILIKE :qp0 AND "name" NOT ILIKE :qp1',
-                [':qp0' => '%heyho%', ':qp1' => '%abc%']
+                [':qp0' => '%heyho%', ':qp1' => '%abc%'],
             ],
             [
                 ['or ilike', 'name', ['heyho', 'abc']],
-                '"name" ILIKE :qp0 OR "name" ILIKE :qp1', [':qp0' => '%heyho%', ':qp1' => '%abc%']
+                '"name" ILIKE :qp0 OR "name" ILIKE :qp1', [':qp0' => '%heyho%', ':qp1' => '%abc%'],
             ],
             [
                 ['or not ilike', 'name', ['heyho', 'abc']],
                 '"name" NOT ILIKE :qp0 OR "name" NOT ILIKE :qp1',
-                [':qp0' => '%heyho%', ':qp1' => '%abc%']
+                [':qp0' => '%heyho%', ':qp1' => '%abc%'],
             ],
 
             /* array condition corner cases */
@@ -317,34 +327,34 @@ final class QueryBuilderTest extends TestCase
             'scalar can not be converted to array #1' => [['@>', 'id', new ArrayExpression(1)], '"id" @> ARRAY[]', []],
             [
                 'scalar can not be converted to array #2' => [
-                    '@>', 'id', new ArrayExpression(false)
+                    '@>', 'id', new ArrayExpression(false),
                 ],
                 '"id" @> ARRAY[]',
-                []
+                [],
             ],
             [
                 ['&&', 'price', new ArrayExpression([12, 14], 'float')],
                 '"price" && ARRAY[:qp0, :qp1]::float[]',
-                [':qp0' => 12, ':qp1' => 14]
+                [':qp0' => 12, ':qp1' => 14],
             ],
             [
                 ['@>', 'id', new ArrayExpression([2, 3])],
                 '"id" @> ARRAY[:qp0, :qp1]',
-                [':qp0' => 2, ':qp1' => 3]
+                [':qp0' => 2, ':qp1' => 3],
             ],
             'array of arrays' => [
                 ['@>', 'id', new ArrayExpression([[1,2], [3,4]], 'float', 2)],
                 '"id" @> ARRAY[ARRAY[:qp0, :qp1]::float[], ARRAY[:qp2, :qp3]::float[]\\]::float[][]',
-                [':qp0' => 1, ':qp1' => 2, ':qp2' => 3, ':qp3' => 4]
+                [':qp0' => 1, ':qp1' => 2, ':qp2' => 3, ':qp3' => 4],
             ],
             [['@>', 'id', new ArrayExpression([])], '"id" @> ARRAY[]', []],
             'array can contain nulls' => [
-                ['@>', 'id', new ArrayExpression([null])], '"id" @> ARRAY[:qp0]', [':qp0' => null]
+                ['@>', 'id', new ArrayExpression([null])], '"id" @> ARRAY[:qp0]', [':qp0' => null],
             ],
             'traversable objects are supported' => [
                 ['@>', 'id', new ArrayExpression(new TraversableObject([1, 2, 3]))],
                 '[[id]] @> ARRAY[:qp0, :qp1, :qp2]',
-                [':qp0' => 1, ':qp1' => 2, ':qp2' => 3]
+                [':qp0' => 1, ':qp1' => 2, ':qp2' => 3],
             ],
             [['@>', 'time', new ArrayExpression([new Expression('now()')])], '[[time]] @> ARRAY[now()]', []],
             [
@@ -356,10 +366,10 @@ final class QueryBuilderTest extends TestCase
                             ->select('id')
                             ->from('users')
                             ->where(['active' => 1])
-                    )
+                    ),
                 ],
                 '[[id]] @> ARRAY(SELECT [[id]] FROM [[users]] WHERE [[active]]=:qp0)',
-                [':qp0' => 1]
+                [':qp0' => 1],
             ],
             [
                 [
@@ -370,28 +380,28 @@ final class QueryBuilderTest extends TestCase
                             (new Query($this->getConnection()))
                                 ->select('id')
                                 ->from('users')
-                                ->where(['active' => 1])
+                                ->where(['active' => 1]),
                         ],
                         'integer'
-                    )
+                    ),
                 ],
                 '[[id]] @> ARRAY[ARRAY(SELECT [[id]] FROM [[users]] WHERE [[active]]=:qp0)::integer[]]::integer[]',
-                [':qp0' => 1]
+                [':qp0' => 1],
             ],
 
             /* json conditions */
             [
                 ['=', 'jsoncol', new JsonExpression(['lang' => 'uk', 'country' => 'UA'])],
                 '[[jsoncol]] = :qp0',
-                [':qp0' => '{"lang":"uk","country":"UA"}']
+                [':qp0' => '{"lang":"uk","country":"UA"}'],
             ],
             [
                 ['=', 'jsoncol', new JsonExpression([false])],
-                '[[jsoncol]] = :qp0', [':qp0' => '[false]']
+                '[[jsoncol]] = :qp0', [':qp0' => '[false]'],
             ],
             [
                 ['=', 'prices', new JsonExpression(['seeds' => 15, 'apples' => 25], 'jsonb')],
-                '[[prices]] = :qp0::jsonb', [':qp0' => '{"seeds":15,"apples":25}']
+                '[[prices]] = :qp0::jsonb', [':qp0' => '{"seeds":15,"apples":25}'],
             ],
             'nested json' => [
                 [
@@ -400,19 +410,19 @@ final class QueryBuilderTest extends TestCase
                     new JsonExpression(
                         [
                             'user' => ['login' => 'silverfire', 'password' => 'c4ny0ur34d17?'],
-                            'props' => ['mood' => 'good']
+                            'props' => ['mood' => 'good'],
                         ]
-                    )
+                    ),
                 ],
                 '"data" = :qp0',
-                [':qp0' => '{"user":{"login":"silverfire","password":"c4ny0ur34d17?"},"props":{"mood":"good"}}']
+                [':qp0' => '{"user":{"login":"silverfire","password":"c4ny0ur34d17?"},"props":{"mood":"good"}}'],
             ],
             'null value' => [['=', 'jsoncol', new JsonExpression(null)], '"jsoncol" = :qp0', [':qp0' => 'null']],
             'null as array value' => [
-                ['=', 'jsoncol', new JsonExpression([null])], '"jsoncol" = :qp0', [':qp0' => '[null]']
+                ['=', 'jsoncol', new JsonExpression([null])], '"jsoncol" = :qp0', [':qp0' => '[null]'],
             ],
             'null as object value' => [
-                ['=', 'jsoncol', new JsonExpression(['nil' => null])], '"jsoncol" = :qp0', [':qp0' => '{"nil":null}']
+                ['=', 'jsoncol', new JsonExpression(['nil' => null])], '"jsoncol" = :qp0', [':qp0' => '{"nil":null}'],
             ],
             'query' => [
                 [
@@ -423,10 +433,10 @@ final class QueryBuilderTest extends TestCase
                             ->select('params')
                             ->from('user')
                             ->where(['id' => 1])
-                    )
+                    ),
                 ],
                 '[[jsoncol]] = (SELECT [[params]] FROM [[user]] WHERE [[id]]=:qp0)',
-                [':qp0' => 1]
+                [':qp0' => 1],
             ],
             'query with type' => [
                 [
@@ -438,10 +448,10 @@ final class QueryBuilderTest extends TestCase
                             ->from('user')
                             ->where(['id' => 1]),
                         'jsonb'
-                    )
+                    ),
                 ],
                 '[[jsoncol]] = (SELECT [[params]] FROM [[user]] WHERE [[id]]=:qp0)::jsonb',
-                [':qp0' => 1]
+                [':qp0' => 1],
             ],
             'array of json expressions' => [
                 [
@@ -449,21 +459,21 @@ final class QueryBuilderTest extends TestCase
                     'colname',
                     new ArrayExpression(
                         [new JsonExpression(['a' => null, 'b' => 123, 'c' => [4, 5]]), new JsonExpression([true])]
-                    )
+                    ),
                 ],
                 '"colname" = ARRAY[:qp0, :qp1]',
-                [':qp0' => '{"a":null,"b":123,"c":[4,5]}', ':qp1' => '[true]']
+                [':qp0' => '{"a":null,"b":123,"c":[4,5]}', ':qp1' => '[true]'],
             ],
             'Items in ArrayExpression of type json should be casted to Json' => [
                 ['=', 'colname', new ArrayExpression([['a' => null, 'b' => 123, 'c' => [4, 5]], [true]], 'json')],
                 '"colname" = ARRAY[:qp0, :qp1]::json[]',
-                [':qp0' => '{"a":null,"b":123,"c":[4,5]}', ':qp1' => '[true]']
+                [':qp0' => '{"a":null,"b":123,"c":[4,5]}', ':qp1' => '[true]'],
             ],
             'Two dimension array of text' => [
                 [
                     '=',
                     'colname',
-                    new ArrayExpression([['text1', 'text2'], ['text3', 'text4'], [null, 'text5']], 'text', 2)
+                    new ArrayExpression([['text1', 'text2'], ['text3', 'text4'], [null, 'text5']], 'text', 2),
                 ],
                 '"colname" = ARRAY[ARRAY[:qp0, :qp1]::text[], ARRAY[:qp2, :qp3]::text[], ARRAY[:qp4, :qp5]::text[]]::text[][]',
                 [
@@ -472,14 +482,14 @@ final class QueryBuilderTest extends TestCase
                     ':qp2' => 'text3',
                     ':qp3' => 'text4',
                     ':qp4' => null,
-                    ':qp5' => 'text5'
+                    ':qp5' => 'text5',
                 ],
             ],
             'Three dimension array of booleans' => [
                 [
                     '=',
                     'colname',
-                    new ArrayExpression([[[true], [false, null]], [[false], [true], [false]], [['t', 'f']]], 'bool', 3)
+                    new ArrayExpression([[[true], [false, null]], [[false], [true], [false]], [['t', 'f']]], 'bool', 3),
                 ],
                 '"colname" = ARRAY[ARRAY[ARRAY[:qp0]::bool[], ARRAY[:qp1, :qp2]::bool[]]::bool[][], ARRAY[ARRAY[:qp3]::bool[], ARRAY[:qp4]::bool[], ARRAY[:qp5]::bool[]]::bool[][], ARRAY[ARRAY[:qp6, :qp7]::bool[]]::bool[][]]::bool[][][]',
                 [
@@ -490,7 +500,7 @@ final class QueryBuilderTest extends TestCase
                     ':qp4' => true,
                     ':qp5' => false,
                     ':qp6' => 't',
-                    ':qp7' => 'f'
+                    ':qp7' => 'f',
                 ],
             ],
 
@@ -510,7 +520,7 @@ final class QueryBuilderTest extends TestCase
     /**
      * @dataProvider buildConditionsProvider
      *
-     * @param ExpressionInterface|array $condition
+     * @param array|ExpressionInterface $condition
      * @param string $expected
      * @param array $expectedParams
      *
@@ -573,7 +583,7 @@ final class QueryBuilderTest extends TestCase
     /**
      * @dataProvider buildLikeConditionsProviderTrait
      *
-     * @param object|array $condition
+     * @param array|object $condition
      * @param string $expected
      * @param array $expectedParams
      *
@@ -674,7 +684,7 @@ final class QueryBuilderTest extends TestCase
      * @dataProvider insertProviderTrait
      *
      * @param string $table
-     * @param ColumnSchema|array $columns
+     * @param array|ColumnSchema $columns
      * @param array $params
      * @param string $expectedSQL
      * @param array $expectedParams
@@ -854,7 +864,7 @@ final class QueryBuilderTest extends TestCase
      * @dataProvider upsertProvider
      *
      * @param string $table
-     * @param ColumnSchema|array $insertColumns
+     * @param array|ColumnSchema $insertColumns
      * @param array|bool|null $updateColumns
      * @param string|string[] $expectedSQL
      * @param array $expectedParams

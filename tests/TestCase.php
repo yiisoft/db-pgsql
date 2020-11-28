@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Yiisoft\Db\Pgsql\Tests;
 
+use function explode;
+use function file_get_contents;
 use PHPUnit\Framework\TestCase as AbstractTestCase;
 use Psr\Container\ContainerInterface;
 use Psr\Log\LoggerInterface;
@@ -11,6 +13,8 @@ use Psr\SimpleCache\CacheInterface as SimpleCacheInterface;
 use ReflectionClass;
 use ReflectionException;
 use ReflectionObject;
+use function str_replace;
+use function trim;
 use Yiisoft\Aliases\Aliases;
 use Yiisoft\Cache\ArrayCache;
 use Yiisoft\Cache\Cache;
@@ -23,15 +27,11 @@ use Yiisoft\Db\Exception\Exception;
 use Yiisoft\Db\Factory\DatabaseFactory;
 use Yiisoft\Db\Pgsql\Connection;
 use Yiisoft\Db\TestUtility\IsOneOfAssert;
+
 use Yiisoft\Di\Container;
 use Yiisoft\Factory\Definitions\Reference;
 use Yiisoft\Log\Logger;
 use Yiisoft\Profiler\Profiler;
-
-use function explode;
-use function file_get_contents;
-use function str_replace;
-use function trim;
 
 class TestCase extends AbstractTestCase
 {
@@ -80,8 +80,6 @@ class TestCase extends AbstractTestCase
      * @param string $expected
      * @param string $actual
      * @param string $message
-     *
-     * @return void
      */
     protected function assertEqualsWithoutLE(string $expected, string $actual, string $message = ''): void
     {
@@ -225,9 +223,9 @@ class TestCase extends AbstractTestCase
     /**
      * Adjust dbms specific escaping.
      *
-     * @param string|array $sql
+     * @param array|string $sql
      *
-     * @return string|array
+     * @return array|string
      */
     protected function replaceQuotes($sql)
     {
@@ -271,7 +269,7 @@ class TestCase extends AbstractTestCase
                 'username' => 'root',
                 'password' => 'root',
                 'fixture' => __DIR__ . '/Data/postgres.sql',
-            ]
+            ],
         ];
     }
 
@@ -282,29 +280,29 @@ class TestCase extends AbstractTestCase
         return [
             Aliases::class => [
                 '@root' => dirname(__DIR__, 1),
-                '@data' =>  '@root/tests/Data',
+                '@data' => '@root/tests/Data',
                 '@runtime' => '@data/runtime',
             ],
 
             CacheInterface::class => [
                 '__class' => Cache::class,
                 '__construct()' => [
-                    Reference::to(ArrayCache::class)
-                ]
+                    Reference::to(ArrayCache::class),
+                ],
             ],
 
             SimpleCacheInterface::class => CacheInterface::class,
 
             LoggerInterface::class => Logger::class,
 
-            ConnectionInterface::class  => [
+            ConnectionInterface::class => [
                 '__class' => Connection::class,
                 '__construct()' => [
-                    'dsn' => $params['yiisoft/db-pgsql']['dsn']
+                    'dsn' => $params['yiisoft/db-pgsql']['dsn'],
                 ],
                 'setUsername()' => [$params['yiisoft/db-pgsql']['username']],
-                'setPassword()' => [$params['yiisoft/db-pgsql']['password']]
-            ]
+                'setPassword()' => [$params['yiisoft/db-pgsql']['password']],
+            ],
         ];
     }
 }

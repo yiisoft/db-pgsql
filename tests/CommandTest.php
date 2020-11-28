@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Yiisoft\Db\Pgsql\Tests;
 
+use function serialize;
 use Yiisoft\Db\Exception\Exception;
 use Yiisoft\Db\Exception\InvalidArgumentException;
 use Yiisoft\Db\Exception\InvalidConfigException;
@@ -11,9 +12,8 @@ use Yiisoft\Db\Exception\NotSupportedException;
 use Yiisoft\Db\Expression\ArrayExpression;
 use Yiisoft\Db\Expression\JsonExpression;
 use Yiisoft\Db\Query\Query;
-use Yiisoft\Db\TestUtility\TestCommandTrait;
 
-use function serialize;
+use Yiisoft\Db\TestUtility\TestCommandTrait;
 
 /**
  * @group pgsql
@@ -196,7 +196,7 @@ final class CommandTest extends TestCase
         $db = $this->getConnection();
 
         $inserted = $db->createCommand()->insert('array_and_json_types', [
-            'jsonb_col' => new JsonExpression(['Solution date' => '13.01.2011'])
+            'jsonb_col' => new JsonExpression(['Solution date' => '13.01.2011']),
         ])->execute();
 
         $this->assertSame(1, $inserted);
@@ -243,8 +243,8 @@ PGSQL
             )]],
             'expected' => 'INSERT INTO "type" ("json_col") VALUES (:qp0)',
             'expectedParams' => [
-                ':qp0' => '{"username":"silverfire","is_active":true,"langs":["Ukrainian","Russian","English"]}'
-            ]
+                ':qp0' => '{"username":"silverfire","is_active":true,"langs":["Ukrainian","Russian","English"]}',
+            ],
         ];
 
         $data['batchInsert binds params from arrayExpression'] = [
@@ -252,7 +252,7 @@ PGSQL
             ['intarray_col'],
             [[new ArrayExpression([1,null,3], 'int')]],
             'expected' => 'INSERT INTO "type" ("intarray_col") VALUES (ARRAY[:qp0, :qp1, :qp2]::int[])',
-            'expectedParams' => [':qp0' => 1, ':qp1' => null, ':qp2' => 3]
+            'expectedParams' => [':qp0' => 1, ':qp1' => null, ':qp2' => 3],
         ];
 
         $data['batchInsert casts string to int according to the table schema'] = [
@@ -267,12 +267,11 @@ PGSQL
             ['jsonb_col'],
             [[['a' => true]]],
             'expected' => 'INSERT INTO "type" ("jsonb_col") VALUES (:qp0::jsonb)',
-            'expectedParams' => [':qp0' => '{"a":true}']
+            'expectedParams' => [':qp0' => '{"a":true}'],
         ];
 
         return $data;
     }
-
 
     /**
      * Make sure that `{{something}}` in values will not be encoded.
@@ -331,13 +330,13 @@ PGSQL
             [
                 'name' => 'testParams',
                 'email' => 'testParams@example.com',
-                'address' => '1'
+                'address' => '1',
             ]
         )->execute();
 
         $params = [
             ':email' => 'testParams@example.com',
-            ':len'   => 5,
+            ':len' => 5,
         ];
 
         $command = $db->createCommand($sql, $params);

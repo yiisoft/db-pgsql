@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Yiisoft\Db\Pgsql;
 
 use PDO;
-use Yiisoft\Db\Connection\Connection as AbstractConnection;
 use Yiisoft\Db\Command\Command;
+use Yiisoft\Db\Connection\Connection as AbstractConnection;
 
 /**
  * Database connection class prefilled for PGSQL Server.
