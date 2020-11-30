@@ -4,20 +4,20 @@ declare(strict_types=1);
 
 namespace Yiisoft\Db\Pgsql\Tests;
 
-use function array_map;
-use function fclose;
-use function fopen;
 use PDO;
-use function trim;
-use function ucfirst;
-use function version_compare;
-
 use Yiisoft\Db\Exception\Exception;
 use Yiisoft\Db\Exception\InvalidConfigException;
 use Yiisoft\Db\Exception\NotSupportedException;
 use Yiisoft\Db\Expression\Expression;
 use Yiisoft\Db\Pgsql\TableSchema;
 use Yiisoft\Db\TestUtility\TestSchemaTrait;
+
+use function array_map;
+use function fclose;
+use function fopen;
+use function trim;
+use function ucfirst;
+use function version_compare;
 
 /**
  * @group pgsql
@@ -644,7 +644,7 @@ final class SchemaTest extends TestCase
         $db = $this->getConnection();
         $schema = $this->getConnection()->getSchema();
 
-        $db->getSchemaCache()->setEnableCache(true);
+        $db->getSchemaCache()->setEnable(true);
         $db->setTablePrefix($tablePrefix);
 
         $noCacheTable = $schema->getTableSchema($tableName, true);

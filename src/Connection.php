@@ -41,7 +41,7 @@ final class Connection extends AbstractConnection
      */
     public function getSchema(): Schema
     {
-        return $this->schema ?? ($this->schema = new Schema($this, $this->getSchemaCache()));
+        return $this->schema = new Schema($this, $this->getSchemaCache());
     }
 
     /**
@@ -70,15 +70,17 @@ final class Connection extends AbstractConnection
      */
     protected function initConnection(): void
     {
-        if ($this->getPDO() !== null) {
-            $this->getPDO()->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+        $pdo = $this->getPDO();
+
+        if ($pdo !== null) {
+            $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
             if ($this->getEmulatePrepare() !== null && constant('PDO::ATTR_EMULATE_PREPARES')) {
-                $this->getPDO()->setAttribute(PDO::ATTR_EMULATE_PREPARES, $this->getEmulatePrepare());
+                $pdo->setAttribute(PDO::ATTR_EMULATE_PREPARES, $this->getEmulatePrepare());
             }
 
             if ($this->getCharset() !== null) {
-                $this->getPDO()->exec('SET NAMES ' . $this->getPDO()->quote($this->getCharset()));
+                $pdo->exec('SET NAMES ' . $pdo->quote($this->getCharset()));
             }
         }
     }
