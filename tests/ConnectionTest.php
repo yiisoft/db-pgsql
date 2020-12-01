@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Yiisoft\Db\Pgsql\Tests;
 
 use PDO;
+use Yiisoft\Cache\CacheKeyNormalizer;
 use Yiisoft\Db\Exception\Exception;
 use Yiisoft\Db\Exception\InvalidConfigException;
 use Yiisoft\Db\Pgsql\Connection;
@@ -27,9 +28,10 @@ final class ConnectionTest extends TestCase
     {
         $db = $this->getConnection();
 
-        $this->assertEquals($this->cache, $db->getSchemaCache());
         $this->assertEquals($this->logger, $db->getLogger());
         $this->assertEquals($this->profiler, $db->getProfiler());
+        $this->assertEquals($this->queryCache, $db->getQueryCache());
+        $this->assertEquals($this->schemaCache, $db->getSchemaCache());
         $this->assertEquals($this->params()['yiisoft/db-pgsql']['dsn'], $db->getDsn());
     }
 
@@ -57,7 +59,7 @@ final class ConnectionTest extends TestCase
         $this->assertFalse($db->isActive());
         $this->assertNull($db->getPDO());
 
-        $db = new Connection($this->cache, $this->logger, $this->profiler, 'unknown::memory:');
+        $db = new Connection($this->logger, $this->profiler, $this->queryCache, $this->schemaCache, 'unknown::memory:');
 
         $this->expectException(Exception::class);
         $this->expectExceptionMessage('could not find driver');
@@ -176,10 +178,7 @@ final class ConnectionTest extends TestCase
             [
                 '__class' => Connection::class,
                 '__construct()' => [
-                    $this->cache,
-                    $this->logger,
-                    $this->profiler,
-                    $this->params()['yiisoft/db-pgsql']['dsn'],
+                    'dsn' => $this->params()['yiisoft/db-pgsql']['dsn'],
                 ],
                 'setUsername()' => [$db->getUsername()],
                 'setPassword()' => [$db->getPassword()],
@@ -211,10 +210,7 @@ final class ConnectionTest extends TestCase
             [
                 '__class' => Connection::class,
                 '__construct()' => [
-                    $this->cache,
-                    $this->logger,
-                    $this->profiler,
-                    $this->params()['yiisoft/db-pgsql']['dsn'],
+                    'dsn' => $this->params()['yiisoft/db-pgsql']['dsn'],
                 ],
                 'setUsername()' => [$db->getUsername()],
                 'setPassword()' => [$db->getPassword()],
@@ -223,7 +219,7 @@ final class ConnectionTest extends TestCase
 
         $db->setShuffleMasters(false);
 
-        $cacheKey = $this->buildKeyCache(
+        $cacheKey = (new CacheKeyNormalizer())->normalize(
             ['Yiisoft\Db\Connection\Connection::openFromPoolSequentially', $db->getDsn()]
         );
 
@@ -240,7 +236,7 @@ final class ConnectionTest extends TestCase
 
         $db = $this->getConnection();
 
-        $cacheKey = $this->buildKeyCache(
+        $cacheKey = (new CacheKeyNormalizer())->normalize(
             ['Yiisoft\Db\Connection\Connection::openFromPoolSequentially', 'host:invalid']
         );
 
@@ -249,10 +245,7 @@ final class ConnectionTest extends TestCase
             [
                 '__class' => Connection::class,
                 '__construct()' => [
-                    $this->cache,
-                    $this->logger,
-                    $this->profiler,
-                    'host:invalid',
+                    'dsn' => 'host:invalid',
                 ],
                 'setUsername()' => [$db->getUsername()],
                 'setPassword()' => [$db->getPassword()],
@@ -285,21 +278,18 @@ final class ConnectionTest extends TestCase
             [
                 '__class' => Connection::class,
                 '__construct()' => [
-                    $this->cache,
-                    $this->logger,
-                    $this->profiler,
-                    $this->params()['yiisoft/db-pgsql']['dsn'],
+                    'dsn' => $this->params()['yiisoft/db-pgsql']['dsn'],
                 ],
                 'setUsername()' => [$db->getUsername()],
                 'setPassword()' => [$db->getPassword()],
             ]
         );
 
-        $db->setSchemaCache(null);
+        $db->getSchemaCache()->setEnable(false);
 
         $db->setShuffleMasters(false);
 
-        $cacheKey = $this->buildKeyCache(
+        $cacheKey = (new CacheKeyNormalizer())->normalize(
             ['Yiisoft\Db\Connection\Connection::openFromPoolSequentially', $db->getDsn()]
         );
 
@@ -311,7 +301,7 @@ final class ConnectionTest extends TestCase
 
         $db->close();
 
-        $cacheKey = $this->buildKeyCache(
+        $cacheKey = (new CacheKeyNormalizer())->normalize(
             ['Yiisoft\Db\Connection\Connection::openFromPoolSequentially', 'host:invalid']
         );
 
@@ -320,10 +310,7 @@ final class ConnectionTest extends TestCase
             [
                 '__class' => Connection::class,
                 '__construct()' => [
-                    $this->cache,
-                    $this->logger,
-                    $this->profiler,
-                    'host:invalid',
+                    'dsn' => 'host:invalid',
                 ],
                 'setUsername()' => [$db->getUsername()],
                 'setPassword()' => [$db->getPassword()],
