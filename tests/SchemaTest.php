@@ -4,20 +4,20 @@ declare(strict_types=1);
 
 namespace Yiisoft\Db\Pgsql\Tests;
 
-use function array_map;
-use function fclose;
-use function fopen;
 use PDO;
-use function trim;
-use function ucfirst;
-use function version_compare;
-
 use Yiisoft\Db\Exception\Exception;
 use Yiisoft\Db\Exception\InvalidConfigException;
 use Yiisoft\Db\Exception\NotSupportedException;
 use Yiisoft\Db\Expression\Expression;
 use Yiisoft\Db\Pgsql\TableSchema;
 use Yiisoft\Db\TestUtility\TestSchemaTrait;
+
+use function array_map;
+use function fclose;
+use function fopen;
+use function trim;
+use function ucfirst;
+use function version_compare;
 
 /**
  * @group pgsql
@@ -641,26 +641,24 @@ final class SchemaTest extends TestCase
         string $testTablePrefix,
         string $testTableName
     ): void {
+        $db = $this->getConnection();
         $schema = $this->getConnection()->getSchema();
 
-        $schema->getDb()->setEnableSchemaCache(true);
-
-        $schema->getDb()->setSchemaCache($this->cache);
-
-        $schema->getDb()->setTablePrefix($tablePrefix);
+        $db->getSchemaCache()->setEnable(true);
+        $db->setTablePrefix($tablePrefix);
 
         $noCacheTable = $schema->getTableSchema($tableName, true);
 
         $this->assertInstanceOf(TableSchema::class, $noCacheTable);
 
         /* Compare */
-        $schema->getDb()->setTablePrefix($testTablePrefix);
+        $db->setTablePrefix($testTablePrefix);
 
         $testNoCacheTable = $schema->getTableSchema($testTableName);
 
         $this->assertSame($noCacheTable, $testNoCacheTable);
 
-        $schema->getDb()->setTablePrefix($tablePrefix);
+        $db->setTablePrefix($tablePrefix);
 
         $schema->refreshTableSchema($tableName);
 
@@ -670,7 +668,7 @@ final class SchemaTest extends TestCase
         $this->assertNotSame($noCacheTable, $refreshedTable);
 
         /* Compare */
-        $schema->getDb()->setTablePrefix($testTablePrefix);
+        $db->setTablePrefix($testTablePrefix);
 
         $schema->refreshTableSchema($testTablePrefix);
 
