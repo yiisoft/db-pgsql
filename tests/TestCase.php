@@ -252,7 +252,6 @@ class TestCase extends AbstractTestCase
      * @param string $propertyName
      * @param $value
      * @param bool $revoke whether to make property inaccessible after setting
-     *
      */
     protected function setInaccessibleProperty(object $object, string $propertyName, $value, bool $revoke = true): void
     {
