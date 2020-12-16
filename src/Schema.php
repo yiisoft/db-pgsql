@@ -4,25 +4,13 @@ declare(strict_types=1);
 
 namespace Yiisoft\Db\Pgsql;
 
-use function array_change_key_case;
-use function array_merge;
-use function array_unique;
-use function array_values;
-use function bindec;
-use function explode;
-use function implode;
 use JsonException;
 use PDO;
-use function preg_match;
-use function preg_replace;
-use function str_replace;
-use function substr;
 use Throwable;
 use Yiisoft\Arrays\ArrayHelper;
 use Yiisoft\Db\Constraint\CheckConstraint;
 use Yiisoft\Db\Constraint\Constraint;
 use Yiisoft\Db\Constraint\ConstraintFinderInterface;
-
 use Yiisoft\Db\Constraint\ConstraintFinderTrait;
 use Yiisoft\Db\Constraint\DefaultValueConstraint;
 use Yiisoft\Db\Constraint\ForeignKeyConstraint;
@@ -34,6 +22,18 @@ use Yiisoft\Db\Expression\Expression;
 use Yiisoft\Db\Schema\ColumnSchemaBuilder;
 use Yiisoft\Db\Schema\Schema as AbstractSchema;
 use Yiisoft\Db\View\ViewFinderTrait;
+
+use function array_change_key_case;
+use function array_merge;
+use function array_unique;
+use function array_values;
+use function bindec;
+use function explode;
+use function implode;
+use function preg_match;
+use function preg_replace;
+use function str_replace;
+use function substr;
 
 final class Schema extends AbstractSchema implements ConstraintFinderInterface
 {
@@ -763,7 +763,7 @@ SQL;
 
         if (!empty($returnColumns)) {
             $returning = [];
-            foreach ((array) $returnColumns as $name) {
+            foreach ($returnColumns as $name) {
                 $returning[] = $this->quoteColumnName($name);
             }
             $sql .= ' RETURNING ' . implode(', ', $returning);
