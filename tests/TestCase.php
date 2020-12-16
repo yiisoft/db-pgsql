@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace Yiisoft\Db\Pgsql\Tests;
 
+use Exception;
+use InvalidArgumentException;
 use PHPUnit\Framework\TestCase as AbstractTestCase;
 use Psr\Container\ContainerInterface;
 use Psr\Log\LoggerInterface;
-use Psr\SimpleCache\CacheInterface as SimpleCacheInterface;
+use Psr\SimpleCache\CacheInterface as PsrCacheInterface;
 use ReflectionClass;
 use ReflectionException;
 use ReflectionObject;
@@ -19,7 +21,6 @@ use Yiisoft\Db\Cache\QueryCache;
 use Yiisoft\Db\Cache\SchemaCache;
 use Yiisoft\Db\Connection\ConnectionInterface;
 use Yiisoft\Db\Connection\Dsn;
-use Yiisoft\Db\Exception\Exception;
 use Yiisoft\Db\Factory\DatabaseFactory;
 use Yiisoft\Db\Pgsql\Connection;
 use Yiisoft\Db\TestUtility\IsOneOfAssert;
@@ -36,7 +37,7 @@ use function trim;
 class TestCase extends AbstractTestCase
 {
     protected Aliases $aliases;
-    protected SimpleCacheInterface $cache;
+    protected ArrayCache $cache;
     protected Connection $connection;
     protected ContainerInterface $container;
     protected array $dataProvider;
@@ -108,7 +109,7 @@ class TestCase extends AbstractTestCase
         $this->aliases = $this->container->get(Aliases::class);
         $this->logger = $this->container->get(LoggerInterface::class);
         $this->profiler = $this->container->get(Profiler::class);
-        $this->cache = $this->container->get(SimpleCacheInterface::class);
+        $this->cache = $this->container->get(ArrayCache::class);
         $this->connection = $this->container->get(ConnectionInterface::class);
         $this->queryCache = $this->container->get(QueryCache::class);
         $this->schemaCache = $this->container->get(SchemaCache::class);
@@ -195,8 +196,6 @@ class TestCase extends AbstractTestCase
      * @param string $propertyName
      * @param bool $revoke whether to make property inaccessible after getting.
      *
-     * @throws ReflectionException
-     *
      * @return mixed
      */
     protected function getInaccessibleProperty(object $object, string $propertyName, bool $revoke = true)
@@ -220,6 +219,20 @@ class TestCase extends AbstractTestCase
         return $result;
     }
 
+    protected function normalize($key): string
+    {
+        if (is_string($key) || is_int($key)) {
+            $key = (string) $key;
+            return ctype_alnum($key) && mb_strlen($key, '8bit') <= 32 ? $key : md5($key);
+        }
+
+        if (($key = json_encode($key, JSON_THROW_ON_ERROR)) === false) {
+            throw new InvalidArgumentException('Invalid key. ' . json_last_error_msg());
+        }
+
+        return md5($key);
+    }
+
     /**
      * Adjust dbms specific escaping.
      *
@@ -240,7 +253,6 @@ class TestCase extends AbstractTestCase
      * @param $value
      * @param bool $revoke whether to make property inaccessible after setting
      *
-     * @throws ReflectionException
      */
     protected function setInaccessibleProperty(object $object, string $propertyName, $value, bool $revoke = true): void
     {
@@ -284,14 +296,14 @@ class TestCase extends AbstractTestCase
                 '@runtime' => '@data/runtime',
             ],
 
+            PsrCacheInterface::class => ArrayCache::class,
+
             CacheInterface::class => [
                 '__class' => Cache::class,
                 '__construct()' => [
                     Reference::to(ArrayCache::class),
                 ],
             ],
-
-            SimpleCacheInterface::class => CacheInterface::class,
 
             LoggerInterface::class => Logger::class,
 
