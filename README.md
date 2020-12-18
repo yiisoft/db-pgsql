@@ -39,7 +39,7 @@ composer require yiisoft/db-pgsql
 
 ## Configuration
 
-Using yiisoft/composer-config-plugin automatically get the settings of `Psr\SimpleCache\CacheInterface::class`, `LoggerInterface::class`, and `Profiler::class`.
+Using yiisoft/composer-config-plugin automatically get the settings of `Yiisoft\Cache\CacheInterface::class`, `LoggerInterface::class`, and `Profiler::class`.
 
 Di-Container:
 
