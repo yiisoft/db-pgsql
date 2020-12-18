@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Yiisoft\Db\Pgsql\Tests;
 
+use Exception;
 use PHPUnit\Framework\TestCase as AbstractTestCase;
 use Psr\Container\ContainerInterface;
 use Psr\Log\LoggerInterface;
-use Psr\SimpleCache\CacheInterface as SimpleCacheInterface;
 use ReflectionClass;
 use ReflectionException;
 use ReflectionObject;
@@ -19,7 +19,6 @@ use Yiisoft\Db\Cache\QueryCache;
 use Yiisoft\Db\Cache\SchemaCache;
 use Yiisoft\Db\Connection\ConnectionInterface;
 use Yiisoft\Db\Connection\Dsn;
-use Yiisoft\Db\Exception\Exception;
 use Yiisoft\Db\Factory\DatabaseFactory;
 use Yiisoft\Db\Pgsql\Connection;
 use Yiisoft\Db\TestUtility\IsOneOfAssert;
@@ -36,7 +35,7 @@ use function trim;
 class TestCase extends AbstractTestCase
 {
     protected Aliases $aliases;
-    protected SimpleCacheInterface $cache;
+    protected CacheInterface $cache;
     protected Connection $connection;
     protected ContainerInterface $container;
     protected array $dataProvider;
@@ -108,7 +107,7 @@ class TestCase extends AbstractTestCase
         $this->aliases = $this->container->get(Aliases::class);
         $this->logger = $this->container->get(LoggerInterface::class);
         $this->profiler = $this->container->get(Profiler::class);
-        $this->cache = $this->container->get(SimpleCacheInterface::class);
+        $this->cache = $this->container->get(CacheInterface::class);
         $this->connection = $this->container->get(ConnectionInterface::class);
         $this->queryCache = $this->container->get(QueryCache::class);
         $this->schemaCache = $this->container->get(SchemaCache::class);
@@ -290,8 +289,6 @@ class TestCase extends AbstractTestCase
                     Reference::to(ArrayCache::class),
                 ],
             ],
-
-            SimpleCacheInterface::class => CacheInterface::class,
 
             LoggerInterface::class => Logger::class,
 
