@@ -44,16 +44,17 @@ Using yiisoft/composer-config-plugin automatically get the settings of `Yiisoft\
 Di-Container:
 
 ```php
+use Yiisoft\Db\Connection\ConnectionInterface;
 use Yiisoft\Db\Pgsql\Connection as PgsqlConnection;
 
 return [
-    PgsqlConnection::class => [
+    ConnectionInterface::class => [
         '__class' => PgsqlConnection::class,
         '__construct()' => [
             'dsn' => $params['yiisoft/db-pgsql']['dsn']
         ],
         'setUsername()' => [$params['yiisoft/db-pgsql']['username']],
-        'setPassword()' => [$params['yiisoft/db-pgsql']['password']]
+        'setPassword()' => [$params['yiisoft/db-pgsql']['password']],
     ]
 ];
 ```
@@ -67,7 +68,7 @@ return [
     'yiisoft/db-pgsql' => [
         'dsn' => (new Dsn('pgsql', '127.0.0.1', 'yiitest', '5432'))->asString(),
         'username' => 'root',
-        'password' => 'root'
+        'password' => 'root',
     ]
 ];
 ```
