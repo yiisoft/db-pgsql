@@ -28,10 +28,6 @@ final class ConnectionTest extends TestCase
     {
         $db = $this->getConnection();
 
-        $this->assertEquals($this->logger, $db->getLogger());
-        $this->assertEquals($this->profiler, $db->getProfiler());
-        $this->assertEquals($this->queryCache, $db->getQueryCache());
-        $this->assertEquals($this->schemaCache, $db->getSchemaCache());
         $this->assertEquals($this->params()['yiisoft/db-pgsql']['dsn'], $db->getDsn());
     }
 
@@ -59,7 +55,7 @@ final class ConnectionTest extends TestCase
         $this->assertFalse($db->isActive());
         $this->assertNull($db->getPDO());
 
-        $db = new Connection($this->logger, $this->profiler, $this->queryCache, $this->schemaCache, 'unknown::memory:');
+        $db = new Connection('unknown::memory:');
 
         $this->expectException(Exception::class);
         $this->expectExceptionMessage('could not find driver');
@@ -225,12 +221,12 @@ final class ConnectionTest extends TestCase
             ['Yiisoft\Db\Connection\Connection::openFromPoolSequentially', $db->getDsn()]
         );
 
-        $this->assertFalse($this->cache->psr()->has($cacheKey));
+        $this->assertFalse($this->schemaCache->has($cacheKey));
 
         $db->open();
 
         $this->assertFalse(
-            $this->cache->psr()->has($cacheKey),
+            $this->schemaCache->has($cacheKey),
             'Connection was successful – cache must not contain information about this DSN'
         );
 
@@ -262,7 +258,7 @@ final class ConnectionTest extends TestCase
         }
 
         $this->assertTrue(
-            $this->cache->psr()->has($cacheKey),
+            $this->schemaCache->has($cacheKey),
             'Connection was not successful – cache must contain information about this DSN'
         );
 
@@ -273,7 +269,7 @@ final class ConnectionTest extends TestCase
     {
         $cacheKeyNormalizer = new CacheKeyNormalizer();
 
-        $this->cache->psr()->clear();
+        $this->schemaCache->clear();
 
         $db = $this->getConnection();
 
@@ -289,7 +285,7 @@ final class ConnectionTest extends TestCase
             ]
         );
 
-        $db->getSchemaCache()->setEnable(false);
+        $this->schemaCache->setEnable(false);
 
         $db->setShuffleMasters(false);
 
@@ -297,11 +293,11 @@ final class ConnectionTest extends TestCase
             ['Yiisoft\Db\Connection\Connection::openFromPoolSequentially', $db->getDsn()]
         );
 
-        $this->assertFalse($this->cache->psr()->has($cacheKey));
+        $this->assertFalse($this->schemaCache->has($cacheKey));
 
         $db->open();
 
-        $this->assertFalse($this->cache->psr()->has($cacheKey), 'Caching is disabled');
+        $this->assertFalse($this->schemaCache->has($cacheKey), 'Caching is disabled');
 
         $db->close();
 
@@ -326,7 +322,7 @@ final class ConnectionTest extends TestCase
         } catch (InvalidConfigException $e) {
         }
 
-        $this->assertFalse($this->cache->psr()->has($cacheKey), 'Caching is disabled');
+        $this->assertFalse($this->schemaCache->has($cacheKey), 'Caching is disabled');
 
         $db->close();
     }

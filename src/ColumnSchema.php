@@ -4,18 +4,18 @@ declare(strict_types=1);
 
 namespace Yiisoft\Db\Pgsql;
 
+use JsonException;
+use Yiisoft\Db\Expression\ArrayExpression;
+use Yiisoft\Db\Expression\ExpressionInterface;
+use Yiisoft\Db\Expression\JsonExpression;
+use Yiisoft\Db\Schema\ColumnSchema as AbstractColumnSchema;
+
 use function array_walk_recursive;
 use function in_array;
 use function is_array;
 use function is_string;
 use function json_decode;
-
-use JsonException;
 use function strtolower;
-use Yiisoft\Db\Expression\ArrayExpression;
-use Yiisoft\Db\Expression\ExpressionInterface;
-use Yiisoft\Db\Expression\JsonExpression;
-use Yiisoft\Db\Schema\ColumnSchema as AbstractColumnSchema;
 
 final class ColumnSchema extends AbstractColumnSchema
 {
@@ -98,7 +98,7 @@ final class ColumnSchema extends AbstractColumnSchema
      *
      * @throws JsonException
      *
-     * @return bool|mixed|null
+     * @return bool|int|null
      */
     protected function phpTypecastValue($value)
     {

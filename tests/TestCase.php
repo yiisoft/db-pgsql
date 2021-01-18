@@ -20,6 +20,10 @@ use Yiisoft\Db\Cache\SchemaCache;
 use Yiisoft\Db\Connection\ConnectionInterface;
 use Yiisoft\Db\Connection\Dsn;
 use Yiisoft\Db\Factory\DatabaseFactory;
+use Yiisoft\Db\Factory\LoggerFactory;
+use Yiisoft\Db\Factory\ProfilerFactory;
+use Yiisoft\Db\Factory\SchemaCacheFactory;
+use Yiisoft\Db\Factory\QueryCacheFactory;
 use Yiisoft\Db\Pgsql\Connection;
 use Yiisoft\Db\TestUtility\IsOneOfAssert;
 use Yiisoft\Di\Container;
@@ -35,14 +39,13 @@ use function trim;
 
 class TestCase extends AbstractTestCase
 {
-    protected Aliases $aliases;
-    protected CacheInterface $cache;
-    protected Connection $connection;
-    protected ContainerInterface $container;
     protected array $dataProvider;
     protected array $expectedSchemas = ['public'];
     protected string $likeEscapeCharSql = '';
     protected array $likeParameterReplacements = [];
+    protected Aliases $aliases;
+    protected Connection $connection;
+    protected ContainerInterface $container;
     protected LoggerInterface $logger;
     protected ProfilerInterface $profiler;
     protected QueryCache $queryCache;
@@ -63,7 +66,6 @@ class TestCase extends AbstractTestCase
 
         unset(
             $this->aliases,
-            $this->cache,
             $this->connection,
             $this->container,
             $this->dataProvider,
@@ -105,15 +107,18 @@ class TestCase extends AbstractTestCase
     {
         $this->container = new Container($this->config());
 
+        DatabaseFactory::initialize($this->container, []);
+        LoggerFactory::initialize($this->container);
+        ProfilerFactory::initialize($this->container);
+        SchemaCacheFactory::initialize($this->container);
+        QueryCacheFactory::initialize($this->container);
+
         $this->aliases = $this->container->get(Aliases::class);
+        $this->connection = $this->container->get(ConnectionInterface::class);
         $this->logger = $this->container->get(LoggerInterface::class);
         $this->profiler = $this->container->get(ProfilerInterface::class);
-        $this->cache = $this->container->get(CacheInterface::class);
-        $this->connection = $this->container->get(ConnectionInterface::class);
         $this->queryCache = $this->container->get(QueryCache::class);
         $this->schemaCache = $this->container->get(SchemaCache::class);
-
-        DatabaseFactory::initialize($this->container, []);
     }
 
     /**
@@ -195,8 +200,6 @@ class TestCase extends AbstractTestCase
      * @param string $propertyName
      * @param bool $revoke whether to make property inaccessible after getting.
      *
-     * @throws ReflectionException
-     *
      * @return mixed
      */
     protected function getInaccessibleProperty(object $object, string $propertyName, bool $revoke = true)
@@ -239,8 +242,6 @@ class TestCase extends AbstractTestCase
      * @param string $propertyName
      * @param $value
      * @param bool $revoke whether to make property inaccessible after setting
-     *
-     * @throws ReflectionException
      */
     protected function setInaccessibleProperty(object $object, string $propertyName, $value, bool $revoke = true): void
     {
