@@ -98,7 +98,7 @@ final class ColumnSchema extends AbstractColumnSchema
      *
      * @throws JsonException
      *
-     * @return bool|int|null
+     * @return mixed
      */
     protected function phpTypecastValue($value)
     {
