@@ -221,12 +221,12 @@ final class ConnectionTest extends TestCase
             ['Yiisoft\Db\Connection\Connection::openFromPoolSequentially', $db->getDsn()]
         );
 
-        $this->assertFalse($this->schemaCache->has($cacheKey));
+        $this->assertFalse($this->cache->psr()->has($cacheKey));
 
         $db->open();
 
         $this->assertFalse(
-            $this->schemaCache->has($cacheKey),
+            $this->cache->psr()->has($cacheKey),
             'Connection was successful – cache must not contain information about this DSN'
         );
 
@@ -258,7 +258,7 @@ final class ConnectionTest extends TestCase
         }
 
         $this->assertTrue(
-            $this->schemaCache->has($cacheKey),
+            $this->cache->psr()->has($cacheKey),
             'Connection was not successful – cache must contain information about this DSN'
         );
 
@@ -268,8 +268,6 @@ final class ConnectionTest extends TestCase
     public function testServerStatusCacheCanBeDisabled(): void
     {
         $cacheKeyNormalizer = new CacheKeyNormalizer();
-
-        $this->schemaCache->clear();
 
         $db = $this->getConnection();
 
@@ -293,11 +291,11 @@ final class ConnectionTest extends TestCase
             ['Yiisoft\Db\Connection\Connection::openFromPoolSequentially', $db->getDsn()]
         );
 
-        $this->assertFalse($this->schemaCache->has($cacheKey));
+        $this->assertFalse($this->cache->psr()->has($cacheKey));
 
         $db->open();
 
-        $this->assertFalse($this->schemaCache->has($cacheKey), 'Caching is disabled');
+        $this->assertFalse($this->cache->psr()->has($cacheKey), 'Caching is disabled');
 
         $db->close();
 
@@ -322,7 +320,7 @@ final class ConnectionTest extends TestCase
         } catch (InvalidConfigException $e) {
         }
 
-        $this->assertFalse($this->schemaCache->has($cacheKey), 'Caching is disabled');
+        $this->assertFalse($this->cache->psr()->has($cacheKey), 'Caching is disabled');
 
         $db->close();
     }

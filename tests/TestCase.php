@@ -44,6 +44,7 @@ class TestCase extends AbstractTestCase
     protected string $likeEscapeCharSql = '';
     protected array $likeParameterReplacements = [];
     protected Aliases $aliases;
+    protected CacheInterface $cache;
     protected Connection $connection;
     protected ContainerInterface $container;
     protected LoggerInterface $logger;
@@ -66,6 +67,7 @@ class TestCase extends AbstractTestCase
 
         unset(
             $this->aliases,
+            $this->cache,
             $this->connection,
             $this->container,
             $this->dataProvider,
@@ -114,6 +116,7 @@ class TestCase extends AbstractTestCase
         QueryCacheFactory::initialize($this->container);
 
         $this->aliases = $this->container->get(Aliases::class);
+        $this->cache = $this->container->get(CacheInterface::class);
         $this->connection = $this->container->get(ConnectionInterface::class);
         $this->logger = $this->container->get(LoggerInterface::class);
         $this->profiler = $this->container->get(ProfilerInterface::class);
