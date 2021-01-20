@@ -918,6 +918,6 @@ SQL;
      */
     public function createColumnSchemaBuilder(string $type, $length = null): ColumnSchemaBuilder
     {
-        return new ColumnSchemaBuilder($type, $length, $this->getDb());
+        return new ColumnSchemaBuilder($type, $length);
     }
 }
