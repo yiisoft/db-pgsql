@@ -267,6 +267,7 @@ class TestCase extends AbstractTestCase
                 'dsn' => (new Dsn('pgsql', '127.0.0.1', 'yiitest', '5432'))->asString(),
                 'username' => 'root',
                 'password' => 'root',
+                'charset' => 'UTF8',
                 'fixture' => __DIR__ . '/Data/postgres.sql',
             ],
         ];
@@ -301,6 +302,7 @@ class TestCase extends AbstractTestCase
                 ],
                 'setUsername()' => [$params['yiisoft/db-pgsql']['username']],
                 'setPassword()' => [$params['yiisoft/db-pgsql']['password']],
+                'setCharset()' => [$params['yiisoft/db-pgsql']['charset']],
             ],
         ];
     }

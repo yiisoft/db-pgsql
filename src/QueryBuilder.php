@@ -20,6 +20,7 @@ use Yiisoft\Db\Pdo\PdoValue;
 use Yiisoft\Db\Query\Conditions\LikeCondition;
 use Yiisoft\Db\Query\Query;
 use Yiisoft\Db\Query\QueryBuilder as AbstractQueryBuilder;
+use Yiisoft\Db\Schema\ColumnSchemaBuilder;
 use Yiisoft\Strings\NumericHelper;
 
 use function array_diff;
@@ -220,16 +221,20 @@ final class QueryBuilder extends AbstractQueryBuilder
      * associated with the table.
      *
      * @return string the SQL statement for resetting sequence.
+     *
+     * @psalm-suppress MixedArgument
      */
     public function resetSequence(string $tableName, $value = null): string
     {
         $table = $this->getDb()->getTableSchema($tableName);
-        if ($table !== null && $table->getSequenceName() !== null) {
+
+        if ($table !== null && ($sequence = $table->getSequenceName()) !== null) {
             /**
              * {@see http://www.postgresql.org/docs/8.1/static/functions-sequence.html}
              */
-            $sequence = $this->getDb()->quoteTableName($table->getSequenceName());
+            $sequence = $this->getDb()->quoteTableName($sequence);
             $tableName = $this->getDb()->quoteTableName($tableName);
+
             if ($value === null) {
                 $pk = $table->getPrimaryKey();
                 $key = $this->getDb()->quoteColumnName(reset($pk));
@@ -266,8 +271,14 @@ final class QueryBuilder extends AbstractQueryBuilder
 
         $enable = $check ? 'ENABLE' : 'DISABLE';
         $schema = $schema ?: $db->getSchema()->getDefaultSchema();
-        $tableNames = $table ? [$table] : $db->getSchema()->getTableNames($schema);
-        $viewNames = $db->getSchema()->getViewNames($schema);
+        $tableNames = [];
+        $viewNames = [];
+
+        if ($schema !== null) {
+            $tableNames = $table ? [$table] : $db->getSchema()->getTableNames($schema);
+            $viewNames = $db->getSchema()->getViewNames($schema);
+        }
+
         $tableNames = array_diff($tableNames, $viewNames);
         $command = '';
 
@@ -302,10 +313,11 @@ final class QueryBuilder extends AbstractQueryBuilder
      * @param string $table the table whose column is to be changed. The table name will be properly quoted by the
      * method.
      * @param string $column the name of the column to be changed. The name will be properly quoted by the method.
-     * @param object|string $type the new column type. The {@see getColumnType()} method will be invoked to convert abstract
-     * column type (if any) into the physical one. Anything that is not recognized as abstract type will be kept in the
-     * generated SQL. For example, 'string' will be turned into 'varchar(255)', while 'string not null' will become
-     * 'varchar(255) not null'. You can also use PostgreSQL-specific syntax such as `SET NOT NULL`.
+     * @param string|ColumnSchemaBuilder $type the new column type. The {@see getColumnType()} method will be invoked to
+     * convert abstract column type (if any) into the physical one. Anything that is not recognized as abstract type
+     * will be kept in the generated SQL. For example, 'string' will be turned into 'varchar(255)', while
+     * 'string not null' will become 'varchar(255) not null'. You can also use PostgreSQL-specific syntax such as
+     * `SET NOT NULL`.
      *
      * @return string the SQL statement for changing the definition of a column.
      */
@@ -314,21 +326,30 @@ final class QueryBuilder extends AbstractQueryBuilder
         $columnName = $this->getDb()->quoteColumnName($column);
         $tableName = $this->getDb()->quoteTableName($table);
 
+        if (is_object($type)) {
+            /** @var string $type */
+            $type = $type->__toString();
+        }
+
         /**
          * {@see https://github.com/yiisoft/yii2/issues/4492}
          * {@see http://www.postgresql.org/docs/9.1/static/sql-altertable.html}
          */
-        if (preg_match('/^(DROP|SET|RESET|USING)\s+/i', (string) $type)) {
+        if (preg_match('/^(DROP|SET|RESET)\s+/i', $type)) {
             return "ALTER TABLE {$tableName} ALTER COLUMN {$columnName} {$type}";
         }
 
         $type = 'TYPE ' . $this->getColumnType($type);
+
         $multiAlterStatement = [];
         $constraintPrefix = preg_replace('/[^a-z0-9_]/i', '', $table . '_' . $column);
 
         if (preg_match('/\s+DEFAULT\s+(["\']?\w*["\']?)/i', $type, $matches)) {
             $type = preg_replace('/\s+DEFAULT\s+(["\']?\w*["\']?)/i', '', $type);
             $multiAlterStatement[] = "ALTER COLUMN {$columnName} SET DEFAULT {$matches[1]}";
+        } else {
+            // safe to drop default even if there was none in the first place
+            $multiAlterStatement[] = "ALTER COLUMN {$columnName} DROP DEFAULT";
         }
 
         $type = preg_replace('/\s+NOT\s+NULL/i', '', $type, -1, $count);
@@ -336,11 +357,10 @@ final class QueryBuilder extends AbstractQueryBuilder
         if ($count) {
             $multiAlterStatement[] = "ALTER COLUMN {$columnName} SET NOT NULL";
         } else {
-            /** remove additional null if any */
-            $type = preg_replace('/\s+NULL/i', '', $type, -1, $count);
-            if ($count) {
-                $multiAlterStatement[] = "ALTER COLUMN {$columnName} DROP NOT NULL";
-            }
+            // remove additional null if any
+            $type = preg_replace('/\s+NULL/i', '', $type);
+            // safe to drop not null even if there was none in the first place
+            $multiAlterStatement[] = "ALTER COLUMN {$columnName} DROP NOT NULL";
         }
 
         if (preg_match('/\s+CHECK\s+\((.+)\)/i', $type, $matches)) {
@@ -349,12 +369,11 @@ final class QueryBuilder extends AbstractQueryBuilder
         }
 
         $type = preg_replace('/\s+UNIQUE/i', '', $type, -1, $count);
-
         if ($count) {
             $multiAlterStatement[] = "ADD UNIQUE ({$columnName})";
         }
 
-        /** add what's left at the beginning */
+        // add what's left at the beginning
         array_unshift($multiAlterStatement, "ALTER COLUMN {$columnName} {$type}");
 
         return 'ALTER TABLE ' . $tableName . ' ' . implode(', ', $multiAlterStatement);
@@ -384,6 +403,8 @@ final class QueryBuilder extends AbstractQueryBuilder
      * @throws Exception|InvalidArgumentException|InvalidConfigException|JsonException|NotSupportedException
      *
      * @return string the INSERT SQL
+     *
+     * @psalm-suppress MixedArgument
      */
     public function insert(string $table, $columns, array &$params = []): string
     {
@@ -424,6 +445,9 @@ final class QueryBuilder extends AbstractQueryBuilder
      *
      * {@see https://www.postgresql.org/docs/9.5/static/sql-insert.html#SQL-ON-CONFLICT}
      * {@see https://stackoverflow.com/questions/1109061/insert-on-duplicate-update-in-postgresql/8702291#8702291}
+     *
+     * @psalm-suppress MixedArgument
+     * @psalm-suppress MixedAssignment
      */
     public function upsert(string $table, $insertColumns, $updateColumns, array &$params = []): string
     {
@@ -431,9 +455,6 @@ final class QueryBuilder extends AbstractQueryBuilder
 
         if (!is_bool($updateColumns)) {
             $updateColumns = $this->normalizeTableRowData($table, $updateColumns);
-        }
-        if (version_compare($this->getDb()->getServerVersion(), '9.5', '<')) {
-            return $this->oldUpsert($table, $insertColumns, $updateColumns, $params);
         }
 
         return $this->newUpsert($table, $insertColumns, $updateColumns, $params);
@@ -454,6 +475,8 @@ final class QueryBuilder extends AbstractQueryBuilder
     private function newUpsert(string $table, $insertColumns, $updateColumns, array &$params = []): string
     {
         $insertSql = $this->insert($table, $insertColumns, $params);
+
+        /** @var array<array-key, mixed> $uniqueNames */
         [$uniqueNames, , $updateNames] = $this->prepareUpsertColumns($table, $insertColumns, $updateColumns);
 
         if (empty($uniqueNames)) {
@@ -471,131 +494,18 @@ final class QueryBuilder extends AbstractQueryBuilder
 
         if ($updateColumns === true) {
             $updateColumns = [];
+
+            /** @var string $name */
             foreach ($updateNames as $name) {
                 $updateColumns[$name] = new Expression('EXCLUDED.' . $this->getDb()->quoteColumnName($name));
             }
         }
 
+        /** @var array<array-key, mixed> $updates */
         [$updates, $params] = $this->prepareUpdateSets($table, $updateColumns, $params);
 
         return $insertSql . ' ON CONFLICT (' . implode(', ', $uniqueNames) . ') DO UPDATE SET '
             . implode(', ', $updates);
-    }
-
-    /**
-     * {@see upsert()} implementation for PostgreSQL older than 9.5.
-     *
-     * @param string $table
-     * @param array|Query $insertColumns
-     * @param array|bool $updateColumns
-     * @param array $params
-     *
-     * @throws Exception|InvalidArgumentException|InvalidConfigException|JsonException|NotSupportedException
-     *
-     * @return string
-     */
-    private function oldUpsert(string $table, $insertColumns, $updateColumns, array &$params = []): string
-    {
-        /** @var Constraint[] $constraints */
-        [$uniqueNames, $insertNames, $updateNames] = $this->prepareUpsertColumns(
-            $table,
-            $insertColumns,
-            $updateColumns,
-            $constraints
-        );
-
-        if (empty($uniqueNames)) {
-            return $this->insert($table, $insertColumns, $params);
-        }
-
-        if ($updateNames === []) {
-            /** there are no columns to update */
-            $updateColumns = false;
-        }
-
-        /** @var Schema $schema */
-        $schema = $this->getDb()->getSchema();
-
-        if (!$insertColumns instanceof Query) {
-            $tableSchema = $schema->getTableSchema($table);
-            $columnSchemas = $tableSchema !== null ? $tableSchema->getColumns() : [];
-            foreach ($insertColumns as $name => $value) {
-                /**
-                 * NULLs and numeric values must be type hinted in order to be used in SET assigments NVM, let's cast
-                 * them all
-                 */
-                if (isset($columnSchemas[$name])) {
-                    $phName = self::PARAM_PREFIX . count($params);
-                    $params[$phName] = $value;
-                    $insertColumns[$name] = new Expression("CAST($phName AS {$columnSchemas[$name]->getDbType()})");
-                }
-            }
-        }
-
-        [, $placeholders, $values, $params] = $this->prepareInsertValues($table, $insertColumns, $params);
-        $updateCondition = ['or'];
-        $insertCondition = ['or'];
-        $quotedTableName = $schema->quoteTableName($table);
-
-        foreach ($constraints as $constraint) {
-            $constraintUpdateCondition = ['and'];
-            $constraintInsertCondition = ['and'];
-            foreach ($constraint->getColumnNames() as $name) {
-                $quotedName = $schema->quoteColumnName($name);
-                $constraintUpdateCondition[] = "$quotedTableName.$quotedName=\"EXCLUDED\".$quotedName";
-                $constraintInsertCondition[] = "\"upsert\".$quotedName=\"EXCLUDED\".$quotedName";
-            }
-            $updateCondition[] = $constraintUpdateCondition;
-            $insertCondition[] = $constraintInsertCondition;
-        }
-
-        $withSql = 'WITH "EXCLUDED" (' . implode(', ', $insertNames) . ') AS ('
-            . (!empty($placeholders) ? 'VALUES (' . implode(', ', $placeholders) . ')' : ltrim($values, ' ')) . ')';
-
-        if ($updateColumns === false) {
-            $selectSubQuery = (new Query($this->getDb()))
-                ->select(new Expression('1'))
-                ->from($table)
-                ->where($updateCondition);
-            $insertSelectSubQuery = (new Query($this->getDb()))
-                ->select($insertNames)
-                ->from('EXCLUDED')
-                ->where(['not exists', $selectSubQuery]);
-            $insertSql = $this->insert($table, $insertSelectSubQuery, $params);
-
-            return "$withSql $insertSql";
-        }
-
-        if ($updateColumns === true) {
-            $updateColumns = [];
-            foreach ($updateNames as $name) {
-                $quotedName = $this->getDb()->quoteColumnName($name);
-                if (strrpos($quotedName, '.') === false) {
-                    $quotedName = '"EXCLUDED".' . $quotedName;
-                }
-                $updateColumns[$name] = new Expression($quotedName);
-            }
-        }
-
-        [$updates, $params] = $this->prepareUpdateSets($table, $updateColumns, $params);
-
-        $updateSql = 'UPDATE ' . $this->getDb()->quoteTableName($table) . ' SET ' . implode(', ', $updates)
-            . ' FROM "EXCLUDED" ' . $this->buildWhere($updateCondition, $params)
-            . ' RETURNING ' . $this->getDb()->quoteTableName($table) . '.*';
-
-        $selectUpsertSubQuery = (new Query($this->getDb()))
-            ->select(new Expression('1'))
-            ->from('upsert')
-            ->where($insertCondition);
-
-        $insertSelectSubQuery = (new Query($this->getDb()))
-            ->select($insertNames)
-            ->from('EXCLUDED')
-            ->where(['not exists', $selectUpsertSubQuery]);
-
-        $insertSql = $this->insert($table, $insertSelectSubQuery, $params);
-
-        return "$withSql, \"upsert\" AS ($updateSql) $insertSql";
     }
 
     /**
@@ -620,6 +530,7 @@ final class QueryBuilder extends AbstractQueryBuilder
      * @throws Exception|InvalidArgumentException|JsonException
      *
      * @return string the UPDATE SQL.
+     * @psalm-suppress MixedArgument
      */
     public function update(string $table, array $columns, $condition, array &$params = []): string
     {
@@ -634,7 +545,7 @@ final class QueryBuilder extends AbstractQueryBuilder
      * {@see Query} to perform INSERT INTO ... SELECT SQL statement. Passing of
      * {@see Query}.
      *
-     * @return array|object normalized columns
+     * @return mixed normalized columns.
      */
     private function normalizeTableRowData(string $table, $columns)
     {
@@ -644,6 +555,7 @@ final class QueryBuilder extends AbstractQueryBuilder
 
         if (($tableSchema = $this->getDb()->getSchema()->getTableSchema($table)) !== null) {
             $columnSchemas = $tableSchema->getColumns();
+            /** @var mixed $value */
             foreach ($columns as $name => $value) {
                 if (
                     isset($columnSchemas[$name]) &&
@@ -677,13 +589,14 @@ final class QueryBuilder extends AbstractQueryBuilder
      * The method will properly escape the column names, and quote the values to be inserted.
      *
      * @param string $table the table that new rows will be inserted into.
-     * @param array $columns the column names.
+     * @param array<array-key, string> $columns the column names.
      * @param array|Generator $rows the rows to be batch inserted into the table.
      * @param array $params the binding parameters. This parameter exists.
      *
      * @throws Exception|InvalidArgumentException|InvalidConfigException|NotSupportedException
      *
      * @return string the batch INSERT SQL statement.
+     * @psalm-suppress MoreSpecificImplementedParamType
      */
     public function batchInsert(string $table, array $columns, $rows, array &$params = []): string
     {
@@ -691,19 +604,33 @@ final class QueryBuilder extends AbstractQueryBuilder
             return '';
         }
 
+        /**
+         * @var array<array-key, object> $columnSchemas
+         */
+        $columnSchemas = [];
         $schema = $this->getDb()->getSchema();
 
         if (($tableSchema = $schema->getTableSchema($table)) !== null) {
             $columnSchemas = $tableSchema->getColumns();
-        } else {
-            $columnSchemas = [];
         }
 
         $values = [];
+
+        /**
+         * @var array<array-key, mixed> $row
+         */
         foreach ($rows as $row) {
             $vs = [];
+            /**
+             *  @var int $i
+             *  @var mixed $value
+             */
             foreach ($row as $i => $value) {
                 if (isset($columns[$i], $columnSchemas[$columns[$i]])) {
+                    /**
+                     * @var string|int|float|bool|ExpressionInterface|null $value
+                     * @psalm-suppress MixedMethodCall
+                     */
                     $value = $columnSchemas[$columns[$i]]->dbTypecast($value);
                 }
 
@@ -722,6 +649,7 @@ final class QueryBuilder extends AbstractQueryBuilder
                     $value = $this->buildExpression($value, $params);
                 }
 
+                /** @var string|int|float|bool|ExpressionInterface|null $value */
                 $vs[] = $value;
             }
             $values[] = '(' . implode(', ', $vs) . ')';
@@ -731,6 +659,7 @@ final class QueryBuilder extends AbstractQueryBuilder
             return '';
         }
 
+        /** @var string name */
         foreach ($columns as $i => $name) {
             $columns[$i] = $schema->quoteColumnName($name);
         }

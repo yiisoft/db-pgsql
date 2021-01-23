@@ -101,7 +101,7 @@ final class CommandTest extends TestCase
 
     public function testBooleanValuesInsert(): void
     {
-        $db = $this->getConnection();
+        $db = $this->getConnection(true);
 
         $command = $db->createCommand();
 

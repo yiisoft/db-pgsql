@@ -4,13 +4,10 @@ declare(strict_types=1);
 
 namespace Yiisoft\Db\Pgsql\Tests;
 
-use function array_merge;
-use function array_replace;
 use Closure;
-use function is_string;
-use function version_compare;
 use Yiisoft\Arrays\ArrayHelper;
 use Yiisoft\Db\Exception\Exception;
+use Yiisoft\Db\Exception\IntegrityException;
 use Yiisoft\Db\Exception\InvalidArgumentException;
 use Yiisoft\Db\Exception\InvalidConfigException;
 use Yiisoft\Db\Exception\NotSupportedException;
@@ -18,11 +15,15 @@ use Yiisoft\Db\Expression\ArrayExpression;
 use Yiisoft\Db\Expression\Expression;
 use Yiisoft\Db\Expression\JsonExpression;
 use Yiisoft\Db\Pgsql\ColumnSchema;
-
 use Yiisoft\Db\Pgsql\QueryBuilder;
 use Yiisoft\Db\Query\Query;
 use Yiisoft\Db\TestUtility\TestQueryBuilderTrait;
 use Yiisoft\Db\TestUtility\TraversableObject;
+
+use function array_merge;
+use function array_replace;
+use function is_string;
+use function version_compare;
 
 /**
  * @group pgsql
@@ -43,7 +44,7 @@ final class QueryBuilderTest extends TestCase
     {
         $qb = $this->getQueryBuilder();
 
-        $expected = 'ALTER TABLE "foo1" ALTER COLUMN "bar" TYPE varchar(255)';
+        $expected = 'ALTER TABLE "foo1" ALTER COLUMN "bar" TYPE varchar(255), ALTER COLUMN "bar" DROP DEFAULT, ALTER COLUMN "bar" DROP NOT NULL';
         $sql = $qb->alterColumn('foo1', 'bar', 'varchar(255)');
         $this->assertEquals($expected, $sql);
 
@@ -59,50 +60,31 @@ final class QueryBuilderTest extends TestCase
         $sql = $qb->alterColumn('foo1', 'bar', 'reset xyz');
         $this->assertEquals($expected, $sql);
 
-        $expected = 'ALTER TABLE "foo1" ALTER COLUMN "bar" TYPE varchar(255)';
-
+        $expected = 'ALTER TABLE "foo1" ALTER COLUMN "bar" TYPE varchar(255), ALTER COLUMN "bar" DROP DEFAULT, ALTER COLUMN "bar" DROP NOT NULL';
         $sql = $qb->alterColumn('foo1', 'bar', $this->string(255));
         $this->assertEquals($expected, $sql);
 
-        $expected = 'ALTER TABLE "foo1" ALTER COLUMN "bar" TYPE varchar(255) USING bar::varchar';
-
-        $sql = $qb->alterColumn('foo1', 'bar', 'varchar(255) USING bar::varchar');
-        $this->assertEquals($expected, $sql);
-
-        $expected = 'ALTER TABLE "foo1" ALTER COLUMN "bar" TYPE varchar(255) using cast("bar" as varchar)';
-
-        $sql = $qb->alterColumn('foo1', 'bar', 'varchar(255) using cast("bar" as varchar)');
-        $this->assertEquals($expected, $sql);
-
-        $expected = 'ALTER TABLE "foo1" ALTER COLUMN "bar" TYPE varchar(255), ALTER COLUMN "bar" SET NOT NULL';
+        $expected = 'ALTER TABLE "foo1" ALTER COLUMN "bar" TYPE varchar(255), ALTER COLUMN "bar" DROP DEFAULT, ALTER COLUMN "bar" SET NOT NULL';
         $sql = $qb->alterColumn('foo1', 'bar', $this->string(255)->notNull());
         $this->assertEquals($expected, $sql);
 
-        $expected = 'ALTER TABLE "foo1" ALTER COLUMN "bar" TYPE varchar(255), ALTER COLUMN "bar" SET DEFAULT NULL, ALTER COLUMN "bar" DROP NOT NULL';
-        $sql = $qb->alterColumn('foo1', 'bar', $this->string(255)->null());
-        $this->assertEquals($expected, $sql);
-
-        $expected = 'ALTER TABLE "foo1" ALTER COLUMN "bar" TYPE varchar(255), ALTER COLUMN "bar" SET DEFAULT \'xxx\', ALTER COLUMN "bar" DROP NOT NULL';
-        $sql = $qb->alterColumn('foo1', 'bar', $this->string(255)->null()->defaultValue('xxx'));
-        $this->assertEquals($expected, $sql);
-
-        $expected = 'ALTER TABLE "foo1" ALTER COLUMN "bar" TYPE varchar(255), ADD CONSTRAINT foo1_bar_check CHECK (char_length(bar) > 5)';
+        $expected = 'ALTER TABLE "foo1" ALTER COLUMN "bar" TYPE varchar(255), ALTER COLUMN "bar" DROP DEFAULT, ALTER COLUMN "bar" DROP NOT NULL, ADD CONSTRAINT foo1_bar_check CHECK (char_length(bar) > 5)';
         $sql = $qb->alterColumn('foo1', 'bar', $this->string(255)->check('char_length(bar) > 5'));
         $this->assertEquals($expected, $sql);
 
-        $expected = 'ALTER TABLE "foo1" ALTER COLUMN "bar" TYPE varchar(255), ALTER COLUMN "bar" SET DEFAULT \'\'';
+        $expected = 'ALTER TABLE "foo1" ALTER COLUMN "bar" TYPE varchar(255), ALTER COLUMN "bar" SET DEFAULT \'\', ALTER COLUMN "bar" DROP NOT NULL';
         $sql = $qb->alterColumn('foo1', 'bar', $this->string(255)->defaultValue(''));
         $this->assertEquals($expected, $sql);
 
-        $expected = 'ALTER TABLE "foo1" ALTER COLUMN "bar" TYPE varchar(255), ALTER COLUMN "bar" SET DEFAULT \'AbCdE\'';
+        $expected = 'ALTER TABLE "foo1" ALTER COLUMN "bar" TYPE varchar(255), ALTER COLUMN "bar" SET DEFAULT \'AbCdE\', ALTER COLUMN "bar" DROP NOT NULL';
         $sql = $qb->alterColumn('foo1', 'bar', $this->string(255)->defaultValue('AbCdE'));
         $this->assertEquals($expected, $sql);
 
-        $expected = 'ALTER TABLE "foo1" ALTER COLUMN "bar" TYPE timestamp(0), ALTER COLUMN "bar" SET DEFAULT CURRENT_TIMESTAMP';
+        $expected = 'ALTER TABLE "foo1" ALTER COLUMN "bar" TYPE timestamp(0), ALTER COLUMN "bar" SET DEFAULT CURRENT_TIMESTAMP, ALTER COLUMN "bar" DROP NOT NULL';
         $sql = $qb->alterColumn('foo1', 'bar', $this->timestamp()->defaultExpression('CURRENT_TIMESTAMP'));
         $this->assertEquals($expected, $sql);
 
-        $expected = 'ALTER TABLE "foo1" ALTER COLUMN "bar" TYPE varchar(30), ADD UNIQUE ("bar")';
+        $expected = 'ALTER TABLE "foo1" ALTER COLUMN "bar" TYPE varchar(30), ALTER COLUMN "bar" DROP DEFAULT, ALTER COLUMN "bar" DROP NOT NULL, ADD UNIQUE ("bar")';
         $sql = $qb->alterColumn('foo1', 'bar', $this->string(30)->unique());
         $this->assertEquals($expected, $sql);
     }
@@ -890,5 +872,22 @@ final class QueryBuilderTest extends TestCase
         } else {
             $this->assertIsOneOf($actualParams, $expectedParams);
         }
+    }
+
+    public function testCheckIntegrity(): void
+    {
+        $db = $this->getConnection();
+
+        $db->createCommand()->checkIntegrity('public', 'item', false)->execute();
+
+        $sql = 'INSERT INTO {{item}}([[name]], [[category_id]]) VALUES (\'invalid\', 99999)';
+
+        $command = $db->createCommand($sql);
+        $command->execute();
+
+        $db->createCommand()->checkIntegrity('public', 'item', true)->execute();
+
+        $this->expectException(IntegrityException::class);
+        $command->execute();
     }
 }

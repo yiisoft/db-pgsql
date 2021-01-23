@@ -15,6 +15,7 @@ use Yiisoft\Db\Expression\ExpressionBuilderTrait;
 use Yiisoft\Db\Expression\ExpressionInterface;
 use Yiisoft\Db\Expression\JsonExpression;
 use Yiisoft\Db\Query\Query;
+use Yiisoft\Db\Query\QueryInterface;
 use Yiisoft\Json\Json;
 
 final class JsonExpressionBuilder implements ExpressionBuilderInterface
@@ -33,7 +34,10 @@ final class JsonExpressionBuilder implements ExpressionBuilderInterface
      */
     public function build(ExpressionInterface $expression, array &$params = []): string
     {
-        /** @var JsonExpression $expression */
+        /**
+         * @var JsonExpression $expression
+         * @var array|mixed|QueryInterface $value
+         */
         $value = $expression->getValue();
 
         if ($value instanceof Query) {
@@ -50,12 +54,17 @@ final class JsonExpressionBuilder implements ExpressionBuilderInterface
         return $placeholder . $this->getTypecast($expression);
     }
 
+    /**
+     * @param JsonExpression $expression
+     *
+     * @return string the typecast expression based on {@see type}.
+     */
     protected function getTypecast(JsonExpression $expression): string
     {
         if ($expression->getType() === null) {
             return '';
         }
 
-        return '::' . $expression->getType();
+        return '::' . (string) $expression->getType();
     }
 }

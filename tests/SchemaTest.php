@@ -5,11 +5,13 @@ declare(strict_types=1);
 namespace Yiisoft\Db\Pgsql\Tests;
 
 use PDO;
+use Yiisoft\ActiveRecord\ActiveQuery;
 use Yiisoft\Db\Exception\Exception;
 use Yiisoft\Db\Exception\InvalidConfigException;
 use Yiisoft\Db\Exception\NotSupportedException;
 use Yiisoft\Db\Expression\Expression;
 use Yiisoft\Db\Pgsql\TableSchema;
+use Yiisoft\Db\Pgsql\Tests\Data\Stubs\Type;
 use Yiisoft\Db\TestUtility\TestSchemaTrait;
 
 use function array_map;
@@ -420,19 +422,6 @@ final class SchemaTest extends TestCase
         $this->assertCount(3, $schema->getSchemaNames());
     }
 
-    public function bigintValueProvider(): array
-    {
-        return [
-            [8817806877],
-            [3797444208],
-            [3199585540],
-            [1389831585],
-            [922337203685477580],
-            [9223372036854775807],
-            [-9223372036854775808],
-        ];
-    }
-
     /**
      * @see https://github.com/yiisoft/yii2/issues/12483
      */
@@ -677,5 +666,109 @@ final class SchemaTest extends TestCase
         $this->assertInstanceOf(TableSchema::class, $testRefreshedTable);
         $this->assertEquals($refreshedTable, $testRefreshedTable);
         $this->assertNotSame($testNoCacheTable, $testRefreshedTable);
+    }
+
+    public function testFindUniqueIndexes(): void
+    {
+        $db = $this->getConnection();
+
+        try {
+            $db->createCommand()->dropTable('uniqueIndex')->execute();
+        } catch (Exception $e) {
+        }
+        $db->createCommand()->createTable('uniqueIndex', [
+            'somecol' => 'string',
+            'someCol2' => 'string',
+        ])->execute();
+
+        /** @var $schema Schema */
+        $schema = $db->getSchema();
+
+        $uniqueIndexes = $schema->findUniqueIndexes($schema->getTableSchema('uniqueIndex', true));
+        $this->assertEquals([], $uniqueIndexes);
+
+        $db->getSlavePdo()->setAttribute(PDO::ATTR_CASE, PDO::CASE_UPPER);
+
+        $db->createCommand()->createIndex('somecolUnique', 'uniqueIndex', 'somecol', true)->execute();
+
+        $uniqueIndexes = $schema->findUniqueIndexes($schema->getTableSchema('uniqueIndex', true));
+        $this->assertEquals(['somecolUnique' => ['somecol']], $uniqueIndexes);
+
+        $db->getSlavePdo()->setAttribute(PDO::ATTR_CASE, PDO::CASE_LOWER);
+
+        /**
+         * create another column with upper case letter that fails postgres
+         * {@see https://github.com/yiisoft/yii2/issues/10613}
+         */
+        $db->createCommand()->createIndex('someCol2Unique', 'uniqueIndex', 'someCol2', true)->execute();
+
+        $uniqueIndexes = $schema->findUniqueIndexes($schema->getTableSchema('uniqueIndex', true));
+        $this->assertEquals(['somecolUnique' => ['somecol'], 'someCol2Unique' => ['someCol2']], $uniqueIndexes);
+
+        /**
+         * {@see https://github.com/yiisoft/yii2/issues/13814}
+         */
+        $db->createCommand()->createIndex('another unique index', 'uniqueIndex', 'someCol2', true)->execute();
+
+        $uniqueIndexes = $schema->findUniqueIndexes($schema->getTableSchema('uniqueIndex', true));
+        $this->assertEquals([
+            'somecolUnique' => ['somecol'],
+            'someCol2Unique' => ['someCol2'],
+            'another unique index' => ['someCol2'],
+        ], $uniqueIndexes);
+    }
+
+    public function testInsert(): void
+    {
+        $db = $this->getConnection();
+
+        $primaryKey = $db->getSchema()->insert('default_pk', ['type' => 'type']);
+        $this->assertEquals(['id' => 5], $primaryKey);
+
+        $primaryKey = $db->getSchema()->insert('constraints', ['id' => 1, 'field1' => 'testMe']);
+        $this->assertEquals([], $primaryKey);
+    }
+
+    public function bigintValueProvider(): array
+    {
+        return [
+            [8817806877],
+            [3797444208],
+            [3199585540],
+            [1389831585],
+            [922337203685477580],
+            [9223372036854775806],
+            [-9223372036854775807],
+        ];
+    }
+
+    /**
+     * @dataProvider bigintValueProvider
+     *
+     * @param int $bigint
+     */
+    public function testBigintValue(int $bigint): void
+    {
+        $type = new Type($this->getConnection());
+
+        $type->deleteAll();
+
+        $type->setAttributes(
+            [
+                'bigint_col' => $bigint,
+                // whatever just to satisfy NOT NULL columns
+                'int_col' => 1,
+                'char_col' => 'a',
+                'float_col' => 0.1,
+                'bool_col' => true,
+            ]
+        );
+
+        $type->save();
+
+        $query = new ActiveQuery(Type::class, $this->getConnection());
+        $row = $query->one();
+
+        $this->assertEquals($bigint, $row->bigint_col);
     }
 }

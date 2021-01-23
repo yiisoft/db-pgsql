@@ -70,6 +70,9 @@ final class ColumnSchema extends AbstractColumnSchema
      * @throws JsonException
      *
      * @return mixed converted value
+     *
+     * @psalm-suppress MixedAssignment
+     * @psalm-suppress MixedArgument
      */
     public function phpTypecast($value)
     {
@@ -77,8 +80,9 @@ final class ColumnSchema extends AbstractColumnSchema
             if (!is_array($value)) {
                 $value = $this->getArrayParser()->parse($value);
             }
+
             if (is_array($value)) {
-                array_walk_recursive($value, function (&$val) {
+                array_walk_recursive($value, function (?string &$val) {
                     $val = $this->phpTypecastValue($val);
                 });
             } else {
@@ -98,7 +102,7 @@ final class ColumnSchema extends AbstractColumnSchema
      *
      * @throws JsonException
      *
-     * @return bool|int|null
+     * @return mixed
      */
     protected function phpTypecastValue($value)
     {
@@ -121,7 +125,7 @@ final class ColumnSchema extends AbstractColumnSchema
 
                 return (bool) $value;
             case Schema::TYPE_JSON:
-                return json_decode($value, true, 512, JSON_THROW_ON_ERROR);
+                return json_decode((string) $value, true, 512, JSON_THROW_ON_ERROR);
         }
 
         return parent::phpTypecast($value);
@@ -134,30 +138,36 @@ final class ColumnSchema extends AbstractColumnSchema
      */
     protected function getArrayParser(): ArrayParser
     {
-        static $parser = null;
-
-        if ($parser === null) {
-            $parser = new ArrayParser();
-        }
-
-        return $parser;
+        return new ArrayParser();
     }
 
+    /**
+     * @return int Get the dimension of array. Defaults to 0, means this column is not an array.
+     */
     public function getDimension(): int
     {
         return $this->dimension;
     }
 
+    /**
+     * @return string name of associated sequence if column is auto-incremental.
+     */
     public function getSequenceName(): ?string
     {
         return $this->sequenceName;
     }
 
+    /**
+     * Set dimension of array. Defaults to 0, means this column is not an array.
+     */
     public function dimension(int $dimension): void
     {
         $this->dimension = $dimension;
     }
 
+    /**
+     * Set name of associated sequence if column is auto-incremental.
+     */
     public function sequenceName(?string $sequenceName): void
     {
         $this->sequenceName = $sequenceName;

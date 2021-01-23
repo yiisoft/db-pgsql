@@ -15,6 +15,7 @@ use Yiisoft\Db\Expression\ExpressionBuilderTrait;
 use Yiisoft\Db\Expression\ExpressionInterface;
 use Yiisoft\Db\Expression\JsonExpression;
 use Yiisoft\Db\Query\Query;
+use Yiisoft\Db\Query\QueryInterface;
 
 use function get_class;
 use function implode;
@@ -38,7 +39,10 @@ final class ArrayExpressionBuilder implements ExpressionBuilderInterface
      */
     public function build(ExpressionInterface $expression, array &$params = []): string
     {
-        /** @var ArrayExpression $expression */
+        /**
+         *  @var ArrayExpression $expression
+         *  @var array|mixed|QueryInterface $value
+         */
         $value = $expression->getValue();
 
         if ($value === null) {
@@ -46,6 +50,7 @@ final class ArrayExpressionBuilder implements ExpressionBuilderInterface
         }
 
         if ($value instanceof Query) {
+            /** @var string $sql */
             [$sql, $params] = $this->queryBuilder->build($value, $params);
             return $this->buildSubqueryArray($sql, $expression);
         }
@@ -71,19 +76,25 @@ final class ArrayExpressionBuilder implements ExpressionBuilderInterface
         $value = $expression->getValue();
 
         $placeholders = [];
-        if ($value === null || (!is_array($value) && !$value instanceof Traversable)) {
+        if (!is_array($value) && !$value instanceof Traversable) {
             return $placeholders;
         }
 
         if ($expression->getDimension() > 1) {
+            /** @var ExpressionInterface|int $item */
             foreach ($value as $item) {
                 $placeholders[] = $this->build($this->unnestArrayExpression($expression, $item), $params);
             }
             return $placeholders;
         }
 
+        /** @var ExpressionInterface|int $item */
         foreach ($value as $item) {
             if ($item instanceof Query) {
+                /**
+                 * @var string $sql
+                 * @var array $params
+                 */
                 [$sql, $params] = $this->queryBuilder->build($item, $params);
                 $placeholders[] = $this->buildSubqueryArray($sql, $expression);
                 continue;
@@ -102,6 +113,12 @@ final class ArrayExpressionBuilder implements ExpressionBuilderInterface
         return $placeholders;
     }
 
+    /**
+     * @param ArrayExpression $expression
+     * @param array|mixed|QueryInterface $value
+     *
+     * @return ArrayExpression
+     */
     private function unnestArrayExpression(ArrayExpression $expression, $value): ArrayExpression
     {
         $expressionClass = get_class($expression);
@@ -109,14 +126,26 @@ final class ArrayExpressionBuilder implements ExpressionBuilderInterface
         return new $expressionClass($value, $expression->getType(), $expression->getDimension() - 1);
     }
 
+     /**
+     * @param ArrayExpression $expression
+     *
+     * @return string the typecast expression based on {@see type}.
+     */
     protected function getTypeHint(ArrayExpression $expression): string
     {
-        if ($expression->getType() === null) {
+        /**
+         *  @var string|null $type
+         *  @var int $dimension
+         */
+        $type = $expression->getType();
+        $dimension = $expression->getDimension();
+
+        if ($type === null) {
             return '';
         }
 
-        $result = '::' . $expression->getType();
-        $result .= str_repeat('[]', $expression->getDimension());
+        $result = '::' . $type;
+        $result .= str_repeat('[]', $dimension);
 
         return $result;
     }
@@ -138,7 +167,7 @@ final class ArrayExpressionBuilder implements ExpressionBuilderInterface
      * Casts $value to use in $expression.
      *
      * @param ArrayExpression $expression
-     * @param mixed $value
+     * @param ExpressionInterface|int $value
      *
      * @return ExpressionInterface|int
      */
