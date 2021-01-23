@@ -629,7 +629,6 @@ SQL;
      */
     protected function findColumns(TableSchema $table): bool
     {
-
         $tableName = $table->getName();
         $schemaName = $table->getSchemaName();
         $orIdentity = '';
