@@ -255,7 +255,7 @@ SQL;
      *
      * @throws Exception|InvalidConfigException
      *
-     * @return ForeignKeyConstraint[]|array foreign keys for the given table.
+     * @return array|ForeignKeyConstraint[] foreign keys for the given table.
      */
     protected function loadTableForeignKeys(string $tableName): array
     {
@@ -338,7 +338,7 @@ SQL;
      *
      * @throws Exception|InvalidConfigException
      *
-     * @return Constraint[]|array unique constraints for the given table.
+     * @return array|Constraint[] unique constraints for the given table.
      */
     protected function loadTableUniques(string $tableName): array
     {
@@ -354,7 +354,7 @@ SQL;
      *
      * @throws Exception|InvalidConfigException
      *
-     * @return CheckConstraint[]|array check constraints for the given table.
+     * @return array|CheckConstraint[] check constraints for the given table.
      */
     protected function loadTableChecks(string $tableName): array
     {
@@ -525,7 +525,7 @@ SQL;
         }
 
         /**
-         * @var string|int $foreingKeyName.
+         * @var int|string $foreingKeyName.
          * @var array{
          *   tableName: string,
          *   columns: array

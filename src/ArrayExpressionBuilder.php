@@ -126,7 +126,7 @@ final class ArrayExpressionBuilder implements ExpressionBuilderInterface
         return new $expressionClass($value, $expression->getType(), $expression->getDimension() - 1);
     }
 
-     /**
+    /**
      * @param ArrayExpression $expression
      *
      * @return string the typecast expression based on {@see type}.

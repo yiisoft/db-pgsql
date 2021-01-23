@@ -313,7 +313,7 @@ final class QueryBuilder extends AbstractQueryBuilder
      * @param string $table the table whose column is to be changed. The table name will be properly quoted by the
      * method.
      * @param string $column the name of the column to be changed. The name will be properly quoted by the method.
-     * @param string|ColumnSchemaBuilder $type the new column type. The {@see getColumnType()} method will be invoked to
+     * @param ColumnSchemaBuilder|string $type the new column type. The {@see getColumnType()} method will be invoked to
      * convert abstract column type (if any) into the physical one. Anything that is not recognized as abstract type
      * will be kept in the generated SQL. For example, 'string' will be turned into 'varchar(255)', while
      * 'string not null' will become 'varchar(255) not null'. You can also use PostgreSQL-specific syntax such as
@@ -628,7 +628,7 @@ final class QueryBuilder extends AbstractQueryBuilder
             foreach ($row as $i => $value) {
                 if (isset($columns[$i], $columnSchemas[$columns[$i]])) {
                     /**
-                     * @var string|int|float|bool|ExpressionInterface|null $value
+                     * @var bool|ExpressionInterface|float|int|string|null $value
                      * @psalm-suppress MixedMethodCall
                      */
                     $value = $columnSchemas[$columns[$i]]->dbTypecast($value);
@@ -649,7 +649,7 @@ final class QueryBuilder extends AbstractQueryBuilder
                     $value = $this->buildExpression($value, $params);
                 }
 
-                /** @var string|int|float|bool|ExpressionInterface|null $value */
+                /** @var bool|ExpressionInterface|float|int|string|null $value */
                 $vs[] = $value;
             }
             $values[] = '(' . implode(', ', $vs) . ')';
