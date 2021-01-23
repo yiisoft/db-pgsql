@@ -35,6 +35,43 @@ use function preg_replace;
 use function str_replace;
 use function substr;
 
+/**
+ * @psalm-type ColumnArray = array{
+ *   table_schema: string,
+ *   table_name: string,
+ *   column_name: string,
+ *   data_type: string,
+ *   type_type: string|null,
+ *   character_maximum_length: int,
+ *   column_comment: string|null,
+ *   modifier: int,
+ *   is_nullable: bool,
+ *   column_default: mixed,
+ *   is_autoinc: bool,
+ *   sequence_name: string|null,
+ *   enum_values: array<array-key, float|int|string>|string|null,
+ *   numeric_precision: int|null,
+ *   numeric_scale: int|null,
+ *   size: string|null,
+ *   is_pkey: bool|null,
+ *   dimension: int
+ * }
+ *
+ * @psalm-type ConstraintArray = array<
+ *   array-key,
+ *   array {
+ *     name: string,
+ *     column_name: string,
+ *     type: string,
+ *     foreign_table_schema: string|null,
+ *     foreign_table_name: string|null,
+ *     foreign_column_name: string|null,
+ *     on_update: string,
+ *     on_delete: string,
+ *     check_expr: string
+ *   }
+ * >
+ */
 final class Schema extends AbstractSchema implements ConstraintFinderInterface
 {
     use ConstraintFinderTrait;
@@ -526,10 +563,7 @@ SQL;
 
         /**
          * @var int|string $foreingKeyName.
-         * @var array{
-         *   tableName: string,
-         *   columns: array
-         * } $constraint
+         * @var array{tableName: string, columns: array} $constraint
          */
         foreach ($constraints as $foreingKeyName => $constraint) {
             $table->foreignKey(
@@ -722,28 +756,7 @@ SQL;
                 $column = array_change_key_case($column, CASE_LOWER);
             }
 
-            /**
-             * @var array{
-             *   table_schema: string,
-             *   table_name: string,
-             *   column_name: string,
-             *   data_type: string,
-             *   type_type: string|null,
-             *   character_maximum_length: int,
-             *   column_comment: string|null,
-             *   modifier: int,
-             *   is_nullable: bool,
-             *   column_default: mixed,
-             *   is_autoinc: bool,
-             *   sequence_name: string|null,
-             *   enum_values: array<array-key, float|int|string>|string|null,
-             *   numeric_precision: int|null,
-             *   numeric_scale: int|null,
-             *   size: string|null,
-             *   is_pkey: bool|null,
-             *   dimension: int
-             * } $column
-             */
+            /** @psalm-var ColumnArray $column */
             $loadColumnSchema = $this->loadColumnSchema($column);
             $table->columns($loadColumnSchema->getName(), $loadColumnSchema);
 
@@ -992,21 +1005,8 @@ SQL;
          */
         foreach ($constraints as $type => $names) {
             /**
-             * @var object|string|null $name
-             * @var array<
-             *   array-key,
-             *   array {
-             *     name: string,
-             *     column_name: string,
-             *     type: string,
-             *     foreign_table_schema: string|null,
-             *     foreign_table_name: string|null,
-             *     foreign_column_name: string|null,
-             *     on_update: string,
-             *     on_delete: string,
-             *     check_expr: string
-             *   }
-             * > $constraint
+             * @psalm-var object|string|null $name
+             * @psalm-var ConstraintArray $constraint
              */
             foreach ($names as $name => $constraint) {
                 switch ($type) {
