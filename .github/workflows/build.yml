@@ -108,4 +108,4 @@ jobs:
         if: matrix.php == '7.4'
         run: |
           wget https://scrutinizer-ci.com/ocular.phar
-          php ocular.phar code-coverage:upload --format=php-clover coverage.clover
+          php ocular.phar code-coverage:upload --access-token=${{secrets.SCRUTINIZER}} --format=php-clover coverage.clover
