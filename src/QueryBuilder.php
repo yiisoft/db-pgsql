@@ -26,7 +26,6 @@ use Yiisoft\Strings\NumericHelper;
 use function array_diff;
 use function array_merge;
 use function array_unshift;
-use function count;
 use function explode;
 use function implode;
 use function is_bool;
@@ -36,8 +35,6 @@ use function preg_match;
 use function preg_replace;
 use function reset;
 use function strpos;
-use function strrpos;
-use function version_compare;
 
 final class QueryBuilder extends AbstractQueryBuilder
 {
