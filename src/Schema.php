@@ -239,16 +239,13 @@ SQL;
      *
      * @throws Exception|InvalidConfigException
      *
-     * @return (CheckConstraint|Constraint|ForeignKeyConstraint)[]|Constraint|null primary key for the given table,
-     * `null` if the table has no primary key.
-     *
-     * @psalm-return Constraint|list<CheckConstraint|Constraint|ForeignKeyConstraint>|null
-     * @psalm-suppress ImplementedReturnTypeMismatch
-     * @psalm-suppress TraitMethodSignatureMismatch
+     * @return Constraint|null primary key for the given table, `null` if the table has no primary key.
      */
-    protected function loadTablePrimaryKey(string $tableName)
+    protected function loadTablePrimaryKey(string $tableName): ?Constraint
     {
-        return $this->loadTableConstraints($tableName, 'primaryKey');
+        $tablePrimaryKey = $this->loadTableConstraints($tableName, 'primaryKey');
+
+        return $tablePrimaryKey instanceof Constraint ? $tablePrimaryKey : null;
     }
 
     /**
@@ -258,15 +255,13 @@ SQL;
      *
      * @throws Exception|InvalidConfigException
      *
-     * @return (CheckConstraint|Constraint|ForeignKeyConstraint)[]|Constraint|null foreign keys for the given table.
-     *
-     * @psalm-return Constraint|list<CheckConstraint|Constraint|ForeignKeyConstraint>|null
-     * @psalm-suppress ImplementedReturnTypeMismatch
-     * @psalm-suppress TraitMethodSignatureMismatch
+     * @return ForeignKeyConstraint[]|array foreign keys for the given table.
      */
-    protected function loadTableForeignKeys(string $tableName)
+    protected function loadTableForeignKeys(string $tableName): array
     {
-        return $this->loadTableConstraints($tableName, 'foreignKeys');
+        $tableForeignKeys = $this->loadTableConstraints($tableName, 'foreignKeys');
+
+        return is_array($tableForeignKeys) ? $tableForeignKeys : [];
     }
 
     /**
@@ -343,14 +338,13 @@ SQL;
      *
      * @throws Exception|InvalidConfigException
      *
-     * @return mixed unique constraints for the given table.
-     *
-     * @psalm-suppress TraitMethodSignatureMismatch
-     * @psalm-suppress LessSpecificImplementedReturnType
+     * @return Constraint[]|array unique constraints for the given table.
      */
-    protected function loadTableUniques(string $tableName)
+    protected function loadTableUniques(string $tableName): array
     {
-        return $this->loadTableConstraints($tableName, 'uniques');
+        $tableUniques = $this->loadTableConstraints($tableName, 'uniques');
+
+        return is_array($tableUniques) ? $tableUniques : [];
     }
 
     /**
@@ -360,14 +354,13 @@ SQL;
      *
      * @throws Exception|InvalidConfigException
      *
-     * @return mixed check constraints for the given table.
-     *
-     * @psalm-suppress TraitMethodSignatureMismatch
-     * @psalm-suppress LessSpecificImplementedReturnType
+     * @return CheckConstraint[]|array check constraints for the given table.
      */
-    protected function loadTableChecks(string $tableName)
+    protected function loadTableChecks(string $tableName): array
     {
-        return $this->loadTableConstraints($tableName, 'checks');
+        $tableChecks = $this->loadTableConstraints($tableName, 'checks');
+
+        return is_array($tableChecks) ? $tableChecks : [];
     }
 
     /**
