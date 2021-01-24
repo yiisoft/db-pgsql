@@ -17,6 +17,9 @@ use function is_string;
 use function json_decode;
 use function strtolower;
 
+/**
+ * The class ColumnSchema for PostgreSQL database.
+ */
 final class ColumnSchema extends AbstractColumnSchema
 {
     /**

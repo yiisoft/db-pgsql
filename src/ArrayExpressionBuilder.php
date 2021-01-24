@@ -23,6 +23,9 @@ use function in_array;
 use function is_array;
 use function str_repeat;
 
+/**
+ * The class ArrayExpressionBuilder builds {@see ArrayExpression} for PostgreSQL DBMS.
+ */
 final class ArrayExpressionBuilder implements ExpressionBuilderInterface
 {
     use ExpressionBuilderTrait;

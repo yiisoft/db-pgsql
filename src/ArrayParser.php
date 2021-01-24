@@ -7,6 +7,9 @@ namespace Yiisoft\Db\Pgsql;
 use function in_array;
 use function strlen;
 
+/**
+ * The class converts PostgreSQL array representation to PHP array.
+ */
 final class ArrayParser
 {
     /**

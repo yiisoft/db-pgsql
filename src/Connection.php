@@ -9,7 +9,7 @@ use Yiisoft\Db\Command\Command;
 use Yiisoft\Db\Connection\Connection as AbstractConnection;
 
 /**
- * Database connection class prefilled for PGSQL Server.
+ * The class Connection represents a connection to a database via [PDO](https://secure.php.net/manual/en/book.pdo.php).
  */
 final class Connection extends AbstractConnection
 {

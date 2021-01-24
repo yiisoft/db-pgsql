@@ -18,6 +18,9 @@ use Yiisoft\Db\Query\Query;
 use Yiisoft\Db\Query\QueryInterface;
 use Yiisoft\Json\Json;
 
+/**
+ * The class JsonExpressionBuilder builds {@see JsonExpression} for PostgreSQL DBMS.
+ */
 final class JsonExpressionBuilder implements ExpressionBuilderInterface
 {
     use ExpressionBuilderTrait;

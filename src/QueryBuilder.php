@@ -36,6 +36,9 @@ use function preg_replace;
 use function reset;
 use function strpos;
 
+/**
+ * The class QueryBuilder is the query builder for PostgreSQL databases.
+ */
 final class QueryBuilder extends AbstractQueryBuilder
 {
     /**

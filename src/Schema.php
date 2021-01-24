@@ -36,6 +36,9 @@ use function str_replace;
 use function substr;
 
 /**
+ * The class Schema is the class for retrieving metadata from a PostgreSQL database
+ * (version 9.6 and above).
+ *
  * @psalm-type ColumnArray = array{
  *   table_schema: string,
  *   table_name: string,
