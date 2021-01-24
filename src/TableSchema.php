@@ -9,7 +9,7 @@ use Yiisoft\Db\Schema\TableSchema as AbstractTableSchema;
 /**
  * The class TableSchema represents the metadata of a database table.
  *
- * @property-read array $columnNames List of column names. This property is read-only.
+ * @property array $columnNames List of column names. This property is read-only.
  */
 final class TableSchema extends AbstractTableSchema
 {
