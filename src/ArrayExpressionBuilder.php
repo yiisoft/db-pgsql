@@ -136,16 +136,15 @@ final class ArrayExpressionBuilder implements ExpressionBuilderInterface
      */
     protected function getTypeHint(ArrayExpression $expression): string
     {
-        /**
-         *  @var string|null $type
-         *  @var int $dimension
-         */
+        /** @var string|null $type */
         $type = $expression->getType();
-        $dimension = $expression->getDimension();
 
         if ($type === null) {
             return '';
         }
+
+        /** @var int $dimension */
+        $dimension = $expression->getDimension();
 
         $result = '::' . $type;
         $result .= str_repeat('[]', $dimension);
