@@ -83,7 +83,7 @@ final class ArrayExpressionBuilder implements ExpressionBuilderInterface
          */
         $value = $expression->getValue();
 
-        if ($value === null || !is_array($value) && !$value instanceof Traversable) {
+        if (!is_array($value) && !$value instanceof Traversable) {
             return $placeholders;
         }
 
