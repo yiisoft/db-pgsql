@@ -7,6 +7,7 @@ namespace Yiisoft\Db\Pgsql\Tests;
 use Yiisoft\Db\Expression\ArrayExpression;
 use Yiisoft\Db\Expression\JsonExpression;
 use Yiisoft\Db\Query\Query;
+use Yiisoft\Db\Pgsql\ColumnSchema;
 
 /**
  * @group pgsql
@@ -45,6 +46,7 @@ final class ColumnSchemaTest extends TestCase
         $intColPhpTypeCast = $tableSchema->getColumn('int_col')->phpTypecast($query['int_col']);
         $charColPhpTypeCast = $tableSchema->getColumn('char_col')->phpTypecast($query['char_col']);
         $floatColPhpTypeCast = $tableSchema->getColumn('float_col')->phpTypecast($query['float_col']);
+        $boolColPhpTypeCast = $tableSchema->getColumn('bool_col')->phpTypecast($query['bool_col']);
         $numericColPhpTypeCast = $tableSchema->getColumn('numeric_col')->phpTypecast($query['numeric_col']);
         $intArrayColPhpType = $tableSchema->getColumn('intarray_col')->phpTypecast($query['intarray_col']);
         $textArray2ColPhpType = $tableSchema->getColumn('textarray2_col')->phpTypecast($query['textarray2_col']);
@@ -55,11 +57,21 @@ final class ColumnSchemaTest extends TestCase
         $this->assertSame(1, $intColPhpTypeCast);
         $this->assertSame(str_repeat('x', 100), $charColPhpTypeCast);
         $this->assertSame(1.234, $floatColPhpTypeCast);
+        $this->assertSame(false, $boolColPhpTypeCast);
         $this->assertSame('33.22', $numericColPhpTypeCast);
         $this->assertSame([1, -2, null, 42], $intArrayColPhpType);
         $this->assertSame(null, $textArray2ColPhpType);
         $this->assertSame([['a' => 1, 'b' => null, 'c' => [1, 3, 5]]], $jsonColPhpType);
         $this->assertSame(['1', '2', '3'], $jsonBColPhpType);
         $this->assertSame([[[',', 'null', true, 'false', 'f']]], $jsonArrayColPhpType);
+    }
+
+    public function testPhpTypeCastBool(): void
+    {
+        $columnSchema = new ColumnSchema();
+        $columnSchema->type('boolean');
+
+        $this->assertFalse($columnSchema->phpTypeCast('false'));
+        $this->assertTrue($columnSchema->phpTypeCast('true'));
     }
 }
