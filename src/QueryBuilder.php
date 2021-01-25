@@ -324,30 +324,21 @@ final class QueryBuilder extends AbstractQueryBuilder
         $columnName = $this->getDb()->quoteColumnName($column);
         $tableName = $this->getDb()->quoteTableName($table);
 
-        if (is_object($type)) {
-            /** @var string $type */
-            $type = $type->__toString();
-        }
-
         /**
          * {@see https://github.com/yiisoft/yii2/issues/4492}
          * {@see http://www.postgresql.org/docs/9.1/static/sql-altertable.html}
          */
-        if (preg_match('/^(DROP|SET|RESET)\s+/i', $type)) {
+        if (preg_match('/^(DROP|SET|RESET|USING)\s+/i', (string) $type)) {
             return "ALTER TABLE {$tableName} ALTER COLUMN {$columnName} {$type}";
         }
 
         $type = 'TYPE ' . $this->getColumnType($type);
-
         $multiAlterStatement = [];
         $constraintPrefix = preg_replace('/[^a-z0-9_]/i', '', $table . '_' . $column);
 
         if (preg_match('/\s+DEFAULT\s+(["\']?\w*["\']?)/i', $type, $matches)) {
             $type = preg_replace('/\s+DEFAULT\s+(["\']?\w*["\']?)/i', '', $type);
             $multiAlterStatement[] = "ALTER COLUMN {$columnName} SET DEFAULT {$matches[1]}";
-        } else {
-            // safe to drop default even if there was none in the first place
-            $multiAlterStatement[] = "ALTER COLUMN {$columnName} DROP DEFAULT";
         }
 
         $type = preg_replace('/\s+NOT\s+NULL/i', '', $type, -1, $count);
@@ -355,10 +346,11 @@ final class QueryBuilder extends AbstractQueryBuilder
         if ($count) {
             $multiAlterStatement[] = "ALTER COLUMN {$columnName} SET NOT NULL";
         } else {
-            // remove additional null if any
-            $type = preg_replace('/\s+NULL/i', '', $type);
-            // safe to drop not null even if there was none in the first place
-            $multiAlterStatement[] = "ALTER COLUMN {$columnName} DROP NOT NULL";
+            /** remove additional null if any */
+            $type = preg_replace('/\s+NULL/i', '', $type, -1, $count);
+            if ($count) {
+                $multiAlterStatement[] = "ALTER COLUMN {$columnName} DROP NOT NULL";
+            }
         }
 
         if (preg_match('/\s+CHECK\s+\((.+)\)/i', $type, $matches)) {
@@ -367,14 +359,15 @@ final class QueryBuilder extends AbstractQueryBuilder
         }
 
         $type = preg_replace('/\s+UNIQUE/i', '', $type, -1, $count);
+
         if ($count) {
             $multiAlterStatement[] = "ADD UNIQUE ({$columnName})";
         }
 
-        // add what's left at the beginning
+        /** add what's left at the beginning */
         array_unshift($multiAlterStatement, "ALTER COLUMN {$columnName} {$type}");
 
-        return 'ALTER TABLE ' . $tableName . ' ' . implode(', ', $multiAlterStatement);
+        return 'ALTER TABLE ' . $tableName . ' ' . implode(', ', $multiAlterStatement);;
     }
 
     /**
