@@ -53,12 +53,8 @@ final class ColumnSchemaTest extends TestCase
         $jsonArrayColPhpType = $tableSchema->getColumn('jsonarray_col')->phpTypecast($query['jsonarray_col']);
 
         $this->assertSame(1, $intColPhpTypeCast);
-        $this->assertSame(1, $query['int_col2']);
-        $this->assertSame(1, $query['tinyint_col']);
-        $this->assertSame(1, $query['smallint_col']);
         $this->assertSame(str_repeat('x', 100), $charColPhpTypeCast);
         $this->assertSame(1.234, $floatColPhpTypeCast);
-        $this->assertSame('1.23', $query['float_col2']);
         $this->assertSame('33.22', $numericColPhpTypeCast);
         $this->assertSame([1, -2, null, 42], $intArrayColPhpType);
         $this->assertSame(null, $textArray2ColPhpType);
