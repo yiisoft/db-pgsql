@@ -38,6 +38,19 @@ final class ConnectionTest extends TestCase
         $this->assertEquals('pgsql', $db->getDriverName());
     }
 
+    public function testInitConnection(): void
+    {
+        $db = $this->getConnection();
+
+        $db->setEmulatePrepare(true);
+
+        $db->open();
+
+        $this->assertTrue($db->getEmulatePrepare());
+
+        $db->close();
+    }
+
     public function testOpenClose(): void
     {
         $db = $this->getConnection();

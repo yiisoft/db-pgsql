@@ -9,7 +9,7 @@ use Yiisoft\Db\Command\Command;
 use Yiisoft\Db\Connection\Connection as AbstractConnection;
 
 /**
- * Database connection class prefilled for PGSQL Server.
+ * The class Connection represents a connection to a database via [PDO](https://secure.php.net/manual/en/book.pdo.php).
  */
 final class Connection extends AbstractConnection
 {
@@ -77,8 +77,10 @@ final class Connection extends AbstractConnection
                 $pdo->setAttribute(PDO::ATTR_EMULATE_PREPARES, $this->getEmulatePrepare());
             }
 
-            if ($this->getCharset() !== null) {
-                $pdo->exec('SET NAMES ' . $pdo->quote($this->getCharset()));
+            $charset = $this->getCharset();
+
+            if ($charset !== null) {
+                $pdo->exec('SET NAMES ' . $pdo->quote($charset));
             }
         }
     }

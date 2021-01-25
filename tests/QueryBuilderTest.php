@@ -4,13 +4,10 @@ declare(strict_types=1);
 
 namespace Yiisoft\Db\Pgsql\Tests;
 
-use function array_merge;
-use function array_replace;
 use Closure;
-use function is_string;
-use function version_compare;
 use Yiisoft\Arrays\ArrayHelper;
 use Yiisoft\Db\Exception\Exception;
+use Yiisoft\Db\Exception\IntegrityException;
 use Yiisoft\Db\Exception\InvalidArgumentException;
 use Yiisoft\Db\Exception\InvalidConfigException;
 use Yiisoft\Db\Exception\NotSupportedException;
@@ -18,11 +15,15 @@ use Yiisoft\Db\Expression\ArrayExpression;
 use Yiisoft\Db\Expression\Expression;
 use Yiisoft\Db\Expression\JsonExpression;
 use Yiisoft\Db\Pgsql\ColumnSchema;
-
 use Yiisoft\Db\Pgsql\QueryBuilder;
 use Yiisoft\Db\Query\Query;
 use Yiisoft\Db\TestUtility\TestQueryBuilderTrait;
 use Yiisoft\Db\TestUtility\TraversableObject;
+
+use function array_merge;
+use function array_replace;
+use function is_string;
+use function version_compare;
 
 /**
  * @group pgsql
@@ -890,5 +891,22 @@ final class QueryBuilderTest extends TestCase
         } else {
             $this->assertIsOneOf($actualParams, $expectedParams);
         }
+    }
+
+    public function testCheckIntegrity(): void
+    {
+        $db = $this->getConnection();
+
+        $db->createCommand()->checkIntegrity('public', 'item', false)->execute();
+
+        $sql = 'INSERT INTO {{item}}([[name]], [[category_id]]) VALUES (\'invalid\', 99999)';
+
+        $command = $db->createCommand($sql);
+        $command->execute();
+
+        $db->createCommand()->checkIntegrity('public', 'item', true)->execute();
+
+        $this->expectException(IntegrityException::class);
+        $command->execute();
     }
 }
