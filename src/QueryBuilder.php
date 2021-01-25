@@ -221,8 +221,6 @@ final class QueryBuilder extends AbstractQueryBuilder
      * associated with the table.
      *
      * @return string the SQL statement for resetting sequence.
-     *
-     * @psalm-suppress MixedArgument
      */
     public function resetSequence(string $tableName, $value = null): string
     {
@@ -403,8 +401,6 @@ final class QueryBuilder extends AbstractQueryBuilder
      * @throws Exception|InvalidArgumentException|InvalidConfigException|JsonException|NotSupportedException
      *
      * @return string the INSERT SQL
-     *
-     * @psalm-suppress MixedArgument
      */
     public function insert(string $table, $columns, array &$params = []): string
     {
@@ -445,9 +441,6 @@ final class QueryBuilder extends AbstractQueryBuilder
      *
      * {@see https://www.postgresql.org/docs/9.5/static/sql-insert.html#SQL-ON-CONFLICT}
      * {@see https://stackoverflow.com/questions/1109061/insert-on-duplicate-update-in-postgresql/8702291#8702291}
-     *
-     * @psalm-suppress MixedArgument
-     * @psalm-suppress MixedAssignment
      */
     public function upsert(string $table, $insertColumns, $updateColumns, array &$params = []): string
     {
@@ -530,7 +523,6 @@ final class QueryBuilder extends AbstractQueryBuilder
      * @throws Exception|InvalidArgumentException|JsonException
      *
      * @return string the UPDATE SQL.
-     * @psalm-suppress MixedArgument
      */
     public function update(string $table, array $columns, $condition, array &$params = []): string
     {
@@ -589,14 +581,13 @@ final class QueryBuilder extends AbstractQueryBuilder
      * The method will properly escape the column names, and quote the values to be inserted.
      *
      * @param string $table the table that new rows will be inserted into.
-     * @param array<array-key, string> $columns the column names.
+     * @param array<array-key, mixed> $columns the column names.
      * @param array|Generator $rows the rows to be batch inserted into the table.
      * @param array $params the binding parameters. This parameter exists.
      *
      * @throws Exception|InvalidArgumentException|InvalidConfigException|NotSupportedException
      *
      * @return string the batch INSERT SQL statement.
-     * @psalm-suppress MoreSpecificImplementedParamType
      */
     public function batchInsert(string $table, array $columns, $rows, array &$params = []): string
     {
@@ -629,7 +620,6 @@ final class QueryBuilder extends AbstractQueryBuilder
                 if (isset($columns[$i], $columnSchemas[$columns[$i]])) {
                     /**
                      * @var bool|ExpressionInterface|float|int|string|null $value
-                     * @psalm-suppress MixedMethodCall
                      */
                     $value = $columnSchemas[$columns[$i]]->dbTypecast($value);
                 }

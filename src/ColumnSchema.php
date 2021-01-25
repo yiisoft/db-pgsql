@@ -72,10 +72,7 @@ final class ColumnSchema extends AbstractColumnSchema
      *
      * @throws JsonException
      *
-     * @return mixed converted value
-     *
-     * @psalm-suppress MixedAssignment
-     * @psalm-suppress MixedArgument
+     * @return array|bool|int|string|resource|null converted value
      */
     public function phpTypecast($value)
     {
