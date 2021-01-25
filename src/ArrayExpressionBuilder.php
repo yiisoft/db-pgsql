@@ -75,11 +75,15 @@ final class ArrayExpressionBuilder implements ExpressionBuilderInterface
      */
     protected function buildPlaceholders(ExpressionInterface $expression, array &$params): array
     {
-        /** @var ArrayExpression $expression */
+        $placeholders = [];
+
+        /**
+         *  @var ArrayExpression $expression
+         *  @var mixed $value
+         */
         $value = $expression->getValue();
 
-        $placeholders = [];
-        if (!is_array($value) && !$value instanceof Traversable) {
+        if ($value === null || !is_array($value) && !$value instanceof Traversable) {
             return $placeholders;
         }
 

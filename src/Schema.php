@@ -74,6 +74,14 @@ use function substr;
  *     check_expr: string
  *   }
  * >
+ *
+ * @psalm-type FindConstraintArray = array{
+ *   constraint_name: string,
+ *   column_name: string,
+ *   foreign_table_name: string,
+ *   foreign_table_schema: string,
+ *   foreign_column_name: string,
+ * }
  */
 final class Schema extends AbstractSchema implements ConstraintFinderInterface
 {
@@ -521,26 +529,11 @@ order by
     fns.nspname, fc.relname, a.attnum
 SQL;
 
-        /**
-         * @var array{
-         *   array{
-         *     tableName: string,
-         *     columns: array
-         *   }
-         * } $constraints
-         */
+        /** @var array{array{tableName: string, columns: array}} $constraints */
         $constraints = [];
         $slavePdo = $this->getDb()->getSlavePdo();
 
-        /**
-         * @var array{
-         *   constraint_name: string,
-         *   column_name: string,
-         *   foreign_table_name: string,
-         *   foreign_table_schema: string,
-         *   foreign_column_name: string,
-         * } $constraint
-         */
+        /** @var FindConstraintArray $constraint */
         foreach ($this->getDb()->createCommand($sql)->queryAll() as $constraint) {
             if ($slavePdo !== null && $slavePdo->getAttribute(PDO::ATTR_CASE) === PDO::CASE_UPPER) {
                 $constraint = array_change_key_case($constraint, CASE_LOWER);
