@@ -367,7 +367,7 @@ final class QueryBuilder extends AbstractQueryBuilder
         /** add what's left at the beginning */
         array_unshift($multiAlterStatement, "ALTER COLUMN {$columnName} {$type}");
 
-        return 'ALTER TABLE ' . $tableName . ' ' . implode(', ', $multiAlterStatement);;
+        return 'ALTER TABLE ' . $tableName . ' ' . implode(', ', $multiAlterStatement);
     }
 
     /**
