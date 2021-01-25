@@ -6,178 +6,63 @@ namespace Yiisoft\Db\Pgsql\Tests;
 
 use ArrayAccess;
 use Traversable;
-use Yiisoft\ActiveRecord\ActiveQuery;
 use Yiisoft\Db\Expression\ArrayExpression;
-use Yiisoft\Db\Expression\Expression;
 use Yiisoft\Db\Expression\JsonExpression;
-use Yiisoft\Db\Pgsql\Tests\Data\Stubs\ArrayAndJsonTypes;
-use Yiisoft\Db\Pgsql\Tests\Data\Stubs\BoolAR;
+use Yiisoft\Db\Query\Query;
 
 /**
  * @group pgsql
  */
 final class ColumnSchemaTest extends TestCase
 {
-    public function arrayValuesProvider(): array
-    {
-        return [
-            'simple arrays values' => [[
-                'intarray_col' => [
-                    new ArrayExpression([1,-2,null,'42'], 'int4', 1),
-                    new ArrayExpression([1,-2,null,42], 'int4', 1),
-                ],
-                'textarray2_col' => [
-                    new ArrayExpression([['text'], [null], [1]], 'text', 2),
-                    new ArrayExpression([['text'], [null], ['1']], 'text', 2),
-                ],
-                'json_col' => [['a' => 1, 'b' => null, 'c' => [1,3,5]]],
-                'jsonb_col' => [[null, 'a', 'b', '\"', '{"af"}']],
-                'jsonarray_col' => [new ArrayExpression([[',', 'null', true, 'false', 'f']], 'json')],
-            ]],
-            'null arrays values' => [[
-                'intarray_col' => [
-                    null,
-                ],
-                'textarray2_col' => [
-                    [null, null],
-                    new ArrayExpression([null, null], 'text', 2),
-                ],
-                'json_col' => [
-                    null,
-                ],
-                'jsonarray_col' => [
-                    null,
-                ],
-            ]],
-            'empty arrays values' => [[
-                'textarray2_col' => [
-                    [[], []],
-                    new ArrayExpression([], 'text', 2),
-                ],
-            ]],
-            'nested objects' => [[
-                'intarray_col' => [
-                    new ArrayExpression(new ArrayExpression([1,2,3]), 'int', 1),
-                    new ArrayExpression([1,2,3], 'int4', 1),
-                ],
-                'textarray2_col' => [
-                    new ArrayExpression([new ArrayExpression(['text']), [null], [1]], 'text', 2),
-                    new ArrayExpression([['text'], [null], ['1']], 'text', 2),
-                ],
-                'json_col' => [
-                    new JsonExpression(new JsonExpression(new JsonExpression(['a' => 1, 'b' => null, 'c' => new JsonExpression([1,3,5])]))),
-                    ['a' => 1, 'b' => null, 'c' => [1,3,5]],
-                ],
-                'jsonb_col' => [
-                    new JsonExpression(new ArrayExpression([1,2,3])),
-                    [1,2,3],
-                ],
-                'jsonarray_col' => [
-                    new ArrayExpression([new JsonExpression(['1', 2]), [3,4,5]], 'json'),
-                    new ArrayExpression([['1', 2], [3,4,5]], 'json'),
-                ],
-            ]],
-            'arrays packed in classes' => [[
-                'intarray_col' => [
-                    new ArrayExpression([1,-2,null,'42'], 'int', 1),
-                    new ArrayExpression([1,-2,null,42], 'int4', 1),
-                ],
-                'textarray2_col' => [
-                    new ArrayExpression([['text'], [null], [1]], 'text', 2),
-                    new ArrayExpression([['text'], [null], ['1']], 'text', 2),
-                ],
-                'json_col' => [
-                    new JsonExpression(['a' => 1, 'b' => null, 'c' => [1,3,5]]),
-                    ['a' => 1, 'b' => null, 'c' => [1,3,5]],
-                ],
-                'jsonb_col' => [
-                    new JsonExpression([null, 'a', 'b', '\"', '{"af"}']),
-                    [null, 'a', 'b', '\"', '{"af"}'],
-                ],
-                'jsonarray_col' => [
-                    new Expression("array['[\",\",\"null\",true,\"false\",\"f\"]'::json]::json[]"),
-                    new ArrayExpression([[',', 'null', true, 'false', 'f']], 'json'),
-                ],
-            ]],
-            'scalars' => [[
-                'json_col' => [
-                    '5.8',
-                ],
-                'jsonb_col' => [
-                    M_PI,
-                ],
-            ]],
-        ];
-    }
-
-    /**
-     * @dataProvider arrayValuesProvider $attributes
-     */
-    public function testArrayValues(array $attributes): void
+    public function testDbTypes(): void
     {
         $db = $this->getConnection(true);
 
-        $type = new ArrayAndJsonTypes($db);
-
-        foreach ($attributes as $attribute => $expected) {
-            $type->$attribute = $expected[0];
-        }
-
-        $type->save();
-
-        $typeQuery = new ActiveQuery(get_class($type), $db);
-
-        $type = $typeQuery->one();
-
-        foreach ($attributes as $attribute => $expected) {
-            $expected = $expected[1] ?? $expected[0];
-            $value = $type->$attribute;
-
-            if ($expected instanceof ArrayExpression) {
-                $expected = $expected->getValue();
-            }
-
-            $this->assertEquals($expected, $value, 'In column ' . $attribute);
-
-            if ($value instanceof ArrayExpression) {
-                $this->assertInstanceOf(ArrayAccess::class, $value);
-                $this->assertInstanceOf(Traversable::class, $value);
-                /** testing arrayaccess */
-                foreach ($type->$attribute as $key => $v) {
-                    $this->assertSame($expected[$key], $value[$key]);
-                }
-            }
-        }
-
-        /** Testing update */
-        foreach ($attributes as $attribute => $expected) {
-            $type->markAttributeDirty($attribute);
-        }
-
-        $this->assertSame(1, $type->update(), 'The record got updated');
-    }
-
-    public function testBooleanValues(): void
-    {
-        $db = $this->getConnection();
-
         $command = $db->createCommand();
-        $command->batchInsert('bool_values', ['bool_col'], [[true], [false]])->execute();
 
-        $boolARQuery = new ActiveQuery(BoolAR::class, $db);
+        $command->insert(
+            'type',
+            [
+                'int_col' => 1,
+                'char_col' => str_repeat('x', 100),
+                'char_col3' => str_repeat('x', 101),
+                'float_col' => 1.234,
+                'blob_col' => "\x10\x11\x12",
+                'bool_col' => false,
+                'bigint_col' => 9223372036854775806,
+                'intarray_col' => [1, -2, null, '42'],
+                'textarray2_col' => new ArrayExpression([['text'], [null], [1]], 'text', 2),
+                'json_col' => [['a' => 1, 'b' => null, 'c' => [1, 3, 5]]],
+                'jsonb_col' => new JsonExpression(new ArrayExpression([1, 2, 3])),
+                'jsonarray_col' => [new ArrayExpression([[',', 'null', true, 'false', 'f']], 'json')],
+            ]
+        );
 
-        $this->assertTrue($boolARQuery->where(['bool_col' => true])->one()->bool_col);
-        $this->assertFalse($boolARQuery->where(['bool_col' => false])->one()->bool_col);
+        $command->execute();
 
-        $this->assertEquals(1, $boolARQuery->where('bool_col = TRUE')->count('*'));
-        $this->assertEquals(1, $boolARQuery->where('bool_col = FALSE')->count('*'));
-        $this->assertEquals(2, $boolARQuery->where('bool_col IN (TRUE, FALSE)')->count('*'));
+        $query = (new Query($db))->from('type')->one();
 
-        $this->assertEquals(1, $boolARQuery->where(['bool_col' => true])->count('*'));
-        $this->assertEquals(1, $boolARQuery->where(['bool_col' => false])->count('*'));
-        $this->assertEquals(2, $boolARQuery->where(['bool_col' => [true, false]])->count('*'));
-
-        $this->assertEquals(1, $boolARQuery->where('bool_col = :bool_col', ['bool_col' => true])->count('*'));
-        $this->assertEquals(1, $boolARQuery->where('bool_col = :bool_col', ['bool_col' => false])->count('*'));
+        $this->assertSame(1, $query['int_col']);
+        $this->assertSame(1, $query['int_col2']);
+        $this->assertSame(1, $query['tinyint_col']);
+        $this->assertSame(1, $query['smallint_col']);
+        $this->assertSame(str_repeat('x', 100), $query['char_col']);
+        $this->assertSame('something', $query['char_col2']);
+        $this->assertSame(str_repeat('x', 101), $query['char_col3']);
+        $this->assertSame('1.234', $query['float_col']);
+        $this->assertSame('1.23', $query['float_col2']);
+        $this->assertSame("\x10\x11\x12", stream_get_contents($query['blob_col']));
+        $this->assertSame('33.22', $query['numeric_col']);
+        $this->assertSame('2002-01-01 00:00:00', $query['time']);
+        $this->assertSame(false, $query['bool_col']);
+        $this->assertSame(true, $query['bool_col2']);
+        $this->assertSame('10000010', $query['bit_col']);
+        $this->assertSame(9223372036854775806, $query['bigint_col']);
+        $this->assertSame('{1,-2,NULL,42}', $query['intarray_col']);
+        $this->assertSame('{{text},{NULL},{1}}', $query['textarray2_col']);
+        $this->assertSame('[{"a":1,"b":null,"c":[1,3,5]}]', $query['json_col']);
+        $this->assertSame('["1", "2", "3"]', $query['jsonb_col']);
+        $this->assertSame('{{"[\",\",\"null\",true,\"false\",\"f\"]"}}', $query['jsonarray_col']);
     }
 }

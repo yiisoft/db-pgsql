@@ -11,7 +11,6 @@ use Yiisoft\Db\Exception\InvalidConfigException;
 use Yiisoft\Db\Exception\NotSupportedException;
 use Yiisoft\Db\Expression\Expression;
 use Yiisoft\Db\Pgsql\TableSchema;
-use Yiisoft\Db\Pgsql\Tests\Data\Stubs\Type;
 use Yiisoft\Db\TestUtility\TestSchemaTrait;
 
 use function array_map;
@@ -727,48 +726,5 @@ final class SchemaTest extends TestCase
 
         $primaryKey = $db->getSchema()->insert('constraints', ['id' => 1, 'field1' => 'testMe']);
         $this->assertEquals([], $primaryKey);
-    }
-
-    public function bigintValueProvider(): array
-    {
-        return [
-            [8817806877],
-            [3797444208],
-            [3199585540],
-            [1389831585],
-            [922337203685477580],
-            [9223372036854775806],
-            [-9223372036854775807],
-        ];
-    }
-
-    /**
-     * @dataProvider bigintValueProvider
-     *
-     * @param int $bigint
-     */
-    public function testBigintValue(int $bigint): void
-    {
-        $type = new Type($this->getConnection());
-
-        $type->deleteAll();
-
-        $type->setAttributes(
-            [
-                'bigint_col' => $bigint,
-                // whatever just to satisfy NOT NULL columns
-                'int_col' => 1,
-                'char_col' => 'a',
-                'float_col' => 0.1,
-                'bool_col' => true,
-            ]
-        );
-
-        $type->save();
-
-        $query = new ActiveQuery(Type::class, $this->getConnection());
-        $row = $query->one();
-
-        $this->assertEquals($bigint, $row->bigint_col);
     }
 }
