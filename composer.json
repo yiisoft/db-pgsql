@@ -32,7 +32,7 @@
         "spatie/phpunit-watcher": "^1.23",
         "vimeo/psalm": "^4.4",
         "yiisoft/aliases": "^1.1",
-        "yiisoft/cache": "^3.0@dev",
+        "yiisoft/cache": "^1.0",
         "yiisoft/di": "^3.0@dev",
         "yiisoft/log": "^3.0@dev"
     },
