@@ -512,7 +512,8 @@ final class Schema extends AbstractSchema implements ConstraintFinderInterface
                 fns.nspname as foreign_table_schema,
                 fa.attname as foreign_column_name
             FROM
-                (SELECT ct.conname, ct.conrelid, ct.confrelid, ct.conkey, ct.contype, ct.confkey, generate_subscripts(ct.conkey, 1) AS s
+                (SELECT ct.conname, ct.conrelid, ct.confrelid, ct.conkey, ct.contype, ct.confkey,
+                        generate_subscripts(ct.conkey, 1) AS s
                    FROM pg_constraint ct
                 ) AS ct
                 inner join pg_class c on c.oid=ct.conrelid
@@ -688,9 +689,16 @@ final class Schema extends AbstractSchema implements ConstraintFinderInterface
                 a.attnotnull = false AS is_nullable,
                 CAST(pg_get_expr(ad.adbin, ad.adrelid) AS varchar) AS column_default,
                 coalesce(pg_get_expr(ad.adbin, ad.adrelid) ~ 'nextval',false) {$orIdentity} AS is_autoinc,
-                pg_get_serial_sequence(quote_ident(d.nspname) || '.' || quote_ident(c.relname), a.attname) AS sequence_name,
+                pg_get_serial_sequence(quote_ident(d.nspname) || '.' || quote_ident(c.relname), a.attname)
+                    AS sequence_name,
                 CASE WHEN COALESCE(td.typtype, tb.typtype, t.typtype) = 'e'::char
-                    THEN array_to_string((SELECT array_agg(enumlabel) FROM pg_enum WHERE enumtypid = COALESCE(td.oid, tb.oid, a.atttypid))::varchar[], ',')
+                    THEN array_to_string(
+                        (
+                            SELECT array_agg(enumlabel)
+                            FROM pg_enum
+                            WHERE enumtypid = COALESCE(td.oid, tb.oid, a.atttypid)
+                            )::varchar[],
+                        ',')
                     ELSE NULL
                 END AS enum_values,
                 CASE atttypid
@@ -716,8 +724,10 @@ final class Schema extends AbstractSchema implements ConstraintFinderInterface
                        ELSE null
                   END AS numeric_scale,
                 CAST(
-                         information_schema._pg_char_max_length(information_schema._pg_truetypid(a, t), information_schema._pg_truetypmod(a, t))
-                         AS numeric
+                         information_schema._pg_char_max_length(
+                             information_schema._pg_truetypid(a, t),
+                             information_schema._pg_truetypmod(a, t)
+                             ) AS numeric
                 ) AS size,
                 a.attnum = any (ct.conkey) as is_pkey,
                 COALESCE(NULLIF(a.attndims, 0), NULLIF(t.typndims, 0), (t.typcategory='A')::int) AS dimension
@@ -726,7 +736,8 @@ final class Schema extends AbstractSchema implements ConstraintFinderInterface
                 LEFT JOIN pg_attribute a ON a.attrelid = c.oid
                 LEFT JOIN pg_attrdef ad ON a.attrelid = ad.adrelid AND a.attnum = ad.adnum
                 LEFT JOIN pg_type t ON a.atttypid = t.oid
-                LEFT JOIN pg_type tb ON (a.attndims > 0 OR t.typcategory='A') AND t.typelem > 0 AND t.typelem = tb.oid OR t.typbasetype > 0 AND t.typbasetype = tb.oid
+                LEFT JOIN pg_type tb ON (a.attndims > 0 OR t.typcategory='A') AND t.typelem > 0 AND t.typelem = tb.oid
+                                            OR t.typbasetype > 0 AND t.typbasetype = tb.oid
                 LEFT JOIN pg_type td ON t.typndims > 0 AND t.typbasetype > 0 AND tb.typelem = td.oid
                 LEFT JOIN pg_namespace d ON d.oid = c.relnamespace
                 LEFT JOIN pg_constraint ct ON ct.conrelid = c.oid AND ct.contype = 'p'
@@ -770,7 +781,11 @@ final class Schema extends AbstractSchema implements ConstraintFinderInterface
             } elseif ($defaultValue) {
                 if (
                     is_string($defaultValue) &&
-                    in_array($loadColumnSchema->getType(), [self::TYPE_TIMESTAMP, self::TYPE_DATE, self::TYPE_TIME], true) &&
+                    in_array(
+                        $loadColumnSchema->getType(),
+                        [self::TYPE_TIMESTAMP, self::TYPE_DATE, self::TYPE_TIME],
+                        true
+                    ) &&
                     in_array(
                         strtoupper($defaultValue),
                         ['NOW()', 'CURRENT_TIMESTAMP', 'CURRENT_DATE', 'CURRENT_TIME'],
