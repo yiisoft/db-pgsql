@@ -223,7 +223,7 @@ final class Schema extends AbstractSchema implements ConstraintFinderInterface
             FROM "pg_namespace" AS "ns"
             WHERE "ns"."nspname" != 'information_schema' AND "ns"."nspname" NOT LIKE 'pg_%'
             ORDER BY "ns"."nspname" ASC
-        SQL;
+            SQL;
 
         return $this->getDb()->createCommand($sql)->queryColumn();
     }
@@ -252,7 +252,7 @@ final class Schema extends AbstractSchema implements ConstraintFinderInterface
             INNER JOIN pg_namespace ns ON ns.oid = c.relnamespace
             WHERE ns.nspname = :schemaName AND c.relkind IN ('r','v','m','f', 'p')
             ORDER BY c.relname
-        SQL;
+            SQL;
 
         return $this->getDb()->createCommand($sql, [':schemaName' => $schema])->queryColumn();
     }
@@ -340,7 +340,7 @@ final class Schema extends AbstractSchema implements ConstraintFinderInterface
                 ON "ia"."attrelid" = "i"."indexrelid"
             WHERE "tcns"."nspname" = :schemaName AND "tc"."relname" = :tableName
             ORDER BY "ia"."attnum" ASC
-        SQL;
+            SQL;
 
         $resolvedName = $this->resolveTableName($tableName);
 
@@ -474,7 +474,7 @@ final class Schema extends AbstractSchema implements ConstraintFinderInterface
             INNER JOIN pg_namespace ns ON ns.oid = c.relnamespace
             WHERE ns.nspname = :schemaName AND (c.relkind = 'v' OR c.relkind = 'm')
             ORDER BY c.relname
-        SQL;
+            SQL;
 
         return $this->getDb()->createCommand($sql, [':schemaName' => $schema])->queryColumn();
     }
@@ -527,7 +527,7 @@ final class Schema extends AbstractSchema implements ConstraintFinderInterface
                 and ns.nspname={$tableSchema}
             ORDER BY
                 fns.nspname, fc.relname, a.attnum
-        SQL;
+            SQL;
 
         /** @var array{array{tableName: string, columns: array}} $constraints */
         $constraints = [];
@@ -594,7 +594,7 @@ final class Schema extends AbstractSchema implements ConstraintFinderInterface
             WHERE idx.indisprimary = FALSE AND idx.indisunique = TRUE
             AND c.relname = :tableName AND ns.nspname = :schemaName
             ORDER BY i.relname, k
-        SQL;
+            SQL;
 
         return $this->getDb()->createCommand($sql, [
             ':schemaName' => $table->getSchemaName(),
@@ -736,7 +736,7 @@ final class Schema extends AbstractSchema implements ConstraintFinderInterface
                 AND d.nspname = {$schemaName}
             ORDER BY
                 a.attnum;
-        SQL;
+            SQL;
 
         /** @var array columns */
         $columns = $this->getDb()->createCommand($sql)->queryAll();
@@ -966,7 +966,7 @@ final class Schema extends AbstractSchema implements ConstraintFinderInterface
                 ON "fa"."attrelid" = "c"."confrelid" AND "fa"."attnum" = ANY ("c"."confkey")
             WHERE "tcns"."nspname" = :schemaName AND "tc"."relname" = :tableName
             ORDER BY "a"."attnum" ASC, "fa"."attnum" ASC
-        SQL;
+            SQL;
 
         /** @var array<array-key, string> $actionTypes */
         $actionTypes = [
