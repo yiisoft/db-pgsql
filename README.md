@@ -49,7 +49,7 @@ use Yiisoft\Db\Pgsql\Connection as PgsqlConnection;
 
 return [
     ConnectionInterface::class => [
-        '__class' => PgsqlConnection::class,
+        'class' => PgsqlConnection::class,
         '__construct()' => [
             'dsn' => $params['yiisoft/db-pgsql']['dsn']
         ],
