@@ -62,7 +62,7 @@ final class ColumnSchemaTest extends TestCase
         $this->assertSame([1, -2, null, 42], $intArrayColPhpType);
         $this->assertSame(null, $textArray2ColPhpType);
         $this->assertSame([['a' => 1, 'b' => null, 'c' => [1, 3, 5]]], $jsonColPhpType);
-        $this->assertSame(['1', '2', '3'], $jsonBColPhpType);
+        $this->assertSame([1, 2, 3], $jsonBColPhpType);
         $this->assertSame([[[',', 'null', true, 'false', 'f']]], $jsonArrayColPhpType);
     }
 
