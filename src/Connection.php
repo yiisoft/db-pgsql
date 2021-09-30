@@ -7,12 +7,25 @@ namespace Yiisoft\Db\Pgsql;
 use PDO;
 use Yiisoft\Db\Command\Command;
 use Yiisoft\Db\Connection\Connection as AbstractConnection;
+use Yiisoft\Db\Cache\QueryCache;
+use Yiisoft\Db\Cache\SchemaCache;
 
 /**
  * The class Connection represents a connection to a database via [PDO](https://secure.php.net/manual/en/book.pdo.php).
  */
 final class Connection extends AbstractConnection
 {
+    private QueryCache $queryCache;
+    private SchemaCache $schemaCache;
+
+    public function __construct(string $dsn, QueryCache $queryCache, SchemaCache $schemaCache)
+    {
+        $this->queryCache = $queryCache;
+        $this->schemaCache = $schemaCache;
+
+        parent::__construct($dsn, $queryCache);
+    }
+
     /**
      * Creates a command for execution.
      *
@@ -27,7 +40,15 @@ final class Connection extends AbstractConnection
             $sql = $this->quoteSql($sql);
         }
 
-        $command = new Command($this, $sql);
+        $command = new Command($this, $this->queryCache, $sql);
+
+        if ($this->logger !== null) {
+            $command->setLogger($this->logger);
+        }
+
+        if ($this->profiler !== null) {
+            $command->setProfiler($this->profiler);
+        }
 
         return $command->bindValues($params);
     }
@@ -39,7 +60,7 @@ final class Connection extends AbstractConnection
      */
     public function getSchema(): Schema
     {
-        return new Schema($this);
+        return new Schema($this, $this->schemaCache);
     }
 
     /**
