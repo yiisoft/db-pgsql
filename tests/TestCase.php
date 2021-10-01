@@ -14,10 +14,10 @@ class TestCase extends AbstractTestCase
 
     protected const DB_CONNECTION_CLASS = \Yiisoft\Db\Pgsql\Connection::class;
     protected const DB_DRIVERNAME = 'pgsql';
-    protected const DB_DSN = 'pgsql:host=127.0.0.1;dbname=yiitest;port=5432';
+    protected const DB_DSN = 'pgsql:host=127.0.0.1;dbname=scrutinizer;port=5432';
     protected const DB_FIXTURES_PATH = __DIR__ . '/Fixture/postgres.sql';
-    protected const DB_USERNAME = 'root';
-    protected const DB_PASSWORD = 'root';
+    protected const DB_USERNAME = 'scrutinizer';
+    protected const DB_PASSWORD = 'scrutinizer';
     protected const DB_CHARSET = 'UTF8';
     protected array $dataProvider;
     protected array $expectedSchemas = ['public'];
