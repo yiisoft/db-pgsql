@@ -13,8 +13,13 @@ class TestCase extends AbstractTestCase
 {
     use TestTrait;
 
+    protected const DB_CONNECTION_CLASS = \Yiisoft\Db\Pgsql\Connection::class;
+    protected const DB_DRIVERNAME = 'pgsql';
     protected const DB_DSN = 'pgsql:host=127.0.0.1;dbname=yiitest;port=5432';
     protected const DB_FIXTURES_PATH = __DIR__ . '/Fixture/postgres.sql';
+    protected const DB_USERNAME = 'root';
+    protected const DB_PASSWORD = 'root';
+    protected const DB_CHARSET = 'UTF8';
     protected array $dataProvider;
     protected array $expectedSchemas = ['public'];
     protected string $likeEscapeCharSql = '';
@@ -39,33 +44,5 @@ class TestCase extends AbstractTestCase
             $this->schemaCache,
             $this->profiler
         );
-    }
-
-    protected function createConnection(string $dsn = null): ?ConnectionInterface
-    {
-        $db = null;
-
-        if ($dsn !== null) {
-            $db = new Connection($dsn, $this->createQueryCache(), $this->createSchemaCache());
-            $db->setLogger($this->createLogger());
-            $db->setProfiler($this->createProfiler());
-            $db->setUsername('root');
-            $db->setPassword('root');
-            $db->setCharset('UTF8');
-        }
-
-        return $db;
-    }
-
-    /**
-     * Adjust dbms specific escaping.
-     *
-     * @param array|string $sql
-     *
-     * @return array|string
-     */
-    protected function replaceQuotes($sql)
-    {
-        return str_replace(['\\[', '\\]'], ['[', ']'], preg_replace('/(\[\[)|((?<!(\[))\]\])/', '"', $sql));
     }
 }
