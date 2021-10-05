@@ -190,9 +190,11 @@ final class Schema extends AbstractSchema implements ConstraintFinderInterface
         if (isset($parts[1])) {
             $resolvedName->schemaName($parts[0]);
             $resolvedName->name($parts[1]);
+            $resolvedName->comment($this->getTableComment($parts[0], $parts[1]));
         } else {
             $resolvedName->schemaName($this->defaultSchema);
             $resolvedName->name($name);
+            $resolvedName->comment($this->getTableComment($this->defaultSchema, $name));
         }
 
         $resolvedName->fullName(
@@ -448,9 +450,11 @@ final class Schema extends AbstractSchema implements ConstraintFinderInterface
         if (isset($parts[1])) {
             $table->schemaName($parts[0]);
             $table->name($parts[1]);
+            $table->comment($this->getTableComment($parts[0], $parts[1]));
         } else {
             $table->schemaName($this->defaultSchema);
             $table->name($parts[0]);
+            $table->comment($this->getTableComment($this->defaultSchema, $parts[0]));
         }
 
         if ($table->getSchemaName() !== $this->defaultSchema) {
@@ -1098,5 +1102,26 @@ final class Schema extends AbstractSchema implements ConstraintFinderInterface
     public function createColumnSchemaBuilder(string $type, $length = null): ColumnSchemaBuilder
     {
         return new ColumnSchemaBuilder($type, $length);
+    }
+
+    private function getTableComment(?string $schema, string $name): string
+    {
+        $sql = <<<SQL
+        SELECT description as table_comment from pg_description
+        join pg_class on pg_description.objoid = pg_class.oid where relname = '$name';
+        SQL;
+
+        if ($schema !== null) {
+            $sql = <<<SQL
+            SELECT description as table_comment from pg_description
+            join pg_class on pg_description.objoid = pg_class.oid
+            where relname = '$name' AND relnamespace = '$schema'::regnamespace;
+            SQL;
+        }
+
+        /** @psalm-var array<string, string> */
+        $tableinfo = $this->getDb()->createCommand($sql)->queryOne();
+
+        return $tableinfo['table_comment'] ?? '';
     }
 }
