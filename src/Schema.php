@@ -850,7 +850,7 @@ final class Schema extends AbstractSchema implements ConstraintFinderInterface
         $column = $this->createColumnSchema();
         $column->allowNull($info['is_nullable']);
         $column->autoIncrement($info['is_autoinc']);
-        $column->comment($info['column_comment']);
+        $column->comment($info['column_comment'] ?? '');
         $column->dbType($info['data_type']);
         $column->defaultValue($info['column_default']);
         $column->enumValues(($info['enum_values'] !== null)
