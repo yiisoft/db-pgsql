@@ -1099,10 +1099,13 @@ final class Schema extends AbstractSchema implements ConstraintFinderInterface
     private function getTableComment(?string $schema, string $name): ?string
     {
         $sql = "SELECT obj_description(oid, 'pg_class') FROM pg_class WHERE relname='$name'";
+
         if ($schema !== null) {
             $sql .= " AND relnamespace='$schema'::regnamespace";
         }
+
         $comment = $this->getDb()->createCommand($sql)->queryScalar();
+
         return $comment === false ? null : $comment;
     }
 }
