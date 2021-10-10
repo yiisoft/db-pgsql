@@ -1104,24 +1104,13 @@ final class Schema extends AbstractSchema implements ConstraintFinderInterface
         return new ColumnSchemaBuilder($type, $length);
     }
 
-    private function getTableComment(?string $schema, string $name): string
+    private function getTableComment(?string $schema, string $name): ?string
     {
-        $sql = <<<SQL
-        SELECT description as table_comment from pg_description
-        join pg_class on pg_description.objoid = pg_class.oid where relname = '$name';
-        SQL;
-
+        $sql = "SELECT obj_description(oid, 'pg_class') FROM pg_class WHERE relname='$name'";
         if ($schema !== null) {
-            $sql = <<<SQL
-            SELECT description as table_comment from pg_description
-            join pg_class on pg_description.objoid = pg_class.oid
-            where relname = '$name' AND relnamespace = '$schema'::regnamespace;
-            SQL;
+            $sql .= " AND relnamespace='$schema'::regnamespace";
         }
-
-        /** @psalm-var array<string, string> */
-        $tableinfo = $this->getDb()->createCommand($sql)->queryOne();
-
-        return $tableinfo['table_comment'] ?? '';
+        $comment = $this->getDb()->createCommand($sql)->queryScalar();
+        return $comment === false ? null : $comment;
     }
 }
