@@ -22,7 +22,7 @@ build:
 
     phpunit:
       services:
-        db-mssql:
+        db-pgsql:
           image: postgres:14
 
           # Define any additional environment variables that are needed by the service.
