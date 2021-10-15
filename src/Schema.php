@@ -200,7 +200,7 @@ final class Schema extends AbstractSchema implements ConstraintFinderInterface
                 $resolvedName->getSchemaName() !== $this->defaultSchema ?
                     (string) $resolvedName->getSchemaName() . '.' :
                     ''
-            ) . (string) $resolvedName->getName()
+            ) . $resolvedName->getName()
         );
 
         return $resolvedName;
@@ -454,7 +454,7 @@ final class Schema extends AbstractSchema implements ConstraintFinderInterface
         }
 
         if ($table->getSchemaName() !== $this->defaultSchema) {
-            $name = (string) $table->getSchemaName() . '.' . (string) $table->getName();
+            $name = (string) $table->getSchemaName() . '.' . $table->getName();
         } else {
             $name = $table->getName();
         }
@@ -491,9 +491,7 @@ final class Schema extends AbstractSchema implements ConstraintFinderInterface
         $tableName = $table->getName();
         $tableSchema = $table->getSchemaName();
 
-        if ($tableName !== null) {
-            $tableName = $this->quoteValue($tableName);
-        }
+        $tableName = $this->quoteValue($tableName);
 
         if ($tableSchema !== null) {
             $tableSchema = $this->quoteValue($tableSchema);
@@ -664,9 +662,7 @@ final class Schema extends AbstractSchema implements ConstraintFinderInterface
         $schemaName = $table->getSchemaName();
         $orIdentity = '';
 
-        if ($tableName !== null) {
-            $tableName = $this->getDb()->quoteValue($tableName);
-        }
+        $tableName = $this->getDb()->quoteValue($tableName);
 
         if ($schemaName !== null) {
             $schemaName = $this->getDb()->quoteValue($schemaName);
