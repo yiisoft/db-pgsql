@@ -21,22 +21,22 @@ jobs:
           - ubuntu-latest
 
         php:
-          - "7.4"
+          - 8.0
 
     services:
       postgres:
         image: postgres:13
         env:
-          POSTGRES_USER: scrutinizer
-          POSTGRES_PASSWORD: scrutinizer
-          POSTGRES_DB: scrutinizer
+          POSTGRES_USER: root
+          POSTGRES_PASSWORD: root
+          POSTGRES_DB: yiitest
         ports:
           - 5432:5432
         options: --name=postgres --health-cmd="pg_isready" --health-interval=10s --health-timeout=5s --health-retries=3
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v2.3.4
+        uses: actions/checkout@v2
 
       - name: Install PHP with extensions
         uses: shivammathur/setup-php@v2
