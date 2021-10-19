@@ -110,6 +110,10 @@ final class ColumnSchema extends AbstractColumnSchema
             return null;
         }
 
+        if (RangeParser::isAllowedType($this->getType())) {
+            return $this->getRangeParser()->parse($value);
+        }
+
         switch ($this->getType()) {
             case Schema::TYPE_BOOLEAN:
                 $value = is_string($value) ? strtolower($value) : $value;
@@ -139,6 +143,16 @@ final class ColumnSchema extends AbstractColumnSchema
     protected function getArrayParser(): ArrayParser
     {
         return new ArrayParser();
+    }
+
+    /**
+     * Creates instance of RangeParser.
+     *
+     * @return RangeParser
+     */
+    protected function getRangeParser(): RangeParser
+    {
+        return new RangerParser($this->getType());
     }
 
     /**
