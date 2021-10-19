@@ -152,7 +152,7 @@ final class ColumnSchema extends AbstractColumnSchema
      */
     protected function getRangeParser(): RangeParser
     {
-        return new RangerParser($this->getType());
+        return new RangeParser($this->getType());
     }
 
     /**

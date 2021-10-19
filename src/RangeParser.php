@@ -40,13 +40,13 @@ final class RangeParser
             return null;
         }
 
-        if (!preg_match('/^(\[|\()([^,]*),([^\(\]]*)(\)|\])$/', $value, $matches)) {
+        if (!preg_match('/^(\[|\()([^,]*),([^\)\]]*)(\)|\])$/', $value, $matches)) {
             throw new InvalidArgumentException();
         }
 
         $lower = $matches[2] ? trim($matches[2], '"') : null;
         $upper = $matches[3] ? trim($matches[3], '"') : null;
-        $includeLower = $matches[0] === '[';
+        $includeLower = $matches[1] === '[';
         $includeUpper = $matches[4] === ']';
 
         if ($lower === null && $upper === null) {
