@@ -35,6 +35,7 @@ DROP TABLE IF EXISTS "T_constraints_2";
 DROP TABLE IF EXISTS "T_constraints_1";
 DROP TABLE IF EXISTS "T_upsert";
 DROP TABLE IF EXISTS "T_upsert_1";
+DROP TABLE IF EXISTS "ranges";
 
 DROP SCHEMA IF EXISTS "schema1" CASCADE;
 DROP SCHEMA IF EXISTS "schema2" CASCADE;
@@ -424,3 +425,16 @@ CREATE TABLE "T_upsert_1"
 (
     "a" INT NOT NULL PRIMARY KEY
 );
+
+
+CREATE TABLE ranges
+(
+    "id" INT2 NOT NULL PRIMARY KEY,
+    "int_range" INT4RANGE NOT NULL,
+    "bigint_range" INT8RANGE NOT NULL,
+    "num_range" NUMRANGE NOT NULL,
+    "ts_range" TSRANGE NOT NULL,
+    "ts_tz_range" TSTZRANGE NOT NULL,
+    "date_range" DATERANGE NOT NULL
+)
+
