@@ -492,8 +492,8 @@ final class Schema extends AbstractSchema implements ConstraintFinderInterface
      */
     protected function findConstraints(TableSchema $table): void
     {
-        $tableName = $this->quoteValue($table->getName());
         $tableSchema = $table->getSchemaName();
+        $tableName = $this->quoteValue($table->getName());
 
         if ($tableSchema !== null) {
             $tableSchema = $this->quoteValue($tableSchema);
@@ -660,12 +660,12 @@ final class Schema extends AbstractSchema implements ConstraintFinderInterface
      */
     protected function findColumns(TableSchema $table): bool
     {
-        $tableName = $this->getDb()->quoteValue($table->getName());
+        $tableName = $this->quoteValue($table->getName());
         $schemaName = $table->getSchemaName();
         $orIdentity = '';
 
         if ($schemaName !== null) {
-            $schemaName = $this->getDb()->quoteValue($schemaName);
+            $schemaName = $this->quoteValue($schemaName);
         }
 
         if (version_compare($this->getDb()->getServerVersion(), '12.0', '>=')) {
