@@ -57,8 +57,9 @@ final class RangeParser
 
         switch ($type) {
             case Schema::TYPE_INT_4_RANGE:
-            case Schema::TYPE_INT_8_RANGE:
                 return self::parseIntRange($lower, $upper, $includeLower, $includeUpper);
+            case Schema::TYPE_INT_8_RANGE:
+                return self::parseBigIntRange($lower, $upper, $includeLower, $includeUpper);
             case Schema::TYPE_NUM_RANGE:
                 return self::parseNumRange($lower, $upper, $includeLower, $includeUpper);
             case Schema::TYPE_DATE_RANGE:
@@ -68,7 +69,7 @@ final class RangeParser
             case Schema::TYPE_TS_TZ_RANGE:
                 return self::parseTsTzRange($lower, $upper, $includeLower, $includeUpper);
             default:
-                throw new RuntimeException();
+                return null;
         }
     }
 
@@ -76,6 +77,27 @@ final class RangeParser
     {
         $min = $lower === null ? null : (int) $lower;
         $max = $upper === null ? null : (int) $upper;
+
+        if ($min !== null && $includeLower === false) {
+            $min += 1;
+        }
+
+        if ($max !== null && $includeUpper === false) {
+            $max -= 1;
+        }
+
+        return [$min, $max];
+    }
+
+    private static function parseBigIntRange(?string $lower, ?string $upper, bool $includeLower, bool $includeUpper): array
+    {
+        if (PHP_INT_SIZE === 4) {
+            $min = $lower === null ? null : (float) $lower;
+            $max = $upper === null ? null : (float) $upper;
+        } else {
+            $min = $lower === null ? null : (int) $lower;
+            $max = $upper === null ? null : (int) $upper;
+        }
 
         if ($min !== null && $includeLower === false) {
             $min += 1;
