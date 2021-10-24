@@ -8,30 +8,36 @@ use Yiisoft\Db\Pgsql\QueryBuilder;
 
 /**
  * @group pgsql
+ * @group schema
  */
 final class TableSchemaTest extends TestCase
 {
-    public function testGetTableSchemaGetComment(): void
+    /**
+     * @dataProvider dataProviderSchemaWithComment
+     */
+    public function testGetTableSchemaGetComment(string $table, string $comment): void
     {
         $db = $this->getConnection(true);
         $qb = new QueryBuilder($db);
 
-        $sql = $qb->addCommentOnTable('comment', 'This is my table.');
+        $sql = $qb->addCommentOnTable($table, $comment);
         $db->createCommand($sql)->execute();
-        $table = $db->getTableSchema('comment', true);
+        $table = $db->getTableSchema($table, true);
 
-        $this->assertEquals('This is my table.', $table->getComment());
+        $this->assertEquals($comment, $table->getComment());
     }
 
-    public function testGetTableSchemaGetCommentWithSchema(): void
+    public function dataProviderSchemaWithComment()
     {
-        $db = $this->getConnection(true);
-        $qb = new QueryBuilder($db);
-
-        $sql = $qb->addCommentOnTable('comment', 'This is my table.');
-        $db->createCommand($sql)->execute();
-        $table = $db->getTableSchema('public.comment', true);
-
-        $this->assertEquals('This is my table.', $table->getComment());
+        return [
+            'comment' => ['comment', 'This is my table.'],
+            'comment with table schema' => ['public.comment', 'This is my table2.'],
+            'comment and table name with quote' => ['comment\'complex', 'This is my table3.'],
+            'comment and table name with quote and table schema' => ['public.comment\'complex', 'This is my table4.'],
+            'table name with dot' => ['"comment.complex"', 'This is my table5.'],
+            'table name with dot and table schema' => ['public."comment.complex"', 'This is my table6.'],
+            'comment with quote1' => ['comment', 'This is \'my" table7.'],
+            'comment with quote2' => ['comment', "This is 'my \" table8."],
+        ];
     }
 }

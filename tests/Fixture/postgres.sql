@@ -23,6 +23,8 @@ DROP TABLE IF EXISTS "animal" CASCADE;
 DROP TABLE IF EXISTS "default_pk" CASCADE;
 DROP TABLE IF EXISTS "document" CASCADE;
 DROP TABLE IF EXISTS "comment" CASCADE;
+DROP TABLE IF EXISTS "comment'complex" CASCADE;
+DROP TABLE IF EXISTS "comment.complex" CASCADE;
 DROP TABLE IF EXISTS "dossier";
 DROP TABLE IF EXISTS "employee";
 DROP TABLE IF EXISTS "department";
@@ -187,6 +189,18 @@ CREATE TABLE "document" (
 );
 
 CREATE TABLE "comment" (
+  id serial primary key,
+  name varchar(255) not null,
+  message text not null
+);
+
+CREATE TABLE "comment'complex" (
+  id serial primary key,
+  name varchar(255) not null,
+  message text not null
+);
+
+CREATE TABLE "comment.complex" (
   id serial primary key,
   name varchar(255) not null,
   message text not null
