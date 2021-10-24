@@ -6,7 +6,6 @@ namespace Yiisoft\Db\Pgsql\Tests;
 
 use Yiisoft\Db\Pgsql\RangeParser;
 use Yiisoft\Db\Pgsql\Schema;
-use DateTime;
 use DateInterval;
 use Yiisoft\Db\Query\Query;
 use Yiisoft\Db\Expression\Expression;
@@ -16,27 +15,27 @@ final class RangeParserTest extends TestCase
     private const RANGES = [
         1 => [
             "int_range" => [1, 10],
-            "bigint_range" => ["2147483647", "2147483650"],
+            "bigint_range" => ['2147483647', '2147483650'],
             "num_range" => [10.5, 20.7],
-            "ts_range" => ["2017-10-20 10:10:00", "2018-10-20 15:10:00"],
-            "ts_tz_range" => ["2018-10-20 10:10:00+00:00", "2019-10-20 15:10:00+00:00"],
-            "date_range" => ["2020-12-01", "2021-01-01"]
+            "ts_range" => ['2017-10-20 10:10:00', '2018-10-20 15:10:00'],
+            "ts_tz_range" => ['2018-10-20 10:10:00+00:00', '2019-10-20 15:10:00+00:00'],
+            "date_range" => ['2020-12-01', '2021-01-01'],
         ],
         2 => [
             "int_range" => [100, null],
-            "bigint_range" => ["4147483647", null],
+            "bigint_range" => ['4147483647', null],
             "num_range" => [30.7, null],
-            "ts_range" => ["2017-10-20 10:10:00", null],
-            "ts_tz_range" => ["2018-10-20 10:10:00+00:00", null],
-            "date_range" => ["2020-12-01", null]
+            "ts_range" => ['2017-10-20 10:10:00', null],
+            "ts_tz_range" => ['2018-10-20 10:10:00+00:00', null],
+            "date_range" => ['2020-12-01', null],
         ],
         3 => [
             "int_range" => [null, 10],
-            "bigint_range" => [null, "2147483650"],
+            "bigint_range" => [null, '2147483650'],
             "num_range" => [null, 20.7],
-            "ts_range" => [null, "2018-10-20 15:10:00"],
-            "ts_tz_range" => [null, "2019-10-20 15:10:00+00:00"],
-            "date_range" => [null, "2021-01-01"]
+            "ts_range" => [null, '2018-10-20 15:10:00'],
+            "ts_tz_range" => [null, '2019-10-20 15:10:00+00:00'],
+            "date_range" => [null, '2021-01-01'],
         ],
     ];
 
@@ -79,15 +78,18 @@ final class RangeParserTest extends TestCase
         foreach ($rows as $row) {
             $id = $row['id'];
 
-
             foreach ($row as $column => $value) {
-                $range =  self::RANGES[$id][$column] ?? null;
+                if ($column === 'id') {
+                    continue;
+                }
+
+                $this->assertIsString($value);
+                $range = self::RANGES[$id][$column];
 
                 switch ($column) {
                     case 'int_range':
                         $parser = new RangeParser(Schema::TYPE_INT_4_RANGE);
                         $result = $parser->parse($value);
-                        $this->assertTrue(is_string($value));
                         $this->assertSame($result, $range);
                         break;
                     case 'bigint_range':
@@ -103,14 +105,12 @@ final class RangeParserTest extends TestCase
                             $max = $range[1] === null ? null : (int) $range[1];
                         }
 
-                        $this->assertTrue(is_string($value));
                         $this->assertSame($result, [$min, $max]);
 
                         break;
                     case 'num_range':
                         $parser = new RangeParser(Schema::TYPE_NUM_RANGE);
                         $result = $parser->parse($value);
-                        $this->assertTrue(is_string($value));
                         $this->assertSame($result, $range);
 
                         break;
@@ -120,7 +120,6 @@ final class RangeParserTest extends TestCase
                         $min = $result[0] === null ? null : $result[0]->format('Y-m-d H:i:s');
                         $max = $result[1] === null ? null : $result[1]->format('Y-m-d H:i:s');
 
-                        $this->assertTrue(is_string($value));
                         $this->assertSame($range, [$min, $max]);
 
                         break;
@@ -130,7 +129,6 @@ final class RangeParserTest extends TestCase
                         $min = $result[0] === null ? null : $result[0]->format('Y-m-d H:i:sP');
                         $max = $result[1] === null ? null : $result[1]->format('Y-m-d H:i:sP');
 
-                        $this->assertTrue(is_string($value));
                         $this->assertSame($range, [$min, $max]);
 
                         break;
@@ -140,7 +138,6 @@ final class RangeParserTest extends TestCase
                         $min = $result[0] === null ? null : $result[0]->format('Y-m-d');
                         $max = $result[1] === null ? null : $result[1]->format('Y-m-d');
 
-                        $this->assertTrue(is_string($value));
                         $this->assertSame($range, [$min, $max]);
 
                         break;
@@ -149,7 +146,7 @@ final class RangeParserTest extends TestCase
         }
     }
 
-    public function testLowerRanges()
+    public function testExcludeLowerRanges()
     {
         $db = $this->getConnection(true);
         $command = $db->createCommand();
@@ -188,9 +185,13 @@ final class RangeParserTest extends TestCase
         foreach ($rows as $row) {
             $id = $row['id'];
 
-
             foreach ($row as $column => $value) {
-                $range =  self::RANGES[$id][$column] ?? null;
+                if ($column === 'id') {
+                    continue;
+                }
+
+                $this->assertIsString($value);
+                $range = self::RANGES[$id][$column];
 
                 switch ($column) {
                     case 'int_range':
@@ -219,7 +220,6 @@ final class RangeParserTest extends TestCase
                     case 'num_range':
                         $parser = new RangeParser(Schema::TYPE_NUM_RANGE);
                         $result = $parser->parse($value);
-                        $this->assertTrue(is_string($value));
                         $this->assertSame($result, $range);
 
                         break;
@@ -256,7 +256,7 @@ final class RangeParserTest extends TestCase
         }
     }
 
-    public function testUpperRanges()
+    public function testExcludeUpperRanges()
     {
         $db = $this->getConnection(true);
         $command = $db->createCommand();
@@ -295,9 +295,13 @@ final class RangeParserTest extends TestCase
         foreach ($rows as $row) {
             $id = $row['id'];
 
-
             foreach ($row as $column => $value) {
-                $range =  self::RANGES[$id][$column] ?? null;
+                if ($column === 'id') {
+                    continue;
+                }
+
+                $this->assertIsString($value);
+                $range = self::RANGES[$id][$column];
 
                 switch ($column) {
                     case 'int_range':
@@ -326,7 +330,6 @@ final class RangeParserTest extends TestCase
                     case 'num_range':
                         $parser = new RangeParser(Schema::TYPE_NUM_RANGE);
                         $result = $parser->parse($value);
-                        $this->assertTrue(is_string($value));
                         $this->assertSame($result, $range);
 
                         break;

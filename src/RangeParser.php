@@ -7,7 +7,6 @@ namespace Yiisoft\Db\Pgsql;
 use DateInterval;
 use DateTime;
 use InvalidArgumentException;
-use RuntimeException;
 use function preg_match;
 
 final class RangeParser
@@ -91,13 +90,11 @@ final class RangeParser
 
     private static function parseBigIntRange(?string $lower, ?string $upper, bool $includeLower, bool $includeUpper): array
     {
-        if (PHP_INT_SIZE === 4) {
-            $min = $lower === null ? null : (float) $lower;
-            $max = $upper === null ? null : (float) $upper;
-        } else {
-            $min = $lower === null ? null : (int) $lower;
-            $max = $upper === null ? null : (int) $upper;
+        if (PHP_INT_SIZE === 8) {
+            return self::parseIntRange($lower, $upper, $includeLower, $includeUpper);
         }
+
+        [$min, $max] = self::parseNumRange($lower, $upper, $includeLower, $includeUpper);
 
         if ($min !== null && $includeLower === false) {
             $min += 1;
