@@ -89,6 +89,12 @@ final class Schema extends AbstractSchema implements ConstraintFinderInterface
     use ViewFinderTrait;
 
     public const TYPE_JSONB = 'jsonb';
+    public const TYPE_INT_4_RANGE = 'int4range';
+    public const TYPE_INT_8_RANGE = 'int8range';
+    public const TYPE_NUM_RANGE = 'numrange';
+    public const TYPE_TS_RANGE = 'tsrange';
+    public const TYPE_TS_TZ_RANGE = 'tstzrange';
+    public const TYPE_DATE_RANGE = 'daterange';
 
     /**
      * @var array<array-key, string> mapping from physical column types (keys) to abstract column types (values).
@@ -159,6 +165,12 @@ final class Schema extends AbstractSchema implements ConstraintFinderInterface
         'json' => self::TYPE_JSON,
         'jsonb' => self::TYPE_JSON,
         'xml' => self::TYPE_STRING,
+        'int4range' => self::TYPE_INT_4_RANGE,
+        'int8range' => self::TYPE_INT_8_RANGE,
+        'numrange' => self::TYPE_NUM_RANGE,
+        'tsrange' => self::TYPE_TS_RANGE,
+        'tstzrange' => self::TYPE_TS_TZ_RANGE,
+        'daterange' => self::TYPE_DATE_RANGE,
     ];
 
     /**

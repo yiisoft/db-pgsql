@@ -76,6 +76,10 @@ final class ColumnSchema extends AbstractColumnSchema
      */
     public function phpTypecast($value)
     {
+        if (RangeParser::isAllowedType($this->getType())) {
+            return $this->getRangeParser()->parse($value);
+        }
+
         if ($this->dimension > 0) {
             if (!is_array($value)) {
                 $value = $this->getArrayParser()->parse($value);
@@ -139,6 +143,16 @@ final class ColumnSchema extends AbstractColumnSchema
     protected function getArrayParser(): ArrayParser
     {
         return new ArrayParser();
+    }
+
+    /**
+     * Creates instance of RangeParser.
+     *
+     * @return RangeParser
+     */
+    protected function getRangeParser(): RangeParser
+    {
+        return new RangeParser($this->getType());
     }
 
     /**
