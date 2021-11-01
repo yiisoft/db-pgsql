@@ -429,10 +429,10 @@ CREATE TABLE "T_upsert_1"
 CREATE TABLE "ranges"
 (
     "id" INT2 NOT NULL PRIMARY KEY,
-    "int_range" int4range NOT NULL,
-    "bigint_range" int8range NOT NULL,
-    "num_range" numrange NOT NULL,
-    "ts_range" tsrange NOT NULL,
-    "ts_tz_range" tstzrange NOT NULL,
-    "date_range" daterange NOT NULL
+    "int_range" int4range,
+    "bigint_range" int8range,
+    "num_range" numrange,
+    "ts_range" tsrange,
+    "ts_tz_range" tstzrange,
+    "date_range" daterange
 );
