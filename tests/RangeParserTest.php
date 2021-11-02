@@ -44,7 +44,7 @@ final class RangeParserTest extends TestCase
             'ts_range' => [null, '2018-10-20 15:10:00'],
             'ts_tz_range' => [null, '2019-10-20 15:10:00+00:00'],
             'date_range' => [null, '2021-01-01'],
-        ]
+        ],
     ];
 
     private function getData(int $id, bool $exludeLower = false, bool $excludeUpper = false, string ...$columns): array
