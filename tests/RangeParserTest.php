@@ -6,7 +6,6 @@ namespace Yiisoft\Db\Pgsql\Tests;
 
 use Yiisoft\Db\Pgsql\RangeParser;
 use Yiisoft\Db\Pgsql\Schema;
-use DateInterval;
 use DateTime;
 use Yiisoft\Db\Query\Query;
 use Yiisoft\Db\Expression\Expression;
@@ -32,6 +31,7 @@ final class RangeParserTest extends TestCase
      * @param string $field
      * @param string $brackets
      * @param array $inserted
+
      * @return mixed[]
      */
     public function insertAndGetResult(string $field, string $type, string $brackets, array $inserted): array
@@ -45,7 +45,7 @@ final class RangeParserTest extends TestCase
                 $field => new Expression(
                     $type . "(:min, :max, '" . $brackets . "')",
                     [':min' => $inserted[0], ':max' => $inserted[1]]
-                )
+                ),
             ]
         )->execute();
 
