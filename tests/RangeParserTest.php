@@ -31,7 +31,7 @@ final class RangeParserTest extends TestCase
      * @param string $field
      * @param string $brackets
      * @param array $inserted
-
+     *
      * @return mixed[]
      */
     public function insertAndGetResult(string $field, string $type, string $brackets, array $inserted): array
