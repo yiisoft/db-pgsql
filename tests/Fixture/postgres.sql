@@ -428,7 +428,7 @@ CREATE TABLE "T_upsert_1"
 
 CREATE TABLE "ranges"
 (
-    "id" INT2 NOT NULL PRIMARY KEY,
+    "id" SERIAL NOT NULL PRIMARY KEY,
     "int_range" int4range,
     "bigint_range" int8range,
     "num_range" numrange,
