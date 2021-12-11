@@ -6,336 +6,181 @@ namespace Yiisoft\Db\Pgsql\Tests;
 
 use Yiisoft\Db\Pgsql\RangeParser;
 use Yiisoft\Db\Pgsql\Schema;
-use DateInterval;
+use DateTime;
 use Yiisoft\Db\Query\Query;
 use Yiisoft\Db\Expression\Expression;
 
+/**
+ * @group rangeParser
+ */
 final class RangeParserTest extends TestCase
 {
-    private const RANGES = [
-        1 => [
-            'int_range' => [1, 10],
-            'bigint_range' => ['2147483647', '2147483650'],
-            'num_range' => [10.5, 20.7],
-            'ts_range' => ['2017-10-20 10:10:00', '2018-10-20 15:10:00'],
-            'ts_tz_range' => ['2018-10-20 10:10:00+00:00', '2019-10-20 15:10:00+00:00'],
-            'date_range' => ['2020-12-01', '2021-01-01'],
-        ],
-        2 => [
-            'int_range' => [100, null],
-            'bigint_range' => ['4147483647', null],
-            'num_range' => [30.7, null],
-            'ts_range' => ['2017-10-20 10:10:00', null],
-            'ts_tz_range' => ['2018-10-20 10:10:00+00:00', null],
-            'date_range' => ['2020-12-01', null],
-        ],
-        3 => [
-            'int_range' => [null, 10],
-            'bigint_range' => [null, '2147483650'],
-            'num_range' => [null, 20.7],
-            'ts_range' => [null, '2018-10-20 15:10:00'],
-            'ts_tz_range' => [null, '2019-10-20 15:10:00+00:00'],
-            'date_range' => [null, '2021-01-01'],
-        ],
-        4 => [
-            'int_range' => [-100, 10],
-            'bigint_range' => ['-2147483650', '2147483650'],
-            'num_range' => [-13.2, 20.7],
-            'ts_range' => [null, '2018-10-20 15:10:00'],
-            'ts_tz_range' => [null, '2019-10-20 15:10:00+00:00'],
-            'date_range' => [null, '2021-01-01'],
-        ],
+    private const TABLE = '{{ranges}}';
+
+    private const FIELDS = [
+        Schema::TYPE_INT_4_RANGE => 'int_range',
+        Schema::TYPE_INT_8_RANGE => 'bigint_range',
+        Schema::TYPE_NUM_RANGE => 'num_range',
+        Schema::TYPE_DATE_RANGE => 'date_range',
+        Schema::TYPE_TS_RANGE => 'ts_range',
+        Schema::TYPE_TS_TZ_RANGE => 'ts_tz_range',
     ];
 
-    private function getData(int $id, bool $exludeLower = false, bool $excludeUpper = false, string ...$columns): array
+    /**
+     * @param string $type
+     * @param string $field
+     * @param string $brackets
+     * @param array $inserted
+     *
+     * @return mixed[]
+     */
+    public function insertAndGetResult(string $field, string $type, string $brackets, array $inserted): array
     {
-        $data = ['id' => $id];
+        $db = $this->getConnection();
+        $db->createCommand()->delete(self::TABLE)->execute();
 
-        foreach ($columns as $column) {
-            $range = self::RANGES[$id][$column];
+        $db->createCommand()->insert(
+            self::TABLE,
+            [
+                $field => new Expression(
+                    $type . "(:min, :max, '" . $brackets . "')",
+                    [':min' => $inserted[0], ':max' => $inserted[1]]
+                ),
+            ]
+        )->execute();
 
-            switch ($column) {
-                case 'int_range':
-                    $expression = Schema::TYPE_INT_4_RANGE;
-                    break;
-                case 'bigint_range':
-                    $expression = Schema::TYPE_INT_8_RANGE;
-                    break;
-                case 'num_range':
-                    $expression = Schema::TYPE_NUM_RANGE;
-                    break;
-                case 'date_range':
-                    $expression = Schema::TYPE_DATE_RANGE;
-                    break;
-                case 'ts_range':
-                    $expression = Schema::TYPE_TS_RANGE;
-                    break;
-                case 'ts_tz_range':
-                    $expression = Schema::TYPE_TS_TZ_RANGE;
-                    break;
-            }
-
-            $expression .= '(';
-            $expression .= ':min_' . $column . ',';
-            $expression .= ':max_' . $column . ',';
-            $expression .= "'";
-            $expression .= $exludeLower ? '(' : '[';
-            $expression .= $excludeUpper ? ')' : ']';
-            $expression .= "'";
-            $expression .= ')';
-
-            $data[$column] = new Expression($expression, [':min_' . $column => $range[0], ':max_' . $column => $range[1]]);
-        }
-
-        return $data;
+        return (new Query($db))->select([$field])->from(self::TABLE)->one();
     }
 
-    public function testIntRanges(): void
+    /**
+     * @return array
+     */
+    public function rangeNumberProvider(): array
     {
-        $ids = array_keys(self::RANGES);
-        $db = $this->getConnection(true);
-        $command = $db->createCommand();
+        return [
+            // ::int4range
+            [ Schema::TYPE_INT_4_RANGE, 'brackets' => '[]', 'inserted' => [0, 0], 'expected' => [0, 0], ],
+            [ Schema::TYPE_INT_4_RANGE, 'brackets' => '[]', 'inserted' => [1, 10], 'expected' => [1, 10], ],
+            [ Schema::TYPE_INT_4_RANGE, 'brackets' => '[]', 'inserted' => [null, 10], 'expected' => [null, 10], ],
+            [ Schema::TYPE_INT_4_RANGE, 'brackets' => '[]', 'inserted' => [10, null], 'expected' => [10, null], ],
+            [ Schema::TYPE_INT_4_RANGE, 'brackets' => '[]', 'inserted' => [-100, 10], 'expected' => [-100, 10], ],
 
-        foreach ($ids as $id) {
-            $data = $this->getData($id, false, false, 'int_range', 'bigint_range');
-            $command->insert('ranges', $data)->execute();
-        }
+            [ Schema::TYPE_INT_4_RANGE, 'brackets' => '[)', 'inserted' => [1, 10], 'expected' => [1, 9], ],
+            [ Schema::TYPE_INT_4_RANGE, 'brackets' => '[)', 'inserted' => [null, 10], 'expected' => [null, 9], ],
+            [ Schema::TYPE_INT_4_RANGE, 'brackets' => '[)', 'inserted' => [10, null], 'expected' => [10, null], ],
+            [ Schema::TYPE_INT_4_RANGE, 'brackets' => '[)', 'inserted' => [-100, 10], 'expected' => [-100, 9], ],
 
-        $rows = (new Query($db))->select(['id', 'int_range', 'bigint_range'])->from('ranges')->all();
-        $intParser = new RangeParser(Schema::TYPE_INT_4_RANGE);
-        $bigIntParser = new RangeParser(Schema::TYPE_INT_8_RANGE);
+            [ Schema::TYPE_INT_4_RANGE, 'brackets' => '(]', 'inserted' => [1, 10], 'expected' => [2, 10], ],
+            [ Schema::TYPE_INT_4_RANGE, 'brackets' => '(]', 'inserted' => [null, 10], 'expected' => [null, 10], ],
+            [ Schema::TYPE_INT_4_RANGE, 'brackets' => '(]', 'inserted' => [10, null], 'expected' => [11, null], ],
+            [ Schema::TYPE_INT_4_RANGE, 'brackets' => '(]', 'inserted' => [-100, 10], 'expected' => [-99, 10], ],
 
-        foreach ($rows as $row) {
-            $range = self::RANGES[$row['id']];
-            $this->assertIsString($row['int_range']);
-            $this->assertIsString($row['bigint_range']);
-            $this->assertSame($intParser->parse($row['int_range']), $range['int_range']);
+            // ::int8range
+            [ Schema::TYPE_INT_8_RANGE, '[]', ['2147483647', '2147483650'], ['2147483647', '2147483650'], ],
+            [ Schema::TYPE_INT_8_RANGE, '[]', ['4147483647', null], ['4147483647', null], ],
+            [ Schema::TYPE_INT_8_RANGE, '[]', [null, '2147483650'], [null, '2147483650'], ],
+            [ Schema::TYPE_INT_8_RANGE, '[]', ['-2147483650', '2147483650'], ['-2147483650', '2147483650'], ],
 
-            if (PHP_INT_SIZE === 8) {
-                $map = array_map(fn ($value) => $value ? (int) $value : null, $range['bigint_range']);
-            } else {
-                $map = array_map(fn ($value) => $value ? (float) $value : null, $range['bigint_range']);
-            }
+            [ Schema::TYPE_INT_8_RANGE, '[)', ['2147483647', '2147483650'], ['2147483647', '2147483649'], ],
+            [ Schema::TYPE_INT_8_RANGE, '[)', ['4147483647', null], ['4147483647', null], ],
+            [ Schema::TYPE_INT_8_RANGE, '[)', [null, '2147483650'], [null, '2147483649'], ],
+            [ Schema::TYPE_INT_8_RANGE, '[)', ['-2147483650', '2147483650'], ['-2147483650', '2147483649'], ],
 
-            $this->assertSame($intParser->parse($row['bigint_range']), $map);
-        }
+            [ Schema::TYPE_INT_8_RANGE, '(]', ['2147483647', '2147483650'], ['2147483648', '2147483650'], ],
+            [ Schema::TYPE_INT_8_RANGE, '(]', ['4147483647', null], ['4147483648', null], ],
+            [ Schema::TYPE_INT_8_RANGE, '(]', [null, '2147483650'], [null, '2147483650'], ],
+            [ Schema::TYPE_INT_8_RANGE, '(]', ['-2147483650', '2147483650'], ['-2147483649', '2147483650'], ],
+
+            // ::numrange
+            [ Schema::TYPE_NUM_RANGE, 'brackets' => '[]', 'inserted' => ['0.00', '0.00'], 'expected' => [0.0, 0.0], ],
+            [ Schema::TYPE_NUM_RANGE, '[]', [10.5, 20.7], [10.5, 20.7], ],
+            [ Schema::TYPE_NUM_RANGE, '[]', [30.7, null], [30.7, null], ],
+            [ Schema::TYPE_NUM_RANGE, '[]', [null, 20.7], [null, 20.7], ],
+            [ Schema::TYPE_NUM_RANGE, '[]', [-13.2, 20.7], [-13.2, 20.7], ],
+
+            [ Schema::TYPE_NUM_RANGE, '[)', [10.5, 20.7], [10.5, 20.7], ],
+            [ Schema::TYPE_NUM_RANGE, '(]', [10.5, 20.7], [10.5, 20.7], ],
+            [ Schema::TYPE_NUM_RANGE, '()', [10.5, 20.7], [10.5, 20.7], ],
+
+            // empty values
+            [ Schema::TYPE_INT_4_RANGE, 'brackets' => '()', 'inserted' => [0, 0], 'expected' => null, ],
+            [ Schema::TYPE_NUM_RANGE, 'brackets' => '()', 'inserted' => [10, 10], 'expected' => null, ],
+        ];
     }
 
-    public function testIntRangesWoLower(): void
+    /**
+     * @dataProvider rangeNumberProvider
+     */
+    public function testNumberRanges(string $type, string $brackets, array $inserted, ?array $expected): void
     {
-        $ids = array_keys(self::RANGES);
-        $db = $this->getConnection(true);
-        $command = $db->createCommand();
+        $field = self::FIELDS[$type];
+        $row = $this->insertAndGetResult($field, $type, $brackets, $inserted);
 
-        foreach ($ids as $id) {
-            $data = $this->getData($id, true, false, 'int_range', 'bigint_range');
-            $command->insert('ranges', $data)->execute();
-        }
+        $parser = new RangeParser($type);
+        $result = $parser->parse($row[$field]);
 
-        $rows = (new Query($db))->select(['id', 'int_range', 'bigint_range'])->from('ranges')->all();
-        $intParser = new RangeParser(Schema::TYPE_INT_4_RANGE);
-        $bigIntParser = new RangeParser(Schema::TYPE_INT_8_RANGE);
+        $this->assertEquals($result, $expected);
 
-        foreach ($rows as $row) {
-            $range = self::RANGES[$row['id']];
-            $this->assertIsString($row['int_range']);
-            $this->assertIsString($row['bigint_range']);
-            $min = $range['int_range'][0] === null ? null : $range['int_range'][0] + 1;
-            $max = $range['int_range'][1] === null ? null : $range['int_range'][1];
-            $this->assertSame($intParser->parse($row['int_range']), [$min, $max]);
-
-            if (PHP_INT_SIZE === 8) {
-                $map = array_map(fn ($value) => $value ? (int) $value : null, $range['bigint_range']);
-            } else {
-                $map = array_map(fn ($value) => $value ? (float) $value : null, $range['bigint_range']);
-            }
-
-            $min = $map[0] === null ? null : $map[0] + 1;
-            $max = $map[1] === null ? null : $map[1];
-
-            $this->assertSame($intParser->parse($row['bigint_range']), [$min, $max]);
-        }
+        $autoCastParser = new RangeParser();
+        $result = $autoCastParser->parse($row[$field]);
+        $this->assertEquals($result, $expected);
     }
 
-    public function testIntRangesWoUpper(): void
+    /**
+     * @return array[]
+     */
+    public function rangeDateProvider(): array
     {
-        $ids = array_keys(self::RANGES);
-        $db = $this->getConnection(true);
-        $command = $db->createCommand();
+        return [
+            // ::daterange
+            [ Schema::TYPE_DATE_RANGE, '[]', ['2020-12-01', '2021-01-01'], ['2020-12-01', '2021-01-01'], 'Y-m-d', ],
+            [ Schema::TYPE_DATE_RANGE, '[]', ['2020-12-01', null], ['2020-12-01', null], 'Y-m-d', ],
+            [ Schema::TYPE_DATE_RANGE, '[]', [null, '2020-12-01'], [null, '2020-12-01'], 'Y-m-d', ],
 
-        foreach ($ids as $id) {
-            $data = $this->getData($id, false, true, 'int_range', 'bigint_range');
-            $command->insert('ranges', $data)->execute();
-        }
+            [ Schema::TYPE_DATE_RANGE, '[)', ['2020-12-01', '2021-01-01'], ['2020-12-01', '2020-12-31'], 'Y-m-d', ],
+            [ Schema::TYPE_DATE_RANGE, '[)', ['2020-12-01', null], ['2020-12-01', null], 'Y-m-d', ],
+            [ Schema::TYPE_DATE_RANGE, '[)', [null, '2020-12-01'], [null, '2020-11-30'], 'Y-m-d',],
 
-        $rows = (new Query($db))->select(['id', 'int_range', 'bigint_range'])->from('ranges')->all();
-        $intParser = new RangeParser(Schema::TYPE_INT_4_RANGE);
-        $bigIntParser = new RangeParser(Schema::TYPE_INT_8_RANGE);
+            [ Schema::TYPE_DATE_RANGE, '(]', ['2020-12-01', '2021-01-01'], ['2020-12-02', '2021-01-01'], 'Y-m-d', ],
+            [ Schema::TYPE_DATE_RANGE, '(]', ['2020-12-01', null], ['2020-12-02', null], 'Y-m-d', ],
+            [ Schema::TYPE_DATE_RANGE, '(]', [null, '2020-12-01'], [null, '2020-12-01'], 'Y-m-d', ],
 
-        foreach ($rows as $row) {
-            $range = self::RANGES[$row['id']];
-            $this->assertIsString($row['int_range']);
-            $this->assertIsString($row['bigint_range']);
-            $min = $range['int_range'][0] === null ? null : $range['int_range'][0];
-            $max = $range['int_range'][1] === null ? null : $range['int_range'][1] - 1;
-            $this->assertSame($intParser->parse($row['int_range']), [$min, $max]);
+            // ::tsrange
+            [ Schema::TYPE_TS_RANGE, '[]', ['2017-10-20 10:10:00', '2018-10-20 15:10:00'], ['2017-10-20 10:10:00', '2018-10-20 15:10:00'], 'Y-m-d H:i:s', ],
+            [ Schema::TYPE_TS_RANGE, '[]', ['2017-10-20 10:10:00', null], ['2017-10-20 10:10:00', null], 'Y-m-d H:i:s', ],
+            [ Schema::TYPE_TS_RANGE, '[]', [null, '2018-10-20 15:10:00'], [null, '2018-10-20 15:10:00'], 'Y-m-d H:i:s', ],
 
-            if (PHP_INT_SIZE === 8) {
-                $map = array_map(fn ($value) => $value ? (int) $value : null, $range['bigint_range']);
-            } else {
-                $map = array_map(fn ($value) => $value ? (float) $value : null, $range['bigint_range']);
-            }
+            [ Schema::TYPE_TS_RANGE, '[)', ['2017-10-20 10:10:00', '2018-10-20 15:10:00'], ['2017-10-20 10:10:00', '2018-10-20 15:10:00'], 'Y-m-d H:i:s', ],
+            [ Schema::TYPE_TS_RANGE, '(]', ['2017-10-20 10:10:00', '2018-10-20 15:10:00'], ['2017-10-20 10:10:00', '2018-10-20 15:10:00'], 'Y-m-d H:i:s', ],
+            [ Schema::TYPE_TS_RANGE, '()', ['2017-10-20 10:10:00', '2018-10-20 15:10:00'], ['2017-10-20 10:10:00', '2018-10-20 15:10:00'], 'Y-m-d H:i:s', ],
+            [ Schema::TYPE_TS_RANGE, '()', ['2017-10-20 10:10:00', '2018-10-20 15:10:00'], ['2017-10-20 10:10:00', '2018-10-20 15:10:00'], 'Y-m-d H:i:s', ],
 
-            $min = $map[0] === null ? null : $map[0];
-            $max = $map[1] === null ? null : $map[1] - 1;
+            // ::tstzrange
+            [ Schema::TYPE_TS_TZ_RANGE, '[]', ['2018-10-20 10:10:00+00:00', '2019-10-20 15:10:00+00:00'], ['2018-10-20 10:10:00+00:00', '2019-10-20 15:10:00+00:00'], 'Y-m-d H:i:sP', ],
+            [ Schema::TYPE_TS_TZ_RANGE, '[]', ['2018-10-20 10:10:00+00:00', null], ['2018-10-20 10:10:00+00:00', null], 'Y-m-d H:i:sP', ],
+            [ Schema::TYPE_TS_TZ_RANGE, '[]', [null, '2019-10-20 15:10:00+00:00'], [null, '2019-10-20 15:10:00+00:00'], 'Y-m-d H:i:sP', ],
 
-            $this->assertSame($intParser->parse($row['bigint_range']), [$min, $max]);
-        }
+            [ Schema::TYPE_TS_TZ_RANGE, '(]', ['2018-10-20 10:10:00+00:00', '2019-10-20 15:10:00+00:00'], ['2018-10-20 10:10:00+00:00', '2019-10-20 15:10:00+00:00'], 'Y-m-d H:i:sP', ],
+            [ Schema::TYPE_TS_TZ_RANGE, '[)', ['2018-10-20 10:10:00+00:00', '2019-10-20 15:10:00+00:00'], ['2018-10-20 10:10:00+00:00', '2019-10-20 15:10:00+00:00'], 'Y-m-d H:i:sP', ],
+            [ Schema::TYPE_TS_TZ_RANGE, '()', ['2018-10-20 10:10:00+00:00', '2019-10-20 15:10:00+00:00'], ['2018-10-20 10:10:00+00:00', '2019-10-20 15:10:00+00:00'], 'Y-m-d H:i:sP', ],
+        ];
     }
 
-    public function testDateRange(): void
+    /**
+     * @dataProvider rangeDateProvider
+     */
+    public function testDateRanges(string $type, string $brackets, array $inserted, array $expected, string $format): void
     {
-        $ids = array_keys(self::RANGES);
-        $db = $this->getConnection(true);
-        $command = $db->createCommand();
+        $field = self::FIELDS[$type];
+        $row = $this->insertAndGetResult($field, $type, $brackets, $inserted);
 
-        foreach ($ids as $id) {
-            $data = $this->getData($id, false, false, 'date_range', );
-            $command->insert('ranges', $data)->execute();
-        }
+        $parser = new RangeParser($type);
+        $result = $parser->parse($row[$field]);
 
-        $rows = (new Query($db))->select(['id', 'date_range'])->from('ranges')->all();
-        $parser = new RangeParser(Schema::TYPE_DATE_RANGE);
-
-        foreach ($rows as $row) {
-            $range = self::RANGES[$row['id']]['date_range'];
-            $result = $parser->parse($row['date_range']);
-            $min = $result[0] === null ? null : $result[0]->format('Y-m-d');
-            $max = $result[1] === null ? null : $result[1]->format('Y-m-d');
-
-            $this->assertIsString($row['date_range']);
-            $this->assertSame($range, [$min, $max]);
-        }
-    }
-
-    public function testDateRangeWoLower(): void
-    {
-        $ids = array_keys(self::RANGES);
-        $db = $this->getConnection(true);
-        $command = $db->createCommand();
-
-        foreach ($ids as $id) {
-            $data = $this->getData($id, true, false, 'date_range', );
-            $command->insert('ranges', $data)->execute();
-        }
-
-        $rows = (new Query($db))->select(['id', 'date_range'])->from('ranges')->all();
-        $parser = new RangeParser(Schema::TYPE_DATE_RANGE);
-        $interval = new DateInterval('P1D');
-
-        foreach ($rows as $row) {
-            $range = self::RANGES[$row['id']]['date_range'];
-            $result = $parser->parse($row['date_range']);
-            $min = $result[0] === null ? null : $result[0]->sub($interval)->format('Y-m-d');
-            $max = $result[1] === null ? null : $result[1]->format('Y-m-d');
-
-            $this->assertIsString($row['date_range']);
-            $this->assertSame($range, [$min, $max]);
-        }
-    }
-
-    public function testDateRangeWoUpper(): void
-    {
-        $ids = array_keys(self::RANGES);
-        $db = $this->getConnection(true);
-        $command = $db->createCommand();
-
-        foreach ($ids as $id) {
-            $data = $this->getData($id, false, true, 'date_range', );
-            $command->insert('ranges', $data)->execute();
-        }
-
-        $rows = (new Query($db))->select(['id', 'date_range'])->from('ranges')->all();
-        $parser = new RangeParser(Schema::TYPE_DATE_RANGE);
-        $interval = new DateInterval('P1D');
-
-        foreach ($rows as $row) {
-            $range = self::RANGES[$row['id']]['date_range'];
-            $result = $parser->parse($row['date_range']);
-            $min = $result[0] === null ? null : $result[0]->format('Y-m-d');
-            $max = $result[1] === null ? null : $result[1]->add($interval)->format('Y-m-d');
-
-            $this->assertIsString($row['date_range']);
-            $this->assertSame($range, [$min, $max]);
-        }
-    }
-
-    public function testNumRange(): void
-    {
-        $ids = array_keys(self::RANGES);
-        $db = $this->getConnection(true);
-        $command = $db->createCommand();
-
-        foreach ($ids as $id) {
-            $data = $this->getData($id, false, false, 'num_range');
-            $command->insert('ranges', $data)->execute();
-        }
-
-        $rows = (new Query($db))->select(['id', 'num_range'])->from('ranges')->all();
-        $parser = new RangeParser(Schema::TYPE_NUM_RANGE);
-
-        foreach ($rows as $row) {
-            $range = self::RANGES[$row['id']];
-            $this->assertIsString($row['num_range']);
-            $this->assertSame($parser->parse($row['num_range']), $range['num_range']);
-        }
-    }
-
-    public function testTsRange(): void
-    {
-        $ids = array_keys(self::RANGES);
-        $db = $this->getConnection(true);
-        $command = $db->createCommand();
-
-        foreach ($ids as $id) {
-            $data = $this->getData($id, false, false, 'ts_range');
-            $command->insert('ranges', $data)->execute();
-        }
-
-        $rows = (new Query($db))->select(['id', 'ts_range'])->from('ranges')->all();
-        $parser = new RangeParser(Schema::TYPE_TS_RANGE);
-
-        foreach ($rows as $row) {
-            $range = self::RANGES[$row['id']];
-            $result = $parser->parse($row['ts_range']);
-            $min = $result[0] === null ? null : $result[0]->format('Y-m-d H:i:s');
-            $max = $result[1] === null ? null : $result[1]->format('Y-m-d H:i:s');
-            $this->assertIsString($row['ts_range']);
-            $this->assertSame([$min, $max], $range['ts_range']);
-        }
-    }
-
-    public function testTsTzRange(): void
-    {
-        $ids = array_keys(self::RANGES);
-        $db = $this->getConnection(true);
-        $command = $db->createCommand();
-
-        foreach ($ids as $id) {
-            $data = $this->getData($id, false, false, 'ts_tz_range');
-            $command->insert('ranges', $data)->execute();
-        }
-
-        $rows = (new Query($db))->select(['id', 'ts_tz_range'])->from('ranges')->all();
-        $parser = new RangeParser(Schema::TYPE_TS_TZ_RANGE);
-
-        foreach ($rows as $row) {
-            $range = self::RANGES[$row['id']];
-            $result = $parser->parse($row['ts_tz_range']);
-            $min = $result[0] === null ? null : $result[0]->format('Y-m-d H:i:sP');
-            $max = $result[1] === null ? null : $result[1]->format('Y-m-d H:i:sP');
-            $this->assertIsString($row['ts_tz_range']);
-            $this->assertSame([$min, $max], $range['ts_tz_range']);
-        }
+        $this->assertIsString($row[$field]);
+        $this->assertEquals($expected, [
+            $result[0] instanceof DateTime ? $result[0]->format($format) : null,
+            $result[1] instanceof DateTime ? $result[1]->format($format) : null,
+        ]);
     }
 }

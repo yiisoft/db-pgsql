@@ -33,9 +33,51 @@ final class RangeParser
         }
     }
 
+    public function withType(string $type): self
+    {
+        if (!self::isAllowedType($type)) {
+            throw new InvalidArgumentException('Unsupported range type "' . $type . '"');
+        }
+
+        $new = clone $this;
+        $new->type = $type;
+
+        return $new;
+    }
+
+    public function asInt(): self
+    {
+        return $this->withType(Schema::TYPE_INT_4_RANGE);
+    }
+
+    public function asBigInt(): self
+    {
+        return $this->withType(Schema::TYPE_INT_8_RANGE);
+    }
+
+    public function asNumeric(): self
+    {
+        return $this->withType(Schema::TYPE_NUM_RANGE);
+    }
+
+    public function asDate(): self
+    {
+        return $this->withType(Schema::TYPE_DATE_RANGE);
+    }
+
+    public function asTimestamp(): self
+    {
+        return $this->withType(Schema::TYPE_TS_RANGE);
+    }
+
+    public function asTimestampTz(): self
+    {
+        return $this->withType(Schema::TYPE_TS_TZ_RANGE);
+    }
+
     public function parse(?string $value): ?array
     {
-        if ($value === null) {
+        if ($value === null || $value === 'empty') {
             return null;
         }
 
@@ -60,13 +102,13 @@ final class RangeParser
             case Schema::TYPE_INT_8_RANGE:
                 return self::parseBigIntRange($lower, $upper, $includeLower, $includeUpper);
             case Schema::TYPE_NUM_RANGE:
-                return self::parseNumRange($lower, $upper, $includeLower, $includeUpper);
+                return self::parseNumRange($lower, $upper);
             case Schema::TYPE_DATE_RANGE:
                 return self::parseDateRange($lower, $upper, $includeLower, $includeUpper);
             case Schema::TYPE_TS_RANGE:
-                return self::parseTsRange($lower, $upper, $includeLower, $includeUpper);
+                return self::parseTsRange($lower, $upper);
             case Schema::TYPE_TS_TZ_RANGE:
-                return self::parseTsTzRange($lower, $upper, $includeLower, $includeUpper);
+                return self::parseTsTzRange($lower, $upper);
             default:
                 return null;
         }
@@ -107,7 +149,7 @@ final class RangeParser
         return [$min, $max];
     }
 
-    private static function parseNumRange(?string $lower, ?string $upper, bool $includeLower, bool $includeUpper): array
+    private static function parseNumRange(?string $lower, ?string $upper): array
     {
         $min = $lower === null ? null : (float) $lower;
         $max = $upper === null ? null : (float) $upper;
@@ -132,7 +174,7 @@ final class RangeParser
         return [$min, $max];
     }
 
-    private static function parseTsRange(?string $lower, ?string $upper, bool $includeLower, bool $includeUpper): array
+    private static function parseTsRange(?string $lower, ?string $upper): array
     {
         $min = $lower ? DateTime::createFromFormat('Y-m-d H:i:s', $lower) : null;
         $max = $upper ? DateTime::createFromFormat('Y-m-d H:i:s', $upper) : null;
@@ -140,7 +182,7 @@ final class RangeParser
         return [$min, $max];
     }
 
-    private static function parseTsTzRange(?string $lower, ?string $upper, bool $includeLower, bool $includeUpper): array
+    private static function parseTsTzRange(?string $lower, ?string $upper): array
     {
         $min = $lower ? DateTime::createFromFormat('Y-m-d H:i:sP', $lower) : null;
         $max = $upper ? DateTime::createFromFormat('Y-m-d H:i:sP', $upper) : null;
@@ -164,23 +206,23 @@ final class RangeParser
     private static function parseType(?string $lower, ?string $upper): ?string
     {
         if ($lower !== null && $upper !== null) {
-            if (filter_var($lower, FILTER_VALIDATE_INT) && filter_var($upper, FILTER_VALIDATE_INT)) {
+            if (filter_var($lower, FILTER_VALIDATE_INT) !== false && filter_var($upper, FILTER_VALIDATE_INT) !== false) {
                 return Schema::TYPE_INT_4_RANGE;
             }
 
-            if (filter_var($lower, FILTER_VALIDATE_FLOAT) && filter_var($upper, FILTER_VALIDATE_FLOAT)) {
+            if (filter_var($lower, FILTER_VALIDATE_FLOAT) !== false && filter_var($upper, FILTER_VALIDATE_FLOAT) !== false) {
                 return Schema::TYPE_NUM_RANGE;
             }
         }
 
         $value = $lower ?? $upper;
 
-        if (filter_var($value, FILTER_VALIDATE_INT)) {
+        if (filter_var($value, FILTER_VALIDATE_INT) !== false) {
             return Schema::TYPE_INT_4_RANGE;
         }
 
 
-        if (filter_var($value, FILTER_VALIDATE_FLOAT)) {
+        if (filter_var($value, FILTER_VALIDATE_FLOAT) !== false) {
             return Schema::TYPE_NUM_RANGE;
         }
 
