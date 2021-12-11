@@ -136,7 +136,7 @@ final class RangeParser
             return self::parseIntRange($lower, $upper, $includeLower, $includeUpper);
         }
 
-        [$min, $max] = self::parseNumRange($lower, $upper, $includeLower, $includeUpper);
+        [$min, $max] = self::parseNumRange($lower, $upper);
 
         if ($min !== null && $includeLower === false) {
             $min += 1;
