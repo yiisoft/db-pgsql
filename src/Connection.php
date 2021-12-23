@@ -64,49 +64,6 @@ final class Connection extends AbstractConnection
     }
 
     /**
-     * Creates the PDO instance.
-     *
-     * This method is called by {@see open} to establish a DB connection. The default implementation will create a PHP
-     * PDO instance. You may override this method if the default PDO needs to be adapted for certain DBMS.
-     *
-     * @return PDO the pdo instance
-     */
-    protected function createPdoInstance(): PDO
-    {
-        return new PDO($this->getDsn(), $this->getUsername(), $this->getPassword(), $this->getAttributes());
-    }
-
-    /**
-     * Initializes the DB connection.
-     *
-     * This method is invoked right after the DB connection is established.
-     *
-     * The default implementation turns on `PDO::ATTR_EMULATE_PREPARES`.
-     *
-     * if {@see emulatePrepare} is true, and sets the database {@see charset} if it is not empty.
-     *
-     * It then triggers an {@see EVENT_AFTER_OPEN} event.
-     */
-    protected function initConnection(): void
-    {
-        $pdo = $this->getPDO();
-
-        if ($pdo !== null) {
-            $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-
-            if ($this->getEmulatePrepare() !== null && constant('PDO::ATTR_EMULATE_PREPARES')) {
-                $pdo->setAttribute(PDO::ATTR_EMULATE_PREPARES, $this->getEmulatePrepare());
-            }
-
-            $charset = $this->getCharset();
-
-            if ($charset !== null) {
-                $pdo->exec('SET NAMES ' . $pdo->quote($charset));
-            }
-        }
-    }
-
-    /**
      * Returns the name of the DB driver.
      *
      * @return string name of the DB driver
@@ -114,5 +71,28 @@ final class Connection extends AbstractConnection
     public function getDriverName(): string
     {
         return 'pgsql';
+    }
+
+    protected function initConnection(): void
+    {
+        $pdo = $this->getPdo() ?? $this->createPdoInstance();
+        $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+
+        if ($this->getEmulatePrepare() !== null && constant('PDO::ATTR_EMULATE_PREPARES')) {
+            $pdo->setAttribute(PDO::ATTR_EMULATE_PREPARES, $this->getEmulatePrepare());
+        }
+
+        $charset = $this->getCharset();
+
+        if ($charset !== null) {
+            $pdo->exec('SET NAMES ' . $pdo->quote($charset));
+        }
+
+        $this->setPDO($pdo);
+    }
+
+    private function createPdoInstance(): PDO
+    {
+        return new PDO($this->getDsn(), $this->getUsername(), $this->getPassword(), $this->getAttributes());
     }
 }
