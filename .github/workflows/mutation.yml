@@ -34,7 +34,7 @@ jobs:
           - ubuntu-latest
 
         php:
-          - 8.0
+          - 8.1
 
     services:
       postgres:
@@ -54,10 +54,10 @@ jobs:
       - name: Install PHP with extensions
         uses: shivammathur/setup-php@v2
         with:
-          php-version: "${{ matrix.php }}"
+          php-version: ${{ matrix.php }}
           extensions: ${{ env.extensions }}
           ini-values: memory_limit=-1
-          coverage: "pcov"
+          coverage: pcov
           tools: composer:v2
 
       - name: Determine composer cache directory
