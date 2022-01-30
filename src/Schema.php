@@ -10,8 +10,6 @@ use Throwable;
 use Yiisoft\Arrays\ArrayHelper;
 use Yiisoft\Db\Constraint\CheckConstraint;
 use Yiisoft\Db\Constraint\Constraint;
-use Yiisoft\Db\Constraint\ConstraintFinderInterface;
-use Yiisoft\Db\Constraint\ConstraintFinderTrait;
 use Yiisoft\Db\Constraint\DefaultValueConstraint;
 use Yiisoft\Db\Constraint\ForeignKeyConstraint;
 use Yiisoft\Db\Constraint\IndexConstraint;
@@ -83,9 +81,8 @@ use function substr;
  *   foreign_column_name: string,
  * }
  */
-final class Schema extends AbstractSchema implements ConstraintFinderInterface
+final class Schema extends AbstractSchema
 {
-    use ConstraintFinderTrait;
     use ViewFinderTrait;
 
     public const TYPE_JSONB = 'jsonb';
