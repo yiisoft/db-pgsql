@@ -23,7 +23,7 @@
         "ext-json": "*",
         "ext-pdo": "*",
         "yiisoft/arrays": "^2.0",
-        "yiisoft/db": "^3.0",
+        "yiisoft/db": "dev-dev",
         "yiisoft/json": "^1.0",
         "yiisoft/strings": "^2.0"
     },
