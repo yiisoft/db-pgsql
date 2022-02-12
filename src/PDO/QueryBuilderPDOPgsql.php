@@ -5,17 +5,10 @@ declare(strict_types=1);
 namespace Yiisoft\Db\Pgsql\PDO;
 
 use Generator;
-use JsonException;
 use PDO;
 use Yiisoft\Db\Command\CommandInterface;
-use Yiisoft\Db\Connection\ConnectionInterface;
-use Yiisoft\Db\Exception\Exception;
-use Yiisoft\Db\Exception\InvalidArgumentException;
-use Yiisoft\Db\Exception\InvalidConfigException;
-use Yiisoft\Db\Exception\NotSupportedException;
 use Yiisoft\Db\Expression\ArrayExpression;
 use Yiisoft\Db\Expression\Expression;
-use Yiisoft\Db\Expression\ExpressionInterface;
 use Yiisoft\Db\Expression\JsonExpression;
 use Yiisoft\Db\Pdo\PdoValue;
 use Yiisoft\Db\Pgsql\ArrayExpressionBuilder;
@@ -25,23 +18,12 @@ use Yiisoft\Db\Pgsql\JsonExpressionBuilder;
 use Yiisoft\Db\Query\Conditions\LikeCondition;
 use Yiisoft\Db\Query\Query;
 use Yiisoft\Db\Query\QueryBuilder;
-use Yiisoft\Db\Schema\ColumnSchemaBuilder;
 use Yiisoft\Db\Schema\QuoterInterface;
 use Yiisoft\Db\Schema\Schema;
 use Yiisoft\Db\Schema\SchemaInterface;
-use Yiisoft\Strings\NumericHelper;
 
-use function array_diff;
 use function array_merge;
-use function array_unshift;
-use function explode;
-use function implode;
-use function is_bool;
-use function is_float;
 use function is_string;
-use function preg_match;
-use function preg_replace;
-use function reset;
 
 /**
  * The class QueryBuilder is the query builder for PostgresSQL databases.

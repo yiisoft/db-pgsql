@@ -12,7 +12,6 @@ use Yiisoft\Db\Exception\IntegrityException;
 use Yiisoft\Db\Exception\InvalidArgumentException;
 use Yiisoft\Db\Exception\InvalidConfigException;
 use Yiisoft\Db\Exception\NotSupportedException;
-use Yiisoft\Db\Expression\ArrayExpression;
 use Yiisoft\Db\Expression\ExpressionInterface;
 use Yiisoft\Db\Query\Query;
 use Yiisoft\Db\TestSupport\TestQueryBuilderTrait;
@@ -217,7 +216,7 @@ final class QueryBuilderTest extends TestCase
     /**
      * @dataProvider \Yiisoft\Db\Pgsql\Tests\Provider\QueryBuilderProvider::buildLikeConditionsProvider
      *
-     * @param object|array $condition
+     * @param array|object $condition
      * @param string $expected
      * @param array $expectedParams
      *
@@ -252,7 +251,6 @@ final class QueryBuilderTest extends TestCase
         $this->assertEquals($expectedQuerySql, $actualQuerySql);
         $this->assertEquals($expectedQueryParams, $actualQueryParams);
     }
-
 
     /**
      * @throws Exception|InvalidConfigException|Throwable

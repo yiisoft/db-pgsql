@@ -940,9 +940,9 @@ final class SchemaPDOPgsql extends Schema implements ViewInterface
      * - uniques
      * - checks
      *
-     * @return array|Constraint|null (CheckConstraint|Constraint|ForeignKeyConstraint)[]|Constraint|null constraints.
-     *
      * @throws Exception|InvalidConfigException|Throwable
+     *
+     * @return array|Constraint|null (CheckConstraint|Constraint|ForeignKeyConstraint)[]|Constraint|null constraints.
      */
     private function loadTableConstraints(string $tableName, string $returnType): array|Constraint|null
     {
