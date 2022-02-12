@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Yiisoft\Db\Pgsql\Tests;
 
 use Yiisoft\Db\Query\Query;
-use Yiisoft\Db\TestUtility\TestQueryTrait;
+use Yiisoft\Db\TestSupport\TestQueryTrait;
 
 /**
  * @group pgsql

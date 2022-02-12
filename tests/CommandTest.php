@@ -13,7 +13,7 @@ use Yiisoft\Db\Expression\ArrayExpression;
 use Yiisoft\Db\Expression\JsonExpression;
 use Yiisoft\Db\Query\Query;
 
-use Yiisoft\Db\TestUtility\TestCommandTrait;
+use Yiisoft\Db\TestSupport\TestCommandTrait;
 
 /**
  * @group pgsql
@@ -414,13 +414,9 @@ PGSQL
     public function testUpsert(array $firstData, array $secondData): void
     {
         $db = $this->getConnection(true);
-
         $this->assertEquals(0, $db->createCommand('SELECT COUNT(*) FROM {{T_upsert}}')->queryScalar());
-
         $this->performAndCompareUpsertResult($db, $firstData);
-
         $this->assertEquals(1, $db->createCommand('SELECT COUNT(*) FROM {{T_upsert}}')->queryScalar());
-
         $this->performAndCompareUpsertResult($db, $secondData);
     }
 }

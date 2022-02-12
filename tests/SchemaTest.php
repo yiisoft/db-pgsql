@@ -10,7 +10,7 @@ use Yiisoft\Db\Exception\InvalidConfigException;
 use Yiisoft\Db\Exception\NotSupportedException;
 use Yiisoft\Db\Expression\Expression;
 use Yiisoft\Db\Pgsql\TableSchema;
-use Yiisoft\Db\TestUtility\TestSchemaTrait;
+use Yiisoft\Db\TestSupport\TestSchemaTrait;
 
 use function array_map;
 use function fclose;
@@ -307,9 +307,7 @@ final class SchemaTest extends TestCase
     public function testCompositeFk(): void
     {
         $schema = $this->getConnection()->getSchema();
-
         $table = $schema->getTableSchema('composite_fk');
-
         $fk = $table->getForeignKeys();
         $this->assertCount(1, $fk);
         $this->assertTrue(isset($fk['fk_composite_fk_order_item']));
@@ -344,9 +342,7 @@ final class SchemaTest extends TestCase
     public function testBooleanDefaultValues(): void
     {
         $schema = $this->getConnection()->getSchema();
-
         $table = $schema->getTableSchema('bool_values');
-
         $this->assertTrue($table->getColumn('default_true')->getDefaultValue());
         $this->assertFalse($table->getColumn('default_false')->getDefaultValue());
     }
@@ -354,9 +350,7 @@ final class SchemaTest extends TestCase
     public function testGetSchemaNames(): void
     {
         $schema = $this->getConnection()->getSchema();
-
         $schemas = $schema->getSchemaNames();
-
         $this->assertNotEmpty($schemas);
 
         foreach ($this->expectedSchemas as $schema) {
@@ -366,24 +360,20 @@ final class SchemaTest extends TestCase
 
     public function testSequenceName(): void
     {
-        $connection = $this->getConnection();
+        $db = $this->getConnection();
 
-        $sequenceName = $connection->getSchema()->getTableSchema('item')->getSequenceName();
-
-        $connection->createCommand(
+        $sequenceName = $db->getSchema()->getTableSchema('item')->getSequenceName();
+        $db->createCommand(
             'ALTER TABLE "item" ALTER COLUMN "id" SET DEFAULT nextval(\'item_id_seq_2\')'
         )->execute();
+        $db->getSchema()->refreshTableSchema('item');
+        $this->assertEquals('item_id_seq_2', $db->getSchema()->getTableSchema('item')->getSequenceName());
 
-        $connection->getSchema()->refreshTableSchema('item');
-        $this->assertEquals('item_id_seq_2', $connection->getSchema()->getTableSchema('item')->getSequenceName());
-
-        $connection->createCommand(
+        $db->createCommand(
             'ALTER TABLE "item" ALTER COLUMN "id" SET DEFAULT nextval(\'' . $sequenceName . '\')'
         )->execute();
-
-        $connection->getSchema()->refreshTableSchema('item');
-
-        $this->assertEquals($sequenceName, $connection->getSchema()->getTableSchema('item')->getSequenceName());
+        $db->getSchema()->refreshTableSchema('item');
+        $this->assertEquals($sequenceName, $db->getSchema()->getTableSchema('item')->getSequenceName());
     }
 
     public function testGeneratedValues(): void
@@ -392,10 +382,8 @@ final class SchemaTest extends TestCase
             $this->markTestSkipped('PostgreSQL < 12.0 does not support GENERATED AS IDENTITY columns.');
         }
 
-        $this->prepareDatabase(self::DB_DSN, __DIR__ . '/Fixture/postgres12.sql');
-
-        $table = $this->getConnection()->getSchema()->getTableSchema('generated');
-
+        $db = $this->getConnection(true, null, __DIR__ . '/Fixture/postgres12.sql');
+        $table = $db->getSchema()->getTableSchema('generated');
         $this->assertTrue($table->getColumn('id_always')->isAutoIncrement());
         $this->assertTrue($table->getColumn('id_primary')->isAutoIncrement());
         $this->assertTrue($table->getColumn('id_primary')->isAutoIncrement());
@@ -408,15 +396,13 @@ final class SchemaTest extends TestCase
             $this->markTestSkipped('PostgreSQL < 10.0 does not support PARTITION BY clause.');
         }
 
-        $this->prepareDatabase(self::DB_DSN, __DIR__ . '/Fixture/postgres10.sql');
-
-        $this->assertNotNull($this->getConnection()->getSchema()->getTableSchema('partitioned'));
+        $db = $this->getConnection(true, null, __DIR__ . '/Fixture/postgres10.sql');
+        $this->assertNotNull($db->getSchema()->getTableSchema('partitioned'));
     }
 
     public function testFindSchemaNames(): void
     {
         $schema = $this->getConnection()->getSchema();
-
         $this->assertCount(3, $schema->getSchemaNames());
     }
 
@@ -437,13 +423,10 @@ final class SchemaTest extends TestCase
         ])->execute();
 
         $db->getSchema()->refreshTableSchema('test_default_parenthesis');
-
         $tableSchema = $db->getSchema()->getTableSchema('test_default_parenthesis');
-
         $this->assertNotNull($tableSchema);
 
         $column = $tableSchema->getColumn('user_timezone');
-
         $this->assertNotNull($column);
         $this->assertFalse($column->isAllowNull());
         $this->assertEquals('numeric', $column->getDbType());
@@ -465,11 +448,8 @@ final class SchemaTest extends TestCase
             'id' => 'pk',
             'timestamp' => 'timestamp DEFAULT NULL',
         ])->execute();
-
         $db->getSchema()->refreshTableSchema('test_timestamp_default_null');
-
         $tableSchema = $db->getSchema()->getTableSchema('test_timestamp_default_null');
-
         $this->assertNull($tableSchema->getColumn('timestamp')->getDefaultValue());
     }
 
@@ -483,17 +463,16 @@ final class SchemaTest extends TestCase
      */
     public function testGetTableNames(array $pdoAttributes): void
     {
-        $connection = $this->getConnection(true);
+        $db = $this->getConnection(true);
 
         foreach ($pdoAttributes as $name => $value) {
-            $connection->getPDO()->setAttribute($name, $value);
+            $db->getPDO()->setAttribute($name, $value);
         }
 
-        $schema = $connection->getSchema();
-
+        $schema = $db->getSchema();
         $tables = $schema->getTableNames();
 
-        if ($connection->getDriverName() === 'sqlsrv') {
+        if ($db->getDriverName() === 'sqlsrv') {
             $tables = array_map(static function ($item) {
                 return trim($item, '[]');
             }, $tables);
@@ -523,9 +502,7 @@ final class SchemaTest extends TestCase
         }
 
         $schema = $db->getSchema();
-
         $tables = $schema->getTableSchemas();
-
         $this->assertCount(count($schema->getTableNames()), $tables);
 
         foreach ($tables as $table) {
@@ -536,11 +513,9 @@ final class SchemaTest extends TestCase
     public function constraintsProvider(): array
     {
         $result = $this->constraintsProviderTrait();
-
         $result['1: check'][2][0]->expression('CHECK ((("C_check")::text <> \'\'::text))');
         $result['3: foreign key'][2][0]->foreignSchemaName('public');
         $result['3: index'][2] = [];
-
         return $result;
     }
 
@@ -558,7 +533,6 @@ final class SchemaTest extends TestCase
         }
 
         $constraints = $this->getConnection()->getSchema()->{'getTable' . ucfirst($type)}($tableName);
-
         $this->assertMetadataEquals($expected, $constraints);
     }
 
@@ -578,12 +552,9 @@ final class SchemaTest extends TestCase
             $this->expectException(NotSupportedException::class);
         }
 
-        $connection = $this->getConnection();
-
-        $connection->getSlavePdo()->setAttribute(PDO::ATTR_CASE, PDO::CASE_LOWER);
-
-        $constraints = $connection->getSchema()->{'getTable' . ucfirst($type)}($tableName, true);
-
+        $db = $this->getConnection();
+        $db->getSlavePdo()->setAttribute(PDO::ATTR_CASE, PDO::CASE_LOWER);
+        $constraints = $db->getSchema()->{'getTable' . ucfirst($type)}($tableName, true);
         $this->assertMetadataEquals($expected, $constraints);
     }
 
@@ -603,12 +574,9 @@ final class SchemaTest extends TestCase
             $this->expectException(NotSupportedException::class);
         }
 
-        $connection = $this->getConnection();
-
-        $connection->getSlavePdo()->setAttribute(PDO::ATTR_CASE, PDO::CASE_UPPER);
-
-        $constraints = $connection->getSchema()->{'getTable' . ucfirst($type)}($tableName, true);
-
+        $db = $this->getConnection();
+        $db->getSlavePdo()->setAttribute(PDO::ATTR_CASE, PDO::CASE_UPPER);
+        $constraints = $db->getSchema()->{'getTable' . ucfirst($type)}($tableName, true);
         $this->assertMetadataEquals($expected, $constraints);
     }
 
@@ -629,38 +597,29 @@ final class SchemaTest extends TestCase
         string $testTableName
     ): void {
         $db = $this->getConnection();
-        $schema = $this->getConnection()->getSchema();
+        $schema = $db->getSchema();
 
         $this->schemaCache->setEnable(true);
+
         $db->setTablePrefix($tablePrefix);
-
         $noCacheTable = $schema->getTableSchema($tableName, true);
-
         $this->assertInstanceOf(TableSchema::class, $noCacheTable);
 
         /* Compare */
         $db->setTablePrefix($testTablePrefix);
-
         $testNoCacheTable = $schema->getTableSchema($testTableName);
-
         $this->assertSame($noCacheTable, $testNoCacheTable);
 
         $db->setTablePrefix($tablePrefix);
-
         $schema->refreshTableSchema($tableName);
-
         $refreshedTable = $schema->getTableSchema($tableName, false);
-
         $this->assertInstanceOf(TableSchema::class, $refreshedTable);
         $this->assertNotSame($noCacheTable, $refreshedTable);
 
         /* Compare */
         $db->setTablePrefix($testTablePrefix);
-
         $schema->refreshTableSchema($testTablePrefix);
-
         $testRefreshedTable = $schema->getTableSchema($testTableName, false);
-
         $this->assertInstanceOf(TableSchema::class, $testRefreshedTable);
         $this->assertEquals($refreshedTable, $testRefreshedTable);
         $this->assertNotSame($testNoCacheTable, $testRefreshedTable);
@@ -674,6 +633,7 @@ final class SchemaTest extends TestCase
             $db->createCommand()->dropTable('uniqueIndex')->execute();
         } catch (Exception $e) {
         }
+
         $db->createCommand()->createTable('uniqueIndex', [
             'somecol' => 'string',
             'someCol2' => 'string',
@@ -681,14 +641,11 @@ final class SchemaTest extends TestCase
 
         /** @var $schema Schema */
         $schema = $db->getSchema();
-
         $uniqueIndexes = $schema->findUniqueIndexes($schema->getTableSchema('uniqueIndex', true));
         $this->assertEquals([], $uniqueIndexes);
 
         $db->getSlavePdo()->setAttribute(PDO::ATTR_CASE, PDO::CASE_UPPER);
-
         $db->createCommand()->createIndex('somecolUnique', 'uniqueIndex', 'somecol', true)->execute();
-
         $uniqueIndexes = $schema->findUniqueIndexes($schema->getTableSchema('uniqueIndex', true));
         $this->assertEquals(['somecolUnique' => ['somecol']], $uniqueIndexes);
 
@@ -699,7 +656,6 @@ final class SchemaTest extends TestCase
          * {@see https://github.com/yiisoft/yii2/issues/10613}
          */
         $db->createCommand()->createIndex('someCol2Unique', 'uniqueIndex', 'someCol2', true)->execute();
-
         $uniqueIndexes = $schema->findUniqueIndexes($schema->getTableSchema('uniqueIndex', true));
         $this->assertEquals(['somecolUnique' => ['somecol'], 'someCol2Unique' => ['someCol2']], $uniqueIndexes);
 
@@ -707,7 +663,6 @@ final class SchemaTest extends TestCase
          * {@see https://github.com/yiisoft/yii2/issues/13814}
          */
         $db->createCommand()->createIndex('another unique index', 'uniqueIndex', 'someCol2', true)->execute();
-
         $uniqueIndexes = $schema->findUniqueIndexes($schema->getTableSchema('uniqueIndex', true));
         $this->assertEquals([
             'somecolUnique' => ['somecol'],
