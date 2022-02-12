@@ -4,40 +4,62 @@ declare(strict_types=1);
 
 namespace Yiisoft\Db\Pgsql\Tests;
 
+use Exception;
 use PHPUnit\Framework\TestCase as AbstractTestCase;
-use Yiisoft\Db\Pgsql\Connection;
-use Yiisoft\Db\TestUtility\TestTrait;
+use Yiisoft\Db\Driver\PDODriver;
+use Yiisoft\Db\Pgsql\PDO\ConnectionPDOPgsql;
+use Yiisoft\Db\TestSupport\TestTrait;
 
 class TestCase extends AbstractTestCase
 {
     use TestTrait;
 
-    protected const DB_CONNECTION_CLASS = \Yiisoft\Db\Pgsql\Connection::class;
-    protected const DB_DRIVERNAME = 'pgsql';
-    protected const DB_DSN = 'pgsql:host=127.0.0.1;dbname=yiitest;port=5432';
-    protected const DB_FIXTURES_PATH = __DIR__ . '/Fixture/postgres.sql';
-    protected const DB_USERNAME = 'root';
-    protected const DB_PASSWORD = 'root';
-    protected const DB_CHARSET = 'UTF8';
+    protected string $drivername = 'pgsql';
+    protected string $dsn = 'pgsql:host=127.0.0.1;dbname=yiitest;port=5432';
+    protected string $username = 'root';
+    protected string $password = 'root';
+    protected string $charset = 'UTF8';
     protected array $dataProvider;
     protected array $expectedSchemas = ['public'];
     protected string $likeEscapeCharSql = '';
     protected array $likeParameterReplacements = [];
-    protected Connection $connection;
+    protected ?ConnectionPDOPgsql $db = null;
 
-    protected function setUp(): void
-    {
-        parent::setUp();
-        $this->connection = $this->createConnection(self::DB_DSN);
+    /**
+     * @param bool $reset whether to clean up the test database.
+     *
+     * @return ConnectionPDOPgsql
+     */
+    protected function getConnection(
+        $reset = false,
+        ?string $dsn = null,
+        string $fixture = __DIR__ . '/Fixture/postgres.sql'
+    ): ConnectionPDOPgsql {
+        $pdoDriver = new PDODriver($dsn ?? $this->dsn, $this->username, $this->password);
+        $this->db = new ConnectionPDOPgsql($pdoDriver, $this->createQueryCache(), $this->createSchemaCache());
+        $this->db->setLogger($this->createLogger());
+        $this->db->setProfiler($this->createProfiler());
+
+        if ($reset === false) {
+            return $this->db;
+        }
+
+        try {
+            $this->prepareDatabase($this->db, $fixture);
+        } catch (Exception $e) {
+            $this->markTestSkipped('Something wrong when preparing database: ' . $e->getMessage());
+        }
+
+        return $this->db;
     }
 
     protected function tearDown(): void
     {
         parent::tearDown();
-        $this->connection->close();
+        $this->db?->close();
         unset(
             $this->cache,
-            $this->connection,
+            $this->db,
             $this->logger,
             $this->queryCache,
             $this->schemaCache,

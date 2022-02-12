@@ -8,7 +8,7 @@ use function in_array;
 use function strlen;
 
 /**
- * The class converts PostgreSQL array representation to PHP array.
+ * The class converts PostgresSQL array representation to PHP array.
  */
 final class ArrayParser
 {
@@ -18,7 +18,7 @@ final class ArrayParser
     private string $delimiter = ',';
 
     /**
-     * Convert array from PostgreSQL to PHP
+     * Convert array from PostgresSQL to PHP
      *
      * @param string|null $value string to be converted
      *

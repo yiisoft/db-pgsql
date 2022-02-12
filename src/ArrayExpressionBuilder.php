@@ -11,10 +11,11 @@ use Yiisoft\Db\Exception\InvalidConfigException;
 use Yiisoft\Db\Exception\NotSupportedException;
 use Yiisoft\Db\Expression\ArrayExpression;
 use Yiisoft\Db\Expression\ExpressionBuilderInterface;
-use Yiisoft\Db\Expression\ExpressionBuilderTrait;
 use Yiisoft\Db\Expression\ExpressionInterface;
 use Yiisoft\Db\Expression\JsonExpression;
+use Yiisoft\Db\Pgsql\PDO\SchemaPDOPgsql;
 use Yiisoft\Db\Query\Query;
+use Yiisoft\Db\Query\QueryBuilderInterface;
 use Yiisoft\Db\Query\QueryInterface;
 
 use function get_class;
@@ -28,7 +29,9 @@ use function str_repeat;
  */
 final class ArrayExpressionBuilder implements ExpressionBuilderInterface
 {
-    use ExpressionBuilderTrait;
+    public function __construct(private QueryBuilderInterface $queryBuilder)
+    {
+    }
 
     /**
      * Method builds the raw SQL from the $expression that will not be additionally escaped or quoted.
@@ -126,7 +129,7 @@ final class ArrayExpressionBuilder implements ExpressionBuilderInterface
      *
      * @return ArrayExpression
      */
-    private function unnestArrayExpression(ArrayExpression $expression, $value): ArrayExpression
+    private function unnestArrayExpression(ArrayExpression $expression, mixed $value): ArrayExpression
     {
         $expressionClass = get_class($expression);
 
@@ -147,9 +150,7 @@ final class ArrayExpressionBuilder implements ExpressionBuilderInterface
             return '';
         }
 
-        /** @var int $dimension */
         $dimension = $expression->getDimension();
-
         $result = '::' . $type;
         $result .= str_repeat('[]', $dimension);
 
@@ -173,17 +174,19 @@ final class ArrayExpressionBuilder implements ExpressionBuilderInterface
      * Casts $value to use in $expression.
      *
      * @param ArrayExpression $expression
-     * @param ExpressionInterface|int $value
+     * @param int|ExpressionInterface|null $value
      *
-     * @return ExpressionInterface|int
+     * @return array|bool|int|string|JsonExpression|ExpressionInterface|null
      */
-    protected function typecastValue(ArrayExpression $expression, $value)
-    {
+    protected function typecastValue(
+        ArrayExpression $expression,
+        array|bool|int|string|ExpressionInterface|null $value
+    ): array|bool|int|string|JsonExpression|ExpressionInterface|null {
         if ($value instanceof ExpressionInterface) {
             return $value;
         }
 
-        if (in_array($expression->getType(), [Schema::TYPE_JSON, Schema::TYPE_JSONB], true)) {
+        if (in_array($expression->getType(), [SchemaPDOPgsql::TYPE_JSON, SchemaPDOPgsql::TYPE_JSONB], true)) {
             return new JsonExpression($value);
         }
 
