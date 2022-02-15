@@ -8,7 +8,6 @@ use Generator;
 use PDO;
 use Yiisoft\Db\Command\CommandInterface;
 use Yiisoft\Db\Expression\ArrayExpression;
-use Yiisoft\Db\Expression\Expression;
 use Yiisoft\Db\Expression\JsonExpression;
 use Yiisoft\Db\Pdo\PdoValue;
 use Yiisoft\Db\Pgsql\ArrayExpressionBuilder;

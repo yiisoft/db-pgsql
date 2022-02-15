@@ -150,6 +150,9 @@ final class ConnectionPDOPgsql extends Connection implements ConnectionPDOInterf
         return $this->pdo;
     }
 
+    /**
+     * @throws Exception|InvalidConfigException
+     */
     public function getQueryBuilder(): QueryBuilderInterface
     {
         if ($this->queryBuilder === null) {

@@ -4,6 +4,11 @@ declare(strict_types=1);
 
 namespace Yiisoft\Db\Pgsql;
 
+use Throwable;
+use Yiisoft\Db\Exception\Exception;
+use Yiisoft\Db\Exception\InvalidArgumentException;
+use Yiisoft\Db\Exception\InvalidConfigException;
+use Yiisoft\Db\Exception\NotSupportedException;
 use Yiisoft\Db\Pgsql\PDO\SchemaPDOPgsql;
 use Yiisoft\Db\Query\DDLQueryBuilder as AbstractDDLQueryBuilder;
 use Yiisoft\Db\Query\QueryBuilderInterface;
@@ -66,6 +71,9 @@ final class DDLQueryBuilder extends AbstractDDLQueryBuilder
         return 'ALTER TABLE ' . $tableName . ' ' . implode(', ', $multiAlterStatement);
     }
 
+    /**
+     * @throws Exception|InvalidConfigException|NotSupportedException|Throwable
+     */
     public function checkIntegrity(string $schema = '', string $table = '', bool $check = true): string
     {
         /** @var SchemaPDOPgsql */
@@ -95,6 +103,9 @@ final class DDLQueryBuilder extends AbstractDDLQueryBuilder
         return $command;
     }
 
+    /**
+     * @throws Exception|InvalidArgumentException
+     */
     public function createIndex(string $name, string $table, array|string $columns, $unique = false): string
     {
         if ($unique === $this->queryBuilder::INDEX_UNIQUE || $unique === true) {

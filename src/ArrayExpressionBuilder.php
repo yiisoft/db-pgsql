@@ -17,6 +17,7 @@ use Yiisoft\Db\Pgsql\PDO\SchemaPDOPgsql;
 use Yiisoft\Db\Query\Query;
 use Yiisoft\Db\Query\QueryBuilderInterface;
 use Yiisoft\Db\Query\QueryInterface;
+use Yiisoft\Db\Schema\Schema;
 
 use function get_class;
 use function implode;
@@ -25,7 +26,7 @@ use function is_array;
 use function str_repeat;
 
 /**
- * The class ArrayExpressionBuilder builds {@see ArrayExpression} for PostgreSQL DBMS.
+ * The class ArrayExpressionBuilder builds {@see ArrayExpression} for PostgresSQL DBMS.
  */
 final class ArrayExpressionBuilder implements ExpressionBuilderInterface
 {
@@ -174,7 +175,7 @@ final class ArrayExpressionBuilder implements ExpressionBuilderInterface
      * Casts $value to use in $expression.
      *
      * @param ArrayExpression $expression
-     * @param ExpressionInterface|int|null $value
+     * @param array|bool|int|string|ExpressionInterface|null $value
      *
      * @return array|bool|ExpressionInterface|int|JsonExpression|string|null
      */
@@ -186,7 +187,7 @@ final class ArrayExpressionBuilder implements ExpressionBuilderInterface
             return $value;
         }
 
-        if (in_array($expression->getType(), [SchemaPDOPgsql::TYPE_JSON, SchemaPDOPgsql::TYPE_JSONB], true)) {
+        if (in_array($expression->getType(), [Schema::TYPE_JSON, SchemaPDOPgsql::TYPE_JSONB], true)) {
             return new JsonExpression($value);
         }
 
