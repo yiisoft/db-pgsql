@@ -311,7 +311,9 @@ final class SchemaPDOPgsql extends Schema implements ViewInterface
      *
      * @throws Exception|InvalidConfigException|Throwable
      *
-     * @return array|ForeignKeyConstraint[] foreign keys for the given table.
+     * @return array foreign keys for the given table.
+     *
+     * @psaml-return array|ForeignKeyConstraint[]
      */
     protected function loadTableForeignKeys(string $tableName): array
     {
@@ -394,7 +396,9 @@ final class SchemaPDOPgsql extends Schema implements ViewInterface
      *
      * @throws Exception|InvalidConfigException|Throwable
      *
-     * @return array|Constraint[] unique constraints for the given table.
+     * @return array unique constraints for the given table.
+     *
+     * @psalm-return array|Constraint[]
      */
     protected function loadTableUniques(string $tableName): array
     {
@@ -410,7 +414,9 @@ final class SchemaPDOPgsql extends Schema implements ViewInterface
      *
      * @throws Exception|InvalidConfigException|Throwable
      *
-     * @return array|CheckConstraint[] check constraints for the given table.
+     * @return array check constraints for the given table.
+     *
+     * @psaml-return array|CheckConstraint[]
      */
     protected function loadTableChecks(string $tableName): array
     {
@@ -817,7 +823,7 @@ final class SchemaPDOPgsql extends Schema implements ViewInterface
     /**
      * Loads the column information into a {@see ColumnSchema} object.
      *
-     * @param array{
+     * @psalm-param array{
      *   table_schema: string,
      *   table_name: string,
      *   column_name: string,
@@ -1246,6 +1252,9 @@ final class SchemaPDOPgsql extends Schema implements ViewInterface
         $this->db->createCommand("RELEASE SAVEPOINT $name")->execute();
     }
 
+    /**
+     * @throws Exception|InvalidConfigException|Throwable
+     */
     public function getViewNames(string $schema = '', bool $refresh = false): array
     {
         if (!isset($this->viewNames[$schema]) || $refresh) {
