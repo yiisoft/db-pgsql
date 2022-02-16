@@ -175,7 +175,7 @@ final class ArrayExpressionBuilder implements ExpressionBuilderInterface
      * Casts $value to use in $expression.
      *
      * @param ArrayExpression $expression
-     * @param array|bool|int|string|ExpressionInterface|null $value
+     * @param array|bool|ExpressionInterface|int|string|null $value
      *
      * @return array|bool|ExpressionInterface|int|JsonExpression|string|null
      */
