@@ -929,11 +929,8 @@ final class SchemaPDOPgsql extends Schema implements ViewInterface
 
         $command = $this->db->createCommand($sql, $params);
         $command->prepare(false);
-        $result = $command->queryOne();
 
-        $pdoStatement = $command->getPdoStatement();
-
-        return $pdoStatement !== null && !$pdoStatement->rowCount() ? false : $result;
+        return $command->queryOne();
     }
 
     /**
