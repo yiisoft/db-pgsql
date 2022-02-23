@@ -670,15 +670,4 @@ final class SchemaTest extends TestCase
             'another unique index' => ['someCol2'],
         ], $uniqueIndexes);
     }
-
-    public function testInsert(): void
-    {
-        $db = $this->getConnection();
-
-        $primaryKey = $db->getSchema()->insert('default_pk', ['type' => 'type']);
-        $this->assertEquals(['id' => 5], $primaryKey);
-
-        $primaryKey = $db->getSchema()->insert('constraints', ['id' => 1, 'field1' => 'testMe']);
-        $this->assertEquals([], $primaryKey);
-    }
 }

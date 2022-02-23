@@ -897,43 +897,6 @@ final class SchemaPDOPgsql extends Schema implements ViewInterface
     }
 
     /**
-     * Executes the INSERT command, returning primary key values.
-     *
-     * @param string $table the table that new rows will be inserted into.
-     * @param array $columns the column data (name => value) to be inserted into the table.
-     *
-     * @throws Exception|InvalidConfigException|Throwable
-     *
-     * @return array|false primary key values or false if the command fails.
-     */
-    public function insert(string $table, array $columns): bool|array
-    {
-        $params = [];
-        $returnColumns = [];
-        $sql = $this->db->getQueryBuilder()->insert($table, $columns, $params);
-
-        $tableSchema = $this->getTableSchema($table);
-
-        if ($tableSchema !== null) {
-            $returnColumns = $tableSchema->getPrimaryKey();
-        }
-
-        if (!empty($returnColumns)) {
-            $returning = [];
-            /** @var string $name */
-            foreach ($returnColumns as $name) {
-                $returning[] = $this->db->getQuoter()->quoteColumnName($name);
-            }
-            $sql .= ' RETURNING ' . implode(', ', $returning);
-        }
-
-        $command = $this->db->createCommand($sql, $params);
-        $command->prepare(false);
-
-        return $command->queryOne();
-    }
-
-    /**
      * Loads multiple types of constraints and returns the specified ones.
      *
      * @param string $tableName table name.

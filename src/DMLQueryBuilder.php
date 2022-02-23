@@ -24,6 +24,29 @@ final class DMLQueryBuilder extends AbstractDMLQueryBuilder
         parent::__construct($queryBuilder);
     }
 
+    public function insertEx(string $table, Query|array $columns, array &$params = []): string
+    {
+        $sql = $this->insert($table, $columns, $params);
+
+        $tableSchema = $this->queryBuilder->schema()->getTableSchema($table);
+
+        $returnColumns = [];
+        if ($tableSchema !== null) {
+            $returnColumns = $tableSchema->getPrimaryKey();
+        }
+
+        if (!empty($returnColumns)) {
+            $returning = [];
+            /** @var string $name */
+            foreach ($returnColumns as $name) {
+                $returning[] = $this->queryBuilder->quoter()->quoteColumnName($name);
+            }
+            $sql .= ' RETURNING ' . implode(', ', $returning);
+        }
+
+        return $sql;
+    }
+
     /**
      * @throws Exception|InvalidArgumentException|InvalidConfigException|NotSupportedException
      */
