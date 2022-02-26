@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Yiisoft\Db\Pgsql;
+namespace Yiisoft\Db\Pgsql\Builder;
 
 use JsonException;
 use Yiisoft\Db\Exception\Exception;
