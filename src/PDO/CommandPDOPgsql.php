@@ -5,13 +5,11 @@ declare(strict_types=1);
 namespace Yiisoft\Db\Pgsql\PDO;
 
 use PDOException;
-use Throwable;
 use Yiisoft\Db\Cache\QueryCache;
 use Yiisoft\Db\Command\Command;
 use Yiisoft\Db\Connection\ConnectionPDOInterface;
 use Yiisoft\Db\Exception\ConvertException;
 use Yiisoft\Db\Exception\Exception;
-use Yiisoft\Db\Exception\InvalidConfigException;
 use Yiisoft\Db\Query\QueryBuilderInterface;
 
 final class CommandPDOPgsql extends Command
