@@ -32,7 +32,6 @@ use function array_unique;
 use function array_values;
 use function bindec;
 use function explode;
-use function implode;
 use function preg_match;
 use function preg_replace;
 use function str_replace;
