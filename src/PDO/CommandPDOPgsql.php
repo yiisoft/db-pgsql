@@ -10,7 +10,6 @@ use Yiisoft\Db\Command\Command;
 use Yiisoft\Db\Connection\ConnectionPDOInterface;
 use Yiisoft\Db\Exception\ConvertException;
 use Yiisoft\Db\Exception\Exception;
-use Yiisoft\Db\Exception\InvalidConfigException;
 use Yiisoft\Db\Query\QueryBuilderInterface;
 
 final class CommandPDOPgsql extends Command
@@ -21,14 +20,7 @@ final class CommandPDOPgsql extends Command
     }
 
     /**
-     * Executes the INSERT command, returning primary key values.
-     *
-     * @param string $table the table that new rows will be inserted into.
-     * @param array $columns the column data (name => value) to be inserted into the table.
-     *
-     * @throws Exception|InvalidConfigException|Throwable
-     *
-     * @return array|false primary key values or false if the command fails.
+     * @inheritDoc
      */
     public function insertEx(string $table, array $columns): bool|array
     {
