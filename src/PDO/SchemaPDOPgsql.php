@@ -32,7 +32,6 @@ use function array_unique;
 use function array_values;
 use function bindec;
 use function explode;
-use function implode;
 use function preg_match;
 use function preg_replace;
 use function str_replace;
@@ -894,46 +893,6 @@ final class SchemaPDOPgsql extends Schema implements ViewInterface
         $column->phpType($this->getColumnPhpType($column));
 
         return $column;
-    }
-
-    /**
-     * Executes the INSERT command, returning primary key values.
-     *
-     * @param string $table the table that new rows will be inserted into.
-     * @param array $columns the column data (name => value) to be inserted into the table.
-     *
-     * @throws Exception|InvalidConfigException|Throwable
-     *
-     * @return array|false primary key values or false if the command fails.
-     */
-    public function insert(string $table, array $columns): bool|array
-    {
-        $params = [];
-        $returnColumns = [];
-        $sql = $this->db->getQueryBuilder()->insert($table, $columns, $params);
-
-        $tableSchema = $this->getTableSchema($table);
-
-        if ($tableSchema !== null) {
-            $returnColumns = $tableSchema->getPrimaryKey();
-        }
-
-        if (!empty($returnColumns)) {
-            $returning = [];
-            /** @var string $name */
-            foreach ($returnColumns as $name) {
-                $returning[] = $this->db->getQuoter()->quoteColumnName($name);
-            }
-            $sql .= ' RETURNING ' . implode(', ', $returning);
-        }
-
-        $command = $this->db->createCommand($sql, $params);
-        $command->prepare(false);
-        $result = $command->queryOne();
-
-        $pdoStatement = $command->getPdoStatement();
-
-        return $pdoStatement !== null && !$pdoStatement->rowCount() ? false : $result;
     }
 
     /**
