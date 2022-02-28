@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Yiisoft\Db\Pgsql\PDO;
 
 use PDOException;
+use Throwable;
 use Yiisoft\Db\Cache\QueryCache;
 use Yiisoft\Db\Command\Command;
 use Yiisoft\Db\Connection\ConnectionPDOInterface;
@@ -21,14 +22,7 @@ final class CommandPDOPgsql extends Command
     }
 
     /**
-     * Executes the INSERT command, returning primary key values.
-     *
-     * @param string $table the table that new rows will be inserted into.
-     * @param array $columns the column data (name => value) to be inserted into the table.
-     *
-     * @throws Exception|InvalidConfigException|Throwable
-     *
-     * @return array|false primary key values or false if the command fails.
+     * @inheritDoc
      */
     public function insertEx(string $table, array $columns): bool|array
     {
