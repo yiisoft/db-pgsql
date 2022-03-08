@@ -83,6 +83,8 @@ final class QueryBuilderPDOPgsql extends QueryBuilder
         Schema::TYPE_MONEY => 'numeric(19,4)',
         Schema::TYPE_JSON => 'jsonb',
     ];
+    private DDLQueryBuilder $ddlBuilder;
+    private DMLQueryBuilder $dmlBuilder;
 
     public function __construct(
         private CommandInterface $command,
@@ -91,7 +93,7 @@ final class QueryBuilderPDOPgsql extends QueryBuilder
     ) {
         $this->ddlBuilder = new DDLQueryBuilder($this);
         $this->dmlBuilder = new DMLQueryBuilder($this);
-        parent::__construct($quoter, $schema);
+        parent::__construct($quoter, $schema, $this->ddlBuilder, $this->dmlBuilder);
     }
 
     public function alterColumn(string $table, string $column, $type): string
