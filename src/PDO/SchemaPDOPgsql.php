@@ -1068,7 +1068,7 @@ final class SchemaPDOPgsql extends Schema implements ViewInterface
      * This method may be overridden by child classes to create a DBMS-specific column schema builder.
      *
      * @param string $type type of the column. See {@see ColumnSchemaBuilder::$type}.
-     * @param int|string|array|null $length length or precision of the column. See {@see ColumnSchemaBuilder::$length}.
+     * @param array|int|string|null $length length or precision of the column. See {@see ColumnSchemaBuilder::$length}.
      *
      * @return ColumnSchemaBuilder column schema builder instance
      *
