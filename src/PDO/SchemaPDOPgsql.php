@@ -162,7 +162,6 @@ final class SchemaPDOPgsql extends Schema implements ViewInterface
         'xml' => self::TYPE_STRING,
     ];
 
-    private ?string $serverVersion = null;
     private array $viewNames = [];
 
     public function __construct(private ConnectionPDOInterface $db, SchemaCache $schemaCache)
