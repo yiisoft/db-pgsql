@@ -289,7 +289,7 @@ final class DMLQueryBuilder extends AbstractDMLQueryBuilder
      */
     public function update(string $table, array $columns, array|string $condition, array &$params = []): string
     {
-        /** @var QueryInterface|array */
+        /** @var array|QueryInterface */
         $normalizeTableRowData = $this->queryBuilder->normalizeTableRowData($table, $columns);
 
         return parent::update(
@@ -344,11 +344,11 @@ final class DMLQueryBuilder extends AbstractDMLQueryBuilder
         $updateColumns,
         array &$params = []
     ): string {
-        /** @var QueryInterface|array $insertColumns */
+        /** @var array|QueryInterface $insertColumns */
         $insertColumns = $this->queryBuilder->normalizeTableRowData($table, $insertColumns);
 
         if (!is_bool($updateColumns)) {
-            /** @var QueryInterface|array $updateColumns */
+            /** @var array|QueryInterface $updateColumns */
             $updateColumns = $this->queryBuilder->normalizeTableRowData($table, $updateColumns);
         }
 
