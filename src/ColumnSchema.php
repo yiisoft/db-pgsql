@@ -79,12 +79,13 @@ final class ColumnSchema extends AbstractColumnSchema
     public function phpTypecast(mixed $value): mixed
     {
         if ($this->dimension > 0) {
-            if (!is_array($value)) {
+            if (!is_array($value) && (is_string($value) || $value === null)) {
                 $value = $this->getArrayParser()->parse($value);
             }
 
             if (is_array($value)) {
                 array_walk_recursive($value, function (?string &$val) {
+                    /** @var mixed */
                     $val = $this->phpTypecastValue($val);
                 });
             } else {
@@ -114,6 +115,7 @@ final class ColumnSchema extends AbstractColumnSchema
 
         switch ($this->getType()) {
             case Schema::TYPE_BOOLEAN:
+                /** @var mixed */
                 $value = is_string($value) ? strtolower($value) : $value;
 
                 return match ($value) {

@@ -66,7 +66,7 @@ final class TransactionPDOPgsql implements TransactionInterface
                 . ' ' . __METHOD__
             );
 
-            $this->db->getPDO()->beginTransaction();
+            $this->db->getPDO()?->beginTransaction();
             $this->level = 1;
 
             return;
@@ -103,7 +103,7 @@ final class TransactionPDOPgsql implements TransactionInterface
 
         if ($this->level === 0) {
             $this->logger?->log(LogLevel::DEBUG, 'Commit transaction ' . __METHOD__);
-            $this->db->getPDO()->commit();
+            $this->db->getPDO()?->commit();
             return;
         }
 
@@ -146,7 +146,7 @@ final class TransactionPDOPgsql implements TransactionInterface
         $this->level--;
         if ($this->level === 0) {
             $this->logger?->log(LogLevel::INFO, 'Roll back transaction ' . __METHOD__);
-            $this->db->getPDO()->rollBack();
+            $this->db->getPDO()?->rollBack();
             return;
         }
 

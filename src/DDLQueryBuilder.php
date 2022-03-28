@@ -12,6 +12,7 @@ use Yiisoft\Db\Exception\NotSupportedException;
 use Yiisoft\Db\Pgsql\PDO\SchemaPDOPgsql;
 use Yiisoft\Db\Query\DDLQueryBuilder as AbstractDDLQueryBuilder;
 use Yiisoft\Db\Query\QueryBuilderInterface;
+use Yiisoft\Db\Schema\ColumnSchemaBuilder;
 
 final class DDLQueryBuilder extends AbstractDDLQueryBuilder
 {
@@ -20,7 +21,7 @@ final class DDLQueryBuilder extends AbstractDDLQueryBuilder
         parent::__construct($queryBuilder);
     }
 
-    public function alterColumn(string $table, string $column, $type): string
+    public function alterColumn(string $table, string $column, string|ColumnSchemaBuilder $type): string
     {
         $columnName = $this->queryBuilder->quoter()->quoteColumnName($column);
         $tableName = $this->queryBuilder->quoter()->quoteTableName($table);
@@ -91,6 +92,7 @@ final class DDLQueryBuilder extends AbstractDDLQueryBuilder
         $tableNames = array_diff($tableNames, $viewNames);
         $command = '';
 
+        /** @psalm-var string[] $tableNames */
         foreach ($tableNames as $tableName) {
             $tableName = $this->queryBuilder->quoter()->quoteTableName("$schema.$tableName");
             $command .= "ALTER TABLE $tableName $enable TRIGGER ALL; ";
@@ -106,7 +108,7 @@ final class DDLQueryBuilder extends AbstractDDLQueryBuilder
     /**
      * @throws Exception|InvalidArgumentException
      */
-    public function createIndex(string $name, string $table, array|string $columns, $unique = false): string
+    public function createIndex(string $name, string $table, array|string $columns, bool|string $unique = false): string
     {
         if ($unique === $this->queryBuilder::INDEX_UNIQUE || $unique === true) {
             $index = false;
@@ -128,7 +130,7 @@ final class DDLQueryBuilder extends AbstractDDLQueryBuilder
         if (str_contains($table, '.') && !str_contains($name, '.')) {
             if (str_contains($table, '{{')) {
                 $table = preg_replace('/{{(.*?)}}/', '\1', $table);
-                [$schema, $table] = explode('.', $table);
+                [$schema] = explode('.', $table);
                 if (!str_contains($schema, '%')) {
                     $name = $schema . '.' . $name;
                 } else {
