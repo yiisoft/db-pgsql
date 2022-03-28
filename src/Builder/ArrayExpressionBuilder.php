@@ -57,11 +57,11 @@ final class ArrayExpressionBuilder implements ExpressionBuilderInterface
         }
 
         if ($value instanceof Query) {
-            /** @var string $sql */
             [$sql, $params] = $this->queryBuilder->build($value, $params);
             return $this->buildSubqueryArray($sql, $expression);
         }
 
+        /** @psalm-var string[] */
         $placeholders = $this->buildPlaceholders($expression, $params);
 
         return 'ARRAY[' . implode(', ', $placeholders) . ']' . $this->getTypehint($expression);
@@ -102,10 +102,6 @@ final class ArrayExpressionBuilder implements ExpressionBuilderInterface
         /** @var ExpressionInterface|int $item */
         foreach ($value as $item) {
             if ($item instanceof Query) {
-                /**
-                 * @var string $sql
-                 * @var array $params
-                 */
                 [$sql, $params] = $this->queryBuilder->build($item, $params);
                 $placeholders[] = $this->buildSubqueryArray($sql, $expression);
                 continue;
@@ -144,7 +140,6 @@ final class ArrayExpressionBuilder implements ExpressionBuilderInterface
      */
     protected function getTypeHint(ArrayExpression $expression): string
     {
-        /** @var string|null $type */
         $type = $expression->getType();
 
         if ($type === null) {

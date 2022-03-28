@@ -8,6 +8,7 @@ use Generator;
 use PDO;
 use Yiisoft\Db\Command\CommandInterface;
 use Yiisoft\Db\Expression\ArrayExpression;
+use Yiisoft\Db\Expression\ExpressionBuilderInterface;
 use Yiisoft\Db\Expression\JsonExpression;
 use Yiisoft\Db\Pdo\PdoValue;
 use Yiisoft\Db\Pgsql\Builder\ArrayExpressionBuilder;
@@ -57,7 +58,7 @@ final class QueryBuilderPDOPgsql extends QueryBuilder
     /**
      * @var array mapping from abstract column types (keys) to physical column types (values).
      *
-     * @psalm-var array<string, string>
+     * @psalm-var string[]
      */
     protected array $typeMap = [
         Schema::TYPE_PK => 'serial NOT NULL PRIMARY KEY',
@@ -205,6 +206,8 @@ final class QueryBuilderPDOPgsql extends QueryBuilder
      * @return array
      *
      * See {@see ExpressionBuilder} docs for details.
+     *
+     * @psalm-return array<string, class-string<ExpressionBuilderInterface>>
      */
     protected function defaultExpressionBuilders(): array
     {

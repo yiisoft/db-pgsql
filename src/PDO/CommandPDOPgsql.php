@@ -30,7 +30,10 @@ final class CommandPDOPgsql extends CommandPDO
         $this->setSql($sql)->bindValues($params);
         $this->prepare(false);
 
-        return $this->queryOne();
+        /** @var mixed */
+        $queryOne = $this->queryOne();
+
+        return is_array($queryOne) ? $queryOne : false;
     }
 
     public function queryBuilder(): QueryBuilderInterface
@@ -60,10 +63,11 @@ final class CommandPDOPgsql extends CommandPDO
         }
 
         try {
-            $this->pdoStatement = $pdo->prepare($sql);
+            $this->pdoStatement = $pdo?->prepare($sql);
             $this->bindPendingParams();
         } catch (PDOException $e) {
             $message = $e->getMessage() . "\nFailed to prepare SQL: $sql";
+            /** @var array|null */
             $errorInfo = $e->errorInfo ?? null;
 
             throw new Exception($message, $errorInfo, $e);
@@ -92,9 +96,12 @@ final class CommandPDOPgsql extends CommandPDO
                     && $this->isolationLevel !== null
                     && $this->db->getTransaction() === null
                 ) {
-                    $this->db->transaction(fn ($rawSql) => $this->internalExecute($rawSql), $this->isolationLevel);
+                    $this->db->transaction(
+                        fn (?string $rawSql): ?string => $this->internalExecute($rawSql),
+                        $this->isolationLevel
+                    );
                 } else {
-                    $this->pdoStatement->execute();
+                    $this->pdoStatement?->execute();
                 }
                 break;
             } catch (\Exception $e) {

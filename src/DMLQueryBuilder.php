@@ -37,7 +37,6 @@ final class DMLQueryBuilder extends AbstractDMLQueryBuilder
 
         if (!empty($returnColumns)) {
             $returning = [];
-            /** @var string $name */
             foreach ($returnColumns as $name) {
                 $returning[] = $this->queryBuilder->quoter()->quoteColumnName($name);
             }
@@ -49,6 +48,8 @@ final class DMLQueryBuilder extends AbstractDMLQueryBuilder
 
     /**
      * @throws Exception|InvalidArgumentException|InvalidConfigException|NotSupportedException
+     *
+     * @psalm-suppress MixedArrayOffset
      */
     public function batchInsert(string $table, array $columns, iterable|Generator $rows, array &$params = []): string
     {
@@ -57,7 +58,7 @@ final class DMLQueryBuilder extends AbstractDMLQueryBuilder
         }
 
         /**
-         * @var array<array-key, object> $columnSchemas
+         * @psalm-var array<array-key, ColumnSchema> $columnSchemas
          */
         $columnSchemas = [];
         $schema = $this->queryBuilder->schema();
@@ -86,6 +87,7 @@ final class DMLQueryBuilder extends AbstractDMLQueryBuilder
                 }
 
                 if (is_string($value)) {
+                    /** @var mixed */
                     $value = $this->queryBuilder->quoter()->quoteValue($value);
                 } elseif (is_float($value)) {
                     /** ensure type cast always has . as decimal separator in all locales */
@@ -115,6 +117,10 @@ final class DMLQueryBuilder extends AbstractDMLQueryBuilder
             $columns[$i] = $this->queryBuilder->quoter()->quoteColumnName($name);
         }
 
+        /**
+         * @psalm-var string[] $columns
+         * @psalm-var string[] $values
+         */
         return 'INSERT INTO '
             . $this->queryBuilder->quoter()->quoteTableName($table)
             . ' (' . implode(', ', $columns) . ') VALUES ' . implode(', ', $values);
@@ -143,6 +149,7 @@ final class DMLQueryBuilder extends AbstractDMLQueryBuilder
      * @return string the INSERT SQL
      *
      * @psalm-suppress UndefinedInterfaceMethod
+     * @psalm-suppress MixedArgument
      */
     public function insert(string $table, QueryInterface|array $columns, array &$params = []): string
     {
@@ -157,7 +164,7 @@ final class DMLQueryBuilder extends AbstractDMLQueryBuilder
      * @param array|bool|QueryInterface $updateColumns
      * @param array $params
      *
-     *@throws Exception|InvalidArgumentException|InvalidConfigException|JsonException|NotSupportedException
+     * @throws Exception|InvalidArgumentException|InvalidConfigException|JsonException|NotSupportedException
      *
      * @return string
      */
@@ -194,11 +201,18 @@ final class DMLQueryBuilder extends AbstractDMLQueryBuilder
 
             /** @var string $name */
             foreach ($updateNames as $name) {
-                $updateColumns[$name] = new Expression('EXCLUDED.' . $this->queryBuilder->quoter()->quoteColumnName($name));
+                $updateColumns[$name] = new Expression(
+                    'EXCLUDED.' . $this->queryBuilder->quoter()->quoteColumnName($name)
+                );
             }
         }
 
-        /** @var array $updates */
+        /**
+         * @var array $updateColumns
+         *
+         * @psalm-var string[] $uniqueNames
+         * @psalm-var string[] $updates
+         */
         [$updates, $params] = $this->queryBuilder->prepareUpdateSets($table, $updateColumns, $params);
 
         return $insertSql
@@ -274,9 +288,12 @@ final class DMLQueryBuilder extends AbstractDMLQueryBuilder
      */
     public function update(string $table, array $columns, array|string $condition, array &$params = []): string
     {
+        /** @var array|QueryInterface */
+        $normalizeTableRowData = $this->queryBuilder->normalizeTableRowData($table, $columns);
+
         return parent::update(
             $table,
-            $this->queryBuilder->normalizeTableRowData($table, $columns),
+            is_array($normalizeTableRowData) ? $normalizeTableRowData : [],
             $condition,
             $params,
         );
@@ -320,11 +337,17 @@ final class DMLQueryBuilder extends AbstractDMLQueryBuilder
      *
      * @psalm-suppress UndefinedInterfaceMethod
      */
-    public function upsert(string $table, QueryInterface|array $insertColumns, $updateColumns, array &$params = []): string
-    {
+    public function upsert(
+        string $table,
+        QueryInterface|array $insertColumns,
+        $updateColumns,
+        array &$params = []
+    ): string {
+        /** @var array|QueryInterface $insertColumns */
         $insertColumns = $this->queryBuilder->normalizeTableRowData($table, $insertColumns);
 
         if (!is_bool($updateColumns)) {
+            /** @var array|QueryInterface $updateColumns */
             $updateColumns = $this->queryBuilder->normalizeTableRowData($table, $updateColumns);
         }
 
