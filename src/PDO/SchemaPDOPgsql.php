@@ -540,7 +540,7 @@ final class SchemaPDOPgsql extends Schema implements ViewInterface
         /** @var array{array{tableName: string, columns: array}} $constraints */
         $constraints = [];
 
-        $slavePdo = $this->db->getSlavePdo();
+        $pdo = $this->db->getOpenPDO();
 
         /**
          * @psalm-var array<
@@ -556,7 +556,7 @@ final class SchemaPDOPgsql extends Schema implements ViewInterface
         $rows = $this->db->createCommand($sql)->queryAll();
 
         foreach ($rows as $constraint) {
-            if ($slavePdo !== null && $slavePdo->getAttribute(PDO::ATTR_CASE) === PDO::CASE_UPPER) {
+            if ($pdo !== null && $pdo->getAttribute(PDO::ATTR_CASE) === PDO::CASE_UPPER) {
                 $constraint = array_change_key_case($constraint, CASE_LOWER);
             }
 
@@ -644,11 +644,11 @@ final class SchemaPDOPgsql extends Schema implements ViewInterface
     public function findUniqueIndexes(TableSchema $table): array
     {
         $uniqueIndexes = [];
-        $slavePdo = $this->db->getSlavePdo();
+        $pdo = $this->db->getOpenPDO();
 
         /** @var array{indexname: string, columnname: string} $row */
         foreach ($this->getUniqueIndexInformation($table) as $row) {
-            if ($slavePdo !== null && $slavePdo->getAttribute(PDO::ATTR_CASE) === PDO::CASE_UPPER) {
+            if ($pdo !== null && $pdo->getAttribute(PDO::ATTR_CASE) === PDO::CASE_UPPER) {
                 $row = array_change_key_case($row, CASE_LOWER);
             }
 
@@ -770,7 +770,7 @@ final class SchemaPDOPgsql extends Schema implements ViewInterface
         SQL;
 
         $columns = $this->db->createCommand($sql)->queryAll();
-        $slavePdo = $this->db->getSlavePdo();
+        $pdo = $this->db->getOpenPDO();
 
         if (empty($columns)) {
             return false;
@@ -778,7 +778,7 @@ final class SchemaPDOPgsql extends Schema implements ViewInterface
 
         /** @var array $column */
         foreach ($columns as $column) {
-            if ($slavePdo !== null && $slavePdo->getAttribute(PDO::ATTR_CASE) === PDO::CASE_UPPER) {
+            if ($pdo !== null && $pdo->getAttribute(PDO::ATTR_CASE) === PDO::CASE_UPPER) {
                 $column = array_change_key_case($column, CASE_LOWER);
             }
 
@@ -1163,7 +1163,7 @@ final class SchemaPDOPgsql extends Schema implements ViewInterface
      */
     protected function normalizePdoRowKeyCase(array $row, bool $multiple): array
     {
-        if ($this->db->getSlavePdo()?->getAttribute(PDO::ATTR_CASE) !== PDO::CASE_UPPER) {
+        if ($this->db->getOpenPDO()?->getAttribute(PDO::ATTR_CASE) !== PDO::CASE_UPPER) {
             return $row;
         }
 
