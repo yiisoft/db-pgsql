@@ -233,7 +233,12 @@ final class SchemaPDOPgsql extends Schema implements ViewInterface
         ORDER BY "ns"."nspname" ASC
         SQL;
 
-        return $this->db->createCommand($sql)->queryColumn();
+        $schemaNames = $this->db->createCommand($sql)->queryColumn();
+        if (!$schemaNames) {
+            return [];
+        }
+
+        return $schemaNames;
     }
 
     /**
@@ -262,7 +267,12 @@ final class SchemaPDOPgsql extends Schema implements ViewInterface
         ORDER BY c.relname
         SQL;
 
-        return $this->db->createCommand($sql, [':schemaName' => $schema])->queryColumn();
+        $tableNames = $this->db->createCommand($sql, [':schemaName' => $schema])->queryColumn();
+        if (!$tableNames) {
+            return [];
+        }
+
+        return $tableNames;
     }
 
     /**
@@ -483,7 +493,12 @@ final class SchemaPDOPgsql extends Schema implements ViewInterface
         ORDER BY c.relname
         SQL;
 
-        return $this->db->createCommand($sql, [':schemaName' => $schema])->queryColumn();
+        $viewNames = $this->db->createCommand($sql, [':schemaName' => $schema])->queryColumn();
+        if (!$viewNames) {
+            return [];
+        }
+
+        return $viewNames;
     }
 
     /**
