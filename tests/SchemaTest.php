@@ -553,7 +553,7 @@ final class SchemaTest extends TestCase
         }
 
         $db = $this->getConnection();
-        $db->getOpenPDO()->setAttribute(PDO::ATTR_CASE, PDO::CASE_LOWER);
+        $db->getActivePDO()->setAttribute(PDO::ATTR_CASE, PDO::CASE_LOWER);
         $constraints = $db->getSchema()->{'getTable' . ucfirst($type)}($tableName, true);
         $this->assertMetadataEquals($expected, $constraints);
     }
@@ -575,7 +575,7 @@ final class SchemaTest extends TestCase
         }
 
         $db = $this->getConnection();
-        $db->getOpenPDO()->setAttribute(PDO::ATTR_CASE, PDO::CASE_UPPER);
+        $db->getActivePDO()->setAttribute(PDO::ATTR_CASE, PDO::CASE_UPPER);
         $constraints = $db->getSchema()->{'getTable' . ucfirst($type)}($tableName, true);
         $this->assertMetadataEquals($expected, $constraints);
     }
@@ -644,12 +644,12 @@ final class SchemaTest extends TestCase
         $uniqueIndexes = $schema->findUniqueIndexes($schema->getTableSchema('uniqueIndex', true));
         $this->assertEquals([], $uniqueIndexes);
 
-        $db->getOpenPDO()->setAttribute(PDO::ATTR_CASE, PDO::CASE_UPPER);
+        $db->getActivePDO()->setAttribute(PDO::ATTR_CASE, PDO::CASE_UPPER);
         $db->createCommand()->createIndex('somecolUnique', 'uniqueIndex', 'somecol', true)->execute();
         $uniqueIndexes = $schema->findUniqueIndexes($schema->getTableSchema('uniqueIndex', true));
         $this->assertEquals(['somecolUnique' => ['somecol']], $uniqueIndexes);
 
-        $db->getOpenPDO()->setAttribute(PDO::ATTR_CASE, PDO::CASE_LOWER);
+        $db->getActivePDO()->setAttribute(PDO::ATTR_CASE, PDO::CASE_LOWER);
 
         /**
          * create another column with upper case letter that fails postgres

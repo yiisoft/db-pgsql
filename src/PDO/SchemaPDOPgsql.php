@@ -540,7 +540,7 @@ final class SchemaPDOPgsql extends Schema implements ViewInterface
         /** @var array{array{tableName: string, columns: array}} $constraints */
         $constraints = [];
 
-        $pdo = $this->db->getOpenPDO();
+        $pdo = $this->db->getActivePDO();
 
         /**
          * @psalm-var array<
@@ -644,7 +644,7 @@ final class SchemaPDOPgsql extends Schema implements ViewInterface
     public function findUniqueIndexes(TableSchema $table): array
     {
         $uniqueIndexes = [];
-        $pdo = $this->db->getOpenPDO();
+        $pdo = $this->db->getActivePDO();
 
         /** @var array{indexname: string, columnname: string} $row */
         foreach ($this->getUniqueIndexInformation($table) as $row) {
@@ -770,7 +770,7 @@ final class SchemaPDOPgsql extends Schema implements ViewInterface
         SQL;
 
         $columns = $this->db->createCommand($sql)->queryAll();
-        $pdo = $this->db->getOpenPDO();
+        $pdo = $this->db->getActivePDO();
 
         if (empty($columns)) {
             return false;
@@ -1163,7 +1163,7 @@ final class SchemaPDOPgsql extends Schema implements ViewInterface
      */
     protected function normalizePdoRowKeyCase(array $row, bool $multiple): array
     {
-        if ($this->db->getOpenPDO()?->getAttribute(PDO::ATTR_CASE) !== PDO::CASE_UPPER) {
+        if ($this->db->getActivePDO()?->getAttribute(PDO::ATTR_CASE) !== PDO::CASE_UPPER) {
             return $row;
         }
 
