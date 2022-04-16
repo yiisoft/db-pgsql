@@ -8,6 +8,7 @@ use PDO;
 use Yiisoft\Db\Command\CommandInterface;
 use Yiisoft\Db\Connection\ConnectionPDO;
 use Yiisoft\Db\Exception\Exception;
+use Yiisoft\Db\Exception\InvalidArgumentException;
 use Yiisoft\Db\Exception\InvalidConfigException;
 use Yiisoft\Db\Query\QueryBuilderInterface;
 use Yiisoft\Db\Schema\Quoter;
@@ -48,6 +49,15 @@ final class ConnectionPDOPgsql extends ConnectionPDO
     public function getDriverName(): string
     {
         return 'pgsql';
+    }
+
+    public function getLastInsertID(?string $sequenceName = null): string
+    {
+        if ($sequenceName === null) {
+            throw new InvalidArgumentException('PgSQL not support lastInsertId without sequence name');
+        }
+
+        return parent::getLastInsertID($sequenceName);
     }
 
     /**
