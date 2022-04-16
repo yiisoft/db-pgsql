@@ -183,7 +183,6 @@ final class CommandTest extends TestCase
         $db->getLastInsertID();
     }
 
-
     /**
      * {@see https://github.com/yiisoft/yii2/issues/11498}
      */
