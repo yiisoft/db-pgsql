@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Yiisoft\Db\Pgsql\Tests;
 
-use function serialize;
+use Yiisoft\Db\Exception\InvalidCallException;
 use Yiisoft\Db\Exception\Exception;
 use Yiisoft\Db\Exception\InvalidArgumentException;
 use Yiisoft\Db\Exception\InvalidConfigException;
@@ -14,6 +14,8 @@ use Yiisoft\Db\Expression\JsonExpression;
 use Yiisoft\Db\Query\Query;
 
 use Yiisoft\Db\TestSupport\TestCommandTrait;
+
+use function serialize;
 
 /**
  * @group pgsql
@@ -153,7 +155,7 @@ final class CommandTest extends TestCase
 
         $command->execute();
 
-        $this->assertEquals(3, $db->getSchema()->getLastInsertID('public.profile_id_seq'));
+        $this->assertEquals(3, $db->getLastInsertID('public.profile_id_seq'));
 
         $sql = 'INSERT INTO {{schema1.profile}}([[description]]) VALUES (\'non duplicate\')';
 
@@ -161,7 +163,24 @@ final class CommandTest extends TestCase
 
         $command->execute();
 
-        $this->assertEquals(3, $db->getSchema()->getLastInsertID('schema1.profile_id_seq'));
+        $this->assertEquals(3, $db->getLastInsertID('schema1.profile_id_seq'));
+    }
+
+    public function testLastInsertIdException(): void
+    {
+        $db = $this->getConnection();
+        $db->close();
+
+        $this->expectException(InvalidCallException::class);
+        $db->getLastInsertID('schema1.profile_id_seq');
+    }
+
+    public function testLastInsertIdNotSupportedException(): void
+    {
+        $db = $this->getConnection();
+
+        $this->expectException(InvalidArgumentException::class);
+        $db->getLastInsertID();
     }
 
     /**
