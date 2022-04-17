@@ -1088,16 +1088,6 @@ final class Schema extends AbstractSchema implements ViewInterface
         return new ColumnSchemaBuilder($type, $length);
     }
 
-    public function rollBackSavepoint(string $name): void
-    {
-        $this->db->createCommand("ROLLBACK TO SAVEPOINT $name")->execute();
-    }
-
-    public function setTransactionIsolationLevel(string $level): void
-    {
-        $this->db->createCommand("SET TRANSACTION ISOLATION LEVEL $level")->execute();
-    }
-
     /**
      * Returns the actual name of a given table name.
      *
@@ -1176,26 +1166,6 @@ final class Schema extends AbstractSchema implements ViewInterface
     public function getLastInsertID(?string $sequenceName = null): string
     {
         return $this->db->getLastInsertID($sequenceName);
-    }
-
-    /**
-     * Creates a new savepoint.
-     *
-     * @param string $name the savepoint name
-     *
-     * @throws Exception|InvalidConfigException|Throwable
-     */
-    public function createSavepoint(string $name): void
-    {
-        $this->db->createCommand("SAVEPOINT $name")->execute();
-    }
-
-    /**
-     * @throws Exception|InvalidConfigException|Throwable
-     */
-    public function releaseSavepoint(string $name): void
-    {
-        $this->db->createCommand("RELEASE SAVEPOINT $name")->execute();
     }
 
     /**
