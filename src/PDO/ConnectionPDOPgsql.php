@@ -10,6 +10,7 @@ use Yiisoft\Db\Connection\ConnectionPDO;
 use Yiisoft\Db\Exception\Exception;
 use Yiisoft\Db\Exception\InvalidArgumentException;
 use Yiisoft\Db\Exception\InvalidConfigException;
+use Yiisoft\Db\Pgsql\Schema;
 use Yiisoft\Db\Query\QueryBuilderInterface;
 use Yiisoft\Db\Schema\Quoter;
 use Yiisoft\Db\Schema\QuoterInterface;
@@ -88,7 +89,7 @@ final class ConnectionPDOPgsql extends ConnectionPDO
     public function getSchema(): SchemaInterface
     {
         if ($this->schema === null) {
-            $this->schema = new SchemaPDOPgsql($this, $this->schemaCache);
+            $this->schema = new Schema($this, $this->schemaCache);
         }
 
         return $this->schema;
