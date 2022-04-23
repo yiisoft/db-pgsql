@@ -670,4 +670,9 @@ final class SchemaTest extends TestCase
             'another unique index' => ['someCol2'],
         ], $uniqueIndexes);
     }
+
+    public function testGetSchemaDefaultValues(): void
+    {
+        $this->markTestSkipped('PostgreSQL does not support default value constraints.');
+    }
 }
