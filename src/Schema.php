@@ -305,7 +305,7 @@ final class Schema extends AbstractSchema implements ViewInterface
      */
     protected function loadTablePrimaryKey(string $tableName): ?Constraint
     {
-        $tablePrimaryKey = $this->loadTableConstraints($tableName, 'primaryKey');
+        $tablePrimaryKey = $this->loadTableConstraints($tableName, self::PRIMARY_KEY);
 
         return $tablePrimaryKey instanceof Constraint ? $tablePrimaryKey : null;
     }
@@ -323,7 +323,7 @@ final class Schema extends AbstractSchema implements ViewInterface
      */
     protected function loadTableForeignKeys(string $tableName): array
     {
-        $tableForeignKeys = $this->loadTableConstraints($tableName, 'foreignKeys');
+        $tableForeignKeys = $this->loadTableConstraints($tableName, self::FOREIGN_KEYS);
 
         return is_array($tableForeignKeys) ? $tableForeignKeys : [];
     }
@@ -408,7 +408,7 @@ final class Schema extends AbstractSchema implements ViewInterface
      */
     protected function loadTableUniques(string $tableName): array
     {
-        $tableUniques = $this->loadTableConstraints($tableName, 'uniques');
+        $tableUniques = $this->loadTableConstraints($tableName, self::UNIQUES);
 
         return is_array($tableUniques) ? $tableUniques : [];
     }
@@ -426,7 +426,7 @@ final class Schema extends AbstractSchema implements ViewInterface
      */
     protected function loadTableChecks(string $tableName): array
     {
-        $tableChecks = $this->loadTableConstraints($tableName, 'checks');
+        $tableChecks = $this->loadTableConstraints($tableName, self::CHECKS);
 
         return is_array($tableChecks) ? $tableChecks : [];
     }
@@ -990,10 +990,10 @@ final class Schema extends AbstractSchema implements ViewInterface
         $constraints = ArrayHelper::index($constraints, null, ['type', 'name']);
 
         $result = [
-            'primaryKey' => null,
-            'foreignKeys' => [],
-            'uniques' => [],
-            'checks' => [],
+            self::PRIMARY_KEY => null,
+            self::FOREIGN_KEYS => [],
+            self::UNIQUES => [],
+            self::CHECKS => [],
         ];
 
         /**
@@ -1008,17 +1008,15 @@ final class Schema extends AbstractSchema implements ViewInterface
             foreach ($names as $name => $constraint) {
                 switch ($type) {
                     case 'p':
-                        $ct = (new Constraint())
+                        $result[self::PRIMARY_KEY] = (new Constraint())
                             ->name($name)
                             ->columnNames(ArrayHelper::getColumn($constraint, 'column_name'));
-
-                        $result['primaryKey'] = $ct;
                         break;
                     case 'f':
                         $onDelete = $actionTypes[$constraint[0]['on_delete']] ?? null;
                         $onUpdate = $actionTypes[$constraint[0]['on_update']] ?? null;
 
-                        $fk = (new ForeignKeyConstraint())
+                        $result[self::FOREIGN_KEYS][] = (new ForeignKeyConstraint())
                             ->name($name)
                             ->columnNames(array_values(
                                 array_unique(ArrayHelper::getColumn($constraint, 'column_name'))
@@ -1030,23 +1028,17 @@ final class Schema extends AbstractSchema implements ViewInterface
                             ))
                             ->onDelete($onDelete)
                             ->onUpdate($onUpdate);
-
-                        $result['foreignKeys'][] = $fk;
                         break;
                     case 'u':
-                        $ct = (new Constraint())
+                        $result[self::UNIQUES][] = (new Constraint())
                             ->name($name)
                             ->columnNames(ArrayHelper::getColumn($constraint, 'column_name'));
-
-                        $result['uniques'][] = $ct;
                         break;
                     case 'c':
-                        $ck = (new CheckConstraint())
+                        $result[self::CHECKS][] = (new CheckConstraint())
                             ->name($name)
                             ->columnNames(ArrayHelper::getColumn($constraint, 'column_name'))
                             ->expression($constraint[0]['check_expr']);
-
-                        $result['checks'][] = $ck;
                         break;
                 }
             }
