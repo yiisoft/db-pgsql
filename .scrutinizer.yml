@@ -3,14 +3,14 @@ checks:
 
 filter:
   paths:
-    - "src/*"
+    - src/
 
 build:
   image: default-bionic
 
   environment:
     php:
-      version: 8.0.15
+      version: 8.0.18
       ini:
         xdebug.mode: coverage
 
