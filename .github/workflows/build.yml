@@ -61,7 +61,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Install PHP with extensions
         uses: shivammathur/setup-php@v2
@@ -71,9 +71,6 @@ jobs:
           ini-values: date.timezone='UTC'
           coverage: pcov
           tools: composer:v2
-
-      - name: Determine composer cache directory
-        run: echo "COMPOSER_CACHE_DIR=$(composer config cache-dir)" >> $GITHUB_ENV
 
       - name: Update composer
         run: composer self-update
