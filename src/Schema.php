@@ -20,6 +20,7 @@ use Yiisoft\Db\Exception\NotSupportedException;
 use Yiisoft\Db\Expression\Expression;
 use Yiisoft\Db\Schema\ColumnSchemaBuilder;
 use Yiisoft\Db\Schema\Schema as AbstractSchema;
+use Yiisoft\Db\Schema\TableSchemaInterface;
 use Yiisoft\Db\View\ViewInterface;
 
 use function array_change_key_case;
@@ -448,10 +449,10 @@ final class Schema extends AbstractSchema implements ViewInterface
     /**
      * Resolves the table name and schema name (if any).
      *
-     * @param TableSchema $table the table metadata object.
+     * @param TableSchemaInterface $table the table metadata object.
      * @param string $name the table name
      */
-    protected function resolveTableNames(TableSchema $table, string $name): void
+    protected function resolveTableNames(TableSchemaInterface $table, string $name): void
     {
         $parts = explode('.', str_replace('"', '', $name));
 
@@ -500,11 +501,11 @@ final class Schema extends AbstractSchema implements ViewInterface
     /**
      * Collects the foreign key column details for the given table.
      *
-     * @param TableSchema $table the table metadata
+     * @param TableSchemaInterface $table the table metadata
      *
      * @throws Exception|InvalidConfigException|Throwable
      */
-    protected function findConstraints(TableSchema $table): void
+    protected function findConstraints(TableSchemaInterface $table): void
     {
         $tableName = $table->getName();
         $tableSchema = $table->getSchemaName();
@@ -607,13 +608,13 @@ final class Schema extends AbstractSchema implements ViewInterface
     /**
      * Gets information about given table unique indexes.
      *
-     * @param TableSchema $table the table metadata.
+     * @param TableSchemaInterface $table the table metadata.
      *
      * @throws Exception|InvalidConfigException|Throwable
      *
      * @return array with index and column names.
      */
-    protected function getUniqueIndexInformation(TableSchema $table): array
+    protected function getUniqueIndexInformation(TableSchemaInterface $table): array
     {
         $sql = <<<'SQL'
         SELECT
@@ -649,13 +650,13 @@ final class Schema extends AbstractSchema implements ViewInterface
      * ]
      * ```
      *
-     * @param TableSchema $table the table metadata
+     * @param TableSchemaInterface $table the table metadata
      *
      * @throws Exception|InvalidConfigException|Throwable
      *
      * @return array all unique indexes for the given table.
      */
-    public function findUniqueIndexes(TableSchema $table): array
+    public function findUniqueIndexes(TableSchemaInterface $table): array
     {
         $uniqueIndexes = [];
 
@@ -684,13 +685,13 @@ final class Schema extends AbstractSchema implements ViewInterface
     /**
      * Collects the metadata of table columns.
      *
-     * @param TableSchema $table the table metadata.
+     * @param TableSchemaInterface $table the table metadata.
      *
      * @throws Exception|InvalidConfigException|JsonException|Throwable
      *
      * @return bool whether the table exists in the database.
      */
-    protected function findColumns(TableSchema $table): bool
+    protected function findColumns(TableSchemaInterface $table): bool
     {
         $tableName = $table->getName();
         $schemaName = $table->getSchemaName();

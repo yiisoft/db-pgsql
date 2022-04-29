@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Yiisoft\Db\Pgsql\PDO;
 
 use PDO;
-use Yiisoft\Db\Command\CommandInterface;
+use Yiisoft\Db\Command\CommandPDOInterface;
 use Yiisoft\Db\Connection\ConnectionPDO;
 use Yiisoft\Db\Exception\Exception;
 use Yiisoft\Db\Exception\InvalidArgumentException;
@@ -23,7 +23,7 @@ use Yiisoft\Db\Transaction\TransactionInterface;
  */
 final class ConnectionPDOPgsql extends ConnectionPDO
 {
-    public function createCommand(?string $sql = null, array $params = []): CommandInterface
+    public function createCommand(?string $sql = null, array $params = []): CommandPDOInterface
     {
         $command = new CommandPDOPgsql($this, $this->queryCache);
 
