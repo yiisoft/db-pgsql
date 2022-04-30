@@ -21,7 +21,6 @@ use Yiisoft\Db\Expression\Expression;
 use Yiisoft\Db\Schema\ColumnSchemaBuilder;
 use Yiisoft\Db\Schema\Schema as AbstractSchema;
 use Yiisoft\Db\Schema\TableSchemaInterface;
-use Yiisoft\Db\View\ViewInterface;
 
 use function array_change_key_case;
 use function array_merge;
@@ -82,7 +81,7 @@ use function substr;
  *   foreign_column_name: string,
  * }
  */
-final class Schema extends AbstractSchema implements ViewInterface
+final class Schema extends AbstractSchema
 {
     public const TYPE_JSONB = 'jsonb';
 
