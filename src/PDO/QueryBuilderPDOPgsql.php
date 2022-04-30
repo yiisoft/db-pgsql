@@ -7,10 +7,10 @@ namespace Yiisoft\Db\Pgsql\PDO;
 use Generator;
 use PDO;
 use Yiisoft\Db\Command\CommandInterface;
+use Yiisoft\Db\Driver\PDO\PDOValue;
 use Yiisoft\Db\Expression\ArrayExpression;
 use Yiisoft\Db\Expression\ExpressionBuilderInterface;
 use Yiisoft\Db\Expression\JsonExpression;
-use Yiisoft\Db\Pdo\PdoValue;
 use Yiisoft\Db\Pgsql\Builder\ArrayExpressionBuilder;
 use Yiisoft\Db\Pgsql\Builder\JsonExpressionBuilder;
 use Yiisoft\Db\Pgsql\DDLQueryBuilder;
@@ -158,7 +158,7 @@ final class QueryBuilderPDOPgsql extends QueryBuilder
                     is_string($value)
                 ) {
                     /** explicitly setup PDO param type for binary column */
-                    $columns[$name] = new PdoValue($value, PDO::PARAM_LOB);
+                    $columns[$name] = new PDOValue($value, PDO::PARAM_LOB);
                 }
             }
         }

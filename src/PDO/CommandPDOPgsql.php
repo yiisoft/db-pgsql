@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Yiisoft\Db\Pgsql\PDO;
 
-use Yiisoft\Db\Command\CommandPDO;
+use Yiisoft\Db\Driver\PDO\CommandPDO;
 use Yiisoft\Db\Exception\ConvertException;
 use Yiisoft\Db\Query\QueryBuilderInterface;
 
