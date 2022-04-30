@@ -158,8 +158,6 @@ final class Schema extends AbstractSchema
         'xml' => self::TYPE_STRING,
     ];
 
-    private array $viewNames = [];
-
     public function __construct(private ConnectionInterface $db, SchemaCache $schemaCache)
     {
         parent::__construct($schemaCache);
@@ -475,7 +473,7 @@ final class Schema extends AbstractSchema
     /**
      * @throws Exception|InvalidConfigException|Throwable
      */
-    public function findViewNames(string $schema = ''): array
+    protected function findViewNames(string $schema = ''): array
     {
         if ($schema === '') {
             $schema = $this->defaultSchema;
@@ -1158,17 +1156,5 @@ final class Schema extends AbstractSchema
     public function getLastInsertID(?string $sequenceName = null): string
     {
         return $this->db->getLastInsertID($sequenceName);
-    }
-
-    /**
-     * @throws Exception|InvalidConfigException|Throwable
-     */
-    public function getViewNames(string $schema = '', bool $refresh = false): array
-    {
-        if (!isset($this->viewNames[$schema]) || $refresh) {
-            $this->viewNames[$schema] = $this->findViewNames($schema);
-        }
-
-        return is_array($this->viewNames[$schema]) ? $this->viewNames[$schema] : [];
     }
 }
