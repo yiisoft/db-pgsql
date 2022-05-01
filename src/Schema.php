@@ -179,11 +179,11 @@ final class Schema extends AbstractSchema
      *
      * @param string $name the table name.
      *
-     * @return TableSchema with resolved table, schema, etc. names.
+     * @return TableSchemaInterface with resolved table, schema, etc. names.
      *
-     * {@see TableSchema}
+     * {@see TableSchemaInterface}
      */
-    protected function resolveTableName(string $name): TableSchema
+    protected function resolveTableName(string $name): TableSchemaInterface
     {
         $resolvedName = new TableSchema();
 
@@ -276,9 +276,9 @@ final class Schema extends AbstractSchema
      *
      * @throws Exception|InvalidConfigException|Throwable
      *
-     * @return TableSchema|null DBMS-dependent table metadata, `null` if the table does not exist.
+     * @return TableSchemaInterface|null DBMS-dependent table metadata, `null` if the table does not exist.
      */
-    protected function loadTableSchema(string $name): ?TableSchema
+    protected function loadTableSchema(string $name): ?TableSchemaInterface
     {
         $table = new TableSchema();
 
