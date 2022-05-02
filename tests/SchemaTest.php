@@ -10,7 +10,6 @@ use Yiisoft\Db\Exception\InvalidConfigException;
 use Yiisoft\Db\Exception\NotSupportedException;
 use Yiisoft\Db\Expression\Expression;
 use Yiisoft\Db\Pgsql\TableSchema;
-use Yiisoft\Db\Schema\SchemaInterface;
 use Yiisoft\Db\TestSupport\TestSchemaTrait;
 
 use function array_map;
