@@ -14,6 +14,7 @@ use Yiisoft\Db\Exception\InvalidConfigException;
 use Yiisoft\Db\Exception\NotSupportedException;
 use Yiisoft\Db\Expression\ExpressionInterface;
 use Yiisoft\Db\Query\Query;
+use Yiisoft\Db\Query\QueryInterface;
 use Yiisoft\Db\TestSupport\TestQueryBuilderTrait;
 
 use function version_compare;
@@ -175,7 +176,10 @@ final class QueryBuilderTest extends TestCase
         $db = $this->getConnection();
         $query = (new Query($db))->where($condition);
         [$sql, $params] = $db->getQueryBuilder()->build($query);
-        $this->assertEquals('SELECT *' . (empty($expected) ? '' : ' WHERE ' . $this->replaceQuotes($expected)), $sql);
+        $replacedQuotes = $this->replaceQuotes($expected);
+
+        $this->assertIsString($replacedQuotes);
+        $this->assertEquals('SELECT *' . (empty($expected) ? '' : ' WHERE ' . $replacedQuotes), $sql);
         $this->assertEquals($expectedParams, $params);
     }
 
@@ -193,7 +197,10 @@ final class QueryBuilderTest extends TestCase
         $db = $this->getConnection();
         $query = (new Query($db))->filterWhere($condition);
         [$sql, $params] = $db->getQueryBuilder()->build($query);
-        $this->assertEquals('SELECT *' . (empty($expected) ? '' : ' WHERE ' . $this->replaceQuotes($expected)), $sql);
+        $replacedQuotes = $this->replaceQuotes($expected);
+
+        $this->assertIsString($replacedQuotes);
+        $this->assertEquals('SELECT *' . (empty($expected) ? '' : ' WHERE ' . $replacedQuotes), $sql);
         $this->assertEquals($expectedParams, $params);
     }
 
@@ -210,24 +217,30 @@ final class QueryBuilderTest extends TestCase
         $db = $this->getConnection();
         $params = [];
         $sql = $db->getQueryBuilder()->buildFrom([$table], $params);
-        $this->assertEquals('FROM ' . $this->replaceQuotes($expected), $sql);
+        $replacedQuotes = $this->replaceQuotes($expected);
+
+        $this->assertIsString($replacedQuotes);
+        $this->assertEquals('FROM ' . $replacedQuotes, $sql);
     }
 
     /**
      * @dataProvider \Yiisoft\Db\Pgsql\Tests\Provider\QueryBuilderProvider::buildLikeConditionsProvider
      *
-     * @param array|object $condition
+     * @param array|ExpressionInterface $condition
      * @param string $expected
      * @param array $expectedParams
      *
      * @throws Exception|InvalidArgumentException|InvalidConfigException|NotSupportedException
      */
-    public function testBuildLikeCondition(object|array $condition, string $expected, array $expectedParams): void
+    public function testBuildLikeCondition(array|ExpressionInterface $condition, string $expected, array $expectedParams): void
     {
         $db = $this->getConnection();
         $query = (new Query($db))->where($condition);
         [$sql, $params] = $db->getQueryBuilder()->build($query);
-        $this->assertEquals('SELECT *' . (empty($expected) ? '' : ' WHERE ' . $this->replaceQuotes($expected)), $sql);
+        $replacedQuotes = $this->replaceQuotes($expected);
+
+        $this->assertIsString($replacedQuotes);
+        $this->assertEquals('SELECT *' . (empty($expected) ? '' : ' WHERE ' . $replacedQuotes), $sql);
         $this->assertEquals($expectedParams, $params);
     }
 
@@ -400,7 +413,7 @@ final class QueryBuilderTest extends TestCase
      * @dataProvider \Yiisoft\Db\Pgsql\Tests\Provider\QueryBuilderProvider::insertProvider
      *
      * @param string $table
-     * @param array|ColumnSchema $columns
+     * @param array|QueryInterface $columns
      * @param array $params
      * @param string $expectedSQL
      * @param array $expectedParams
@@ -447,8 +460,8 @@ final class QueryBuilderTest extends TestCase
      * @dataProvider \Yiisoft\Db\Pgsql\Tests\Provider\QueryBuilderProvider::upsertProvider
      *
      * @param string $table
-     * @param array|ColumnSchema $insertColumns
-     * @param array|bool|null $updateColumns
+     * @param array|QueryInterface $insertColumns
+     * @param array|bool $updateColumns
      * @param string|string[] $expectedSQL
      * @param array $expectedParams
      *

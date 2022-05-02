@@ -9,7 +9,7 @@ use Yiisoft\Db\Exception\Exception;
 use Yiisoft\Db\Exception\InvalidConfigException;
 use Yiisoft\Db\Exception\NotSupportedException;
 use Yiisoft\Db\Expression\Expression;
-use Yiisoft\Db\Pgsql\TableSchema;
+use Yiisoft\Db\Schema\TableSchemaInterface;
 use Yiisoft\Db\TestSupport\TestSchemaTrait;
 
 use function array_map;
@@ -308,6 +308,9 @@ final class SchemaTest extends TestCase
     {
         $schema = $this->getConnection()->getSchema();
         $table = $schema->getTableSchema('composite_fk');
+
+        $this->assertNotNull($table);
+
         $fk = $table->getForeignKeys();
         $this->assertCount(1, $fk);
         $this->assertTrue(isset($fk['fk_composite_fk_order_item']));
@@ -343,8 +346,16 @@ final class SchemaTest extends TestCase
     {
         $schema = $this->getConnection()->getSchema();
         $table = $schema->getTableSchema('bool_values');
-        $this->assertTrue($table->getColumn('default_true')->getDefaultValue());
-        $this->assertFalse($table->getColumn('default_false')->getDefaultValue());
+
+        $this->assertNotNull($table);
+
+        $columnTrue = $table->getColumn('default_true');
+        $columnFalse = $table->getColumn('default_false');
+
+        $this->assertNotNull($columnTrue);
+        $this->assertNotNull($columnFalse);
+        $this->assertTrue($columnTrue->getDefaultValue());
+        $this->assertFalse($columnFalse->getDefaultValue());
     }
 
     public function testGetSchemaNames(): void
@@ -362,18 +373,29 @@ final class SchemaTest extends TestCase
     {
         $db = $this->getConnection();
 
-        $sequenceName = $db->getSchema()->getTableSchema('item')->getSequenceName();
+        $tableSchema = $db->getSchema()->getTableSchema('item');
+        $this->assertNotNull($tableSchema);
+
+        $sequenceName = $tableSchema->getSequenceName();
         $db->createCommand(
             'ALTER TABLE "item" ALTER COLUMN "id" SET DEFAULT nextval(\'item_id_seq_2\')'
         )->execute();
         $db->getSchema()->refreshTableSchema('item');
-        $this->assertEquals('item_id_seq_2', $db->getSchema()->getTableSchema('item')->getSequenceName());
+
+        $tableSchema = $db->getSchema()->getTableSchema('item');
+        $this->assertNotNull($tableSchema);
+
+        $this->assertEquals('item_id_seq_2', $tableSchema->getSequenceName());
 
         $db->createCommand(
             'ALTER TABLE "item" ALTER COLUMN "id" SET DEFAULT nextval(\'' . $sequenceName . '\')'
         )->execute();
         $db->getSchema()->refreshTableSchema('item');
-        $this->assertEquals($sequenceName, $db->getSchema()->getTableSchema('item')->getSequenceName());
+
+        $tableSchema = $db->getSchema()->getTableSchema('item');
+        $this->assertNotNull($tableSchema);
+
+        $this->assertEquals($sequenceName, $tableSchema->getSequenceName());
     }
 
     public function testGeneratedValues(): void
@@ -384,10 +406,12 @@ final class SchemaTest extends TestCase
 
         $db = $this->getConnection(true, null, __DIR__ . '/Fixture/postgres12.sql');
         $table = $db->getSchema()->getTableSchema('generated');
-        $this->assertTrue($table->getColumn('id_always')->isAutoIncrement());
-        $this->assertTrue($table->getColumn('id_primary')->isAutoIncrement());
-        $this->assertTrue($table->getColumn('id_primary')->isAutoIncrement());
-        $this->assertTrue($table->getColumn('id_default')->isAutoIncrement());
+
+        $this->assertNotNull($table);
+        $this->assertTrue($table->getColumn('id_always')?->isAutoIncrement());
+        $this->assertTrue($table->getColumn('id_primary')?->isAutoIncrement());
+        $this->assertTrue($table->getColumn('id_primary')?->isAutoIncrement());
+        $this->assertTrue($table->getColumn('id_default')?->isAutoIncrement());
     }
 
     public function testPartitionedTable(): void
@@ -450,7 +474,13 @@ final class SchemaTest extends TestCase
         ])->execute();
         $db->getSchema()->refreshTableSchema('test_timestamp_default_null');
         $tableSchema = $db->getSchema()->getTableSchema('test_timestamp_default_null');
-        $this->assertNull($tableSchema->getColumn('timestamp')->getDefaultValue());
+
+        $this->assertNotNull($tableSchema);
+
+        $columnSchema = $tableSchema->getColumn('timestamp');
+
+        $this->assertNotNull($columnSchema);
+        $this->assertNull($columnSchema->getDefaultValue());
     }
 
     /**
@@ -466,7 +496,7 @@ final class SchemaTest extends TestCase
         $db = $this->getConnection(true);
 
         foreach ($pdoAttributes as $name => $value) {
-            $db->getPDO()->setAttribute($name, $value);
+            $db->getActivePDO()->setAttribute($name, $value);
         }
 
         $schema = $db->getSchema();
@@ -498,7 +528,7 @@ final class SchemaTest extends TestCase
         $db = $this->getConnection(true);
 
         foreach ($pdoAttributes as $name => $value) {
-            $db->getPDO()->setAttribute($name, $value);
+            $db->getActivePDO()->setAttribute($name, $value);
         }
 
         $schema = $db->getSchema();
@@ -506,7 +536,7 @@ final class SchemaTest extends TestCase
         $this->assertCount(count($schema->getTableNames()), $tables);
 
         foreach ($tables as $table) {
-            $this->assertInstanceOf(TableSchema::class, $table);
+            $this->assertInstanceOf(TableSchemaInterface::class, $table);
         }
     }
 
@@ -599,11 +629,13 @@ final class SchemaTest extends TestCase
         $db = $this->getConnection();
         $schema = $db->getSchema();
 
+        $this->assertNotNull($this->schemaCache);
+
         $this->schemaCache->setEnable(true);
 
         $db->setTablePrefix($tablePrefix);
         $noCacheTable = $schema->getTableSchema($tableName, true);
-        $this->assertInstanceOf(TableSchema::class, $noCacheTable);
+        $this->assertInstanceOf(TableSchemaInterface::class, $noCacheTable);
 
         /* Compare */
         $db->setTablePrefix($testTablePrefix);
@@ -613,14 +645,14 @@ final class SchemaTest extends TestCase
         $db->setTablePrefix($tablePrefix);
         $schema->refreshTableSchema($tableName);
         $refreshedTable = $schema->getTableSchema($tableName, false);
-        $this->assertInstanceOf(TableSchema::class, $refreshedTable);
+        $this->assertInstanceOf(TableSchemaInterface::class, $refreshedTable);
         $this->assertNotSame($noCacheTable, $refreshedTable);
 
         /* Compare */
         $db->setTablePrefix($testTablePrefix);
         $schema->refreshTableSchema($testTablePrefix);
         $testRefreshedTable = $schema->getTableSchema($testTableName, false);
-        $this->assertInstanceOf(TableSchema::class, $testRefreshedTable);
+        $this->assertInstanceOf(TableSchemaInterface::class, $testRefreshedTable);
         $this->assertEquals($refreshedTable, $testRefreshedTable);
         $this->assertNotSame($testNoCacheTable, $testRefreshedTable);
     }
@@ -639,14 +671,21 @@ final class SchemaTest extends TestCase
             'someCol2' => 'string',
         ])->execute();
 
-        /** @var $schema Schema */
         $schema = $db->getSchema();
-        $uniqueIndexes = $schema->findUniqueIndexes($schema->getTableSchema('uniqueIndex', true));
+
+        $uq = $schema->getTableSchema('uniqueIndex', true);
+        $this->assertNotNull($uq);
+
+        $uniqueIndexes = $schema->findUniqueIndexes($uq);
         $this->assertEquals([], $uniqueIndexes);
 
         $db->getActivePDO()->setAttribute(PDO::ATTR_CASE, PDO::CASE_UPPER);
         $db->createCommand()->createIndex('somecolUnique', 'uniqueIndex', 'somecol', true)->execute();
-        $uniqueIndexes = $schema->findUniqueIndexes($schema->getTableSchema('uniqueIndex', true));
+
+        $uq = $schema->getTableSchema('uniqueIndex', true);
+        $this->assertNotNull($uq);
+
+        $uniqueIndexes = $schema->findUniqueIndexes($uq);
         $this->assertEquals(['somecolUnique' => ['somecol']], $uniqueIndexes);
 
         $db->getActivePDO()->setAttribute(PDO::ATTR_CASE, PDO::CASE_LOWER);
@@ -656,14 +695,22 @@ final class SchemaTest extends TestCase
          * {@see https://github.com/yiisoft/yii2/issues/10613}
          */
         $db->createCommand()->createIndex('someCol2Unique', 'uniqueIndex', 'someCol2', true)->execute();
-        $uniqueIndexes = $schema->findUniqueIndexes($schema->getTableSchema('uniqueIndex', true));
+
+        $uq = $schema->getTableSchema('uniqueIndex', true);
+        $this->assertNotNull($uq);
+
+        $uniqueIndexes = $schema->findUniqueIndexes($uq);
         $this->assertEquals(['somecolUnique' => ['somecol'], 'someCol2Unique' => ['someCol2']], $uniqueIndexes);
 
         /**
          * {@see https://github.com/yiisoft/yii2/issues/13814}
          */
         $db->createCommand()->createIndex('another unique index', 'uniqueIndex', 'someCol2', true)->execute();
-        $uniqueIndexes = $schema->findUniqueIndexes($schema->getTableSchema('uniqueIndex', true));
+
+        $uq = $schema->getTableSchema('uniqueIndex', true);
+        $this->assertNotNull($uq);
+
+        $uniqueIndexes = $schema->findUniqueIndexes($uq);
         $this->assertEquals([
             'somecolUnique' => ['somecol'],
             'someCol2Unique' => ['someCol2'],

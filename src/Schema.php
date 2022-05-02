@@ -20,7 +20,7 @@ use Yiisoft\Db\Exception\NotSupportedException;
 use Yiisoft\Db\Expression\Expression;
 use Yiisoft\Db\Schema\ColumnSchemaBuilder;
 use Yiisoft\Db\Schema\Schema as AbstractSchema;
-use Yiisoft\Db\View\ViewInterface;
+use Yiisoft\Db\Schema\TableSchemaInterface;
 
 use function array_change_key_case;
 use function array_merge;
@@ -81,7 +81,7 @@ use function substr;
  *   foreign_column_name: string,
  * }
  */
-final class Schema extends AbstractSchema implements ViewInterface
+final class Schema extends AbstractSchema
 {
     public const TYPE_JSONB = 'jsonb';
 
@@ -158,8 +158,6 @@ final class Schema extends AbstractSchema implements ViewInterface
         'xml' => self::TYPE_STRING,
     ];
 
-    private array $viewNames = [];
-
     public function __construct(private ConnectionInterface $db, SchemaCache $schemaCache)
     {
         parent::__construct($schemaCache);
@@ -181,11 +179,11 @@ final class Schema extends AbstractSchema implements ViewInterface
      *
      * @param string $name the table name.
      *
-     * @return TableSchema with resolved table, schema, etc. names.
+     * @return TableSchemaInterface with resolved table, schema, etc. names.
      *
-     * {@see TableSchema}
+     * {@see TableSchemaInterface}
      */
-    protected function resolveTableName(string $name): TableSchema
+    protected function resolveTableName(string $name): TableSchemaInterface
     {
         $resolvedName = new TableSchema();
 
@@ -278,9 +276,9 @@ final class Schema extends AbstractSchema implements ViewInterface
      *
      * @throws Exception|InvalidConfigException|Throwable
      *
-     * @return TableSchema|null DBMS-dependent table metadata, `null` if the table does not exist.
+     * @return TableSchemaInterface|null DBMS-dependent table metadata, `null` if the table does not exist.
      */
-    protected function loadTableSchema(string $name): ?TableSchema
+    protected function loadTableSchema(string $name): ?TableSchemaInterface
     {
         $table = new TableSchema();
 
@@ -448,10 +446,10 @@ final class Schema extends AbstractSchema implements ViewInterface
     /**
      * Resolves the table name and schema name (if any).
      *
-     * @param TableSchema $table the table metadata object.
+     * @param TableSchemaInterface $table the table metadata object.
      * @param string $name the table name
      */
-    protected function resolveTableNames(TableSchema $table, string $name): void
+    protected function resolveTableNames(TableSchemaInterface $table, string $name): void
     {
         $parts = explode('.', str_replace('"', '', $name));
 
@@ -475,7 +473,7 @@ final class Schema extends AbstractSchema implements ViewInterface
     /**
      * @throws Exception|InvalidConfigException|Throwable
      */
-    public function findViewNames(string $schema = ''): array
+    protected function findViewNames(string $schema = ''): array
     {
         if ($schema === '') {
             $schema = $this->defaultSchema;
@@ -500,11 +498,11 @@ final class Schema extends AbstractSchema implements ViewInterface
     /**
      * Collects the foreign key column details for the given table.
      *
-     * @param TableSchema $table the table metadata
+     * @param TableSchemaInterface $table the table metadata
      *
      * @throws Exception|InvalidConfigException|Throwable
      */
-    protected function findConstraints(TableSchema $table): void
+    protected function findConstraints(TableSchemaInterface $table): void
     {
         $tableName = $table->getName();
         $tableSchema = $table->getSchemaName();
@@ -607,13 +605,13 @@ final class Schema extends AbstractSchema implements ViewInterface
     /**
      * Gets information about given table unique indexes.
      *
-     * @param TableSchema $table the table metadata.
+     * @param TableSchemaInterface $table the table metadata.
      *
      * @throws Exception|InvalidConfigException|Throwable
      *
      * @return array with index and column names.
      */
-    protected function getUniqueIndexInformation(TableSchema $table): array
+    protected function getUniqueIndexInformation(TableSchemaInterface $table): array
     {
         $sql = <<<'SQL'
         SELECT
@@ -649,13 +647,13 @@ final class Schema extends AbstractSchema implements ViewInterface
      * ]
      * ```
      *
-     * @param TableSchema $table the table metadata
+     * @param TableSchemaInterface $table the table metadata
      *
      * @throws Exception|InvalidConfigException|Throwable
      *
      * @return array all unique indexes for the given table.
      */
-    public function findUniqueIndexes(TableSchema $table): array
+    public function findUniqueIndexes(TableSchemaInterface $table): array
     {
         $uniqueIndexes = [];
 
@@ -684,13 +682,13 @@ final class Schema extends AbstractSchema implements ViewInterface
     /**
      * Collects the metadata of table columns.
      *
-     * @param TableSchema $table the table metadata.
+     * @param TableSchemaInterface $table the table metadata.
      *
      * @throws Exception|InvalidConfigException|JsonException|Throwable
      *
      * @return bool whether the table exists in the database.
      */
-    protected function findColumns(TableSchema $table): bool
+    protected function findColumns(TableSchemaInterface $table): bool
     {
         $tableName = $table->getName();
         $schemaName = $table->getSchemaName();
@@ -1158,17 +1156,5 @@ final class Schema extends AbstractSchema implements ViewInterface
     public function getLastInsertID(?string $sequenceName = null): string
     {
         return $this->db->getLastInsertID($sequenceName);
-    }
-
-    /**
-     * @throws Exception|InvalidConfigException|Throwable
-     */
-    public function getViewNames(string $schema = '', bool $refresh = false): array
-    {
-        if (!isset($this->viewNames[$schema]) || $refresh) {
-            $this->viewNames[$schema] = $this->findViewNames($schema);
-        }
-
-        return is_array($this->viewNames[$schema]) ? $this->viewNames[$schema] : [];
     }
 }
