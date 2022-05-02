@@ -6,7 +6,7 @@ namespace Yiisoft\Db\Pgsql\Tests;
 
 use Exception;
 use PHPUnit\Framework\TestCase as AbstractTestCase;
-use Yiisoft\Db\Driver\PDODriver;
+use Yiisoft\Db\Driver\PDO\PDODriver;
 use Yiisoft\Db\Pgsql\PDO\ConnectionPDOPgsql;
 use Yiisoft\Db\TestSupport\TestTrait;
 
