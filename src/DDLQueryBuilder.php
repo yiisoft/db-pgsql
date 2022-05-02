@@ -20,7 +20,7 @@ final class DDLQueryBuilder extends AbstractDDLQueryBuilder
         parent::__construct($queryBuilder);
     }
 
-    public function alterColumn(string $table, string $column, string|ColumnSchemaBuilder $type): string
+    public function alterColumn(string $table, string $column, ColumnSchemaBuilder|string $type): string
     {
         $columnName = $this->queryBuilder->quoter()->quoteColumnName($column);
         $tableName = $this->queryBuilder->quoter()->quoteTableName($table);
