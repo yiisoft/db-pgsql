@@ -13,6 +13,11 @@ use Yiisoft\Db\Query\DDLQueryBuilder as AbstractDDLQueryBuilder;
 use Yiisoft\Db\Query\QueryBuilderInterface;
 use Yiisoft\Db\Schema\ColumnSchemaBuilder;
 
+use function array_diff;
+use function implode;
+use function preg_match;
+use function preg_replace;
+
 final class DDLQueryBuilder extends AbstractDDLQueryBuilder
 {
     public function __construct(private QueryBuilderInterface $queryBuilder)
@@ -22,8 +27,8 @@ final class DDLQueryBuilder extends AbstractDDLQueryBuilder
 
     public function alterColumn(string $table, string $column, ColumnSchemaBuilder|string $type): string
     {
-        $columnName = $this->queryBuilder->quoter()->quoteColumnName($column);
-        $tableName = $this->queryBuilder->quoter()->quoteTableName($table);
+        $columnName = $this->quoter->quoteColumnName($column);
+        $tableName = $this->quoter->quoteTableName($table);
 
         /**
          * {@see https://github.com/yiisoft/yii2/issues/4492}
@@ -77,7 +82,7 @@ final class DDLQueryBuilder extends AbstractDDLQueryBuilder
     public function checkIntegrity(string $schema = '', string $table = '', bool $check = true): string
     {
         /** @var Schema */
-        $schemaInstance = $this->queryBuilder->schema();
+        $schemaInstance = $this->schema;
         $enable = $check ? 'ENABLE' : 'DISABLE';
         $schema = $schema ?: $schemaInstance->getDefaultSchema();
         $tableNames = [];
@@ -93,7 +98,7 @@ final class DDLQueryBuilder extends AbstractDDLQueryBuilder
 
         /** @psalm-var string[] $tableNames */
         foreach ($tableNames as $tableName) {
-            $tableName = $this->queryBuilder->quoter()->quoteTableName("$schema.$tableName");
+            $tableName = $this->quoter->quoteTableName("$schema.$tableName");
             $command .= "ALTER TABLE $tableName $enable TRIGGER ALL; ";
         }
 
@@ -118,8 +123,8 @@ final class DDLQueryBuilder extends AbstractDDLQueryBuilder
         }
 
         return ($unique ? 'CREATE UNIQUE INDEX ' : 'CREATE INDEX ')
-            . $this->queryBuilder->quoter()->quoteTableName($name) . ' ON '
-            . $this->queryBuilder->quoter()->quoteTableName($table)
+            . $this->quoter->quoteTableName($name) . ' ON '
+            . $this->quoter->quoteTableName($table)
             . ($index !== false ? " USING $index" : '')
             . ' (' . $this->queryBuilder->buildColumns($columns) . ')';
     }
@@ -141,19 +146,19 @@ final class DDLQueryBuilder extends AbstractDDLQueryBuilder
             }
         }
 
-        return 'DROP INDEX ' . $this->queryBuilder->quoter()->quoteTableName($name);
+        return 'DROP INDEX ' . $this->quoter->quoteTableName($name);
     }
 
     public function renameTable(string $oldName, string $newName): string
     {
         return 'ALTER TABLE '
-            . $this->queryBuilder->quoter()->quoteTableName($oldName)
+            . $this->quoter->quoteTableName($oldName)
             . ' RENAME TO '
-            . $this->queryBuilder->quoter()->quoteTableName($newName);
+            . $this->quoter->quoteTableName($newName);
     }
 
     public function truncateTable(string $table): string
     {
-        return 'TRUNCATE TABLE ' . $this->queryBuilder->quoter()->quoteTableName($table) . ' RESTART IDENTITY';
+        return 'TRUNCATE TABLE ' . $this->quoter->quoteTableName($table) . ' RESTART IDENTITY';
     }
 }

@@ -68,7 +68,6 @@ final class ConnectionPDOPgsql extends ConnectionPDO
     {
         if ($this->queryBuilder === null) {
             $this->queryBuilder = new QueryBuilderPDOPgsql(
-                $this->createCommand(),
                 $this->getQuoter(),
                 $this->getSchema(),
             );
