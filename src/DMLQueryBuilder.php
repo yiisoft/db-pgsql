@@ -19,7 +19,6 @@ use Yiisoft\Db\Query\Query;
 use Yiisoft\Db\Query\QueryBuilderInterface;
 use Yiisoft\Db\Query\QueryInterface;
 use Yiisoft\Db\Schema\Schema;
-use Yiisoft\Db\Schema\SchemaInterface;
 use Yiisoft\Strings\NumericHelper;
 
 use function implode;
