@@ -6,6 +6,8 @@ namespace Yiisoft\Db\Pgsql;
 
 use Generator;
 use JsonException;
+use PDO;
+use Yiisoft\Db\Driver\PDO\PDOValue;
 use Yiisoft\Db\Exception\Exception;
 use Yiisoft\Db\Exception\InvalidArgumentException;
 use Yiisoft\Db\Exception\InvalidConfigException;
@@ -13,9 +15,16 @@ use Yiisoft\Db\Exception\NotSupportedException;
 use Yiisoft\Db\Expression\Expression;
 use Yiisoft\Db\Expression\ExpressionInterface;
 use Yiisoft\Db\Query\DMLQueryBuilder as AbstractDMLQueryBuilder;
+use Yiisoft\Db\Query\Query;
 use Yiisoft\Db\Query\QueryBuilderInterface;
 use Yiisoft\Db\Query\QueryInterface;
+use Yiisoft\Db\Schema\Schema;
 use Yiisoft\Strings\NumericHelper;
+
+use function implode;
+use function is_array;
+use function is_string;
+use function reset;
 
 final class DMLQueryBuilder extends AbstractDMLQueryBuilder
 {
@@ -28,7 +37,7 @@ final class DMLQueryBuilder extends AbstractDMLQueryBuilder
     {
         $sql = $this->insert($table, $columns, $params);
 
-        $tableSchema = $this->queryBuilder->schema()->getTableSchema($table);
+        $tableSchema = $this->schema->getTableSchema($table);
 
         $returnColumns = [];
         if ($tableSchema !== null) {
@@ -38,7 +47,7 @@ final class DMLQueryBuilder extends AbstractDMLQueryBuilder
         if (!empty($returnColumns)) {
             $returning = [];
             foreach ($returnColumns as $name) {
-                $returning[] = $this->queryBuilder->quoter()->quoteColumnName($name);
+                $returning[] = $this->quoter->quoteColumnName($name);
             }
             $sql .= ' RETURNING ' . implode(', ', $returning);
         }
@@ -61,7 +70,7 @@ final class DMLQueryBuilder extends AbstractDMLQueryBuilder
          * @psalm-var array<array-key, ColumnSchema> $columnSchemas
          */
         $columnSchemas = [];
-        $schema = $this->queryBuilder->schema();
+        $schema = $this->schema;
 
         if (($tableSchema = $schema->getTableSchema($table)) !== null) {
             $columnSchemas = $tableSchema->getColumns();
@@ -88,7 +97,7 @@ final class DMLQueryBuilder extends AbstractDMLQueryBuilder
 
                 if (is_string($value)) {
                     /** @var mixed */
-                    $value = $this->queryBuilder->quoter()->quoteValue($value);
+                    $value = $this->quoter->quoteValue($value);
                 } elseif (is_float($value)) {
                     /** ensure type cast always has . as decimal separator in all locales */
                     $value = NumericHelper::normalize((string) $value);
@@ -114,7 +123,7 @@ final class DMLQueryBuilder extends AbstractDMLQueryBuilder
 
         /** @var string name */
         foreach ($columns as $i => $name) {
-            $columns[$i] = $this->queryBuilder->quoter()->quoteColumnName($name);
+            $columns[$i] = $this->quoter->quoteColumnName($name);
         }
 
         /**
@@ -122,7 +131,7 @@ final class DMLQueryBuilder extends AbstractDMLQueryBuilder
          * @psalm-var string[] $values
          */
         return 'INSERT INTO '
-            . $this->queryBuilder->quoter()->quoteTableName($table)
+            . $this->quoter->quoteTableName($table)
             . ' (' . implode(', ', $columns) . ') VALUES ' . implode(', ', $values);
     }
 
@@ -153,7 +162,7 @@ final class DMLQueryBuilder extends AbstractDMLQueryBuilder
      */
     public function insert(string $table, QueryInterface|array $columns, array &$params = []): string
     {
-        return parent::insert($table, $this->queryBuilder->normalizeTableRowData($table, $columns), $params);
+        return parent::insert($table, $this->normalizeTableRowData($table, $columns), $params);
     }
 
     /**
@@ -177,7 +186,7 @@ final class DMLQueryBuilder extends AbstractDMLQueryBuilder
         $insertSql = $this->insert($table, $insertColumns, $params);
 
         /** @var array $uniqueNames */
-        [$uniqueNames, , $updateNames] = $this->queryBuilder->prepareUpsertColumns(
+        [$uniqueNames, , $updateNames] = $this->prepareUpsertColumns(
             $table,
             $insertColumns,
             $updateColumns,
@@ -202,7 +211,7 @@ final class DMLQueryBuilder extends AbstractDMLQueryBuilder
             /** @var string $name */
             foreach ($updateNames as $name) {
                 $updateColumns[$name] = new Expression(
-                    'EXCLUDED.' . $this->queryBuilder->quoter()->quoteColumnName($name)
+                    'EXCLUDED.' . $this->quoter->quoteColumnName($name)
                 );
             }
         }
@@ -213,7 +222,7 @@ final class DMLQueryBuilder extends AbstractDMLQueryBuilder
          * @psalm-var string[] $uniqueNames
          * @psalm-var string[] $updates
          */
-        [$updates, $params] = $this->queryBuilder->prepareUpdateSets($table, $updateColumns, $params);
+        [$updates, $params] = $this->prepareUpdateSets($table, $updateColumns, $params);
 
         return $insertSql
             . ' ON CONFLICT (' . implode(', ', $uniqueNames) . ') DO UPDATE SET ' . implode(', ', $updates);
@@ -236,18 +245,18 @@ final class DMLQueryBuilder extends AbstractDMLQueryBuilder
      */
     public function resetSequence(string $tableName, $value = null): string
     {
-        $table = $this->queryBuilder->schema()->getTableSchema($tableName);
+        $table = $this->schema->getTableSchema($tableName);
 
         if ($table !== null && ($sequence = $table->getSequenceName()) !== null) {
             /**
              * {@see http://www.postgresql.org/docs/8.1/static/functions-sequence.html}
              */
-            $sequence = $this->queryBuilder->quoter()->quoteTableName($sequence);
-            $tableName = $this->queryBuilder->quoter()->quoteTableName($tableName);
+            $sequence = $this->quoter->quoteTableName($sequence);
+            $tableName = $this->quoter->quoteTableName($tableName);
 
             if ($value === null) {
                 $pk = $table->getPrimaryKey();
-                $key = $this->queryBuilder->quoter()->quoteColumnName(reset($pk));
+                $key = $this->quoter->quoteColumnName(reset($pk));
                 $value = "(SELECT COALESCE(MAX($key),0) FROM $tableName)+1";
             } else {
                 $value = (int) $value;
@@ -288,8 +297,7 @@ final class DMLQueryBuilder extends AbstractDMLQueryBuilder
      */
     public function update(string $table, array $columns, array|string $condition, array &$params = []): string
     {
-        /** @var array|QueryInterface */
-        $normalizeTableRowData = $this->queryBuilder->normalizeTableRowData($table, $columns);
+        $normalizeTableRowData = $this->normalizeTableRowData($table, $columns);
 
         return parent::update(
             $table,
@@ -343,14 +351,46 @@ final class DMLQueryBuilder extends AbstractDMLQueryBuilder
         $updateColumns,
         array &$params = []
     ): string {
-        /** @var array|QueryInterface $insertColumns */
-        $insertColumns = $this->queryBuilder->normalizeTableRowData($table, $insertColumns);
+        $insertColumns = $this->normalizeTableRowData($table, $insertColumns);
 
         if (!is_bool($updateColumns)) {
-            /** @var array|QueryInterface $updateColumns */
-            $updateColumns = $this->queryBuilder->normalizeTableRowData($table, $updateColumns);
+            $updateColumns = $this->normalizeTableRowData($table, $updateColumns);
         }
 
         return $this->newUpsert($table, $insertColumns, $updateColumns, $params);
+    }
+
+    /**
+     * Normalizes data to be saved into the table, performing extra preparations and type converting, if necessary.
+     *
+     * @param string $table the table that data will be saved into.
+     * @param array|QueryInterface $columns the column data (name => value) to be saved into the table or instance of
+     * {@see QueryInterface} to perform INSERT INTO ... SELECT SQL statement. Passing of
+     * {@see QueryInterface}.
+     *
+     * @return array|QueryInterface normalized columns.
+     */
+    private function normalizeTableRowData(string $table, QueryInterface|array $columns): QueryInterface|array
+    {
+        if ($columns instanceof QueryInterface) {
+            return $columns;
+        }
+
+        if (($tableSchema = $this->schema->getTableSchema($table)) !== null) {
+            $columnSchemas = $tableSchema->getColumns();
+            /** @var mixed $value */
+            foreach ($columns as $name => $value) {
+                if (
+                    isset($columnSchemas[$name]) &&
+                    $columnSchemas[$name]->getType() === Schema::TYPE_BINARY &&
+                    is_string($value)
+                ) {
+                    /** explicitly setup PDO param type for binary column */
+                    $columns[$name] = new PDOValue($value, PDO::PARAM_LOB);
+                }
+            }
+        }
+
+        return $columns;
     }
 }
