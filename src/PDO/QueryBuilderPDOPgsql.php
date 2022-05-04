@@ -75,13 +75,11 @@ final class QueryBuilderPDOPgsql extends QueryBuilder
     private DMLQueryBuilder $dmlBuilder;
     private DQLQueryBuilder $dqlBuilder;
 
-    public function __construct(
-        protected QuoterInterface $quoter,
-        protected SchemaInterface $schema
-    ) {
-        $this->ddlBuilder = new DDLQueryBuilder($this);
-        $this->dmlBuilder = new DMLQueryBuilder($this);
-        $this->dqlBuilder = new DQLQueryBuilder($this);
+    public function __construct(QuoterInterface $quoter, SchemaInterface $schema)
+    {
+        $this->ddlBuilder = new DDLQueryBuilder($this, $quoter, $schema);
+        $this->dmlBuilder = new DMLQueryBuilder($this, $quoter, $schema);
+        $this->dqlBuilder = new DQLQueryBuilder($this, $quoter, $schema);
         parent::__construct($quoter, $schema, $this->ddlBuilder, $this->dmlBuilder, $this->dqlBuilder);
     }
 }

@@ -7,11 +7,12 @@ namespace Yiisoft\Db\Pgsql;
 use Throwable;
 use Yiisoft\Db\Exception\Exception;
 use Yiisoft\Db\Exception\InvalidArgumentException;
-use Yiisoft\Db\Exception\InvalidConfigException;
 use Yiisoft\Db\Exception\NotSupportedException;
 use Yiisoft\Db\Query\DDLQueryBuilder as AbstractDDLQueryBuilder;
 use Yiisoft\Db\Query\QueryBuilderInterface;
 use Yiisoft\Db\Schema\ColumnSchemaBuilder;
+use Yiisoft\Db\Schema\QuoterInterface;
+use Yiisoft\Db\Schema\SchemaInterface;
 
 use function array_diff;
 use function implode;
@@ -20,9 +21,12 @@ use function preg_replace;
 
 final class DDLQueryBuilder extends AbstractDDLQueryBuilder
 {
-    public function __construct(private QueryBuilderInterface $queryBuilder)
-    {
-        parent::__construct($queryBuilder);
+    public function __construct(
+        private QueryBuilderInterface $queryBuilder,
+        private QuoterInterface $quoter,
+        private SchemaInterface $schema
+    ) {
+        parent::__construct($queryBuilder, $quoter, $schema);
     }
 
     public function alterColumn(string $table, string $column, ColumnSchemaBuilder|string $type): string
@@ -77,7 +81,7 @@ final class DDLQueryBuilder extends AbstractDDLQueryBuilder
     }
 
     /**
-     * @throws Exception|InvalidConfigException|NotSupportedException|Throwable
+     * @throws Exception|NotSupportedException|Throwable
      */
     public function checkIntegrity(string $schema = '', string $table = '', bool $check = true): string
     {
