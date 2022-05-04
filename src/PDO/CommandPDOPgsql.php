@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace Yiisoft\Db\Pgsql\PDO;
 
+use Exception;
 use Yiisoft\Db\Driver\PDO\CommandPDO;
 use Yiisoft\Db\Exception\ConvertException;
 use Yiisoft\Db\Query\QueryBuilderInterface;
+use Yiisoft\Db\Schema\SchemaInterface;
 
 final class CommandPDOPgsql extends CommandPDO
 {
@@ -32,6 +34,11 @@ final class CommandPDOPgsql extends CommandPDO
         return $this->db->getQueryBuilder();
     }
 
+    public function schema(): SchemaInterface
+    {
+        return $this->db->getSchema();
+    }
+
     protected function internalExecute(?string $rawSql): void
     {
         $attempt = 0;
@@ -44,14 +51,14 @@ final class CommandPDOPgsql extends CommandPDO
                     && $this->db->getTransaction() === null
                 ) {
                     $this->db->transaction(
-                        fn (?string $rawSql): ?string => $this->internalExecute($rawSql),
+                        fn (?string $rawSql) => $this->internalExecute($rawSql),
                         $this->isolationLevel
                     );
                 } else {
                     $this->pdoStatement?->execute();
                 }
                 break;
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 $rawSql = $rawSql ?: $this->getRawSql();
                 $e = (new ConvertException($e, $rawSql))->run();
 
