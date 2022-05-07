@@ -368,7 +368,6 @@ final class QueryBuilderTest extends TestCase
         ];
     }
 
-
     public function testDropIndex(): void
     {
         $db = $this->getConnection();
