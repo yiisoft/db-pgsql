@@ -13,7 +13,10 @@ use Yiisoft\Db\Exception\InvalidArgumentException;
 use Yiisoft\Db\Exception\InvalidConfigException;
 use Yiisoft\Db\Exception\NotSupportedException;
 use Yiisoft\Db\Expression\ExpressionInterface;
+use Yiisoft\Db\Pgsql\PDO\QueryBuilderPDOPgsql;
 use Yiisoft\Db\Query\Query;
+use Yiisoft\Db\Query\QueryBuilder;
+use Yiisoft\Db\Query\QueryBuilderInterface;
 use Yiisoft\Db\Query\QueryInterface;
 use Yiisoft\Db\TestSupport\TestQueryBuilderTrait;
 
@@ -324,6 +327,45 @@ final class QueryBuilderTest extends TestCase
     {
         $db = $this->getConnection();
         $this->assertSame($db->getQuoter()->quoteSql($sql), $builder($db->getQueryBuilder()));
+    }
+
+    /**
+     * @dataProvider createIndexesProvider
+     *
+     * @param string $sql
+     * @param Closure $builder
+     */
+    public function testCreateIndex(string $sql, Closure $builder): void
+    {
+        $db = $this->getConnection();
+        $this->assertSame($db->getQuoter()->quoteSql($sql), $builder($db->getQueryBuilder()));
+    }
+
+    public function createIndexesProvider(): array
+    {
+        $tableName = 'T_constraints_2';
+        $name1 = 'CN_constraints_2_single';
+
+        return [
+            'create unique' => [
+                "CREATE UNIQUE INDEX [[$name1]] ON {{{$tableName}}} ([[C_index_1]])",
+                static function (QueryBuilderInterface $qb) use ($tableName, $name1) {
+                    return $qb->createIndex($name1, $tableName, 'C_index_1', QueryBuilder::INDEX_UNIQUE);
+                },
+            ],
+            'create simple' => [
+                "CREATE INDEX [[$name1]] ON {{{$tableName}}} ([[C_index_1]])",
+                static function (QueryBuilderInterface $qb) use ($tableName, $name1) {
+                    return $qb->createIndex($name1, $tableName, 'C_index_1');
+                },
+            ],
+            'create btree' => [
+                "CREATE INDEX [[$name1]] ON {{{$tableName}}} USING btree ([[C_index_1]])",
+                static function (QueryBuilderInterface $qb) use ($tableName, $name1) {
+                    return $qb->createIndex($name1, $tableName, 'C_index_1', null, QueryBuilderPDOPgsql::INDEX_B_TREE);
+                },
+            ],
+        ];
     }
 
     public function testDropIndex(): void
