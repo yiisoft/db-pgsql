@@ -107,15 +107,13 @@ final class ConnectionPDOPgsql extends ConnectionPDO
      */
     protected function initConnection(): void
     {
-        if ($this->pdo === null) {
-            $this->pdo = $this->driver->createConnection();
-        }
-
-        $this->pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-
+        $attributes = [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION];
         if ($this->getEmulatePrepare() !== null && constant('PDO::ATTR_EMULATE_PREPARES')) {
-            $this->pdo->setAttribute(PDO::ATTR_EMULATE_PREPARES, $this->getEmulatePrepare());
+            $attributes[PDO::ATTR_EMULATE_PREPARES] = $this->getEmulatePrepare();
         }
+        $this->driver->attributes($attributes);
+
+        $this->pdo = $this->driver->createConnection();
 
         $charset = $this->driver->getCharset();
 
