@@ -47,11 +47,6 @@ final class ConnectionPDOPgsql extends ConnectionPDO
         return new TransactionPDOPgsql($this);
     }
 
-    public function getDriverName(): string
-    {
-        return 'pgsql';
-    }
-
     public function getLastInsertID(?string $sequenceName = null): string
     {
         if ($sequenceName === null) {
@@ -107,20 +102,10 @@ final class ConnectionPDOPgsql extends ConnectionPDO
      */
     protected function initConnection(): void
     {
-        if ($this->pdo === null) {
-            $this->pdo = $this->driver->createConnection();
-        }
-
-        $this->pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-
         if ($this->getEmulatePrepare() !== null && constant('PDO::ATTR_EMULATE_PREPARES')) {
-            $this->pdo->setAttribute(PDO::ATTR_EMULATE_PREPARES, $this->getEmulatePrepare());
+            $this->driver->attributes([PDO::ATTR_EMULATE_PREPARES => $this->getEmulatePrepare()]);
         }
 
-        $charset = $this->driver->getCharset();
-
-        if ($charset !== null) {
-            $this->pdo->exec('SET NAMES ' . $this->pdo->quote($charset));
-        }
+        $this->pdo = $this->driver->createConnection();
     }
 }
