@@ -56,7 +56,7 @@ final class ArrayExpressionBuilder implements ExpressionBuilderInterface
             return 'NULL';
         }
 
-        if ($value instanceof Query) {
+        if ($value instanceof QueryInterface) {
             [$sql, $params] = $this->queryBuilder->build($value, $params);
             return $this->buildSubqueryArray($sql, $expression);
         }
@@ -101,7 +101,7 @@ final class ArrayExpressionBuilder implements ExpressionBuilderInterface
 
         /** @var ExpressionInterface|int $item */
         foreach ($value as $item) {
-            if ($item instanceof Query) {
+            if ($item instanceof QueryInterface) {
                 [$sql, $params] = $this->queryBuilder->build($item, $params);
                 $placeholders[] = $this->buildSubqueryArray($sql, $expression);
                 continue;

@@ -45,7 +45,7 @@ final class JsonExpressionBuilder implements ExpressionBuilderInterface
          */
         $value = $expression->getValue();
 
-        if ($value instanceof Query) {
+        if ($value instanceof QueryInterface) {
             [$sql, $params] = $this->queryBuilder->build($value, $params);
             return "($sql)" . $this->getTypecast($expression);
         }
