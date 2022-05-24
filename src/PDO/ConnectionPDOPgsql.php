@@ -102,7 +102,7 @@ final class ConnectionPDOPgsql extends ConnectionPDO
      */
     protected function initConnection(): void
     {
-        if ($this->getEmulatePrepare() !== null && constant('PDO::ATTR_EMULATE_PREPARES')) {
+        if ($this->getEmulatePrepare() !== null) {
             $this->driver->attributes([PDO::ATTR_EMULATE_PREPARES => $this->getEmulatePrepare()]);
         }
 
