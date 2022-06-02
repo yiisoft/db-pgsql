@@ -159,8 +159,12 @@ final class QueryBuilder extends AbstractQueryBuilder
         }
 
         return ($unique ? 'CREATE UNIQUE INDEX ' : 'CREATE INDEX ')
-            . $this->getDb()->quoteTableName($name) . ' ON '
-            . $this->getDb()->quoteTableName($table)
+            . $this
+                ->getDb()
+                ->quoteTableName($name) . ' ON '
+            . $this
+                ->getDb()
+                ->quoteTableName($table)
             . ($index !== false ? " USING $index" : '')
             . ' (' . $this->buildColumns($columns) . ')';
     }
@@ -190,7 +194,9 @@ final class QueryBuilder extends AbstractQueryBuilder
             }
         }
 
-        return 'DROP INDEX ' . $this->getDb()->quoteTableName($name);
+        return 'DROP INDEX ' . $this
+                ->getDb()
+                ->quoteTableName($name);
     }
 
     /**
@@ -203,8 +209,12 @@ final class QueryBuilder extends AbstractQueryBuilder
      */
     public function renameTable(string $oldName, string $newName): string
     {
-        return 'ALTER TABLE ' . $this->getDb()->quoteTableName($oldName) . ' RENAME TO '
-            . $this->getDb()->quoteTableName($newName);
+        return 'ALTER TABLE ' . $this
+                ->getDb()
+                ->quoteTableName($oldName) . ' RENAME TO '
+            . $this
+                ->getDb()
+                ->quoteTableName($newName);
     }
 
     /**
@@ -224,18 +234,26 @@ final class QueryBuilder extends AbstractQueryBuilder
      */
     public function resetSequence(string $tableName, $value = null): string
     {
-        $table = $this->getDb()->getTableSchema($tableName);
+        $table = $this
+            ->getDb()
+            ->getTableSchema($tableName);
 
         if ($table !== null && ($sequence = $table->getSequenceName()) !== null) {
             /**
              * {@see http://www.postgresql.org/docs/8.1/static/functions-sequence.html}
              */
-            $sequence = $this->getDb()->quoteTableName($sequence);
-            $tableName = $this->getDb()->quoteTableName($tableName);
+            $sequence = $this
+                ->getDb()
+                ->quoteTableName($sequence);
+            $tableName = $this
+                ->getDb()
+                ->quoteTableName($tableName);
 
             if ($value === null) {
                 $pk = $table->getPrimaryKey();
-                $key = $this->getDb()->quoteColumnName(reset($pk));
+                $key = $this
+                    ->getDb()
+                    ->quoteColumnName(reset($pk));
                 $value = "(SELECT COALESCE(MAX({$key}),0) FROM {$tableName})+1";
             } else {
                 $value = (int) $value;
@@ -268,13 +286,19 @@ final class QueryBuilder extends AbstractQueryBuilder
         $db = $this->getDb();
 
         $enable = $check ? 'ENABLE' : 'DISABLE';
-        $schema = $schema ?: $db->getSchema()->getDefaultSchema();
+        $schema = $schema ?: $db
+            ->getSchema()
+            ->getDefaultSchema();
         $tableNames = [];
         $viewNames = [];
 
         if ($schema !== null) {
-            $tableNames = $table ? [$table] : $db->getSchema()->getTableNames($schema);
-            $viewNames = $db->getSchema()->getViewNames($schema);
+            $tableNames = $table ? [$table] : $db
+                ->getSchema()
+                ->getTableNames($schema);
+            $viewNames = $db
+                ->getSchema()
+                ->getViewNames($schema);
         }
 
         $tableNames = array_diff($tableNames, $viewNames);
@@ -286,7 +310,9 @@ final class QueryBuilder extends AbstractQueryBuilder
         }
 
         /** enable to have ability to alter several tables */
-        $db->getMasterPdo()->setAttribute(PDO::ATTR_EMULATE_PREPARES, true);
+        $db
+            ->getMasterPdo()
+            ->setAttribute(PDO::ATTR_EMULATE_PREPARES, true);
 
         return $command;
     }
@@ -302,7 +328,9 @@ final class QueryBuilder extends AbstractQueryBuilder
      */
     public function truncateTable(string $table): string
     {
-        return 'TRUNCATE TABLE ' . $this->getDb()->quoteTableName($table) . ' RESTART IDENTITY';
+        return 'TRUNCATE TABLE ' . $this
+                ->getDb()
+                ->quoteTableName($table) . ' RESTART IDENTITY';
     }
 
     /**
@@ -321,8 +349,12 @@ final class QueryBuilder extends AbstractQueryBuilder
      */
     public function alterColumn(string $table, string $column, $type): string
     {
-        $columnName = $this->getDb()->quoteColumnName($column);
-        $tableName = $this->getDb()->quoteTableName($table);
+        $columnName = $this
+            ->getDb()
+            ->quoteColumnName($column);
+        $tableName = $this
+            ->getDb()
+            ->quoteTableName($table);
 
         /**
          * {@see https://github.com/yiisoft/yii2/issues/4492}
@@ -483,7 +515,9 @@ final class QueryBuilder extends AbstractQueryBuilder
 
             /** @var string $name */
             foreach ($updateNames as $name) {
-                $updateColumns[$name] = new Expression('EXCLUDED.' . $this->getDb()->quoteColumnName($name));
+                $updateColumns[$name] = new Expression('EXCLUDED.' . $this
+                        ->getDb()
+                        ->quoteColumnName($name));
             }
         }
 
@@ -538,7 +572,10 @@ final class QueryBuilder extends AbstractQueryBuilder
             return $columns;
         }
 
-        if (($tableSchema = $this->getDb()->getSchema()->getTableSchema($table)) !== null) {
+        if (($tableSchema = $this
+                ->getDb()
+                ->getSchema()
+                ->getTableSchema($table)) !== null) {
             $columnSchemas = $tableSchema->getColumns();
             /** @var mixed $value */
             foreach ($columns as $name => $value) {
@@ -592,7 +629,9 @@ final class QueryBuilder extends AbstractQueryBuilder
          * @var array<array-key, object> $columnSchemas
          */
         $columnSchemas = [];
-        $schema = $this->getDb()->getSchema();
+        $schema = $this
+            ->getDb()
+            ->getSchema();
 
         if (($tableSchema = $schema->getTableSchema($table)) !== null) {
             $columnSchemas = $tableSchema->getColumns();

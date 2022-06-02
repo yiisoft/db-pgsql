@@ -41,18 +41,40 @@ final class ColumnSchemaTest extends TestCase
 
         $command->execute();
 
-        $query = (new Query($db))->from('type')->one();
+        $query = (new Query($db))
+            ->from('type')
+            ->one();
 
-        $intColPhpTypeCast = $tableSchema->getColumn('int_col')->phpTypecast($query['int_col']);
-        $charColPhpTypeCast = $tableSchema->getColumn('char_col')->phpTypecast($query['char_col']);
-        $floatColPhpTypeCast = $tableSchema->getColumn('float_col')->phpTypecast($query['float_col']);
-        $boolColPhpTypeCast = $tableSchema->getColumn('bool_col')->phpTypecast($query['bool_col']);
-        $numericColPhpTypeCast = $tableSchema->getColumn('numeric_col')->phpTypecast($query['numeric_col']);
-        $intArrayColPhpType = $tableSchema->getColumn('intarray_col')->phpTypecast($query['intarray_col']);
-        $textArray2ColPhpType = $tableSchema->getColumn('textarray2_col')->phpTypecast($query['textarray2_col']);
-        $jsonColPhpType = $tableSchema->getColumn('json_col')->phpTypecast($query['json_col']);
-        $jsonBColPhpType = $tableSchema->getColumn('jsonb_col')->phpTypecast($query['jsonb_col']);
-        $jsonArrayColPhpType = $tableSchema->getColumn('jsonarray_col')->phpTypecast($query['jsonarray_col']);
+        $intColPhpTypeCast = $tableSchema
+            ->getColumn('int_col')
+            ->phpTypecast($query['int_col']);
+        $charColPhpTypeCast = $tableSchema
+            ->getColumn('char_col')
+            ->phpTypecast($query['char_col']);
+        $floatColPhpTypeCast = $tableSchema
+            ->getColumn('float_col')
+            ->phpTypecast($query['float_col']);
+        $boolColPhpTypeCast = $tableSchema
+            ->getColumn('bool_col')
+            ->phpTypecast($query['bool_col']);
+        $numericColPhpTypeCast = $tableSchema
+            ->getColumn('numeric_col')
+            ->phpTypecast($query['numeric_col']);
+        $intArrayColPhpType = $tableSchema
+            ->getColumn('intarray_col')
+            ->phpTypecast($query['intarray_col']);
+        $textArray2ColPhpType = $tableSchema
+            ->getColumn('textarray2_col')
+            ->phpTypecast($query['textarray2_col']);
+        $jsonColPhpType = $tableSchema
+            ->getColumn('json_col')
+            ->phpTypecast($query['json_col']);
+        $jsonBColPhpType = $tableSchema
+            ->getColumn('jsonb_col')
+            ->phpTypecast($query['jsonb_col']);
+        $jsonArrayColPhpType = $tableSchema
+            ->getColumn('jsonarray_col')
+            ->phpTypecast($query['jsonarray_col']);
 
         $this->assertSame(1, $intColPhpTypeCast);
         $this->assertSame(str_repeat('x', 100), $charColPhpTypeCast);

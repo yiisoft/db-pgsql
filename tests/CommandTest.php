@@ -34,23 +34,37 @@ final class CommandTest extends TestCase
         $schema = $db->getSchema();
 
         if ($schema->getTableSchema($tableName) !== null) {
-            $db->createCommand()->dropTable($tableName)->execute();
+            $db
+                ->createCommand()
+                ->dropTable($tableName)
+                ->execute();
         }
 
-        $db->createCommand()->createTable($tableName, [
-            'int1' => 'integer',
-        ])->execute();
+        $db
+            ->createCommand()
+            ->createTable($tableName, [
+                'int1' => 'integer',
+            ])
+            ->execute();
 
         $this->assertEmpty($schema->getTableChecks($tableName, true));
 
-        $db->createCommand()->addCheck($name, $tableName, '[[int1]] > 1')->execute();
+        $db
+            ->createCommand()
+            ->addCheck($name, $tableName, '[[int1]] > 1')
+            ->execute();
 
         $this->assertMatchesRegularExpression(
             '/^.*int1.*>.*1.*$/',
-            $schema->getTableChecks($tableName, true)[0]->getExpression()
+            $schema
+                ->getTableChecks($tableName, true)
+                ->getExpression()
         );
 
-        $db->createCommand()->dropCheck($name, $tableName)->execute();
+        $db
+            ->createCommand()
+            ->dropCheck($name, $tableName)
+            ->execute();
 
         $this->assertEmpty($schema->getTableChecks($tableName, true));
     }
@@ -65,27 +79,46 @@ final class CommandTest extends TestCase
         $schema = $db->getSchema();
 
         if ($schema->getTableSchema($tableName) !== null) {
-            $db->createCommand()->dropTable($tableName)->execute();
+            $db
+                ->createCommand()
+                ->dropTable($tableName)
+                ->execute();
         }
 
-        $db->createCommand()->createTable($tableName, [
-            'int1' => 'integer not null',
-            'int2' => 'integer not null',
-        ])->execute();
+        $db
+            ->createCommand()
+            ->createTable($tableName, [
+                'int1' => 'integer not null',
+                'int2' => 'integer not null',
+            ])
+            ->execute();
 
         $this->assertNull($schema->getTablePrimaryKey($tableName, true));
 
-        $db->createCommand()->addPrimaryKey($name, $tableName, ['int1'])->execute();
+        $db
+            ->createCommand()
+            ->addPrimaryKey($name, $tableName, ['int1'])
+            ->execute();
 
-        $this->assertEquals(['int1'], $schema->getTablePrimaryKey($tableName, true)->getColumnNames());
+        $this->assertEquals(['int1'], $schema
+            ->getTablePrimaryKey($tableName, true)
+            ->getColumnNames());
 
-        $db->createCommand()->dropPrimaryKey($name, $tableName)->execute();
+        $db
+            ->createCommand()
+            ->dropPrimaryKey($name, $tableName)
+            ->execute();
 
         $this->assertNull($schema->getTablePrimaryKey($tableName, true));
 
-        $db->createCommand()->addPrimaryKey($name, $tableName, ['int1', 'int2'])->execute();
+        $db
+            ->createCommand()
+            ->addPrimaryKey($name, $tableName, ['int1', 'int2'])
+            ->execute();
 
-        $this->assertEquals(['int1', 'int2'], $schema->getTablePrimaryKey($tableName, true)->getColumnNames());
+        $this->assertEquals(['int1', 'int2'], $schema
+            ->getTablePrimaryKey($tableName, true)
+            ->getColumnNames());
     }
 
     public function testAutoQuoting(): void
@@ -153,7 +186,9 @@ final class CommandTest extends TestCase
 
         $command->execute();
 
-        $this->assertEquals(3, $db->getSchema()->getLastInsertID('public.profile_id_seq'));
+        $this->assertEquals(3, $db
+            ->getSchema()
+            ->getLastInsertID('public.profile_id_seq'));
 
         $sql = 'INSERT INTO {{schema1.profile}}([[description]]) VALUES (\'non duplicate\')';
 
@@ -161,7 +196,9 @@ final class CommandTest extends TestCase
 
         $command->execute();
 
-        $this->assertEquals(3, $db->getSchema()->getLastInsertID('schema1.profile_id_seq'));
+        $this->assertEquals(3, $db
+            ->getSchema()
+            ->getLastInsertID('schema1.profile_id_seq'));
     }
 
     /**
@@ -171,19 +208,23 @@ final class CommandTest extends TestCase
     {
         $db = $this->getConnection();
 
-        $command = $db->createCommand()->insert('type', [
-            'int_col' => 1,
-            'char_col' => 'serialize',
-            'float_col' => 5.6,
-            'bool_col' => true,
-            'blob_col' => serialize($db),
-        ]);
+        $command = $db
+            ->createCommand()
+            ->insert('type', [
+                'int_col' => 1,
+                'char_col' => 'serialize',
+                'float_col' => 5.6,
+                'bool_col' => true,
+                'blob_col' => serialize($db),
+            ]);
 
         $this->assertEquals(1, $command->execute());
 
-        $command = $db->createCommand()->update('type', [
-            'blob_col' => serialize($db),
-        ], ['char_col' => 'serialize']);
+        $command = $db
+            ->createCommand()
+            ->update('type', [
+                'blob_col' => serialize($db),
+            ], ['char_col' => 'serialize']);
 
         $this->assertEquals(1, $command->execute());
     }
@@ -195,32 +236,42 @@ final class CommandTest extends TestCase
     {
         $db = $this->getConnection();
 
-        $inserted = $db->createCommand()->insert('array_and_json_types', [
-            'jsonb_col' => new JsonExpression(['Solution date' => '13.01.2011']),
-        ])->execute();
+        $inserted = $db
+            ->createCommand()
+            ->insert('array_and_json_types', [
+                'jsonb_col' => new JsonExpression(['Solution date' => '13.01.2011']),
+            ])
+            ->execute();
 
         $this->assertSame(1, $inserted);
 
-        $found = $db->createCommand(
-            <<<PGSQL
+        $found = $db
+            ->createCommand(
+                <<<PGSQL
             SELECT *
             FROM array_and_json_types
             WHERE jsonb_col @> '{"Some not existing key": "random value"}'
 PGSQL
-        )->execute();
+            )
+            ->execute();
 
         $this->assertSame(0, $found);
 
-        $found = $db->createCommand(
-            <<<PGSQL
+        $found = $db
+            ->createCommand(
+                <<<PGSQL
             SELECT *
             FROM array_and_json_types
             WHERE jsonb_col @> '{"Solution date": "13.01.2011"}'
 PGSQL
-        )->execute();
+            )
+            ->execute();
 
         $this->assertSame(1, $found);
-        $this->assertSame(1, $db->createCommand()->delete('array_and_json_types')->execute());
+        $this->assertSame(1, $db
+            ->createCommand()
+            ->delete('array_and_json_types')
+            ->execute());
     }
 
     public function batchInsertSqlProvider(): array
@@ -325,14 +376,17 @@ PGSQL
     {
         $db = $this->getConnection();
 
-        $db->createCommand()->insert(
-            'customer',
-            [
-                'name' => 'testParams',
-                'email' => 'testParams@example.com',
-                'address' => '1',
-            ]
-        )->execute();
+        $db
+            ->createCommand()
+            ->insert(
+                'customer',
+                [
+                    'name' => 'testParams',
+                    'email' => 'testParams@example.com',
+                    'address' => '1',
+                ]
+            )
+            ->execute();
 
         $params = [
             ':email' => 'testParams@example.com',
@@ -385,17 +439,21 @@ PGSQL
 
         $query = new Query($db);
 
-        $query->select($invalidSelectColumns)->from('{{customer}}');
+        $query
+            ->select($invalidSelectColumns)
+            ->from('{{customer}}');
 
         $command = $db->createCommand();
 
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Expected select query object with enumerated (named) parameters');
 
-        $command->insert(
-            '{{customer}}',
-            $query
-        )->execute();
+        $command
+            ->insert(
+                '{{customer}}',
+                $query
+            )
+            ->execute();
     }
 
     /**
@@ -415,11 +473,15 @@ PGSQL
     {
         $db = $this->getConnection(true);
 
-        $this->assertEquals(0, $db->createCommand('SELECT COUNT(*) FROM {{T_upsert}}')->queryScalar());
+        $this->assertEquals(0, $db
+            ->createCommand('SELECT COUNT(*) FROM {{T_upsert}}')
+            ->queryScalar());
 
         $this->performAndCompareUpsertResult($db, $firstData);
 
-        $this->assertEquals(1, $db->createCommand('SELECT COUNT(*) FROM {{T_upsert}}')->queryScalar());
+        $this->assertEquals(1, $db
+            ->createCommand('SELECT COUNT(*) FROM {{T_upsert}}')
+            ->queryScalar());
 
         $this->performAndCompareUpsertResult($db, $secondData);
     }

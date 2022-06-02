@@ -194,9 +194,9 @@ final class Schema extends AbstractSchema
 
         $resolvedName->fullName(
             (
-                $resolvedName->getSchemaName() !== $this->defaultSchema ?
-                    (string) $resolvedName->getSchemaName() . '.' :
-                    ''
+            $resolvedName->getSchemaName() !== $this->defaultSchema ?
+                (string) $resolvedName->getSchemaName() . '.' :
+                ''
             ) . $resolvedName->getName()
         );
 
@@ -222,7 +222,10 @@ final class Schema extends AbstractSchema
             ORDER BY "ns"."nspname" ASC
             SQL;
 
-        return $this->getDb()->createCommand($sql)->queryColumn();
+        return $this
+            ->getDb()
+            ->createCommand($sql)
+            ->queryColumn();
     }
 
     /**
@@ -251,7 +254,10 @@ final class Schema extends AbstractSchema
             ORDER BY c.relname
             SQL;
 
-        return $this->getDb()->createCommand($sql, [':schemaName' => $schema])->queryColumn();
+        return $this
+            ->getDb()
+            ->createCommand($sql, [':schemaName' => $schema])
+            ->queryColumn();
     }
 
     /**
@@ -341,10 +347,13 @@ final class Schema extends AbstractSchema
 
         $resolvedName = $this->resolveTableName($tableName);
 
-        $indexes = $this->getDb()->createCommand($sql, [
-            ':schemaName' => $resolvedName->getSchemaName(),
-            ':tableName' => $resolvedName->getName(),
-        ])->queryAll();
+        $indexes = $this
+            ->getDb()
+            ->createCommand($sql, [
+                ':schemaName' => $resolvedName->getSchemaName(),
+                ':tableName' => $resolvedName->getName(),
+            ])
+            ->queryAll();
 
         /** @var array<array-key, array<array-key, mixed>> @indexes */
         $indexes = $this->normalizePdoRowKeyCase($indexes, true);
@@ -473,7 +482,10 @@ final class Schema extends AbstractSchema
             ORDER BY c.relname
             SQL;
 
-        return $this->getDb()->createCommand($sql, [':schemaName' => $schema])->queryColumn();
+        return $this
+            ->getDb()
+            ->createCommand($sql, [':schemaName' => $schema])
+            ->queryColumn();
     }
 
     /**
@@ -527,10 +539,15 @@ final class Schema extends AbstractSchema
 
         /** @var array{array{tableName: string, columns: array}} $constraints */
         $constraints = [];
-        $slavePdo = $this->getDb()->getSlavePdo();
+        $slavePdo = $this
+            ->getDb()
+            ->getSlavePdo();
 
         /** @var FindConstraintArray $constraint */
-        foreach ($this->getDb()->createCommand($sql)->queryAll() as $constraint) {
+        foreach ($this
+                     ->getDb()
+                     ->createCommand($sql)
+                     ->queryAll() as $constraint) {
             if ($slavePdo !== null && $slavePdo->getAttribute(PDO::ATTR_CASE) === PDO::CASE_UPPER) {
                 $constraint = array_change_key_case($constraint, CASE_LOWER);
             }
@@ -592,10 +609,13 @@ final class Schema extends AbstractSchema
             ORDER BY i.relname, k
             SQL;
 
-        return $this->getDb()->createCommand($sql, [
-            ':schemaName' => $table->getSchemaName(),
-            ':tableName' => $table->getName(),
-        ])->queryAll();
+        return $this
+            ->getDb()
+            ->createCommand($sql, [
+                ':schemaName' => $table->getSchemaName(),
+                ':tableName' => $table->getName(),
+            ])
+            ->queryAll();
     }
 
     /**
@@ -619,7 +639,9 @@ final class Schema extends AbstractSchema
     public function findUniqueIndexes(TableSchema $table): array
     {
         $uniqueIndexes = [];
-        $slavePdo = $this->getDb()->getSlavePdo();
+        $slavePdo = $this
+            ->getDb()
+            ->getSlavePdo();
 
         /** @var array{indexname: string, columnname: string} $row */
         foreach ($this->getUniqueIndexInformation($table) as $row) {
@@ -659,13 +681,19 @@ final class Schema extends AbstractSchema
         $schemaName = $table->getSchemaName();
         $orIdentity = '';
 
-        $tableName = $this->getDb()->quoteValue($tableName);
+        $tableName = $this
+            ->getDb()
+            ->quoteValue($tableName);
 
         if ($schemaName !== null) {
-            $schemaName = $this->getDb()->quoteValue($schemaName);
+            $schemaName = $this
+                ->getDb()
+                ->quoteValue($schemaName);
         }
 
-        if (version_compare($this->getDb()->getServerVersion(), '12.0', '>=')) {
+        if (version_compare($this
+            ->getDb()
+            ->getServerVersion(), '12.0', '>=')) {
             $orIdentity = 'OR a.attidentity != \'\'';
         }
 
@@ -743,8 +771,13 @@ final class Schema extends AbstractSchema
             SQL;
 
         /** @var array columns */
-        $columns = $this->getDb()->createCommand($sql)->queryAll();
-        $slavePdo = $this->getDb()->getSlavePdo();
+        $columns = $this
+            ->getDb()
+            ->createCommand($sql)
+            ->queryAll();
+        $slavePdo = $this
+            ->getDb()
+            ->getSlavePdo();
 
         if (empty($columns)) {
             return false;
@@ -876,7 +909,9 @@ final class Schema extends AbstractSchema
                 $defaultValue
             ));
         } elseif ($sequenceName !== null) {
-            $column->sequenceName($this->resolveTableName($sequenceName)->getFullName());
+            $column->sequenceName($this
+                ->resolveTableName($sequenceName)
+                ->getFullName());
         }
 
         if (isset($this->typeMap[$column->getDbType()])) {
@@ -904,7 +939,10 @@ final class Schema extends AbstractSchema
     {
         $params = [];
         $returnColumns = [];
-        $sql = $this->getDb()->getQueryBuilder()->insert($table, $columns, $params);
+        $sql = $this
+            ->getDb()
+            ->getQueryBuilder()
+            ->insert($table, $columns, $params);
         $tableSchema = $this->getTableSchema($table);
 
         if ($tableSchema !== null) {
@@ -920,7 +958,9 @@ final class Schema extends AbstractSchema
             $sql .= ' RETURNING ' . implode(', ', $returning);
         }
 
-        $command = $this->getDb()->createCommand($sql, $params);
+        $command = $this
+            ->getDb()
+            ->createCommand($sql, $params);
         $command->prepare(false);
         $result = $command->queryOne();
 
@@ -987,10 +1027,13 @@ final class Schema extends AbstractSchema
 
         $resolvedName = $this->resolveTableName($tableName);
 
-        $constraints = $this->getDb()->createCommand($sql, [
-            ':schemaName' => $resolvedName->getSchemaName(),
-            ':tableName' => $resolvedName->getName(),
-        ])->queryAll();
+        $constraints = $this
+            ->getDb()
+            ->createCommand($sql, [
+                ':schemaName' => $resolvedName->getSchemaName(),
+                ':tableName' => $resolvedName->getName(),
+            ])
+            ->queryAll();
 
         /** @var array<array-key, array> $constraints */
         $constraints = $this->normalizePdoRowKeyCase($constraints, true);

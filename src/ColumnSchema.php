@@ -78,7 +78,9 @@ final class ColumnSchema extends AbstractColumnSchema
     {
         if ($this->dimension > 0) {
             if (!is_array($value)) {
-                $value = $this->getArrayParser()->parse($value);
+                $value = $this
+                    ->getArrayParser()
+                    ->parse($value);
             }
 
             if (is_array($value)) {
