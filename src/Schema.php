@@ -788,10 +788,12 @@ final class Schema extends AbstractSchema
 
         /** @var array $column */
         foreach ($columns as $column) {
+            /** @psalm-var ColumnArray $column */
             $column = $this->normalizeRowKeyCase($column, false);
 
-            /** @psalm-var ColumnArray $column */
+            /** @psalm-var ColumnSchema $loadColumnSchema */
             $loadColumnSchema = $this->loadColumnSchema($column);
+
             $table->columns($loadColumnSchema->getName(), $loadColumnSchema);
 
             /** @var mixed */
