@@ -9,8 +9,8 @@ use Yiisoft\Db\Expression\ExpressionBuilderInterface;
 use Yiisoft\Db\Expression\JsonExpression;
 use Yiisoft\Db\Pgsql\Builder\ArrayExpressionBuilder;
 use Yiisoft\Db\Pgsql\Builder\JsonExpressionBuilder;
-use Yiisoft\Db\Query\Conditions\LikeCondition;
-use Yiisoft\Db\Query\DQLQueryBuilder as AbstractDQLQueryBuilder;
+use Yiisoft\Db\QueryBuilder\Conditions\LikeCondition;
+use Yiisoft\Db\QueryBuilder\DQLQueryBuilder as AbstractDQLQueryBuilder;
 
 use function array_merge;
 

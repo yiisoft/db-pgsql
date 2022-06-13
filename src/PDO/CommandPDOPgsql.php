@@ -7,7 +7,7 @@ namespace Yiisoft\Db\Pgsql\PDO;
 use Exception;
 use Yiisoft\Db\Driver\PDO\CommandPDO;
 use Yiisoft\Db\Exception\ConvertException;
-use Yiisoft\Db\Query\QueryBuilderInterface;
+use Yiisoft\Db\QueryBuilder\QueryBuilderInterface;
 use Yiisoft\Db\Schema\SchemaInterface;
 
 final class CommandPDOPgsql extends CommandPDO

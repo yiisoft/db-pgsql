@@ -14,9 +14,9 @@ use Yiisoft\Db\Exception\InvalidConfigException;
 use Yiisoft\Db\Exception\NotSupportedException;
 use Yiisoft\Db\Expression\ExpressionInterface;
 use Yiisoft\Db\Pgsql\PDO\QueryBuilderPDOPgsql;
+use Yiisoft\Db\QueryBuilder\QueryBuilder;
+use Yiisoft\Db\QueryBuilder\QueryBuilderInterface;
 use Yiisoft\Db\Query\Query;
-use Yiisoft\Db\Query\QueryBuilder;
-use Yiisoft\Db\Query\QueryBuilderInterface;
 use Yiisoft\Db\Query\QueryInterface;
 use Yiisoft\Db\TestSupport\TestQueryBuilderTrait;
 
