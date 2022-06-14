@@ -2,12 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Yiisoft\Db\Pgsql\PDO;
+namespace Yiisoft\Db\Pgsql;
 
-use Yiisoft\Db\Pgsql\DDLQueryBuilder;
-use Yiisoft\Db\Pgsql\DMLQueryBuilder;
-use Yiisoft\Db\Pgsql\DQLQueryBuilder;
-use Yiisoft\Db\QueryBuilder\QueryBuilder;
+use Yiisoft\Db\QueryBuilder\QueryBuilder as AbstractQueryBuilder;
 use Yiisoft\Db\Schema\QuoterInterface;
 use Yiisoft\Db\Schema\Schema;
 use Yiisoft\Db\Schema\SchemaInterface;
@@ -15,7 +12,7 @@ use Yiisoft\Db\Schema\SchemaInterface;
 /**
  * The class QueryBuilder is the query builder for PostgresSQL databases.
  */
-final class QueryBuilderPDOPgsql extends QueryBuilder
+final class QueryBuilder extends AbstractQueryBuilder
 {
     /**
      * Defines a B-tree index method for {@see createIndex()}.

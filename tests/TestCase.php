@@ -6,8 +6,8 @@ namespace Yiisoft\Db\Pgsql\Tests;
 
 use Exception;
 use PHPUnit\Framework\TestCase as AbstractTestCase;
-use Yiisoft\Db\Pgsql\PDO\PDODriver;
-use Yiisoft\Db\Pgsql\PDO\ConnectionPDOPgsql;
+use Yiisoft\Db\Pgsql\PDODriver;
+use Yiisoft\Db\Pgsql\ConnectionPDO;
 use Yiisoft\Db\TestSupport\TestTrait;
 
 class TestCase extends AbstractTestCase
@@ -23,20 +23,20 @@ class TestCase extends AbstractTestCase
     protected array $expectedSchemas = ['public'];
     protected string $likeEscapeCharSql = '';
     protected array $likeParameterReplacements = [];
-    protected ?ConnectionPDOPgsql $db = null;
+    protected ?ConnectionPDO $db = null;
 
     /**
      * @param bool $reset whether to clean up the test database.
      *
-     * @return ConnectionPDOPgsql
+     * @return ConnectionPDO
      */
     protected function getConnection(
         $reset = false,
         ?string $dsn = null,
         string $fixture = __DIR__ . '/Fixture/postgres.sql'
-    ): ConnectionPDOPgsql {
+    ): ConnectionPDO {
         $pdoDriver = new PDODriver($dsn ?? $this->dsn, $this->username, $this->password);
-        $this->db = new ConnectionPDOPgsql($pdoDriver, $this->createQueryCache(), $this->createSchemaCache());
+        $this->db = new ConnectionPDO($pdoDriver, $this->createQueryCache(), $this->createSchemaCache());
         $this->db->setLogger($this->createLogger());
         $this->db->setProfiler($this->createProfiler());
 

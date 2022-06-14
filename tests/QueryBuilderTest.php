@@ -13,8 +13,7 @@ use Yiisoft\Db\Exception\InvalidArgumentException;
 use Yiisoft\Db\Exception\InvalidConfigException;
 use Yiisoft\Db\Exception\NotSupportedException;
 use Yiisoft\Db\Expression\ExpressionInterface;
-use Yiisoft\Db\Pgsql\PDO\QueryBuilderPDOPgsql;
-use Yiisoft\Db\QueryBuilder\QueryBuilder;
+use Yiisoft\Db\Pgsql\QueryBuilder;
 use Yiisoft\Db\QueryBuilder\QueryBuilderInterface;
 use Yiisoft\Db\Query\Query;
 use Yiisoft\Db\Query\QueryInterface;
@@ -362,7 +361,7 @@ final class QueryBuilderTest extends TestCase
             'create btree' => [
                 "CREATE INDEX [[$name1]] ON {{{$tableName}}} USING btree ([[C_index_1]])",
                 static function (QueryBuilderInterface $qb) use ($tableName, $name1) {
-                    return $qb->createIndex($name1, $tableName, 'C_index_1', null, QueryBuilderPDOPgsql::INDEX_B_TREE);
+                    return $qb->createIndex($name1, $tableName, 'C_index_1', null, QueryBuilder::INDEX_B_TREE);
                 },
             ],
         ];
