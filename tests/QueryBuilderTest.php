@@ -267,10 +267,20 @@ final class QueryBuilderTest extends TestCase
         $this->assertEquals($expectedQueryParams, $actualQueryParams);
     }
 
+    public function testCheckIntegrity(): void
+    {
+        $this->assertEqualsWithoutLE(
+            <<<SQL
+            ALTER TABLE "public"."item" ENABLE TRIGGER ALL;
+            SQL . ' ',
+            $this->getConnection()->getQueryBuilder()->checkIntegrity('public', 'item'),
+        );
+    }
+
     /**
      * @throws Exception|InvalidConfigException|Throwable
      */
-    public function testCheckIntegrity(): void
+    public function testCheckIntegrityExecute(): void
     {
         $db = $this->getConnection();
         $db->createCommand()->checkIntegrity('public', 'item', false)->execute();
