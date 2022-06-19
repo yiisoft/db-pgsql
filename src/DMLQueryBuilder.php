@@ -7,7 +7,7 @@ namespace Yiisoft\Db\Pgsql;
 use Generator;
 use JsonException;
 use PDO;
-use Yiisoft\Db\Driver\PDO\PDOValue;
+use Yiisoft\Db\Command\Param;
 use Yiisoft\Db\Exception\Exception;
 use Yiisoft\Db\Exception\InvalidArgumentException;
 use Yiisoft\Db\Exception\InvalidConfigException;
@@ -398,7 +398,7 @@ final class DMLQueryBuilder extends AbstractDMLQueryBuilder
                     is_string($value)
                 ) {
                     /** explicitly setup PDO param type for binary column */
-                    $columns[$name] = new PDOValue($value, PDO::PARAM_LOB);
+                    $columns[$name] = new Param($value, PDO::PARAM_LOB);
                 }
             }
         }
