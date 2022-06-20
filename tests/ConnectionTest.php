@@ -26,7 +26,7 @@ final class ConnectionTest extends TestCase
     public function testGetDriverName(): void
     {
         $db = $this->getConnection();
-        $this->assertEquals('pgsql', $db->getDriverName());
+        $this->assertEquals('pgsql', $db->getDriver()->getDriverName());
     }
 
     public function testInitConnection(): void
