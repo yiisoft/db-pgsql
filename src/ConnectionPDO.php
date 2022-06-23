@@ -55,6 +55,11 @@ final class ConnectionPDO extends AbstractConnectionPDO
         return parent::getLastInsertID($sequenceName);
     }
 
+    public function getName(): string
+    {
+        return $this->getDriver()->getName();
+    }
+
     /**
      * @throws Exception|InvalidConfigException
      */
