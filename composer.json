@@ -19,11 +19,11 @@
     "minimum-stability": "dev",
     "prefer-stable": true,
     "require": {
-        "php": "^7.4|^8.0",
+        "php": "^8.0",
         "ext-json": "*",
         "ext-pdo": "*",
         "yiisoft/arrays": "^2.0",
-        "yiisoft/db": "^3.0",
+        "yiisoft/db": "dev-master",
         "yiisoft/json": "^1.0",
         "yiisoft/strings": "^2.0"
     },
@@ -33,8 +33,7 @@
         "spatie/phpunit-watcher": "^1.23",
         "vimeo/psalm": "^4.18",
         "yiisoft/aliases": "^1.1|^2.0",
-        "yiisoft/cache": "^1.0",
-        "yiisoft/log": "^1.0"
+        "yiisoft/cache": "^1.0"
     },
     "autoload": {
         "psr-4": {

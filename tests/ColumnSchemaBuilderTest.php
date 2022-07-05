@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Yiisoft\Db\Pgsql\Tests;
 
-use Yiisoft\Db\TestUtility\TestColumnSchemaBuilderTrait;
+use Yiisoft\Db\TestSupport\TestColumnSchemaBuilderTrait;
 
 /**
  * @group pgsql

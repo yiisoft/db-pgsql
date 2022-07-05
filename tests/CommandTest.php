@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Yiisoft\Db\Pgsql\Tests;
 
-use function serialize;
+use Yiisoft\Db\Exception\InvalidCallException;
 use Yiisoft\Db\Exception\Exception;
 use Yiisoft\Db\Exception\InvalidArgumentException;
 use Yiisoft\Db\Exception\InvalidConfigException;
@@ -13,7 +13,9 @@ use Yiisoft\Db\Expression\ArrayExpression;
 use Yiisoft\Db\Expression\JsonExpression;
 use Yiisoft\Db\Query\Query;
 
-use Yiisoft\Db\TestUtility\TestCommandTrait;
+use Yiisoft\Db\TestSupport\TestCommandTrait;
+
+use function serialize;
 
 /**
  * @group pgsql
@@ -76,16 +78,20 @@ final class CommandTest extends TestCase
         $this->assertNull($schema->getTablePrimaryKey($tableName, true));
 
         $db->createCommand()->addPrimaryKey($name, $tableName, ['int1'])->execute();
+        $pk = $schema->getTablePrimaryKey($tableName, true);
 
-        $this->assertEquals(['int1'], $schema->getTablePrimaryKey($tableName, true)->getColumnNames());
+        $this->assertNotNull($pk);
+        $this->assertEquals(['int1'], $pk->getColumnNames());
 
         $db->createCommand()->dropPrimaryKey($name, $tableName)->execute();
 
         $this->assertNull($schema->getTablePrimaryKey($tableName, true));
 
         $db->createCommand()->addPrimaryKey($name, $tableName, ['int1', 'int2'])->execute();
+        $pk = $schema->getTablePrimaryKey($tableName, true);
 
-        $this->assertEquals(['int1', 'int2'], $schema->getTablePrimaryKey($tableName, true)->getColumnNames());
+        $this->assertNotNull($pk);
+        $this->assertEquals(['int1', 'int2'], $pk->getColumnNames());
     }
 
     public function testAutoQuoting(): void
@@ -153,7 +159,7 @@ final class CommandTest extends TestCase
 
         $command->execute();
 
-        $this->assertEquals(3, $db->getSchema()->getLastInsertID('public.profile_id_seq'));
+        $this->assertEquals(3, $db->getLastInsertID('public.profile_id_seq'));
 
         $sql = 'INSERT INTO {{schema1.profile}}([[description]]) VALUES (\'non duplicate\')';
 
@@ -161,7 +167,24 @@ final class CommandTest extends TestCase
 
         $command->execute();
 
-        $this->assertEquals(3, $db->getSchema()->getLastInsertID('schema1.profile_id_seq'));
+        $this->assertEquals(3, $db->getLastInsertID('schema1.profile_id_seq'));
+    }
+
+    public function testLastInsertIdException(): void
+    {
+        $db = $this->getConnection();
+        $db->close();
+
+        $this->expectException(InvalidCallException::class);
+        $db->getLastInsertID('schema1.profile_id_seq');
+    }
+
+    public function testLastInsertIdNotSupportedException(): void
+    {
+        $db = $this->getConnection();
+
+        $this->expectException(InvalidArgumentException::class);
+        $db->getLastInsertID();
     }
 
     /**
@@ -414,13 +437,9 @@ PGSQL
     public function testUpsert(array $firstData, array $secondData): void
     {
         $db = $this->getConnection(true);
-
         $this->assertEquals(0, $db->createCommand('SELECT COUNT(*) FROM {{T_upsert}}')->queryScalar());
-
         $this->performAndCompareUpsertResult($db, $firstData);
-
         $this->assertEquals(1, $db->createCommand('SELECT COUNT(*) FROM {{T_upsert}}')->queryScalar());
-
         $this->performAndCompareUpsertResult($db, $secondData);
     }
 }
