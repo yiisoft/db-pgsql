@@ -217,7 +217,7 @@ final class Schema extends AbstractSchema
      *
      * @throws Exception|InvalidConfigException|Throwable
      *
-     * @return array all schema names in the database, except system schemas.
+     * @return array All schema names in the database, except system schemas.
      */
     protected function findSchemaNames(): array
     {
@@ -228,12 +228,7 @@ final class Schema extends AbstractSchema
         ORDER BY "ns"."nspname" ASC
         SQL;
 
-        $schemaNames = $this->db->createCommand($sql)->queryColumn();
-        if (!$schemaNames) {
-            return [];
-        }
-
-        return $schemaNames;
+        return $this->db->createCommand($sql)->queryColumn();
     }
 
     /**
@@ -246,7 +241,7 @@ final class Schema extends AbstractSchema
      *
      * @throws Exception|InvalidConfigException|Throwable
      *
-     * @return array all table names in the database. The names have NO schema name prefix.
+     * @return array All table names in the database. The names have NO schema name prefix.
      */
     protected function findTableNames(string $schema = ''): array
     {
@@ -262,12 +257,7 @@ final class Schema extends AbstractSchema
         ORDER BY c.relname
         SQL;
 
-        $tableNames = $this->db->createCommand($sql, [':schemaName' => $schema])->queryColumn();
-        if (!$tableNames) {
-            return [];
-        }
-
-        return $tableNames;
+        return $this->db->createCommand($sql, [':schemaName' => $schema])->queryColumn();
     }
 
     /**
@@ -488,12 +478,7 @@ final class Schema extends AbstractSchema
         ORDER BY c.relname
         SQL;
 
-        $viewNames = $this->db->createCommand($sql, [':schemaName' => $schema])->queryColumn();
-        if (!$viewNames) {
-            return [];
-        }
-
-        return $viewNames;
+        return $this->db->createCommand($sql, [':schemaName' => $schema])->queryColumn();
     }
 
     /**
