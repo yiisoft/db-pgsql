@@ -188,7 +188,8 @@ final class Schema extends AbstractSchema
     {
         $resolvedName = new TableSchema();
 
-        $parts = explode('.', str_replace('"', '', $name));
+        $name = str_replace('"', '', $name);
+        $parts = explode('.', $name);
 
         if (isset($parts[1])) {
             $resolvedName->schemaName($parts[0]);
