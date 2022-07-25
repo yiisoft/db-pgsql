@@ -271,9 +271,7 @@ final class Schema extends AbstractSchema
      */
     protected function loadTableSchema(string $name): ?TableSchemaInterface
     {
-        $table = new TableSchema();
-
-        $this->resolveTableNames($table, $name);
+        $table = $this->resolveTableName($name);
 
         if ($this->findColumns($table)) {
             $this->findConstraints($table);
@@ -432,33 +430,6 @@ final class Schema extends AbstractSchema
     protected function loadTableDefaultValues(string $tableName): array
     {
         throw new NotSupportedException('PostgreSQL does not support default value constraints.');
-    }
-
-    /**
-     * Resolves the table name and schema name (if any).
-     *
-     * @param TableSchemaInterface $table the table metadata object.
-     * @param string $name the table name
-     */
-    protected function resolveTableNames(TableSchemaInterface $table, string $name): void
-    {
-        $parts = explode('.', str_replace('"', '', $name));
-
-        if (isset($parts[1])) {
-            $table->schemaName($parts[0]);
-            $table->name($parts[1]);
-        } else {
-            $table->schemaName($this->defaultSchema);
-            $table->name($parts[0]);
-        }
-
-        if ($table->getSchemaName() !== $this->defaultSchema) {
-            $name = (string) $table->getSchemaName() . '.' . $table->getName();
-        } else {
-            $name = $table->getName();
-        }
-
-        $table->fullName($name);
     }
 
     /**
