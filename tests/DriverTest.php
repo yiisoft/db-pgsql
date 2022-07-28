@@ -21,7 +21,7 @@ final class DriverTest extends TestCase
         $this->assertEqualsIgnoringCase($this->charset, array_values($charset)[0]);
 
         $newCharset = 'latin1';
-        $pdoDriver->charset($newCharset);
+        $pdoDriver->setCharset($newCharset);
         $pdo = $pdoDriver->createConnection();
         $charset = $pdo->query('SHOW client_encoding', PDO::FETCH_ASSOC)->fetch();
         $this->assertEqualsIgnoringCase($newCharset, array_values($charset)[0]);
