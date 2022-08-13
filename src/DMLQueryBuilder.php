@@ -136,7 +136,7 @@ final class DMLQueryBuilder extends AbstractDMLQueryBuilder
          * @psalm-var string[] $values
          */
         return 'INSERT INTO '
-            . $this->quoter->quoteSql($table)
+            . $this->quoter->quoteTableName($table)
             . ' (' . implode(', ', $columns) . ') VALUES ' . implode(', ', $values);
     }
 
