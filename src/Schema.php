@@ -183,39 +183,12 @@ final class Schema extends AbstractSchema
     {
         $resolvedName = new TableSchema();
 
-        $resolvedName->serverName($name->getServerName());
-        $resolvedName->catalogName($name->getCatalogName());
         $resolvedName->schemaName($name->getSchemaName() ?? $this->defaultSchema);
         $resolvedName->name($name->getTableName());
-        $resolvedName->fullName((string) $name);
+        $resolvedName->fullName($name->getSchemaName() === $this->defaultSchema ? $name->getTableName() : (string) $name);
 
         return $resolvedName;
     }
-//    protected function resolveTableName(string $name): TableSchemaInterface
-//    {
-//        $resolvedName = new TableSchema();
-//
-//        $name = str_replace('"', '', $name);
-//        $parts = explode('.', $name);
-//
-//        if (isset($parts[1])) {
-//            $resolvedName->schemaName($parts[0]);
-//            $resolvedName->name($parts[1]);
-//        } else {
-//            $resolvedName->schemaName($this->defaultSchema);
-//            $resolvedName->name($name);
-//        }
-//
-//        $resolvedName->fullName(
-//            (
-//                $resolvedName->getSchemaName() !== $this->defaultSchema ?
-//                    (string) $resolvedName->getSchemaName() . '.' :
-//                    ''
-//            ) . $resolvedName->getName()
-//        );
-//
-//        return $resolvedName;
-//    }
 
     /**
      * Returns all schema names in the database, including the default one but not system schemas.
