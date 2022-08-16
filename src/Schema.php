@@ -628,17 +628,7 @@ final class Schema extends AbstractSchema
      */
     protected function findColumns(TableSchemaInterface $table): bool
     {
-        $tableName = $table->getName();
-        $schemaName = $table->getSchemaName();
         $orIdentity = '';
-
-        /** @var mixed */
-        $tableName = $this->db->getQuoter()->quoteValue($tableName);
-
-        if ($schemaName !== null) {
-            /** @var mixed */
-            $schemaName = $this->db->getQuoter()->quoteValue($schemaName);
-        }
 
         if (version_compare($this->db->getServerVersion(), '12.0', '>=')) {
             $orIdentity = 'OR a.attidentity != \'\'';
@@ -711,13 +701,16 @@ final class Schema extends AbstractSchema
                 LEFT JOIN pg_constraint ct ON ct.conrelid = c.oid AND ct.contype = 'p'
             WHERE
                 a.attnum > 0 AND t.typname != '' AND NOT a.attisdropped
-                AND c.relname = $tableName
-                AND d.nspname = $schemaName
+                AND c.relname = :tableName
+                AND d.nspname = :schemaName
             ORDER BY
                 a.attnum;
         SQL;
 
-        $columns = $this->db->createCommand($sql)->queryAll();
+        $columns = $this->db->createCommand($sql, [
+            ':schemaName' => $table->getSchemaName(),
+            ':tableName' => $table->getName(),
+        ])->queryAll();
 
         if (empty($columns)) {
             return false;
