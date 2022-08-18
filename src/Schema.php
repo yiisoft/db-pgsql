@@ -159,11 +159,6 @@ final class Schema extends AbstractSchema
         'xml' => self::TYPE_STRING,
     ];
 
-    public function __construct(private ConnectionInterface $db, SchemaCache $schemaCache)
-    {
-        parent::__construct($schemaCache);
-    }
-
     /**
      * @var string|null the default schema used for the current session.
      */
@@ -188,23 +183,15 @@ final class Schema extends AbstractSchema
     {
         $resolvedName = new TableSchema();
 
-        $name = str_replace('"', '', $name);
-        $parts = explode('.', $name);
+        $parts = array_reverse(
+            $this->db->getQuoter()->getTableNameParts($name)
+        );
 
-        if (isset($parts[1])) {
-            $resolvedName->schemaName($parts[0]);
-            $resolvedName->name($parts[1]);
-        } else {
-            $resolvedName->schemaName($this->defaultSchema);
-            $resolvedName->name($name);
-        }
+        $resolvedName->name($parts[0] ?? '');
+        $resolvedName->schemaName($parts[1] ?? $this->defaultSchema);
 
-        $resolvedName->fullName(
-            (
-                $resolvedName->getSchemaName() !== $this->defaultSchema ?
-                    (string) $resolvedName->getSchemaName() . '.' :
-                    ''
-            ) . $resolvedName->getName()
+        $resolvedName->fullName($resolvedName->getSchemaName() !== $this->defaultSchema ?
+            implode('.', array_reverse($parts)) : $resolvedName->getName()
         );
 
         return $resolvedName;
@@ -462,17 +449,6 @@ final class Schema extends AbstractSchema
      */
     protected function findConstraints(TableSchemaInterface $table): void
     {
-        $tableName = $table->getName();
-        $tableSchema = $table->getSchemaName();
-
-        /** @var mixed */
-        $tableName = $this->db->getQuoter()->quoteValue($tableName);
-
-        if ($tableSchema !== null) {
-            /** @var mixed */
-            $tableSchema = $this->db->getQuoter()->quoteValue($tableSchema);
-        }
-
         /**
          * We need to extract the constraints de hard way since:
          * {@see http://www.postgresql.org/message-id/26677.1086673982@sss.pgh.pa.us}
@@ -498,8 +474,8 @@ final class Schema extends AbstractSchema
             left join pg_attribute fa on fa.attrelid=ct.confrelid and fa.attnum = ct.confkey[ct.s]
         WHERE
             ct.contype='f'
-            and c.relname=$tableName
-            and ns.nspname=$tableSchema
+            and c.relname=:tableName
+            and ns.nspname=:schemaName
         ORDER BY
             fns.nspname, fc.relname, a.attnum
         SQL;
@@ -518,7 +494,10 @@ final class Schema extends AbstractSchema
          *   }
          * > $rows
          */
-        $rows = $this->db->createCommand($sql)->queryAll();
+        $rows = $this->db->createCommand($sql, [
+            ':schemaName' => $table->getSchemaName(),
+            ':tableName' => $table->getName(),
+        ])->queryAll();
 
         foreach ($rows as $constraint) {
             /** @psalm-var array{
@@ -648,17 +627,7 @@ final class Schema extends AbstractSchema
      */
     protected function findColumns(TableSchemaInterface $table): bool
     {
-        $tableName = $table->getName();
-        $schemaName = $table->getSchemaName();
         $orIdentity = '';
-
-        /** @var mixed */
-        $tableName = $this->db->getQuoter()->quoteValue($tableName);
-
-        if ($schemaName !== null) {
-            /** @var mixed */
-            $schemaName = $this->db->getQuoter()->quoteValue($schemaName);
-        }
 
         if (version_compare($this->db->getServerVersion(), '12.0', '>=')) {
             $orIdentity = 'OR a.attidentity != \'\'';
@@ -731,13 +700,16 @@ final class Schema extends AbstractSchema
                 LEFT JOIN pg_constraint ct ON ct.conrelid = c.oid AND ct.contype = 'p'
             WHERE
                 a.attnum > 0 AND t.typname != '' AND NOT a.attisdropped
-                AND c.relname = $tableName
-                AND d.nspname = $schemaName
+                AND c.relname = :tableName
+                AND d.nspname = :schemaName
             ORDER BY
                 a.attnum;
         SQL;
 
-        $columns = $this->db->createCommand($sql)->queryAll();
+        $columns = $this->db->createCommand($sql, [
+            ':schemaName' => $table->getSchemaName(),
+            ':tableName' => $table->getName(),
+        ])->queryAll();
 
         if (empty($columns)) {
             return false;
@@ -1036,27 +1008,6 @@ final class Schema extends AbstractSchema
     public function createColumnSchemaBuilder(string $type, int|string|array|null $length = null): ColumnSchemaBuilder
     {
         return new ColumnSchemaBuilder($type, $length);
-    }
-
-    /**
-     * Returns the actual name of a given table name.
-     *
-     * This method will strip off curly brackets from the given table name and replace the percentage character '%' with
-     * {@see ConnectionInterface::tablePrefix}.
-     *
-     * @param string $name the table name to be converted.
-     *
-     * @return string the real name of the given table name.
-     */
-    public function getRawTableName(string $name): string
-    {
-        if (str_contains($name, '{{')) {
-            $name = preg_replace('/{{(.*?)}}/', '\1', $name);
-
-            return str_replace('%', $this->db->getTablePrefix(), $name);
-        }
-
-        return $name;
     }
 
     /**
