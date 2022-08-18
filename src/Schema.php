@@ -7,8 +7,6 @@ namespace Yiisoft\Db\Pgsql;
 use JsonException;
 use Throwable;
 use Yiisoft\Arrays\ArrayHelper;
-use Yiisoft\Db\Cache\SchemaCache;
-use Yiisoft\Db\Connection\ConnectionInterface;
 use Yiisoft\Db\Constraint\CheckConstraint;
 use Yiisoft\Db\Constraint\Constraint;
 use Yiisoft\Db\Constraint\DefaultValueConstraint;
@@ -190,7 +188,8 @@ final class Schema extends AbstractSchema
         $resolvedName->name($parts[0] ?? '');
         $resolvedName->schemaName($parts[1] ?? $this->defaultSchema);
 
-        $resolvedName->fullName($resolvedName->getSchemaName() !== $this->defaultSchema ?
+        $resolvedName->fullName(
+            $resolvedName->getSchemaName() !== $this->defaultSchema ?
             implode('.', array_reverse($parts)) : $resolvedName->getName()
         );
 
