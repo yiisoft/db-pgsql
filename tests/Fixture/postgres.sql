@@ -14,6 +14,7 @@ DROP TABLE IF EXISTS "order_with_null_fk" CASCADE;
 DROP TABLE IF EXISTS "category" CASCADE;
 DROP TABLE IF EXISTS "customer" CASCADE;
 DROP TABLE IF EXISTS "profile" CASCADE;
+DROP TABLE IF EXISTS "quoter" CASCADE;
 DROP TABLE IF EXISTS "type" CASCADE;
 DROP TABLE IF EXISTS "null_values" CASCADE;
 DROP TABLE IF EXISTS "negative_default_values" CASCADE;
@@ -55,6 +56,12 @@ CREATE TABLE "profile" (
 
 CREATE TABLE "schema1"."profile" (
   id serial not null primary key,
+  description varchar(128) NOT NULL
+);
+
+CREATE TABLE "quoter" (
+  id serial not null primary key,
+  name varchar(16) NOT NULL,
   description varchar(128) NOT NULL
 );
 
