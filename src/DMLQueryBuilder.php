@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Yiisoft\Db\Pgsql;
 
-use Generator;
 use JsonException;
 use PDO;
 use Yiisoft\Db\Command\Param;
@@ -13,7 +12,6 @@ use Yiisoft\Db\Exception\InvalidArgumentException;
 use Yiisoft\Db\Exception\InvalidConfigException;
 use Yiisoft\Db\Exception\NotSupportedException;
 use Yiisoft\Db\Expression\Expression;
-use Yiisoft\Db\Expression\ExpressionInterface;
 use Yiisoft\Db\QueryBuilder\DMLQueryBuilder as AbstractDMLQueryBuilder;
 use Yiisoft\Db\QueryBuilder\QueryBuilderInterface;
 use Yiisoft\Db\Query\Query;
@@ -21,7 +19,6 @@ use Yiisoft\Db\Query\QueryInterface;
 use Yiisoft\Db\Schema\QuoterInterface;
 use Yiisoft\Db\Schema\Schema;
 use Yiisoft\Db\Schema\SchemaInterface;
-use Yiisoft\Strings\NumericHelper;
 
 use function implode;
 use function is_array;
@@ -58,86 +55,6 @@ final class DMLQueryBuilder extends AbstractDMLQueryBuilder
         }
 
         return $sql;
-    }
-
-    /**
-     * @throws Exception|InvalidArgumentException|InvalidConfigException|NotSupportedException
-     *
-     * @psalm-suppress MixedArrayOffset
-     */
-    public function batchInsert(string $table, array $columns, iterable|Generator $rows, array &$params = []): string
-    {
-        if (empty($rows)) {
-            return '';
-        }
-
-        /**
-         * @psalm-var array<array-key, ColumnSchema> $columnSchemas
-         */
-        $columnSchemas = [];
-        $schema = $this->schema;
-
-        if (($tableSchema = $schema->getTableSchema($table)) !== null) {
-            $columnSchemas = $tableSchema->getColumns();
-        }
-
-        $values = [];
-
-        /**
-         * @var array $row
-         */
-        foreach ($rows as $row) {
-            $vs = [];
-            /**
-             *  @var int $i
-             *  @var mixed $value
-             */
-            foreach ($row as $i => $value) {
-                if (isset($columns[$i], $columnSchemas[$columns[$i]])) {
-                    /**
-                     * @var bool|ExpressionInterface|float|int|string|null $value
-                     */
-                    $value = $columnSchemas[$columns[$i]]->dbTypecast($value);
-                }
-
-                if (is_string($value)) {
-                    /** @var mixed */
-                    $value = $this->quoter->quoteValue($value);
-                } elseif (is_float($value)) {
-                    /** ensure type cast always has . as decimal separator in all locales */
-                    $value = NumericHelper::normalize((string) $value);
-                } elseif ($value === true) {
-                    $value = 'TRUE';
-                } elseif ($value === false) {
-                    $value = 'FALSE';
-                } elseif ($value === null) {
-                    $value = 'NULL';
-                } elseif ($value instanceof ExpressionInterface) {
-                    $value = $this->queryBuilder->buildExpression($value, $params);
-                }
-
-                /** @var bool|ExpressionInterface|float|int|string|null $value */
-                $vs[] = $value;
-            }
-            $values[] = '(' . implode(', ', $vs) . ')';
-        }
-
-        if (empty($values)) {
-            return '';
-        }
-
-        /** @var string name */
-        foreach ($columns as $i => $name) {
-            $columns[$i] = $this->quoter->quoteColumnName($name);
-        }
-
-        /**
-         * @psalm-var string[] $columns
-         * @psalm-var string[] $values
-         */
-        return 'INSERT INTO '
-            . $this->quoter->quoteTableName($table)
-            . ' (' . implode(', ', $columns) . ') VALUES ' . implode(', ', $values);
     }
 
     /**

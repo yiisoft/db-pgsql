@@ -250,47 +250,60 @@ PGSQL
     {
         $data = $this->batchInsertSqlProviderTrait();
 
-        $data['issue11242']['expected'] = 'INSERT INTO "type" ("int_col", "float_col", "char_col")'
-            . ' VALUES (NULL, NULL, \'Kyiv {{city}}, Ukraine\')';
-
-        $data['wrongBehavior']['expected'] = 'INSERT INTO "type" ("type"."int_col", "float_col", "char_col")'
-            . ' VALUES (\'\', \'\', \'Kyiv {{city}}, Ukraine\')';
-
-        $data['batchInsert binds params from expression']['expected'] = 'INSERT INTO "type" ("int_col") VALUES (:qp1)';
+        // @todo: need discuss about normalizing field names before using
+        // unset($data['wrongBehavior']);
 
         $data['batchInsert binds params from jsonExpression'] = [
             '{{%type}}',
-            ['json_col'],
+            ['json_col', 'int_col', 'float_col', 'char_col', 'bool_col'],
             [[new JsonExpression(
                 ['username' => 'silverfire', 'is_active' => true, 'langs' => ['Ukrainian', 'Russian', 'English']]
-            )]],
-            'expected' => 'INSERT INTO "type" ("json_col") VALUES (:qp0)',
+            ), 1, 1, '', false]],
+            'expected' => 'INSERT INTO "type" ("json_col", "int_col", "float_col", "char_col", "bool_col") VALUES (:qp0, :qp1, :qp2, :qp3, :qp4)',
             'expectedParams' => [
                 ':qp0' => '{"username":"silverfire","is_active":true,"langs":["Ukrainian","Russian","English"]}',
+                ':qp1' => 1,
+                ':qp2' => 1.0,
+                ':qp3' => '',
+                ':qp4' => false,
             ],
         ];
 
         $data['batchInsert binds params from arrayExpression'] = [
             '{{%type}}',
-            ['intarray_col'],
-            [[new ArrayExpression([1,null,3], 'int')]],
-            'expected' => 'INSERT INTO "type" ("intarray_col") VALUES (ARRAY[:qp0, :qp1, :qp2]::int[])',
-            'expectedParams' => [':qp0' => 1, ':qp1' => null, ':qp2' => 3],
+            ['intarray_col', 'int_col', 'float_col', 'char_col', 'bool_col'],
+            [[new ArrayExpression([1,null,3], 'int'), 1, 1, '', false]],
+            'expected' => 'INSERT INTO "type" ("intarray_col", "int_col", "float_col", "char_col", "bool_col") VALUES (ARRAY[:qp0, :qp1, :qp2]::int[], :qp3, :qp4, :qp5, :qp6)',
+            'expectedParams' => [':qp0' => 1, ':qp1' => null, ':qp2' => 3, ':qp3' => 1, ':qp4' => 1.0, ':qp5' => '', ':qp6' => false],
         ];
 
         $data['batchInsert casts string to int according to the table schema'] = [
             '{{%type}}',
-            ['int_col'],
-            [['3']],
-            'expected' => 'INSERT INTO "type" ("int_col") VALUES (3)',
+            ['int_col', 'float_col', 'char_col', 'bool_col'],
+            [['3', '1.1', '', false]],
+            'expected' => 'INSERT INTO "type" ("int_col", "float_col", "char_col", "bool_col") VALUES (:qp0, :qp1, :qp2, :qp3)',
+            'expectedParams' => [
+                ':qp0' => 3,
+                ':qp1' => 1.1,
+                ':qp2' => '',
+                ':qp3' => false,
+            ],
         ];
 
-        $data['batchInsert casts JSON to JSONB when column is JSONB'] = [
+        $data['batchInsert binds params from jsonbExpression'] = [
             '{{%type}}',
-            ['jsonb_col'],
-            [[['a' => true]]],
-            'expected' => 'INSERT INTO "type" ("jsonb_col") VALUES (:qp0::jsonb)',
-            'expectedParams' => [':qp0' => '{"a":true}'],
+            ['jsonb_col', 'int_col', 'float_col', 'char_col', 'bool_col'],
+            [[new JsonExpression(
+                ['a' => true]
+            ), 1, 1.1, '', false]],
+            'expected' => 'INSERT INTO "type" ("jsonb_col", "int_col", "float_col", "char_col", "bool_col") VALUES (:qp0, :qp1, :qp2, :qp3, :qp4)',
+            'expectedParams' => [
+                ':qp0' => '{"a":true}',
+                ':qp1' => 1,
+                ':qp2' => 1.1,
+                ':qp3' => '',
+                ':qp4' => false,
+            ],
         ];
 
         return $data;
@@ -306,6 +319,7 @@ PGSQL
      * @param array $values
      * @param string $expected
      * @param array $expectedParams
+     * @param int $insertedRow
      *
      * @throws Exception
      * @throws InvalidConfigException
@@ -318,7 +332,8 @@ PGSQL
         array $columns,
         array $values,
         string $expected,
-        array $expectedParams = []
+        array $expectedParams = [],
+        int $insertedRow = 1
     ): void {
         $db = $this->getConnection(true);
 
@@ -330,6 +345,9 @@ PGSQL
 
         $this->assertSame($expected, $command->getSql());
         $this->assertSame($expectedParams, $command->getParams());
+
+        $command->execute();
+        $this->assertEquals($insertedRow, (new Query($db))->from($table)->count());
     }
 
     /**
