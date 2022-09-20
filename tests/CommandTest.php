@@ -251,7 +251,7 @@ PGSQL
         $data = $this->batchInsertSqlProviderTrait();
 
         // @todo: need discuss about normalizing field names before using
-        // unset($data['wrongBehavior']);
+        unset($data['wrongBehavior']);
 
         $data['batchInsert binds params from jsonExpression'] = [
             '{{%type}}',
