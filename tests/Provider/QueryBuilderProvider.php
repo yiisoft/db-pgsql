@@ -23,11 +23,11 @@ final class QueryBuilderProvider extends TestCase
         return [
             'drop' => [
                 "ALTER TABLE {{{$tableName}}} DROP CONSTRAINT [[$name]]",
-                static fn(QueryBuilderInterface $qb) => $qb->dropCheck($name, $tableName),
+                static fn (QueryBuilderInterface $qb) => $qb->dropCheck($name, $tableName),
             ],
             'add' => [
                 "ALTER TABLE {{{$tableName}}} ADD CONSTRAINT [[$name]] CHECK ([[C_not_null]] > 100)",
-                static fn(QueryBuilderInterface $qb) => $qb->addCheck($name, $tableName, '[[C_not_null]] > 100'),
+                static fn (QueryBuilderInterface $qb) => $qb->addCheck($name, $tableName, '[[C_not_null]] > 100'),
             ],
         ];
     }

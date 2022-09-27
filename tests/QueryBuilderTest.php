@@ -136,7 +136,6 @@ final class QueryBuilderTest extends TestCase
     /**
      * @dataProvider \Yiisoft\Db\Pgsql\Tests\Provider\QueryBuilderProvider::batchInsertProvider
      *
-     *
      * @throws Exception|InvalidArgumentException|InvalidConfigException|NotSupportedException
      */
     public function testBatchInsert(string $table, array $columns, array $value, string $expected, array $expectedParams = []): void
@@ -152,7 +151,6 @@ final class QueryBuilderTest extends TestCase
 
     /**
      * @dataProvider \Yiisoft\Db\Pgsql\Tests\Provider\QueryBuilderProvider::buildConditionsProvider
-     *
      *
      * @throws Exception|InvalidArgumentException|InvalidConfigException|NotSupportedException
      */
@@ -174,7 +172,6 @@ final class QueryBuilderTest extends TestCase
     /**
      * @dataProvider \Yiisoft\Db\Pgsql\Tests\Provider\QueryBuilderProvider::buildFilterConditionProvider
      *
-     *
      * @throws Exception|InvalidArgumentException|InvalidConfigException|NotSupportedException
      */
     public function testBuildFilterCondition(array $condition, string $expected, array $expectedParams): void
@@ -192,7 +189,6 @@ final class QueryBuilderTest extends TestCase
     /**
      * @dataProvider \Yiisoft\Db\Pgsql\Tests\Provider\QueryBuilderProvider::buildFromDataProvider
      *
-     *
      * @throws Exception
      */
     public function testBuildFrom(string $table, string $expected): void
@@ -208,7 +204,6 @@ final class QueryBuilderTest extends TestCase
 
     /**
      * @dataProvider \Yiisoft\Db\Pgsql\Tests\Provider\QueryBuilderProvider::buildLikeConditionsProvider
-     *
      *
      * @throws Exception|InvalidArgumentException|InvalidConfigException|NotSupportedException
      */
@@ -226,7 +221,6 @@ final class QueryBuilderTest extends TestCase
 
     /**
      * @dataProvider \Yiisoft\Db\Pgsql\Tests\Provider\QueryBuilderProvider::buildExistsParamsProvider
-     *
      *
      * @throws Exception|InvalidArgumentException|InvalidConfigException|NotSupportedException
      */
@@ -328,15 +322,15 @@ final class QueryBuilderTest extends TestCase
         return [
             'create unique' => [
                 "CREATE UNIQUE INDEX [[$name1]] ON {{{$tableName}}} ([[C_index_1]])",
-                static fn(QueryBuilderInterface $qb) => $qb->createIndex($name1, $tableName, 'C_index_1', QueryBuilder::INDEX_UNIQUE),
+                static fn (QueryBuilderInterface $qb) => $qb->createIndex($name1, $tableName, 'C_index_1', QueryBuilder::INDEX_UNIQUE),
             ],
             'create simple' => [
                 "CREATE INDEX [[$name1]] ON {{{$tableName}}} ([[C_index_1]])",
-                static fn(QueryBuilderInterface $qb) => $qb->createIndex($name1, $tableName, 'C_index_1'),
+                static fn (QueryBuilderInterface $qb) => $qb->createIndex($name1, $tableName, 'C_index_1'),
             ],
             'create btree' => [
                 "CREATE INDEX [[$name1]] ON {{{$tableName}}} USING btree ([[C_index_1]])",
-                static fn(QueryBuilderInterface $qb) => $qb->createIndex($name1, $tableName, 'C_index_1', null, QueryBuilder::INDEX_B_TREE),
+                static fn (QueryBuilderInterface $qb) => $qb->createIndex($name1, $tableName, 'C_index_1', null, QueryBuilder::INDEX_B_TREE),
             ],
         ];
     }
@@ -369,7 +363,6 @@ final class QueryBuilderTest extends TestCase
 
     /**
      * @dataProvider \Yiisoft\Db\Pgsql\Tests\Provider\QueryBuilderProvider::deleteProvider
-     *
      *
      * @throws Exception|InvalidArgumentException|InvalidConfigException|NotSupportedException
      */
@@ -423,13 +416,12 @@ final class QueryBuilderTest extends TestCase
     /**
      * @dataProvider \Yiisoft\Db\Pgsql\Tests\Provider\QueryBuilderProvider::insertProvider
      *
-     *
      * @throws Exception
      * @throws InvalidArgumentException
      * @throws InvalidConfigException
      * @throws NotSupportedException
      */
-    public function testInsert(string $table, array|\Yiisoft\Db\Query\QueryInterface $columns, array $params, string $expectedSQL, array $expectedParams): void
+    public function testInsert(string $table, array|QueryInterface $columns, array $params, string $expectedSQL, array $expectedParams): void
     {
         $actualParams = $params;
         $db = $this->getConnection();
@@ -439,7 +431,6 @@ final class QueryBuilderTest extends TestCase
 
     /**
      * @dataProvider \Yiisoft\Db\Pgsql\Tests\Provider\QueryBuilderProvider::updateProvider
-     *
      *
      * @throws Exception|InvalidArgumentException|InvalidConfigException|NotSupportedException
      */
@@ -464,7 +455,7 @@ final class QueryBuilderTest extends TestCase
      *
      * @throws Exception|NotSupportedException
      */
-    public function testUpsert(string $table, array|\Yiisoft\Db\Query\QueryInterface $insertColumns, array|bool $updateColumns, string|array $expectedSQL, array $expectedParams): void
+    public function testUpsert(string $table, array|QueryInterface $insertColumns, array|bool $updateColumns, string|array $expectedSQL, array $expectedParams): void
     {
         $actualParams = [];
         $db = $this->getConnection();

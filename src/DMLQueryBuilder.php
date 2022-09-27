@@ -92,9 +92,7 @@ final class DMLQueryBuilder extends AbstractDMLQueryBuilder
     /**
      * {@see upsert()} implementation for PostgresSQL 9.5 or higher.
      *
-     *
      * @throws Exception|InvalidArgumentException|InvalidConfigException|JsonException|NotSupportedException
-     *
      */
     public function newUpsert(
         string $table,

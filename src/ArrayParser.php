@@ -39,7 +39,6 @@ final class ArrayParser
      * Pares PgSQL array encoded in string.
      *
      * @param int $i parse starting position.
-     *
      */
     private function parseArray(string $value, int &$i = 0): array
     {
@@ -76,7 +75,6 @@ final class ArrayParser
      * Parses PgSQL encoded string.
      *
      * @param int $i parse starting position.
-     *
      */
     private function parseString(string $value, int &$i): ?string
     {

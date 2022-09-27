@@ -100,9 +100,7 @@ final class ColumnSchema extends AbstractColumnSchema
     /**
      * Casts $value after retrieving from the DBMS to PHP representation.
      *
-     *
      * @throws JsonException
-     *
      */
     protected function phpTypecastValue(mixed $value): mixed
     {

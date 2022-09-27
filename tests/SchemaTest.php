@@ -490,7 +490,6 @@ final class SchemaTest extends TestCase
     /**
      * @dataProvider pdoAttributesProviderTrait
      *
-     *
      * @throws Exception
      * @throws InvalidConfigException
      */
@@ -506,7 +505,7 @@ final class SchemaTest extends TestCase
         $tables = $schema->getTableNames();
 
         if ($db->getDriver()->getDriverName() === 'sqlsrv') {
-            $tables = array_map(static fn($item) => trim($item, '[]'), $tables);
+            $tables = array_map(static fn ($item) => trim($item, '[]'), $tables);
         }
 
         $this->assertContains('customer', $tables);
@@ -564,7 +563,6 @@ final class SchemaTest extends TestCase
     /**
      * @dataProvider lowercaseConstraintsProviderTrait
      *
-     *
      * @throws Exception
      * @throws InvalidConfigException
      */
@@ -582,7 +580,6 @@ final class SchemaTest extends TestCase
 
     /**
      * @dataProvider uppercaseConstraintsProviderTrait
-     *
      *
      * @throws Exception
      * @throws InvalidConfigException
@@ -727,7 +724,7 @@ final class SchemaTest extends TestCase
         $mockDb
             ->expects(self::once())
             ->method('createCommand')
-            ->with(self::callback(fn($sql) => true), self::callback(function ($params) use ($expectedTableName, $expectedSchemaName) {
+            ->with(self::callback(fn ($sql) => true), self::callback(function ($params) use ($expectedTableName, $expectedSchemaName) {
                 $this->assertEquals($expectedTableName, $params[':tableName']);
                 $this->assertEquals($expectedSchemaName, $params[':schemaName']);
                 return true;
