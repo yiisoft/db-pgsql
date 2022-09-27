@@ -21,8 +21,6 @@ final class ArrayParser
      * Convert array from PostgresSQL to PHP
      *
      * @param string|null $value string to be converted
-     *
-     * @return array|null
      */
     public function parse(?string $value): ?array
     {
@@ -40,10 +38,7 @@ final class ArrayParser
     /**
      * Pares PgSQL array encoded in string.
      *
-     * @param string $value
      * @param int $i parse starting position.
-     *
-     * @return array
      */
     private function parseArray(string $value, int &$i = 0): array
     {
@@ -79,10 +74,7 @@ final class ArrayParser
     /**
      * Parses PgSQL encoded string.
      *
-     * @param string $value
      * @param int $i parse starting position.
-     *
-     * @return string|null
      */
     private function parseString(string $value, int &$i): ?string
     {
