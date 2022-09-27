@@ -20,7 +20,6 @@ final class DQLQueryBuilder extends AbstractDQLQueryBuilder
      * Contains array of default condition classes. Extend this method, if you want to change default condition classes
      * for the query builder.
      *
-     * @return array
      *
      * See {@see conditionClasses} docs for details.
      */
@@ -38,10 +37,8 @@ final class DQLQueryBuilder extends AbstractDQLQueryBuilder
      * Contains array of default expression builders. Extend this method and override it, if you want to change default
      * expression builders for this query builder.
      *
-     * @return array
      *
      * See {@see ExpressionBuilder} docs for details.
-     *
      * @psalm-return array<string, class-string<ExpressionBuilderInterface>>
      */
     protected function defaultExpressionBuilders(): array
