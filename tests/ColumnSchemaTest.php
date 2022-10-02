@@ -6,8 +6,8 @@ namespace Yiisoft\Db\Pgsql\Tests;
 
 use Yiisoft\Db\Expression\ArrayExpression;
 use Yiisoft\Db\Expression\JsonExpression;
-use Yiisoft\Db\Query\Query;
 use Yiisoft\Db\Pgsql\ColumnSchema;
+use Yiisoft\Db\Query\Query;
 
 /**
  * @group pgsql
@@ -75,5 +75,49 @@ final class ColumnSchemaTest extends TestCase
 
         $this->assertFalse($columnSchema->phpTypeCast('false'));
         $this->assertTrue($columnSchema->phpTypeCast('true'));
+    }
+
+    public function phpArrayDataProvider(): array
+    {
+        return [
+            [
+                'pgsql_arrays',
+                [
+                    '_int',
+                    '_text',
+                    '_uuid',
+                    '_date',
+                    '_timestamp',
+                    '_decimal',
+                ]
+            ],
+            [
+                'array_and_json_types',
+                [
+                    'intarray_col',
+                    'textarray2_col',
+                    'jsonarray_col',
+                ]
+            ]
+        ];
+    }
+
+    /**
+     * @dataProvider phpArrayDataProvider
+     * @param string $tableName
+     * @param string[] $columns
+     * @return void
+     */
+    public function testPhpArrayType(string $tableName, array $columns): void
+    {
+        $tableSchema = $this->getConnection(true)
+            ->getSchema()
+            ->getTableSchema($tableName);
+
+        foreach ($columns as $column) {
+            /** @var ColumnSchema $columnSchema */
+            $columnSchema = $tableSchema->getColumn($column);
+            $this->assertEquals('array', $columnSchema->getPhpType());
+        }
     }
 }

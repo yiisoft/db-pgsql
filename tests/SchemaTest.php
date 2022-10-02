@@ -15,7 +15,6 @@ use Yiisoft\Db\Pgsql\Schema;
 use Yiisoft\Db\QueryBuilder\QueryBuilder;
 use Yiisoft\Db\Schema\TableSchemaInterface;
 use Yiisoft\Db\TestSupport\TestSchemaTrait;
-
 use function array_map;
 use function fclose;
 use function fopen;
@@ -749,11 +748,11 @@ final class SchemaTest extends TestCase
             ->method('createCommand')
             ->with(self::callback(function ($sql) {
                 return true;
-            }), self::callback(function ($params) use ($expectedTableName, $expectedSchemaName) {
-                $this->assertEquals($expectedTableName, $params[':tableName']);
-                $this->assertEquals($expectedSchemaName, $params[':schemaName']);
-                return true;
-            }))
+                }), self::callback(function ($params) use ($expectedTableName, $expectedSchemaName) {
+                    $this->assertEquals($expectedTableName, $params[':tableName']);
+                    $this->assertEquals($expectedSchemaName, $params[':schemaName']);
+                    return true;
+                }))
             ->willReturn($commandMock);
 
         $schema = new Schema($mockDb, $this->createSchemaCache());

@@ -36,6 +36,7 @@ DROP TABLE IF EXISTS "T_constraints_2";
 DROP TABLE IF EXISTS "T_constraints_1";
 DROP TABLE IF EXISTS "T_upsert";
 DROP TABLE IF EXISTS "T_upsert_1";
+DROP TABLE IF EXISTS "pgsql_arrays";
 
 DROP SCHEMA IF EXISTS "schema1" CASCADE;
 DROP SCHEMA IF EXISTS "schema2" CASCADE;
@@ -430,4 +431,15 @@ CREATE TABLE "T_upsert"
 CREATE TABLE "T_upsert_1"
 (
     "a" INT NOT NULL PRIMARY KEY
+);
+
+CREATE TABLE "pgsql_arrays"
+(
+    "id" SERIAL NOT NULL PRIMARY KEY,
+    "_int" integer[],
+    "_text" varchar[],
+    "_uuid" uuid[],
+    "_date" date[],
+    "_timestamp" timestamp[],
+    "_decimal" decimal[]
 );

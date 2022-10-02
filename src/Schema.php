@@ -20,7 +20,6 @@ use Yiisoft\Db\Schema\ColumnSchemaBuilder;
 use Yiisoft\Db\Schema\ColumnSchemaInterface;
 use Yiisoft\Db\Schema\Schema as AbstractSchema;
 use Yiisoft\Db\Schema\TableSchemaInterface;
-
 use function array_change_key_case;
 use function array_merge;
 use function array_unique;
@@ -44,6 +43,7 @@ use function substr;
  *   type_type: string|null,
  *   character_maximum_length: int,
  *   column_comment: string|null,
+ *   formatted_type: string,
  *   modifier: int,
  *   is_nullable: bool,
  *   column_default: mixed,
@@ -641,6 +641,7 @@ final class Schema extends AbstractSchema
             COALESCE(td.typtype, tb.typtype, t.typtype) AS type_type,
             a.attlen AS character_maximum_length,
             pg_catalog.col_description(c.oid, a.attnum) AS column_comment,
+            pg_catalog.format_type(a.atttypid, NULL) AS formatted_type,
             a.atttypmod AS modifier,
             a.attnotnull = false AS is_nullable,
             CAST(pg_get_expr(ad.adbin, ad.adrelid) AS varchar) AS column_default,
@@ -787,6 +788,7 @@ final class Schema extends AbstractSchema
      *   type_type: string|null,
      *   character_maximum_length: int,
      *   column_comment: string|null,
+     *   formatted_type: string,
      *   modifier: int,
      *   is_nullable: bool,
      *   column_default: mixed,
@@ -849,7 +851,11 @@ final class Schema extends AbstractSchema
             $column->type(self::TYPE_STRING);
         }
 
-        $column->phpType($this->getColumnPhpType($column));
+        if (str_ends_with($info['formatted_type'], ']')) {
+            $column->phpType(self::PHP_TYPE_ARRAY);
+        } else {
+            $column->phpType($this->getColumnPhpType($column));
+        }
 
         return $column;
     }
