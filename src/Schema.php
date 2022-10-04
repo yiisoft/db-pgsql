@@ -42,7 +42,6 @@ use function substr;
  *   data_type: string,
  *   type_type: string|null,
  *   character_maximum_length: int,
- *   raw_data_type: string,
  *   column_comment: string|null,
  *   modifier: int,
  *   is_nullable: bool,
@@ -641,7 +640,6 @@ final class Schema extends AbstractSchema
             COALESCE(td.typtype, tb.typtype, t.typtype) AS type_type,
             a.attlen AS character_maximum_length,
             pg_catalog.col_description(c.oid, a.attnum) AS column_comment,
-            pg_catalog.format_type(a.atttypid, NULL) AS raw_data_type,
             a.atttypmod AS modifier,
             a.attnotnull = false AS is_nullable,
             CAST(pg_get_expr(ad.adbin, ad.adrelid) AS varchar) AS column_default,
@@ -787,7 +785,6 @@ final class Schema extends AbstractSchema
      *   data_type: string,
      *   type_type: string|null,
      *   character_maximum_length: int,
-     *   raw_data_type: string,
      *   column_comment: string|null,
      *   modifier: int,
      *   is_nullable: bool,
@@ -811,7 +808,6 @@ final class Schema extends AbstractSchema
         $column->autoIncrement($info['is_autoinc']);
         $column->comment($info['column_comment']);
         $column->dbType($info['data_type']);
-        $column->rawDbType($info['raw_data_type']);
         $column->defaultValue($info['column_default']);
         $column->enumValues(($info['enum_values'] !== null)
             ? explode(',', str_replace(["''"], ["'"], $info['enum_values'])) : null);
@@ -853,19 +849,8 @@ final class Schema extends AbstractSchema
         }
 
         $column->phpType($this->getColumnPhpType($column));
-        $column->phpArrayType(parent::getColumnPhpType($column));
 
         return $column;
-    }
-
-    protected function getColumnPhpType(ColumnSchemaInterface $column): string
-    {
-        /** @var ColumnSchema $column */
-        if ($column->isPgSqlArray()) {
-            return self::PHP_TYPE_ARRAY;
-        }
-
-        return parent::getColumnPhpType($column);
     }
 
     /**

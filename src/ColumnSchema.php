@@ -10,14 +10,11 @@ use Yiisoft\Db\Expression\ExpressionInterface;
 use Yiisoft\Db\Expression\JsonExpression;
 use Yiisoft\Db\Schema\ColumnSchema as AbstractColumnSchema;
 use Yiisoft\Db\Schema\Schema as AbstractSchema;
-use function array_walk_recursive;
 use function in_array;
-use function is_array;
 use function is_bool;
 use function is_float;
 use function is_string;
 use function json_decode;
-use function str_ends_with;
 use function strtolower;
 use const JSON_THROW_ON_ERROR;
 
@@ -26,16 +23,6 @@ use const JSON_THROW_ON_ERROR;
  */
 final class ColumnSchema extends AbstractColumnSchema
 {
-    /**
-     * @var string|null real DB type with [*] on end for array
-     */
-    private ?string $rawDbType = null;
-
-    /**
-     * @var string|null php type from pgsql array values
-     */
-    private ?string $phpArrayType = null;
-
     /**
      * @var int the dimension of array. Defaults to 0, means this column is not an array.
      */
@@ -46,16 +33,6 @@ final class ColumnSchema extends AbstractColumnSchema
      */
     private ?string $sequenceName = null;
 
-    public function rawDbType(?string $value): void
-    {
-        $this->rawDbType = $value;
-    }
-
-    public function phpArrayType(string $type): void
-    {
-        $this->phpArrayType = $type;
-    }
-
     /**
      * Return type of PgSql array values
      *
@@ -63,21 +40,12 @@ final class ColumnSchema extends AbstractColumnSchema
      */
     public function getPhpArrayType(): ?string
     {
-        return $this->phpArrayType;
+        return $this->dimension > 0 ? parent::getPhpType() : null;
     }
 
-    /**
-     * Check this column is PgSql array type or not
-     *
-     * @return bool
-     */
-    public function isPgSqlArray(): bool
+    public function getPhpType(): ?string
     {
-        if ($this->rawDbType) {
-            return str_ends_with($this->rawDbType, ']');
-        }
-
-        return $this->dimension > 0;
+        return $this->dimension > 0 ? AbstractSchema::PHP_TYPE_ARRAY : parent::getPhpType();
     }
 
     /**
@@ -124,18 +92,13 @@ final class ColumnSchema extends AbstractColumnSchema
      */
     public function phpTypecast(mixed $value): mixed
     {
-        if ($this->isPgSqlArray()) {
-            if (is_string($value) || $value === null) {
-                $value = $this->getArrayParser()->parse($value);
+        if ($this->dimension > 0) {
+            if ($value === null) {
+                return null;
             }
 
-            if (is_array($value)) {
-                array_walk_recursive($value, function (?string &$val) {
-                    /** @var mixed */
-                    $val = $this->phpTypecastValue($val);
-                });
-            } else {
-                return null;
+            if (is_string($value)) {
+                return $this->getArrayParser()->parse($value);
             }
 
             return $value;
@@ -150,7 +113,7 @@ final class ColumnSchema extends AbstractColumnSchema
      * @param mixed $value
      * @return bool|null
      */
-    private static function castBooleanValue(mixed $value): ?bool
+    public static function castBooleanValue(mixed $value): ?bool
     {
         if (is_bool($value) || $value === null) {
             return $value;
@@ -180,8 +143,8 @@ final class ColumnSchema extends AbstractColumnSchema
             return null;
         }
 
-        if ($this->isPgSqlArray()) {
-            return match ($this->phpArrayType) {
+        if ($this->dimension > 0) {
+            return match ($this->getPhpArrayType()) {
                 AbstractSchema::PHP_TYPE_INTEGER => is_int($value) ? $value : (int) $value,
                 AbstractSchema::PHP_TYPE_DOUBLE => is_float($value) ? $value : (float) $value,
                 AbstractSchema::PHP_TYPE_BOOLEAN => self::castBooleanValue($value),
@@ -204,7 +167,7 @@ final class ColumnSchema extends AbstractColumnSchema
      */
     protected function getArrayParser(): ArrayParser
     {
-        return new ArrayParser();
+        return (new ArrayParser)->withTypeCast($this->getPhpArrayType());
     }
 
     /**
