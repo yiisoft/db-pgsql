@@ -441,5 +441,6 @@ CREATE TABLE "pgsql_arrays"
     "_uuid" uuid[],
     "_date" date[],
     "_timestamp" timestamp[],
-    "_decimal" decimal[]
+    "_decimal" decimal[],
+    "_int3" integer[3]
 );

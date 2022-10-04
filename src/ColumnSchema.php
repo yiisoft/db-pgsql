@@ -10,19 +10,32 @@ use Yiisoft\Db\Expression\ExpressionInterface;
 use Yiisoft\Db\Expression\JsonExpression;
 use Yiisoft\Db\Schema\ColumnSchema as AbstractColumnSchema;
 use Yiisoft\Db\Schema\Schema as AbstractSchema;
-
 use function array_walk_recursive;
 use function in_array;
 use function is_array;
+use function is_bool;
+use function is_float;
 use function is_string;
 use function json_decode;
+use function str_ends_with;
 use function strtolower;
+use const JSON_THROW_ON_ERROR;
 
 /**
  * The class ColumnSchema for PostgreSQL database.
  */
 final class ColumnSchema extends AbstractColumnSchema
 {
+    /**
+     * @var string|null real DB type with [*] on end for array
+     */
+    private ?string $rawDbType = null;
+
+    /**
+     * @var string|null php type from pgsql array values
+     */
+    private ?string $phpArrayType = null;
+
     /**
      * @var int the dimension of array. Defaults to 0, means this column is not an array.
      */
@@ -32,6 +45,40 @@ final class ColumnSchema extends AbstractColumnSchema
      * @var string|null name of associated sequence if column is auto-incremental.
      */
     private ?string $sequenceName = null;
+
+    public function rawDbType(?string $value): void
+    {
+        $this->rawDbType = $value;
+    }
+
+    public function phpArrayType(string $type): void
+    {
+        $this->phpArrayType = $type;
+    }
+
+    /**
+     * Return type of PgSql array values
+     *
+     * @return string|null
+     */
+    public function getPhpArrayType(): ?string
+    {
+        return $this->phpArrayType;
+    }
+
+    /**
+     * Check this column is PgSql array type or not
+     *
+     * @return bool
+     */
+    public function isPgSqlArray(): bool
+    {
+        if ($this->rawDbType) {
+            return str_ends_with($this->rawDbType, ']');
+        }
+
+        return $this->dimension > 0;
+    }
 
     /**
      * Converts the input value according to {@see type} and {@see dbType} for use in a db query.
@@ -77,8 +124,8 @@ final class ColumnSchema extends AbstractColumnSchema
      */
     public function phpTypecast(mixed $value): mixed
     {
-        if ($this->dimension > 0) {
-            if (!is_array($value) && (is_string($value) || $value === null)) {
+        if ($this->isPgSqlArray()) {
+            if (is_string($value) || $value === null) {
                 $value = $this->getArrayParser()->parse($value);
             }
 
@@ -98,6 +145,27 @@ final class ColumnSchema extends AbstractColumnSchema
     }
 
     /**
+     * Cast mixed value to PHP boolean type
+     *
+     * @param mixed $value
+     * @return bool|null
+     */
+    private static function castBooleanValue(mixed $value): ?bool
+    {
+        if (is_bool($value) || $value === null) {
+            return $value;
+        }
+        /** @var mixed $value */
+        $value = is_string($value) ? strtolower($value) : $value;
+
+        return match ($value) {
+            't', 'true' => true,
+            'f', 'false' => false,
+            default => (bool) $value,
+        };
+    }
+
+    /**
      * Casts $value after retrieving from the DBMS to PHP representation.
      *
      * @param mixed $value
@@ -112,21 +180,21 @@ final class ColumnSchema extends AbstractColumnSchema
             return null;
         }
 
-        switch ($this->getType()) {
-            case AbstractSchema::TYPE_BOOLEAN:
-                /** @var mixed */
-                $value = is_string($value) ? strtolower($value) : $value;
-
-                return match ($value) {
-                    't', 'true' => true,
-                    'f', 'false' => false,
-                    default => (bool)$value,
-                };
-            case AbstractSchema::TYPE_JSON:
-                return json_decode((string) $value, true, 512, JSON_THROW_ON_ERROR);
+        if ($this->isPgSqlArray()) {
+            return match ($this->phpArrayType) {
+                AbstractSchema::PHP_TYPE_INTEGER => is_int($value) ? $value : (int) $value,
+                AbstractSchema::PHP_TYPE_DOUBLE => is_float($value) ? $value : (float) $value,
+                AbstractSchema::PHP_TYPE_BOOLEAN => self::castBooleanValue($value),
+                AbstractSchema::PHP_TYPE_ARRAY => json_decode((string) $value, true, 512, JSON_THROW_ON_ERROR),
+                default => $value,
+            };
         }
 
-        return parent::phpTypecast($value);
+        return match ($this->getType()) {
+            AbstractSchema::TYPE_BOOLEAN => self::castBooleanValue($value),
+            AbstractSchema::TYPE_JSON => json_decode((string) $value, true, 512, JSON_THROW_ON_ERROR),
+            default => parent::phpTypecast($value),
+        };
     }
 
     /**

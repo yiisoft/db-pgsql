@@ -7,6 +7,7 @@ namespace Yiisoft\Db\Pgsql\Tests;
 use Yiisoft\Db\Expression\ArrayExpression;
 use Yiisoft\Db\Expression\JsonExpression;
 use Yiisoft\Db\Pgsql\ColumnSchema;
+use Yiisoft\Db\Pgsql\Schema;
 use Yiisoft\Db\Query\Query;
 
 /**
@@ -83,20 +84,20 @@ final class ColumnSchemaTest extends TestCase
             [
                 'pgsql_arrays',
                 [
-                    '_int',
-                    '_text',
-                    '_uuid',
-                    '_date',
-                    '_timestamp',
-                    '_decimal',
+                    '_int' => Schema::PHP_TYPE_INTEGER,
+                    '_text' => Schema::PHP_TYPE_STRING,
+                    '_uuid' => Schema::PHP_TYPE_STRING,
+                    '_date' => Schema::PHP_TYPE_STRING,
+                    '_timestamp' => Schema::PHP_TYPE_STRING,
+                    '_decimal' => Schema::PHP_TYPE_STRING, //Wrong only for that test/PR. It must be fixed in db/Schema
                 ]
             ],
             [
                 'array_and_json_types',
                 [
-                    'intarray_col',
-                    'textarray2_col',
-                    'jsonarray_col',
+                    'intarray_col' => Schema::PHP_TYPE_INTEGER,
+                    'textarray2_col' => Schema::PHP_TYPE_STRING,
+                    'jsonarray_col' => Schema::PHP_TYPE_ARRAY,
                 ]
             ]
         ];
@@ -114,10 +115,11 @@ final class ColumnSchemaTest extends TestCase
             ->getSchema()
             ->getTableSchema($tableName);
 
-        foreach ($columns as $column) {
+        foreach ($columns as $column => $phpType) {
             /** @var ColumnSchema $columnSchema */
             $columnSchema = $tableSchema->getColumn($column);
-            $this->assertEquals('array', $columnSchema->getPhpType());
+            $this->assertEquals(Schema::PHP_TYPE_ARRAY, $columnSchema->getPhpType());
+            $this->assertEquals($phpType, $columnSchema->getPhpArrayType());
         }
     }
 }

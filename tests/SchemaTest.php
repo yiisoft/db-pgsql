@@ -242,7 +242,7 @@ final class SchemaTest extends TestCase
             'intarray_col' => [
                 'type' => 'integer',
                 'dbType' => 'int4',
-                'phpType' => 'integer',
+                'phpType' => 'array',
                 'allowNull' => true,
                 'autoIncrement' => false,
                 'enumValues' => null,
@@ -255,7 +255,7 @@ final class SchemaTest extends TestCase
             'textarray2_col' => [
                 'type' => 'text',
                 'dbType' => 'text',
-                'phpType' => 'string',
+                'phpType' => 'array',
                 'allowNull' => true,
                 'autoIncrement' => false,
                 'enumValues' => null,
