@@ -355,7 +355,6 @@ PGSQL
      *
      * @dataProvider bindParamsNonWhereProviderTrait
      *
-     *
      * @throws Exception
      * @throws InvalidArgumentException
      * @throws InvalidConfigException
@@ -413,7 +412,6 @@ PGSQL
      *
      * @dataProvider invalidSelectColumnsProviderTrait
      *
-     *
      * @throws Exception
      * @throws InvalidConfigException
      * @throws NotSupportedException
@@ -441,7 +439,6 @@ PGSQL
      * Test command upsert.
      *
      * @dataProvider upsertProviderTrait
-     *
      *
      * @throws InvalidArgumentException
      * @throws Exception

@@ -59,7 +59,6 @@ final class JsonExpressionBuilder implements ExpressionBuilderInterface
     }
 
     /**
-     *
      * @return string the typecast expression based on {@see type}.
      */
     protected function getTypecast(JsonExpression $expression): string

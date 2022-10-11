@@ -15,7 +15,6 @@ final class ColumnSchemaBuilderTest extends TestCase
 
     /**
      * @dataProvider typesProviderTrait
-     *
      */
     public function testCustomTypes(string $expected, string $type, ?int $length, mixed $calls): void
     {

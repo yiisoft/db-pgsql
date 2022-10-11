@@ -18,7 +18,6 @@ use Yiisoft\Db\QueryBuilder\QueryBuilderInterface;
 use Yiisoft\Db\Query\QueryInterface;
 use Yiisoft\Db\Schema\Schema as AbstractSchema;
 
-use function get_class;
 use function implode;
 use function in_array;
 use function is_array;
@@ -72,7 +71,6 @@ final class ArrayExpressionBuilder implements ExpressionBuilderInterface
      * @param array $params the binding parameters.
      *
      * @throws Exception|InvalidArgumentException|InvalidConfigException|NotSupportedException
-     *
      */
     protected function buildPlaceholders(ExpressionInterface $expression, array &$params): array
     {
@@ -119,7 +117,6 @@ final class ArrayExpressionBuilder implements ExpressionBuilderInterface
 
     /**
      * @param array|mixed|QueryInterface $value
-     *
      */
     private function unnestArrayExpression(ArrayExpression $expression, mixed $value): ArrayExpression
     {
@@ -127,7 +124,6 @@ final class ArrayExpressionBuilder implements ExpressionBuilderInterface
     }
 
     /**
-     *
      * @return string the typecast expression based on {@see type}.
      */
     protected function getTypeHint(ArrayExpression $expression): string
@@ -159,7 +155,6 @@ final class ArrayExpressionBuilder implements ExpressionBuilderInterface
 
     /**
      * Casts $value to use in $expression.
-     *
      *
      * @return array|bool|ExpressionInterface|int|JsonExpression|string|null
      */
