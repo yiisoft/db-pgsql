@@ -59,7 +59,6 @@ final class JsonExpressionBuilder implements ExpressionBuilderInterface
     }
 
     /**
-     * @param JsonExpression $expression
      *
      * @return string the typecast expression based on {@see type}.
      */

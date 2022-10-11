@@ -355,7 +355,6 @@ PGSQL
      *
      * @dataProvider bindParamsNonWhereProviderTrait
      *
-     * @param string $sql
      *
      * @throws Exception
      * @throws InvalidArgumentException
@@ -414,13 +413,12 @@ PGSQL
      *
      * @dataProvider invalidSelectColumnsProviderTrait
      *
-     * @param mixed $invalidSelectColumns
      *
      * @throws Exception
      * @throws InvalidConfigException
      * @throws NotSupportedException
      */
-    public function testInsertSelectFailed($invalidSelectColumns): void
+    public function testInsertSelectFailed(mixed $invalidSelectColumns): void
     {
         $db = $this->getConnection();
 
@@ -444,8 +442,6 @@ PGSQL
      *
      * @dataProvider upsertProviderTrait
      *
-     * @param array $firstData
-     * @param array $secondData
      *
      * @throws InvalidArgumentException
      * @throws Exception

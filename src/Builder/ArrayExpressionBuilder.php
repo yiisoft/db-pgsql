@@ -69,12 +69,10 @@ final class ArrayExpressionBuilder implements ExpressionBuilderInterface
     /**
      * Builds placeholders array out of $expression values.
      *
-     * @param ExpressionInterface $expression
      * @param array $params the binding parameters.
      *
      * @throws Exception|InvalidArgumentException|InvalidConfigException|NotSupportedException
      *
-     * @return array
      */
     protected function buildPlaceholders(ExpressionInterface $expression, array &$params): array
     {
@@ -120,20 +118,15 @@ final class ArrayExpressionBuilder implements ExpressionBuilderInterface
     }
 
     /**
-     * @param ArrayExpression $expression
      * @param array|mixed|QueryInterface $value
      *
-     * @return ArrayExpression
      */
     private function unnestArrayExpression(ArrayExpression $expression, mixed $value): ArrayExpression
     {
-        $expressionClass = get_class($expression);
-
-        return new $expressionClass($value, $expression->getType(), $expression->getDimension() - 1);
+        return new ArrayExpression($value, $expression->getType(), $expression->getDimension() - 1);
     }
 
     /**
-     * @param ArrayExpression $expression
      *
      * @return string the typecast expression based on {@see type}.
      */
@@ -156,7 +149,6 @@ final class ArrayExpressionBuilder implements ExpressionBuilderInterface
      * Build an array expression from a subquery SQL.
      *
      * @param string $sql the subquery SQL.
-     * @param ArrayExpression $expression
      *
      * @return string the subquery array expression.
      */
@@ -168,8 +160,6 @@ final class ArrayExpressionBuilder implements ExpressionBuilderInterface
     /**
      * Casts $value to use in $expression.
      *
-     * @param ArrayExpression $expression
-     * @param array|bool|ExpressionInterface|int|string|null $value
      *
      * @return array|bool|ExpressionInterface|int|JsonExpression|string|null
      */
