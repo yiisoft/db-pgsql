@@ -160,7 +160,7 @@ final class Schema extends AbstractSchema
     /**
      * @var string|null the default schema used for the current session.
      */
-    protected ?string $defaultSchema = 'public';
+    protected string|null $defaultSchema = 'public';
 
     /**
      * @var string|string[] character used to quote schema, table, etc. names. An array of 2 characters can be used in
@@ -256,7 +256,7 @@ final class Schema extends AbstractSchema
      *
      * @return TableSchemaInterface|null DBMS-dependent table metadata, `null` if the table does not exist.
      */
-    protected function loadTableSchema(string $name): ?TableSchemaInterface
+    protected function loadTableSchema(string $name): TableSchemaInterface|null
     {
         $table = $this->resolveTableName($name);
 
@@ -277,7 +277,7 @@ final class Schema extends AbstractSchema
      *
      * @return Constraint|null primary key for the given table, `null` if the table has no primary key.
      */
-    protected function loadTablePrimaryKey(string $tableName): ?Constraint
+    protected function loadTablePrimaryKey(string $tableName): Constraint|null
     {
         $tablePrimaryKey = $this->loadTableConstraints($tableName, self::PRIMARY_KEY);
 
@@ -1061,7 +1061,7 @@ final class Schema extends AbstractSchema
     /**
      * @inheritDoc
      */
-    public function getLastInsertID(?string $sequenceName = null): string
+    public function getLastInsertID(string $sequenceName = null): string
     {
         return $this->db->getLastInsertID($sequenceName);
     }

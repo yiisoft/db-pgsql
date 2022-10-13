@@ -22,7 +22,7 @@ final class ArrayParser
      *
      * @param string|null $value string to be converted
      */
-    public function parse(?string $value): ?array
+    public function parse(string|null $value): array|null
     {
         if ($value === null) {
             return null;
@@ -76,7 +76,7 @@ final class ArrayParser
      *
      * @param int $i parse starting position.
      */
-    private function parseString(string $value, int &$i): ?string
+    private function parseString(string $value, int &$i): string|null
     {
         $isQuoted = $value[$i] === '"';
         $stringEndChars = $isQuoted ? ['"'] : [$this->delimiter, '}'];
