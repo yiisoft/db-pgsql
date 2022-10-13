@@ -38,6 +38,7 @@ jobs:
         php:
           - 8.0
           - 8.1
+          - 8.2
 
         pgsql:
           - 9
@@ -46,6 +47,7 @@ jobs:
           - 12
           - 13
           - 14
+          - 15rc2
 
     services:
       postgres:

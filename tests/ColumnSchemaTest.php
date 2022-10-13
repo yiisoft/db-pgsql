@@ -30,7 +30,7 @@ final class ColumnSchemaTest extends TestCase
                 'float_col' => 1.234,
                 'blob_col' => "\x10\x11\x12",
                 'bool_col' => false,
-                'bigint_col' => 9223372036854775806,
+                'bigint_col' => 9_223_372_036_854_775_806,
                 'intarray_col' => [1, -2, null, '42'],
                 'textarray2_col' => new ArrayExpression(null),
                 'json_col' => [['a' => 1, 'b' => null, 'c' => [1, 3, 5]]],

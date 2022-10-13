@@ -31,7 +31,7 @@ final class ColumnSchema extends AbstractColumnSchema
     /**
      * @var string|null name of associated sequence if column is auto-incremental.
      */
-    private ?string $sequenceName = null;
+    private string|null $sequenceName = null;
 
     /**
      * Converts the input value according to {@see type} and {@see dbType} for use in a db query.
@@ -83,7 +83,7 @@ final class ColumnSchema extends AbstractColumnSchema
             }
 
             if (is_array($value)) {
-                array_walk_recursive($value, function (?string &$val) {
+                array_walk_recursive($value, function (string|null &$val) {
                     /** @var mixed */
                     $val = $this->phpTypecastValue($val);
                 });
@@ -100,11 +100,7 @@ final class ColumnSchema extends AbstractColumnSchema
     /**
      * Casts $value after retrieving from the DBMS to PHP representation.
      *
-     * @param mixed $value
-     *
      * @throws JsonException
-     *
-     * @return mixed
      */
     protected function phpTypecastValue(mixed $value): mixed
     {
@@ -131,8 +127,6 @@ final class ColumnSchema extends AbstractColumnSchema
 
     /**
      * Creates instance of ArrayParser.
-     *
-     * @return ArrayParser
      */
     protected function getArrayParser(): ArrayParser
     {
@@ -150,7 +144,7 @@ final class ColumnSchema extends AbstractColumnSchema
     /**
      * @return string|null name of associated sequence if column is auto-incremental.
      */
-    public function getSequenceName(): ?string
+    public function getSequenceName(): string|null
     {
         return $this->sequenceName;
     }
@@ -166,7 +160,7 @@ final class ColumnSchema extends AbstractColumnSchema
     /**
      * Set name of associated sequence if column is auto-incremental.
      */
-    public function sequenceName(?string $sequenceName): void
+    public function sequenceName(string|null $sequenceName): void
     {
         $this->sequenceName = $sequenceName;
     }
