@@ -4,8 +4,11 @@ declare(strict_types=1);
 
 namespace Yiisoft\Db\Pgsql;
 
+use JsonException;
 use function in_array;
+use function json_decode;
 use function strlen;
+use const JSON_THROW_ON_ERROR;
 
 /**
  * The class converts PostgresSQL array representation to PHP array.
@@ -16,6 +19,11 @@ final class ArrayParser
      * @var string Character used in array
      */
     private string $delimiter = ',';
+
+    /**
+     * @var string|null cast array values to php type
+     */
+    private ?string $typeCast = null;
 
     /**
      * Convert array from PostgresSQL to PHP
@@ -37,6 +45,14 @@ final class ArrayParser
         return $this->parseArray($value);
     }
 
+    public function withTypeCast(?string $typeCast): self
+    {
+        $new = clone $this;
+        $new->typeCast = $typeCast;
+
+        return $new;
+    }
+
     /**
      * Pares PgSQL array encoded in string.
      *
@@ -44,6 +60,7 @@ final class ArrayParser
      * @param int $i parse starting position.
      *
      * @return array
+     * @throws JsonException
      */
     private function parseArray(string $value, int &$i = 0): array
     {
@@ -69,6 +86,7 @@ final class ArrayParser
                     }
                     break;
                 default:
+                    /** @var mixed */
                     $result[] = $this->parseString($value, $i);
             }
         }
@@ -82,9 +100,10 @@ final class ArrayParser
      * @param string $value
      * @param int $i parse starting position.
      *
-     * @return string|null
+     * @return mixed
+     * @throws JsonException
      */
-    private function parseString(string $value, int &$i): ?string
+    private function parseString(string $value, int &$i): mixed
     {
         $isQuoted = $value[$i] === '"';
         $stringEndChars = $isQuoted ? ['"'] : [$this->delimiter, '}'];
@@ -104,9 +123,15 @@ final class ArrayParser
         $i -= $isQuoted ? 0 : 1;
 
         if (!$isQuoted && $result === 'NULL') {
-            $result = null;
+            return null;
         }
 
-        return $result;
+        return match ($this->typeCast) {
+            Schema::PHP_TYPE_INTEGER => (int) $result,
+            Schema::PHP_TYPE_DOUBLE => (float) $result,
+            Schema::PHP_TYPE_ARRAY => json_decode($result, true, 512, JSON_THROW_ON_ERROR),
+            Schema::PHP_TYPE_BOOLEAN => ColumnSchema::castBooleanValue($result),
+            default => $result,
+        };
     }
 }

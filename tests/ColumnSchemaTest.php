@@ -6,8 +6,9 @@ namespace Yiisoft\Db\Pgsql\Tests;
 
 use Yiisoft\Db\Expression\ArrayExpression;
 use Yiisoft\Db\Expression\JsonExpression;
-use Yiisoft\Db\Query\Query;
 use Yiisoft\Db\Pgsql\ColumnSchema;
+use Yiisoft\Db\Pgsql\Schema;
+use Yiisoft\Db\Query\Query;
 
 /**
  * @group pgsql
@@ -75,5 +76,50 @@ final class ColumnSchemaTest extends TestCase
 
         $this->assertFalse($columnSchema->phpTypeCast('false'));
         $this->assertTrue($columnSchema->phpTypeCast('true'));
+    }
+
+    public function phpArrayDataProvider(): array
+    {
+        return [
+            [
+                'pgsql_arrays',
+                [
+                    '_int' => Schema::PHP_TYPE_INTEGER,
+                    '_text' => Schema::PHP_TYPE_STRING,
+                    '_uuid' => Schema::PHP_TYPE_STRING,
+                    '_date' => Schema::PHP_TYPE_STRING,
+                    '_timestamp' => Schema::PHP_TYPE_STRING,
+                    '_decimal' => Schema::PHP_TYPE_STRING, //Wrong only for that test/PR. It must be fixed in db/Schema
+                ]
+            ],
+            [
+                'array_and_json_types',
+                [
+                    'intarray_col' => Schema::PHP_TYPE_INTEGER,
+                    'textarray2_col' => Schema::PHP_TYPE_STRING,
+                    'jsonarray_col' => Schema::PHP_TYPE_ARRAY,
+                ]
+            ]
+        ];
+    }
+
+    /**
+     * @dataProvider phpArrayDataProvider
+     * @param string $tableName
+     * @param string[] $columns
+     * @return void
+     */
+    public function testPhpArrayType(string $tableName, array $columns): void
+    {
+        $tableSchema = $this->getConnection(true)
+            ->getSchema()
+            ->getTableSchema($tableName);
+
+        foreach ($columns as $column => $phpType) {
+            /** @var ColumnSchema $columnSchema */
+            $columnSchema = $tableSchema->getColumn($column);
+            $this->assertEquals(Schema::PHP_TYPE_ARRAY, $columnSchema->getPhpType());
+            $this->assertEquals($phpType, $columnSchema->getPhpArrayType());
+        }
     }
 }
