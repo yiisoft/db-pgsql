@@ -152,8 +152,8 @@ final class DMLQueryBuilder extends AbstractDMLQueryBuilder
      * or 1.
      *
      * @param string $tableName the name of the table whose primary key sequence will be reset.
-     * @param mixed $value the value for the primary key of the next new row inserted. If this is not set, the next new
-     * row's primary key will have a value 1.
+     * @param int|string|null $value the value for the primary key of the next new row inserted. If this is not set, the
+     * next new row's primary key will have a value 1.
      *
      * @throws Exception|InvalidArgumentException if the table does not exist or there is no sequence
      * associated with the table.
@@ -175,8 +175,6 @@ final class DMLQueryBuilder extends AbstractDMLQueryBuilder
                 $pk = $table->getPrimaryKey();
                 $key = $this->quoter->quoteColumnName(reset($pk));
                 $value = "(SELECT COALESCE(MAX($key),0) FROM $tableName)+1";
-            } else {
-                $value = (int) $value;
             }
 
             return "SELECT SETVAL('$sequence',$value,false)";
