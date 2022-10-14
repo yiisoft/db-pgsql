@@ -390,6 +390,10 @@ final class QueryBuilderTest extends TestCase
         $expected = "SELECT SETVAL('\"item_id_seq\"',4,false)";
         $sql = $qb->resetSequence('item', 4);
         $this->assertEquals($expected, $sql);
+
+        $expected = "SELECT SETVAL('\"item_id_seq\"',1,false)";
+        $sql = $qb->resetSequence('item', '1');
+        $this->assertEquals($expected, $sql);
     }
 
     /**
@@ -410,6 +414,10 @@ final class QueryBuilderTest extends TestCase
 
         $expected = "SELECT SETVAL('\"item_12_id_seq\"',4,false)";
         $sql = $qb->resetSequence('item_12', 4);
+        $this->assertEquals($expected, $sql);
+
+        $expected = "SELECT SETVAL('\"item_id_seq\"',1,false)";
+        $sql = $qb->resetSequence('item', '1');
         $this->assertEquals($expected, $sql);
     }
 
