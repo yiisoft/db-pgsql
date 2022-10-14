@@ -239,7 +239,7 @@ final class QueryBuilderTest extends TestCase
 
     public function testCheckIntegrity(): void
     {
-        $this->assertEqualsWithoutLE(
+        $this->assertSame(
             <<<SQL
             ALTER TABLE "public"."item" ENABLE TRIGGER ALL;
             SQL . ' ',
