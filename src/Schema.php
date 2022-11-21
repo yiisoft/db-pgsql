@@ -1034,14 +1034,6 @@ final class Schema extends AbstractSchema
     }
 
     /**
-     * @return bool whether this DBMS supports [savepoint](http://en.wikipedia.org/wiki/Savepoint).
-     */
-    public function supportsSavepoint(): bool
-    {
-        return $this->db->isSavepointEnabled();
-    }
-
-    /**
      * Changes row's array key case to lower.
      *
      * @param array $row row's array or an array of row's arrays.
@@ -1056,13 +1048,5 @@ final class Schema extends AbstractSchema
         }
 
         return array_change_key_case($row, CASE_LOWER);
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function getLastInsertID(string $sequenceName = null): string
-    {
-        return $this->db->getLastInsertID($sequenceName);
     }
 }
