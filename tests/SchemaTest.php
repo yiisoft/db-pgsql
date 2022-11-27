@@ -408,7 +408,7 @@ final class SchemaTest extends TestCase
             $this->markTestSkipped('PostgreSQL < 12.0 does not support GENERATED AS IDENTITY columns.');
         }
 
-        $db = $this->getConnection(true, null, __DIR__ . '/Fixture/postgres12.sql');
+        $db = $this->getConnection(true, null, __DIR__ . '/Fixture/pgsql12.sql');
         $table = $db->getSchema()->getTableSchema('generated');
 
         $this->assertNotNull($table);
@@ -424,7 +424,7 @@ final class SchemaTest extends TestCase
             $this->markTestSkipped('PostgreSQL < 10.0 does not support PARTITION BY clause.');
         }
 
-        $db = $this->getConnection(true, null, __DIR__ . '/Fixture/postgres10.sql');
+        $db = $this->getConnection(true, null, __DIR__ . '/Fixture/pgsql10.sql');
         $this->assertNotNull($db->getSchema()->getTableSchema('partitioned'));
     }
 

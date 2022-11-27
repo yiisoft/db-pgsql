@@ -33,7 +33,7 @@ class TestCase extends AbstractTestCase
     protected function getConnection(
         $reset = false,
         ?string $dsn = null,
-        string $fixture = __DIR__ . '/Fixture/postgres.sql'
+        string $fixture = __DIR__ . '/Support/Fixture/pgsql.sql'
     ): ConnectionPDO {
         $pdoDriver = new PDODriver($dsn ?? $this->dsn, $this->username, $this->password);
         $this->db = new ConnectionPDO($pdoDriver, $this->createQueryCache(), $this->createSchemaCache());

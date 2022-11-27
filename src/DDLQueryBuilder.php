@@ -29,6 +29,14 @@ final class DDLQueryBuilder extends AbstractDDLQueryBuilder
         parent::__construct($queryBuilder, $quoter, $schema);
     }
 
+    /**
+     * @throws NotSupportedException
+     */
+    public function addDefaultValue(string $name, string $table, string $column, mixed $value): string
+    {
+        throw new NotSupportedException(__METHOD__ . '()' . ' is not supported by PostgreSQL.');
+    }
+
     public function alterColumn(string $table, string $column, ColumnSchemaBuilder|string $type): string
     {
         $columnName = $this->quoter->quoteColumnName($column);
@@ -123,6 +131,14 @@ final class DDLQueryBuilder extends AbstractDDLQueryBuilder
             . $this->quoter->quoteTableName($table)
             . ($indexMethod !== null ? " USING $indexMethod" : '')
             . ' (' . $this->queryBuilder->buildColumns($columns) . ')';
+    }
+
+    /**
+     * @throws NotSupportedException
+     */
+    public function dropDefaultValue(string $name, string $table): string
+    {
+        throw new NotSupportedException(__METHOD__ . '()' . ' is not supported by PostgreSQL.');
     }
 
     public function dropIndex(string $name, string $table): string

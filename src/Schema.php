@@ -416,7 +416,7 @@ final class Schema extends AbstractSchema
      */
     protected function loadTableDefaultValues(string $tableName): array
     {
-        throw new NotSupportedException('PostgreSQL does not support default value constraints.');
+        throw new NotSupportedException(__METHOD__ . ' is not supported by PostgreSQL.');
     }
 
     /**
