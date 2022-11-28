@@ -32,8 +32,6 @@ final class CommandPDOTest extends CommonCommandPDOTest
     }
 
     /**
-     * Test whether param binding works in other places than WHERE.
-     *
      * @dataProvider \Yiisoft\Db\Pgsql\Tests\Provider\CommandPDOProvider::bindParamsNonWhere()
      */
     public function testBindParamsNonWhere(string $sql): void

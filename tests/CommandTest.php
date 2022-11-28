@@ -188,11 +188,11 @@ final class CommandTest extends CommonCommandTest
     }
 
     /**
-     * {@see https://github.com/yiisoft/yii2/issues/15827}
-     *
      * @throws Exception
      * @throws InvalidConfigException
      * @throws Throwable
+     *
+     * {@link https://github.com/yiisoft/yii2/issues/15827}
      */
     public function testIssue15827(): void
     {
@@ -231,15 +231,13 @@ final class CommandTest extends CommonCommandTest
     }
 
     /**
-     * Test command getRawSql.
-     *
      * @dataProvider \Yiisoft\Db\Pgsql\Tests\Provider\CommandProvider::rawSql()
      *
      * @throws Exception
      * @throws InvalidConfigException
      * @throws NotSupportedException
      *
-     * {@see https://github.com/yiisoft/yii2/issues/8592}
+     * {@link https://github.com/yiisoft/yii2/issues/8592}
      */
     public function testGetRawSql(string $sql, array $params, string $expectedRawSql): void
     {
@@ -247,11 +245,11 @@ final class CommandTest extends CommonCommandTest
     }
 
     /**
-     * {@see https://github.com/yiisoft/yii2/issues/11498}
-     *
      * @throws Exception
      * @throws InvalidConfigException
      * @throws Throwable
+     *
+     * {@link https://github.com/yiisoft/yii2/issues/11498}
      */
     public function testSaveSerializedObject(): void
     {
