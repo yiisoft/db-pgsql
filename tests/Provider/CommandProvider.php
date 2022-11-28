@@ -81,13 +81,6 @@ final class CommandProvider
         return $batchInsert;
     }
 
-    public function createIndex(): array
-    {
-        $baseCommandProvider = new BaseCommandProvider();
-
-        return $baseCommandProvider->createIndex();
-    }
-
     public function rawSql(): array
     {
         $baseCommandProvider = new BaseCommandProvider();

@@ -247,19 +247,6 @@ final class CommandTest extends CommonCommandTest
     }
 
     /**
-     * @dataProvider \Yiisoft\Db\Pgsql\Tests\Provider\CommandProvider::update()
-     */
-    public function testUpdate(
-        string $table,
-        array $columns,
-        array|string $conditions,
-        array $params,
-        string $expected
-    ): void {
-        parent::testUpdate($table, $columns, $conditions, $params, $expected);
-    }
-
-    /**
      * {@see https://github.com/yiisoft/yii2/issues/11498}
      *
      * @throws Exception
@@ -287,5 +274,26 @@ final class CommandTest extends CommonCommandTest
         $command->update('{{type}}', ['blob_col' => serialize($db)], ['char_col' => 'serialize']);
 
         $this->assertSame(1, $command->execute());
+    }
+
+    /**
+     * @dataProvider \Yiisoft\Db\Pgsql\Tests\Provider\CommandProvider::update()
+     */
+    public function testUpdate(
+        string $table,
+        array $columns,
+        array|string $conditions,
+        array $params,
+        string $expected
+    ): void {
+        parent::testUpdate($table, $columns, $conditions, $params, $expected);
+    }
+
+    /**
+     * @dataProvider \Yiisoft\Db\Pgsql\Tests\Provider\CommandProvider::upsert()
+     */
+    public function testUpsert(array $firstData, array $secondData): void
+    {
+        parent::testUpsert($firstData, $secondData);
     }
 }
