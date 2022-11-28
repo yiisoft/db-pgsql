@@ -15,9 +15,12 @@ use Yiisoft\Db\Schema\QuoterInterface;
 use Yiisoft\Db\Schema\SchemaInterface;
 
 use function array_diff;
+use function array_unshift;
+use function explode;
 use function implode;
 use function preg_match;
 use function preg_replace;
+use function str_contains;
 
 final class DDLQueryBuilder extends AbstractDDLQueryBuilder
 {
@@ -93,7 +96,7 @@ final class DDLQueryBuilder extends AbstractDDLQueryBuilder
      */
     public function checkIntegrity(string $schema = '', string $table = '', bool $check = true): string
     {
-        /** @var Schema */
+        /** @var Schema $schemaInstance */
         $schemaInstance = $this->schema;
         $enable = $check ? 'ENABLE' : 'DISABLE';
         $schema = $schema ?: $schemaInstance->getDefaultSchema();

@@ -6,6 +6,9 @@ namespace Yiisoft\Db\Pgsql\Tests\Provider;
 
 use Yiisoft\Db\Tests\Provider\BaseCommandPDOProvider;
 
+/**
+ * @psalm-suppress MixedArrayAssignment
+ */
 final class CommandPDOProvider
 {
     public function bindParam(): array

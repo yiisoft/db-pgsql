@@ -9,6 +9,8 @@ use Yiisoft\Db\Tests\Common\CommonCommandPDOTest;
 
 /**
  * @group pgsql
+ *
+ * @psalm-suppress PropertyNotSetInConstructor
  */
 final class CommandPDOTest extends CommonCommandPDOTest
 {

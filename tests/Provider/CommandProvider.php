@@ -88,10 +88,6 @@ final class CommandProvider
         return $baseCommandProvider->createIndex();
     }
 
-    /**
-     * @throws Exception
-     * @throws InvalidConfigException
-     */
     public function rawSql(): array
     {
         $baseCommandProvider = new BaseCommandProvider();

@@ -5,12 +5,18 @@ declare(strict_types=1);
 namespace Yiisoft\Db\Pgsql\Tests\Support;
 
 use Yiisoft\Db\Driver\PDO\ConnectionPDOInterface;
+use Yiisoft\Db\Exception\Exception;
+use Yiisoft\Db\Exception\InvalidConfigException;
 use Yiisoft\Db\Pgsql\ConnectionPDO;
 use Yiisoft\Db\Pgsql\PDODriver;
 use Yiisoft\Db\Tests\Support\DbHelper;
 
 trait TestTrait
 {
+    /**
+     * @throws InvalidConfigException
+     * @throws Exception
+     */
     protected function getConnection(bool $fixture = false): ConnectionPDOInterface
     {
         $db = new ConnectionPDO(

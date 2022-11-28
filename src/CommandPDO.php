@@ -5,10 +5,13 @@ declare(strict_types=1);
 namespace Yiisoft\Db\Pgsql;
 
 use Exception;
+use Throwable;
 use Yiisoft\Db\Driver\PDO\CommandPDO as AbstractCommandPDO;
 use Yiisoft\Db\Driver\PDO\ConnectionPDOInterface;
 use Yiisoft\Db\Exception\ConvertException;
 use Yiisoft\Db\QueryBuilder\QueryBuilderInterface;
+
+use function is_array;
 
 final class CommandPDO extends AbstractCommandPDO
 {
@@ -23,7 +26,7 @@ final class CommandPDO extends AbstractCommandPDO
         $this->setSql($sql)->bindValues($params);
         $this->prepare(false);
 
-        /** @var mixed */
+        /** @var mixed $queryOne */
         $queryOne = $this->queryOne();
 
         return is_array($queryOne) ? $queryOne : false;
@@ -36,6 +39,9 @@ final class CommandPDO extends AbstractCommandPDO
 
     /**
      * @psalm-suppress UnusedClosureParam
+     *
+     * @throws \Yiisoft\Db\Exception\Exception
+     * @throws Throwable
      */
     protected function internalExecute(string|null $rawSql): void
     {
