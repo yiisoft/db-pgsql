@@ -405,7 +405,7 @@ final class QueryBuilderTest extends TestCase
             $this->markTestSkipped('PostgreSQL < 12.0 does not support GENERATED AS IDENTITY columns.');
         }
 
-        $db = $this->getConnection(true, null, __DIR__ . '/Fixture/postgres12.sql');
+        $db = $this->getConnection(true, null, __DIR__ . '/Fixture/pgsql12.sql');
         $qb = $db->getQueryBuilder();
 
         $expected = "SELECT SETVAL('\"item_12_id_seq\"',(SELECT COALESCE(MAX(\"id\"),0) FROM \"item_12\")+1,false)";
