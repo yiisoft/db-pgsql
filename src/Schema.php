@@ -222,7 +222,9 @@ final class Schema extends AbstractSchema
     {
         $objName = (string) $this->db->quoteValue(
             $this->db->getQuoter()->quoteTableName(
-                $tableSchema->getSchemaName() . '.' . $tableSchema->getName()
+                $tableSchema->getSchemaName() ?
+                    (string) $tableSchema->getSchemaName() . '.' . $tableSchema->getName() :
+                    $tableSchema->getName()
             )
         );
 
