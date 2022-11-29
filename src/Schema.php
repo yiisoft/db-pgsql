@@ -229,7 +229,7 @@ final class Schema extends AbstractSchema
         );
 
         $sql = <<<SQL
-        SELECT obj_description($objName::regclass)
+        SELECT obj_description($objName::regclass, 'pg_class')
         SQL;
 
         $comment = $this->db->createCommand($sql)->queryScalar();
