@@ -171,24 +171,6 @@ final class CommandTest extends CommonCommandTest
 
     /**
      * @throws Exception
-     * @throws InvalidCallException
-     * @throws InvalidConfigException
-     * @throws Throwable
-     */
-    public function testInsertEx(): void
-    {
-        $db = $this->getConnection(true);
-
-        $command = $db->createCommand();
-
-        $this->assertSame(
-            ['id' => 4],
-            $command->insertEx('{{customer}}', ['name' => 'test_1', 'email' => 'test_1@example.com']),
-        );
-    }
-
-    /**
-     * @throws Exception
      * @throws InvalidConfigException
      * @throws Throwable
      *
