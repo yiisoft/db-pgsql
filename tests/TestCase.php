@@ -10,6 +10,9 @@ use Yiisoft\Db\Pgsql\PDODriver;
 use Yiisoft\Db\Pgsql\ConnectionPDO;
 use Yiisoft\Db\TestSupport\TestTrait;
 
+/**
+ * @psalm-suppress PropertyNotSetInConstructor
+ */
 class TestCase extends AbstractTestCase
 {
     use TestTrait;
@@ -19,21 +22,16 @@ class TestCase extends AbstractTestCase
     protected string $username = 'root';
     protected string $password = 'root';
     protected string $charset = 'UTF8';
-    protected array $dataProvider;
+    protected array $dataProvider = [];
     protected array $expectedSchemas = ['public'];
     protected string $likeEscapeCharSql = '';
     protected array $likeParameterReplacements = [];
     protected ?ConnectionPDO $db = null;
 
-    /**
-     * @param bool $reset whether to clean up the test database.
-     *
-     * @return ConnectionPDO
-     */
     protected function getConnection(
-        $reset = false,
+        bool $reset = false,
         ?string $dsn = null,
-        string $fixture = __DIR__ . '/Fixture/postgres.sql'
+        string $fixture = __DIR__ . '/Support/Fixture/pgsql.sql'
     ): ConnectionPDO {
         $pdoDriver = new PDODriver($dsn ?? $this->dsn, $this->username, $this->password);
         $this->db = new ConnectionPDO($pdoDriver, $this->createQueryCache(), $this->createSchemaCache());

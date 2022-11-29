@@ -15,9 +15,12 @@ use Yiisoft\Db\Schema\QuoterInterface;
 use Yiisoft\Db\Schema\SchemaInterface;
 
 use function array_diff;
+use function array_unshift;
+use function explode;
 use function implode;
 use function preg_match;
 use function preg_replace;
+use function str_contains;
 
 final class DDLQueryBuilder extends AbstractDDLQueryBuilder
 {
@@ -27,6 +30,14 @@ final class DDLQueryBuilder extends AbstractDDLQueryBuilder
         private SchemaInterface $schema
     ) {
         parent::__construct($queryBuilder, $quoter, $schema);
+    }
+
+    /**
+     * @throws NotSupportedException
+     */
+    public function addDefaultValue(string $name, string $table, string $column, mixed $value): string
+    {
+        throw new NotSupportedException(__METHOD__ . ' is not supported by PostgreSQL.');
     }
 
     public function alterColumn(string $table, string $column, ColumnSchemaBuilder|string $type): string
@@ -85,7 +96,7 @@ final class DDLQueryBuilder extends AbstractDDLQueryBuilder
      */
     public function checkIntegrity(string $schema = '', string $table = '', bool $check = true): string
     {
-        /** @var Schema */
+        /** @var Schema $schemaInstance */
         $schemaInstance = $this->schema;
         $enable = $check ? 'ENABLE' : 'DISABLE';
         $schema = $schema ?: $schemaInstance->getDefaultSchema();
@@ -123,6 +134,14 @@ final class DDLQueryBuilder extends AbstractDDLQueryBuilder
             . $this->quoter->quoteTableName($table)
             . ($indexMethod !== null ? " USING $indexMethod" : '')
             . ' (' . $this->queryBuilder->buildColumns($columns) . ')';
+    }
+
+    /**
+     * @throws NotSupportedException
+     */
+    public function dropDefaultValue(string $name, string $table): string
+    {
+        throw new NotSupportedException(__METHOD__ . ' is not supported by PostgreSQL.');
     }
 
     public function dropIndex(string $name, string $table): string

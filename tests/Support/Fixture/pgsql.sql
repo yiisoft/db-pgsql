@@ -1,9 +1,3 @@
-/**
- * This is the database schema for testing PostgreSQL support of yii Active Record.
- * To test this feature, you need to create a database named 'yiitest' on 'localhost'
- * and create an account 'postgres/postgres' which owns this test database.
- */
-
 DROP TABLE IF EXISTS "composite_fk" CASCADE;
 DROP TABLE IF EXISTS "order_item" CASCADE;
 DROP TABLE IF EXISTS "item" CASCADE;
@@ -308,51 +302,6 @@ INSERT INTO "beta" (id, alpha_string_identifier) VALUES (5, '2');
 INSERT INTO "beta" (id, alpha_string_identifier) VALUES (6, '2b');
 INSERT INTO "beta" (id, alpha_string_identifier) VALUES (7, '2b');
 INSERT INTO "beta" (id, alpha_string_identifier) VALUES (8, '02');
-
-/**
- * (Postgres-)Database Schema for validator tests
- */
-
-DROP TABLE IF EXISTS "validator_main" CASCADE;
-DROP TABLE IF EXISTS "validator_ref" CASCADE;
-DROP TABLE IF EXISTS "validatorMain" CASCADE;
-DROP TABLE IF EXISTS "validatorRef" CASCADE;
-
-CREATE TABLE "validator_main" (
-  id serial primary key,
-  field1 VARCHAR(255)
-);
-CREATE TABLE "validator_ref" (
-  id serial primary key,
-  a_field VARCHAR(255),
-  ref     integer
-);
-CREATE TABLE "validatorMain" (
-  id integer not null primary key,
-  field1 VARCHAR(255)
-);
-CREATE TABLE "validatorRef" (
-  id integer not null primary key,
-  a_field VARCHAR(255),
-  ref     integer,
-  CONSTRAINT "validatorRef_id" FOREIGN KEY ("ref") REFERENCES "validatorMain" ("id") ON DELETE CASCADE ON UPDATE CASCADE
-);
-
-INSERT INTO "validator_main" (field1) VALUES ('just a string1');
-INSERT INTO "validator_main" (field1) VALUES ('just a string2');
-INSERT INTO "validator_main" (field1) VALUES ('just a string3');
-INSERT INTO "validator_main" (field1) VALUES ('just a string4');
-INSERT INTO "validator_ref" (a_field, ref) VALUES ('ref_to_2', 2);
-INSERT INTO "validator_ref" (a_field, ref) VALUES ('ref_to_2', 2);
-INSERT INTO "validator_ref" (a_field, ref) VALUES ('ref_to_3', 3);
-INSERT INTO "validator_ref" (a_field, ref) VALUES ('ref_to_4', 4);
-INSERT INTO "validator_ref" (a_field, ref) VALUES ('ref_to_4', 4);
-INSERT INTO "validator_ref" (a_field, ref) VALUES ('ref_to_5', 5);
-INSERT INTO "validatorMain" (id, field1) VALUES (2, 'just a string2');
-INSERT INTO "validatorMain" (id, field1) VALUES (3, 'just a string3');
-INSERT INTO "validatorRef" (id, a_field, ref) VALUES (1, 'ref_to_2', 2);
-INSERT INTO "validatorRef" (id, a_field, ref) VALUES (2, 'ref_to_2', 2);
-INSERT INTO "validatorRef" (id, a_field, ref) VALUES (3, 'ref_to_3', 3);
 
 /* bit test, see https://github.com/yiisoft/yii2/issues/9006 */
 

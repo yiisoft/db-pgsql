@@ -1,20 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<phpunit bootstrap="vendor/autoload.php"
-         colors="true"
-         verbose="true"
-         failOnRisky="true"
-         failOnWarning="true"
-         convertErrorsToExceptions="true"
-         convertNoticesToExceptions="true"
-         convertWarningsToExceptions="true"
-         stopOnFailure="false"
-         executionOrder="default"
-         resolveDependencies="true">
+<phpunit
+  bootstrap="vendor/autoload.php"
+  colors="true"
+  verbose="true"
+  failOnRisky="true"
+  failOnWarning="true"
+  convertErrorsToExceptions="true"
+  convertNoticesToExceptions="true"
+  convertWarningsToExceptions="true"
+  stopOnFailure="false"
+  executionOrder="default"
+  resolveDependencies="true"
+>
 
   <coverage>
     <include>
-      <directory>./</directory>
+      <directory>./src</directory>
     </include>
     <exclude>
       <directory>./tests</directory>
