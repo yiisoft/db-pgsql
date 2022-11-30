@@ -4,12 +4,13 @@ declare(strict_types=1);
 
 namespace Yiisoft\Db\Pgsql\Tests;
 
-use Yiisoft\Db\TestSupport\TestBatchQueryResultTrait;
+use Yiisoft\Db\Pgsql\Tests\Support\TestTrait;
+use Yiisoft\Db\Tests\Common\CommonBatchQueryResultTest;
 
 /**
  * @group pgsql
  */
-final class BatchQueryResultTest extends TestCase
+final class BatchQueryResultTest extends CommonBatchQueryResultTest
 {
-    use TestBatchQueryResultTrait;
+    use TestTrait;
 }
