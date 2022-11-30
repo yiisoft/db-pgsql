@@ -19,7 +19,7 @@ It is used in [Yii Framework] but is supposed to be usable separately.
 [![Latest Stable Version](https://poser.pugx.org/yiisoft/db-pgsql/v/stable.png)](https://packagist.org/packages/yiisoft/db-pgsql)
 [![Total Downloads](https://poser.pugx.org/yiisoft/db-pgsql/downloads.png)](https://packagist.org/packages/yiisoft/db-pgsql)
 [![rector](https://github.com/yiisoft/db-pgsql/actions/workflows/rector.yml/badge.svg)](https://github.com/yiisoft/db-pgsql/actions/workflows/rector.yml)
-[![codecov](https://codecov.io/gh/yiisoft/db-pgsql/branch/dev/graph/badge.svg?token=3FGN91IVZA)](https://codecov.io/gh/yiisoft/db-pgsql)
+[![codecov](https://codecov.io/gh/yiisoft/db-pgsql/branch/master/graph/badge.svg?token=3FGN91IVZA)](https://codecov.io/gh/yiisoft/db-pgsql)
 [![StyleCI](https://github.styleci.io/repos/145220173/shield?branch=master)](https://github.styleci.io/repos/145220173?branch=master)
 
 
@@ -46,11 +46,11 @@ Di-Container:
 
 ```php
 use Yiisoft\Db\Connection\ConnectionInterface;
-use Yiisoft\Db\Pgsql\Connection as PgsqlConnection;
+use Yiisoft\Db\Pgsql\ConnectionPDO;
 
 return [
     ConnectionInterface::class => [
-        'class' => PgsqlConnection::class,
+        'class' => ConnectionPDO::class,
         '__construct()' => [
             'dsn' => $params['yiisoft/db-pgsql']['dsn']
         ],
@@ -105,6 +105,16 @@ use either newest or any specific version of PHP:
 
 ```shell
 ./vendor/bin/rector
+```
+
+### Composer require checker
+
+This package uses [composer-require-checker](https://github.com/maglnet/ComposerRequireChecker) to check if all dependencies are correctly defined in `composer.json`.
+
+To run the checker, execute the following command:
+
+```shell
+./vendor/bin/composer-require-checker
 ```
 
 ### Support the project

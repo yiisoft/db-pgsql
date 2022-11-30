@@ -202,7 +202,9 @@ final class Schema extends AbstractSchema
      * This method should be overridden by child classes in order to support this feature because the default
      * implementation simply throws an exception.
      *
-     * @throws Exception|InvalidConfigException|Throwable
+     * @throws Exception
+     * @throws InvalidConfigException
+     * @throws Throwable
      *
      * @return array All schema names in the database, except system schemas.
      */
@@ -245,7 +247,9 @@ final class Schema extends AbstractSchema
      *
      * @param string $schema the schema of the tables. Defaults to empty string, meaning the current or default schema.
      *
-     * @throws Exception|InvalidConfigException|Throwable
+     * @throws Exception
+     * @throws InvalidConfigException
+     * @throws Throwable
      *
      * @return array All table names in the database. The names have NO schema name prefix.
      */
@@ -271,7 +275,9 @@ final class Schema extends AbstractSchema
      *
      * @param string $name table name.
      *
-     * @throws Exception|InvalidConfigException|Throwable
+     * @throws Exception
+     * @throws InvalidConfigException
+     * @throws Throwable
      *
      * @return TableSchemaInterface|null DBMS-dependent table metadata, `null` if the table does not exist.
      */
@@ -293,7 +299,9 @@ final class Schema extends AbstractSchema
      *
      * @param string $tableName table name.
      *
-     * @throws Exception|InvalidConfigException|Throwable
+     * @throws Exception
+     * @throws InvalidConfigException
+     * @throws Throwable
      *
      * @return Constraint|null primary key for the given table, `null` if the table has no primary key.
      */
@@ -309,7 +317,9 @@ final class Schema extends AbstractSchema
      *
      * @param string $tableName table name.
      *
-     * @throws Exception|InvalidConfigException|Throwable
+     * @throws Exception
+     * @throws InvalidConfigException
+     * @throws Throwable
      *
      * @return array foreign keys for the given table.
      *
@@ -327,7 +337,9 @@ final class Schema extends AbstractSchema
      *
      * @param string $tableName table name.
      *
-     * @throws Exception|InvalidConfigException|Throwable
+     * @throws Exception
+     * @throws InvalidConfigException
+     * @throws Throwable
      *
      * @return IndexConstraint[] indexes for the given table.
      */
@@ -359,14 +371,14 @@ final class Schema extends AbstractSchema
             ':tableName' => $resolvedName->getName(),
         ])->queryAll();
 
-        /** @var array[] @indexes */
+        /** @var array[] $indexes */
         $indexes = $this->normalizeRowKeyCase($indexes, true);
         $indexes = ArrayHelper::index($indexes, null, 'name');
         $result = [];
 
         /**
-         * @var object|string|null $name
-         * @var array<
+         * @psalm-var object|string|null $name
+         * @psalm-var array<
          *   array-key,
          *   array{
          *     name: string,
@@ -394,7 +406,9 @@ final class Schema extends AbstractSchema
      *
      * @param string $tableName table name.
      *
-     * @throws Exception|InvalidConfigException|Throwable
+     * @throws Exception
+     * @throws InvalidConfigException
+     * @throws Throwable
      *
      * @return array unique constraints for the given table.
      *
@@ -412,7 +426,9 @@ final class Schema extends AbstractSchema
      *
      * @param string $tableName table name.
      *
-     * @throws Exception|InvalidConfigException|Throwable
+     * @throws Exception
+     * @throws InvalidConfigException
+     * @throws Throwable
      *
      * @return array check constraints for the given table.
      *
@@ -436,11 +452,13 @@ final class Schema extends AbstractSchema
      */
     protected function loadTableDefaultValues(string $tableName): array
     {
-        throw new NotSupportedException('PostgreSQL does not support default value constraints.');
+        throw new NotSupportedException(__METHOD__ . ' is not supported by PostgreSQL.');
     }
 
     /**
-     * @throws Exception|InvalidConfigException|Throwable
+     * @throws Exception
+     * @throws InvalidConfigException
+     * @throws Throwable
      */
     protected function findViewNames(string $schema = ''): array
     {
@@ -464,7 +482,9 @@ final class Schema extends AbstractSchema
      *
      * @param TableSchemaInterface $table the table metadata
      *
-     * @throws Exception|InvalidConfigException|Throwable
+     * @throws Exception
+     * @throws InvalidConfigException
+     * @throws Throwable
      */
     protected function findConstraints(TableSchemaInterface $table): void
     {
@@ -563,7 +583,9 @@ final class Schema extends AbstractSchema
      *
      * @param TableSchemaInterface $table the table metadata.
      *
-     * @throws Exception|InvalidConfigException|Throwable
+     * @throws Exception
+     * @throws InvalidConfigException
+     * @throws Throwable
      *
      * @return array with index and column names.
      */
@@ -605,7 +627,9 @@ final class Schema extends AbstractSchema
      *
      * @param TableSchemaInterface $table the table metadata
      *
-     * @throws Exception|InvalidConfigException|Throwable
+     * @throws Exception
+     * @throws InvalidConfigException
+     * @throws Throwable
      *
      * @return array all unique indexes for the given table.
      */
@@ -640,7 +664,10 @@ final class Schema extends AbstractSchema
      *
      * @param TableSchemaInterface $table the table metadata.
      *
-     * @throws Exception|InvalidConfigException|JsonException|Throwable
+     * @throws Exception
+     * @throws InvalidConfigException
+     * @throws JsonException
+     * @throws Throwable
      *
      * @return bool whether the table exists in the database.
      */
@@ -744,7 +771,7 @@ final class Schema extends AbstractSchema
 
             $table->columns($loadColumnSchema->getName(), $loadColumnSchema);
 
-            /** @var mixed */
+            /** @psalm-var mixed $defaultValue */
             $defaultValue = $loadColumnSchema->getDefaultValue();
 
             if ($loadColumnSchema->isPrimaryKey()) {
@@ -844,7 +871,7 @@ final class Schema extends AbstractSchema
          * pg_get_serial_sequence() doesn't track DEFAULT value change. GENERATED BY IDENTITY columns always have null
          * default value.
          *
-         * @var mixed $defaultValue
+         * @psalm-var mixed $defaultValue
          */
         $defaultValue = $column->getDefaultValue();
         $sequenceName = $info['sequence_name'] ?? null;
@@ -884,7 +911,9 @@ final class Schema extends AbstractSchema
      * - uniques
      * - checks
      *
-     * @throws Exception|InvalidConfigException|Throwable
+     * @throws Exception
+     * @throws InvalidConfigException
+     * @throws Throwable
      *
      * @return array|Constraint|null (CheckConstraint|Constraint|ForeignKeyConstraint)[]|Constraint|null constraints.
      */
@@ -918,7 +947,7 @@ final class Schema extends AbstractSchema
         ORDER BY "a"."attnum" ASC, "fa"."attnum" ASC
         SQL;
 
-        /** @var array<array-key, string> $actionTypes */
+        /** @psalm-var array<array-key, string> $actionTypes */
         $actionTypes = [
             'a' => 'NO ACTION',
             'r' => 'RESTRICT',
