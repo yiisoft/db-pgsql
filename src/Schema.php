@@ -220,6 +220,25 @@ final class Schema extends AbstractSchema
         return $this->db->createCommand($sql)->queryColumn();
     }
 
+    protected function findTableComment(TableSchemaInterface $tableSchema): void
+    {
+        $objName = (string) $this->db->quoteValue(
+            $this->db->getQuoter()->quoteTableName(
+                $tableSchema->getSchemaName() ?
+                    (string) $tableSchema->getSchemaName() . '.' . $tableSchema->getName() :
+                    $tableSchema->getName()
+            )
+        );
+
+        $sql = <<<SQL
+        SELECT obj_description($objName::regclass, 'pg_class')
+        SQL;
+
+        $comment = $this->db->createCommand($sql)->queryScalar();
+
+        $tableSchema->comment(is_string($comment) ? $comment : null);
+    }
+
     /**
      * Returns all table names in the database.
      *
@@ -265,6 +284,7 @@ final class Schema extends AbstractSchema
     protected function loadTableSchema(string $name): TableSchemaInterface|null
     {
         $table = $this->resolveTableName($name);
+        $this->findTableComment($table);
 
         if ($this->findColumns($table)) {
             $this->findConstraints($table);
