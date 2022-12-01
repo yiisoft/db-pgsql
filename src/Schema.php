@@ -236,7 +236,6 @@ final class Schema extends AbstractSchema
             ':tableName' => $tableSchema->getName(),
 
         ])->queryScalar();
-        echo $sql;
 
         $tableSchema->comment(is_string($comment) ? $comment : null);
     }
