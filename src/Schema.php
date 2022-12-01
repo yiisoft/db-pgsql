@@ -222,19 +222,20 @@ final class Schema extends AbstractSchema
 
     protected function findTableComment(TableSchemaInterface $tableSchema): void
     {
-        $objName = (string) $this->db->quoteValue(
-            $this->db->getQuoter()->quoteTableName(
-                $tableSchema->getSchemaName() ?
-                    (string) $tableSchema->getSchemaName() . '.' . $tableSchema->getName() :
-                    $tableSchema->getName()
-            )
-        );
-
         $sql = <<<SQL
-        SELECT obj_description($objName::regclass, 'pg_class')
+        SELECT obj_description(pc.oid, 'pg_class')
+        FROM pg_catalog.pg_class pc
+        INNER JOIN pg_namespace pn ON pc.relnamespace = pn.oid
+        WHERE
+        pc.relname=:tableName AND
+        pn.nspname=:schemaName
         SQL;
 
-        $comment = $this->db->createCommand($sql)->queryScalar();
+        $comment = $this->db->createCommand($sql, [
+            ':schemaName' => $tableSchema->getSchemaName(),
+            ':tableName' => $tableSchema->getName(),
+
+        ])->queryScalar();
 
         $tableSchema->comment(is_string($comment) ? $comment : null);
     }
