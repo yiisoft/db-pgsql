@@ -722,7 +722,7 @@ final class SchemaTest extends TestCase
             ->willReturn($db->getQuoter());
 
         $mockDb
-            ->expects(self::once())
+            ->expects(self::atLeastOnce())
             ->method('createCommand')
             ->with(self::callback(fn ($sql) => true), self::callback(function ($params) use ($expectedTableName, $expectedSchemaName) {
                 $this->assertEquals($expectedTableName, $params[':tableName']);
