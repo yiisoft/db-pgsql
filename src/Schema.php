@@ -234,7 +234,6 @@ final class Schema extends AbstractSchema
         $comment = $this->db->createCommand($sql, [
             ':schemaName' => $tableSchema->getSchemaName(),
             ':tableName' => $tableSchema->getName(),
-
         ])->queryScalar();
 
         $tableSchema->comment(is_string($comment) ? $comment : null);
