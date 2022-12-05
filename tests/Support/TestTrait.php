@@ -31,4 +31,9 @@ trait TestTrait
 
         return $db;
     }
+
+    protected function getDriverName(): string
+    {
+        return 'pgsql';
+    }
 }
