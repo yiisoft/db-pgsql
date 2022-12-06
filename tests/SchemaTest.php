@@ -431,7 +431,7 @@ final class SchemaTest extends TestCase
     public function testFindSchemaNames(): void
     {
         $schema = $this->getConnection(true)->getSchema();
-        $this->assertCount(4, $schema->getSchemaNames());
+        $this->assertCount(3, $schema->getSchemaNames());
     }
 
     /**
