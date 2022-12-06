@@ -269,7 +269,7 @@ final class QueryBuilderTest extends CommonQueryBuilderTest
      */
     public function testCheckIntegrityExecute(): void
     {
-        $db = $this->getConnection();
+        $db = $this->getConnection(true);
 
         $db->createCommand()->checkIntegrity('public', 'item', false)->execute();
         $command = $db->createCommand(
@@ -501,23 +501,6 @@ final class QueryBuilderTest extends CommonQueryBuilderTest
      * @throws InvalidConfigException
      * @throws NotSupportedException
      */
-    public function testResetSequenceNoAssociatedException(): void
-    {
-        $db = $this->getConnection();
-
-        $qb = $db->getQueryBuilder();
-
-        $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage("There is not sequence associated with table 'constraints'.");
-
-        $qb->resetSequence('constraints');
-    }
-
-    /**
-     * @throws Exception
-     * @throws InvalidConfigException
-     * @throws NotSupportedException
-     */
     public function testResetSequencePgsql12(): void
     {
         if (version_compare($this->getConnection()->getServerVersion(), '12.0', '<')) {
@@ -550,23 +533,6 @@ final class QueryBuilderTest extends CommonQueryBuilderTest
             SQL,
             $qb->resetSequence('item', '1'),
         );
-    }
-
-    /**
-     * @throws Exception
-     * @throws InvalidConfigException
-     * @throws NotSupportedException
-     */
-    public function testResetSequenceTableNoExistException(): void
-    {
-        $db = $this->getConnection();
-
-        $qb = $db->getQueryBuilder();
-
-        $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('Table not found: noExist');
-
-        $qb->resetSequence('noExist', 1);
     }
 
     /**

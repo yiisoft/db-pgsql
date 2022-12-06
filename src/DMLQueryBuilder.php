@@ -181,7 +181,7 @@ final class DMLQueryBuilder extends AbstractDMLQueryBuilder
         }
 
         if ($table === null) {
-            throw new InvalidArgumentException("Table not found: $tableName");
+            throw new InvalidArgumentException("Table not found: '$tableName'.");
         }
 
         throw new InvalidArgumentException("There is not sequence associated with table '$tableName'.");
