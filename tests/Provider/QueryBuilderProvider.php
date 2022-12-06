@@ -11,42 +11,17 @@ use Yiisoft\Db\Expression\Expression;
 use Yiisoft\Db\Expression\JsonExpression;
 use Yiisoft\Db\Pgsql\Tests\Support\TestTrait;
 use Yiisoft\Db\Query\Query;
-use Yiisoft\Db\Tests\Provider\BaseQueryBuilderProvider;
+use Yiisoft\Db\Tests\Provider\AbstractQueryBuilderProvider;
 use Yiisoft\Db\Tests\Support\TraversableObject;
 
 use function array_replace;
 
-final class QueryBuilderProvider
+final class QueryBuilderProvider extends AbstractQueryBuilderProvider
 {
     use TestTrait;
 
-    public function addForeignKey(): array
-    {
-        $baseQueryBuilderProvider = new BaseQueryBuilderProvider();
-
-        return $baseQueryBuilderProvider->addForeignKey($this->getDriverName());
-    }
-
-    public function addPrimaryKey(): array
-    {
-        $baseQueryBuilderProvider = new BaseQueryBuilderProvider();
-
-        return $baseQueryBuilderProvider->addPrimaryKey($this->getDriverName());
-    }
-
-    public function addUnique(): array
-    {
-        $baseQueryBuilderProvider = new BaseQueryBuilderProvider();
-
-        return $baseQueryBuilderProvider->addUnique($this->getDriverName());
-    }
-
-    public function batchInsert(): array
-    {
-        $baseQueryBuilderProvider = new BaseQueryBuilderProvider();
-
-        return $baseQueryBuilderProvider->batchInsert($this->getDriverName());
-    }
+    protected string $likeEscapeCharSql = '';
+    protected array $likeParameterReplacements = [];
 
     /**
      * @throws Exception
@@ -56,9 +31,7 @@ final class QueryBuilderProvider
     {
         $db = $this->getConnection();
 
-        $baseQueryBuilderProvider = new BaseQueryBuilderProvider();
-
-        $buildCondition = $baseQueryBuilderProvider->buildCondition($db);
+        $buildCondition = parent::buildCondition();
 
         return array_merge(
             $buildCondition,
@@ -68,7 +41,6 @@ final class QueryBuilderProvider
                 *
                 * {@see http://www.postgresql.org/docs/8.3/static/functions-matching.html#FUNCTIONS-LIKE}
                 */
-
                 /* empty values */
                 [['ilike', 'name', []], '0=1', []],
                 [['not ilike', 'name', []], '', []],
@@ -282,43 +254,9 @@ final class QueryBuilderProvider
         );
     }
 
-    public function buildFrom(): array
-    {
-        $baseQueryBuilderProvider = new BaseQueryBuilderProvider();
-
-        return $baseQueryBuilderProvider->buildFrom($this->getDriverName());
-    }
-
-    public function buildLikeCondition(): array
-    {
-        $baseQueryBuilderProvider = new BaseQueryBuilderProvider();
-
-        return $baseQueryBuilderProvider->buildLikeCondition($this->getDriverName());
-    }
-
-    public function buildWhereExists(): array
-    {
-        $baseQueryBuilderProvider = new BaseQueryBuilderProvider();
-
-        return $baseQueryBuilderProvider->buildWhereExists($this->getDriverName());
-    }
-
-    public function delete(): array
-    {
-        $baseQueryBuilderProvider = new BaseQueryBuilderProvider();
-
-        return $baseQueryBuilderProvider->delete($this->getDriverName());
-    }
-
-    /**
-     * @throws Exception
-     * @throws InvalidConfigException
-     */
     public function insert(): array
     {
-        $baseQueryBuilderProvider = new BaseQueryBuilderProvider();
-
-        $insert = $baseQueryBuilderProvider->insert($this->getConnection());
+        $insert = parent::insert();
 
         $insert['empty columns'][3] = <<<SQL
         INSERT INTO "customer" DEFAULT VALUES
@@ -327,15 +265,9 @@ final class QueryBuilderProvider
         return $insert;
     }
 
-    /**
-     * @throws Exception
-     * @throws InvalidConfigException
-     */
     public function insertEx(): array
     {
-        $baseQueryBuilderProvider = new BaseQueryBuilderProvider();
-
-        $insertEx = $baseQueryBuilderProvider->insertEx($this->getConnection());
+        $insertEx = parent::insertEx();
 
         $insertEx['regular-values'][3] = <<<SQL
         INSERT INTO "customer" ("email", "name", "address", "is_active", "related_id") VALUES (:qp0, :qp1, :qp2, :qp3, :qp4) RETURNING "id"
@@ -350,17 +282,6 @@ final class QueryBuilderProvider
         return $insertEx;
     }
 
-    public function update(): array
-    {
-        $baseQueryBuilderProvider = new BaseQueryBuilderProvider();
-
-        return $baseQueryBuilderProvider->update($this->getDriverName());
-    }
-
-    /**
-     * @throws Exception
-     * @throws InvalidConfigException
-     */
     public function upsert(): array
     {
         $concreteData = [
@@ -483,9 +404,7 @@ final class QueryBuilderProvider
             ],
         ];
 
-        $baseQueryBuilderProvider = new BaseQueryBuilderProvider();
-
-        $upsert = $baseQueryBuilderProvider->upsert($this->getConnection());
+        $upsert = parent::upsert();
 
         foreach ($concreteData as $testName => $data) {
             $upsert[$testName] = array_replace($upsert[$testName], $data);
