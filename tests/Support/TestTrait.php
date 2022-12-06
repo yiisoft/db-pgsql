@@ -13,6 +13,8 @@ use Yiisoft\Db\Tests\Support\DbHelper;
 
 trait TestTrait
 {
+    protected string $fixture = 'pgsql.sql';
+
     /**
      * @throws InvalidConfigException
      * @throws Exception
@@ -26,9 +28,19 @@ trait TestTrait
         );
 
         if ($fixture) {
-            DbHelper::loadFixture($db, __DIR__ . '/Fixture/pgsql.sql');
+            DbHelper::loadFixture($db, __DIR__ . "/Fixture/$this->fixture");
         }
 
         return $db;
+    }
+
+    protected function getDriverName(): string
+    {
+        return 'pgsql';
+    }
+
+    protected function setFixture(string $fixture): void
+    {
+        $this->fixture = $fixture;
     }
 }

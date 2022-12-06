@@ -164,6 +164,11 @@ final class DDLQueryBuilder extends AbstractDDLQueryBuilder
         return 'DROP INDEX ' . $this->quoter->quoteTableName($name);
     }
 
+    public function truncateTable(string $table): string
+    {
+        return 'TRUNCATE TABLE ' . $this->quoter->quoteTableName($table) . ' RESTART IDENTITY';
+    }
+
     public function renameTable(string $oldName, string $newName): string
     {
         return 'ALTER TABLE '
