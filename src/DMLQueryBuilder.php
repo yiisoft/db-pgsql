@@ -187,11 +187,6 @@ final class DMLQueryBuilder extends AbstractDMLQueryBuilder
         throw new InvalidArgumentException("There is not sequence associated with table '$tableName'.");
     }
 
-    public function truncateTable(string $table): string
-    {
-        return 'TRUNCATE TABLE ' . $this->quoter->quoteTableName($table) . ' RESTART IDENTITY';
-    }
-
     /**
      * Creates an UPDATE SQL statement.
      *

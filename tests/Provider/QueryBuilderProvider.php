@@ -318,7 +318,13 @@ final class QueryBuilderProvider
     {
         $baseQueryBuilderProvider = new BaseQueryBuilderProvider();
 
-        return $baseQueryBuilderProvider->insert($this->getConnection());
+        $insert = $baseQueryBuilderProvider->insert($this->getConnection());
+
+        $insert['empty columns'][3] = <<<SQL
+        INSERT INTO "customer" DEFAULT VALUES
+        SQL;
+
+        return $insert;
     }
 
     /**
