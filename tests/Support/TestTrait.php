@@ -13,7 +13,7 @@ use Yiisoft\Db\Tests\Support\DbHelper;
 
 trait TestTrait
 {
-    protected string $fixture =  'pgsql.sql';
+    protected string $fixture = 'pgsql.sql';
 
     /**
      * @throws InvalidConfigException
