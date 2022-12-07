@@ -23,7 +23,7 @@
         "ext-json": "*",
         "ext-pdo": "*",
         "yiisoft/arrays": "^2.0",
-        "yiisoft/db": "^3.0@dev",
+        "yiisoft/db": "dev-remove-test-column-schema-builder-trait as 3.0@dev",
         "yiisoft/json": "^1.0",
         "yiisoft/strings": "^2.0"
     },
