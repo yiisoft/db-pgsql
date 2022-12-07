@@ -4,15 +4,13 @@ declare(strict_types=1);
 
 namespace Yiisoft\Db\Pgsql\Tests\Provider;
 
-use Yiisoft\Db\Tests\Provider\BaseCommandPDOProvider;
+use Yiisoft\Db\Tests\Provider\AbstractCommandPDOProvider;
 
-final class CommandPDOProvider
+final class CommandPDOProvider extends AbstractCommandPDOProvider
 {
     public function bindParam(): array
     {
-        $baseCommandPDOProvider = new BaseCommandPDOProvider();
-
-        $bindParam = $baseCommandPDOProvider->bindParam();
+        $bindParam = parent::bindParam();
 
         $bindParam[0][6] = [
             'id' => 1,
@@ -25,12 +23,5 @@ final class CommandPDOProvider
         ];
 
         return $bindParam;
-    }
-
-    public function bindParamsNonWhere(): array
-    {
-        $baseCommandPDOProvider = new BaseCommandPDOProvider();
-
-        return $baseCommandPDOProvider->bindParamsNonWhere();
     }
 }
