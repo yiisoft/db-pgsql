@@ -130,11 +130,11 @@ final class SchemaTest extends CommonSchemaTest
     {
         $this->fixture = 'pgsql12.sql';
 
-        $db = $this->getConnection(true);
-
-        if (version_compare($db->getServerVersion(), '12.0', '<')) {
+        if (version_compare($this->getConnection()->getServerVersion(), '12.0', '<')) {
             $this->markTestSkipped('PostgreSQL < 12.0 does not support GENERATED AS IDENTITY columns.');
         }
+
+        $db = $this->getConnection(true);
 
         $schema = $db->getSchema();
         $table = $schema->getTableSchema('generated');
@@ -247,11 +247,11 @@ final class SchemaTest extends CommonSchemaTest
     {
         $this->fixture = 'pgsql10.sql';
 
-        $db = $this->getConnection(true);
-
-        if (version_compare($db->getServerVersion(), '10.0', '<')) {
+        if (version_compare($this->getConnection()->getServerVersion(), '10.0', '<')) {
             $this->markTestSkipped('PostgreSQL < 10.0 does not support PARTITION BY clause.');
         }
+
+        $db = $this->getConnection(true);
 
         $schema = $db->getSchema();
 
