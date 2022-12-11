@@ -6,7 +6,6 @@ namespace Yiisoft\Db\Pgsql\Tests\Provider;
 
 use Yiisoft\Db\Expression\Expression;
 use Yiisoft\Db\Tests\Provider\AbstractSchemaProvider;
-use Yiisoft\Db\Tests\Support\AnyValue;
 
 final class SchemaProvider extends AbstractSchemaProvider
 {
