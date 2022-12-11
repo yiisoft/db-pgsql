@@ -21,6 +21,7 @@ use Yiisoft\Db\Schema\ColumnSchemaInterface;
 use Yiisoft\Db\Schema\Schema as AbstractSchema;
 use Yiisoft\Db\Schema\TableSchemaInterface;
 
+use function array_change_key_case;
 use function array_merge;
 use function array_unique;
 use function array_values;

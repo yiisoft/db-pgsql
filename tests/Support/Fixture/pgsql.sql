@@ -24,6 +24,8 @@ DROP TABLE IF EXISTS "department";
 DROP TABLE IF EXISTS "alpha";
 DROP TABLE IF EXISTS "beta";
 DROP VIEW IF EXISTS "animal_view";
+DROP TABLE IF EXISTS "T_constraints_6";
+DROP TABLE IF EXISTS "T_constraints_5";
 DROP TABLE IF EXISTS "T_constraints_4";
 DROP TABLE IF EXISTS "T_constraints_3";
 DROP TABLE IF EXISTS "T_constraints_2";
@@ -361,6 +363,27 @@ CREATE TABLE "T_constraints_4"
     "C_col_1" INT NULL,
     "C_col_2" INT NOT NULL,
     CONSTRAINT "CN_constraints_4" UNIQUE ("C_col_1", "C_col_2")
+);
+
+CREATE TABLE "schema1"."T_constraints_5"
+(
+    "C_id_1" INT NOT NULL,
+    "C_id_2" INT NOT NULL,
+    "C_index_1" INT NULL,
+    "C_index_2_1" INT NULL,
+    "C_index_2_2" INT NULL,
+    CONSTRAINT "CN_constraints_5_multi" UNIQUE ("C_index_2_1", "C_index_2_2"),
+    CONSTRAINT "CN_pk" PRIMARY KEY ("C_id_1", "C_id_2")
+);
+
+CREATE INDEX "CN_constraints_5_single" ON "schema1"."T_constraints_5" ("C_index_1");
+
+CREATE TABLE "T_constraints_6"
+(
+    "C_id" INT NOT NULL,
+    "C_fk_id_1" INT NOT NULL,
+    "C_fk_id_2" INT NOT NULL,
+    CONSTRAINT "CN_constraints_6" FOREIGN KEY ("C_fk_id_1", "C_fk_id_2") REFERENCES "schema1"."T_constraints_5" ("C_id_1", "C_id_2") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 CREATE TABLE "T_upsert"

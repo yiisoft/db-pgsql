@@ -4,351 +4,28 @@ declare(strict_types=1);
 
 namespace Yiisoft\Db\Pgsql\Tests;
 
-use PDO;
 use Yiisoft\Db\Command\CommandInterface;
 use Yiisoft\Db\Connection\ConnectionInterface;
-use Yiisoft\Db\Exception\Exception;
-use Yiisoft\Db\Exception\InvalidConfigException;
 use Yiisoft\Db\Exception\NotSupportedException;
 use Yiisoft\Db\Expression\Expression;
 use Yiisoft\Db\Pgsql\Schema;
-use Yiisoft\Db\QueryBuilder\QueryBuilder;
+use Yiisoft\Db\Pgsql\Tests\Support\TestTrait;
 use Yiisoft\Db\Schema\TableSchemaInterface;
-use Yiisoft\Db\TestSupport\TestSchemaTrait;
-
-use function array_map;
-use function fclose;
-use function fopen;
-use function trim;
-use function ucfirst;
-use function version_compare;
+use Yiisoft\Db\Tests\Common\CommonSchemaTest;
+use Yiisoft\Db\Tests\Support\DbHelper;
 
 /**
  * @group pgsql
  */
-final class SchemaTest extends TestCase
+final class SchemaTest extends CommonSchemaTest
 {
-    use TestSchemaTrait;
-
-    public function getExpectedColumns(): array
-    {
-        $version = $this->getConnection()->getServerVersion();
-
-        return [
-            'int_col' => [
-                'type' => 'integer',
-                'dbType' => 'int4',
-                'phpType' => 'integer',
-                'allowNull' => false,
-                'autoIncrement' => false,
-                'enumValues' => null,
-                'size' => null,
-                'precision' => 32,
-                'scale' => 0,
-                'defaultValue' => null,
-            ],
-            'int_col2' => [
-                'type' => 'integer',
-                'dbType' => 'int4',
-                'phpType' => 'integer',
-                'allowNull' => true,
-                'autoIncrement' => false,
-                'enumValues' => null,
-                'size' => null,
-                'precision' => 32,
-                'scale' => 0,
-                'defaultValue' => 1,
-            ],
-            'tinyint_col' => [
-                'type' => 'smallint',
-                'dbType' => 'int2',
-                'phpType' => 'integer',
-                'allowNull' => true,
-                'autoIncrement' => false,
-                'enumValues' => null,
-                'size' => null,
-                'precision' => 16,
-                'scale' => 0,
-                'defaultValue' => 1,
-            ],
-            'smallint_col' => [
-                'type' => 'smallint',
-                'dbType' => 'int2',
-                'phpType' => 'integer',
-                'allowNull' => true,
-                'autoIncrement' => false,
-                'enumValues' => null,
-                'size' => null,
-                'precision' => 16,
-                'scale' => 0,
-                'defaultValue' => 1,
-            ],
-            'char_col' => [
-                'type' => 'char',
-                'dbType' => 'bpchar',
-                'phpType' => 'string',
-                'allowNull' => false,
-                'autoIncrement' => false,
-                'enumValues' => null,
-                'size' => 100,
-                'precision' => null,
-                'scale' => null,
-                'defaultValue' => null,
-            ],
-            'char_col2' => [
-                'type' => 'string',
-                'dbType' => 'varchar',
-                'phpType' => 'string',
-                'allowNull' => true,
-                'autoIncrement' => false,
-                'enumValues' => null,
-                'size' => 100,
-                'precision' => null,
-                'scale' => null,
-                'defaultValue' => 'something',
-            ],
-            'char_col3' => [
-                'type' => 'text',
-                'dbType' => 'text',
-                'phpType' => 'string',
-                'allowNull' => true,
-                'autoIncrement' => false,
-                'enumValues' => null,
-                'size' => null,
-                'precision' => null,
-                'scale' => null,
-                'defaultValue' => null,
-            ],
-            'float_col' => [
-                'type' => 'double',
-                'dbType' => 'float8',
-                'phpType' => 'double',
-                'allowNull' => false,
-                'autoIncrement' => false,
-                'enumValues' => null,
-                'size' => null,
-                'precision' => 53,
-                'scale' => null,
-                'defaultValue' => null,
-            ],
-            'float_col2' => [
-                'type' => 'double',
-                'dbType' => 'float8',
-                'phpType' => 'double',
-                'allowNull' => true,
-                'autoIncrement' => false,
-                'enumValues' => null,
-                'size' => null,
-                'precision' => 53,
-                'scale' => null,
-                'defaultValue' => 1.23,
-            ],
-            'blob_col' => [
-                'type' => 'binary',
-                'dbType' => 'bytea',
-                'phpType' => 'resource',
-                'allowNull' => true,
-                'autoIncrement' => false,
-                'enumValues' => null,
-                'size' => null,
-                'precision' => null,
-                'scale' => null,
-                'defaultValue' => null,
-            ],
-            'numeric_col' => [
-                'type' => 'decimal',
-                'dbType' => 'numeric',
-                'phpType' => 'string',
-                'allowNull' => true,
-                'autoIncrement' => false,
-                'enumValues' => null,
-                'size' => null,
-                'precision' => 5,
-                'scale' => 2,
-                'defaultValue' => '33.22',
-            ],
-            'time' => [
-                'type' => 'timestamp',
-                'dbType' => 'timestamp',
-                'phpType' => 'string',
-                'allowNull' => false,
-                'autoIncrement' => false,
-                'enumValues' => null,
-                'size' => null,
-                'precision' => null,
-                'scale' => null,
-                'defaultValue' => '2002-01-01 00:00:00',
-            ],
-            'bool_col' => [
-                'type' => 'boolean',
-                'dbType' => 'bool',
-                'phpType' => 'boolean',
-                'allowNull' => false,
-                'autoIncrement' => false,
-                'enumValues' => null,
-                'size' => null,
-                'precision' => null,
-                'scale' => null,
-                'defaultValue' => null,
-            ],
-            'bool_col2' => [
-                'type' => 'boolean',
-                'dbType' => 'bool',
-                'phpType' => 'boolean',
-                'allowNull' => true,
-                'autoIncrement' => false,
-                'enumValues' => null,
-                'size' => null,
-                'precision' => null,
-                'scale' => null,
-                'defaultValue' => true,
-            ],
-            'ts_default' => [
-                'type' => 'timestamp',
-                'dbType' => 'timestamp',
-                'phpType' => 'string',
-                'allowNull' => false,
-                'autoIncrement' => false,
-                'enumValues' => null,
-                'size' => null,
-                'precision' => null,
-                'scale' => null,
-                'defaultValue' => version_compare($version, '10', '<')
-                    ? new Expression('now()') : new Expression('CURRENT_TIMESTAMP'),
-            ],
-            'bit_col' => [
-                'type' => 'integer',
-                'dbType' => 'bit',
-                'phpType' => 'integer',
-                'allowNull' => false,
-                'autoIncrement' => false,
-                'enumValues' => null,
-                'size' => 8,
-                'precision' => null,
-                'scale' => null,
-                'defaultValue' => 130, //b '10000010'
-            ],
-            'bigint_col' => [
-                'type' => 'bigint',
-                'dbType' => 'int8',
-                'phpType' => 'integer',
-                'allowNull' => true,
-                'autoIncrement' => false,
-                'enumValues' => null,
-                'size' => null,
-                'precision' => 64,
-                'scale' => 0,
-                'defaultValue' => null,
-            ],
-            'intarray_col' => [
-                'type' => 'integer',
-                'dbType' => 'int4',
-                'phpType' => 'integer',
-                'allowNull' => true,
-                'autoIncrement' => false,
-                'enumValues' => null,
-                'size' => null,
-                'precision' => null,
-                'scale' => null,
-                'defaultValue' => null,
-                'dimension' => 1,
-            ],
-            'textarray2_col' => [
-                'type' => 'text',
-                'dbType' => 'text',
-                'phpType' => 'string',
-                'allowNull' => true,
-                'autoIncrement' => false,
-                'enumValues' => null,
-                'size' => null,
-                'precision' => null,
-                'scale' => null,
-                'defaultValue' => null,
-                'dimension' => 2,
-            ],
-            'json_col' => [
-                'type' => 'json',
-                'dbType' => 'json',
-                'phpType' => 'array',
-                'allowNull' => true,
-                'autoIncrement' => false,
-                'enumValues' => null,
-                'size' => null,
-                'precision' => null,
-                'scale' => null,
-                'defaultValue' => ['a' => 1],
-                'dimension' => 0,
-            ],
-            'jsonb_col' => [
-                'type' => 'json',
-                'dbType' => 'jsonb',
-                'phpType' => 'array',
-                'allowNull' => true,
-                'autoIncrement' => false,
-                'enumValues' => null,
-                'size' => null,
-                'precision' => null,
-                'scale' => null,
-                'defaultValue' => null,
-                'dimension' => 0,
-            ],
-            'jsonarray_col' => [
-                'type' => 'json',
-                'dbType' => 'json',
-                'phpType' => 'array',
-                'allowNull' => true,
-                'autoIncrement' => false,
-                'enumValues' => null,
-                'size' => null,
-                'precision' => null,
-                'scale' => null,
-                'defaultValue' => null,
-                'dimension' => 1,
-            ],
-        ];
-    }
-
-    public function testCompositeFk(): void
-    {
-        $schema = $this->getConnection()->getSchema();
-        $table = $schema->getTableSchema('composite_fk');
-
-        $this->assertNotNull($table);
-
-        $fk = $table->getForeignKeys();
-        $this->assertCount(1, $fk);
-        $this->assertTrue(isset($fk['fk_composite_fk_order_item']));
-        $this->assertEquals('order_item', $fk['fk_composite_fk_order_item'][0]);
-        $this->assertEquals('order_id', $fk['fk_composite_fk_order_item']['order_id']);
-        $this->assertEquals('item_id', $fk['fk_composite_fk_order_item']['item_id']);
-    }
-
-    public function testGetPDOType(): void
-    {
-        $values = [
-            [null, PDO::PARAM_NULL],
-            ['', PDO::PARAM_STR],
-            ['hello', PDO::PARAM_STR],
-            [0, PDO::PARAM_INT],
-            [1, PDO::PARAM_INT],
-            [1337, PDO::PARAM_INT],
-            [true, PDO::PARAM_BOOL],
-            [false, PDO::PARAM_BOOL],
-            [$fp = fopen(__FILE__, 'rb'), PDO::PARAM_LOB],
-        ];
-
-        $schema = $this->getConnection()->getSchema();
-
-        foreach ($values as $value) {
-            $this->assertEquals($value[1], $schema->getPdoType($value[0]));
-        }
-
-        fclose($fp);
-    }
+    use TestTrait;
 
     public function testBooleanDefaultValues(): void
     {
-        $schema = $this->getConnection()->getSchema();
+        $db = $this->getConnection(true);
+
+        $schema = $db->getSchema();
         $table = $schema->getTableSchema('bool_values');
 
         $this->assertNotNull($table);
@@ -362,54 +39,105 @@ final class SchemaTest extends TestCase
         $this->assertFalse($columnFalse->getDefaultValue());
     }
 
-    public function testGetSchemaNames(): void
+    /**
+     * @dataProvider \Yiisoft\Db\Pgsql\Tests\Provider\SchemaProvider::columns()
+     */
+    public function testColumnSchema(array $columns): void
     {
-        $schema = $this->getConnection()->getSchema();
-        $schemas = $schema->getSchemaNames();
-        $this->assertNotEmpty($schemas);
+        $db = $this->getConnection(true);
 
-        foreach ($this->expectedSchemas as $schema) {
-            $this->assertContains($schema, $schemas);
+        if (version_compare($db->getServerVersion(), '9', '>')) {
+            $columns['ts_default']['defaultValue'] = new Expression('CURRENT_TIMESTAMP');
         }
-    }
 
-    public function testSequenceName(): void
-    {
-        $db = $this->getConnection();
+        $table = $db->getTableSchema('type', true);
 
-        $tableSchema = $db->getSchema()->getTableSchema('item');
-        $this->assertNotNull($tableSchema);
+        $this->assertNotNull($table);
 
-        $sequenceName = $tableSchema->getSequenceName();
-        $db->createCommand(
-            'ALTER TABLE "item" ALTER COLUMN "id" SET DEFAULT nextval(\'item_id_seq_2\')'
-        )->execute();
-        $db->getSchema()->refreshTableSchema('item');
+        $expectedColNames = array_keys($columns);
+        sort($expectedColNames);
+        $colNames = $table->getColumnNames();
+        sort($colNames);
 
-        $tableSchema = $db->getSchema()->getTableSchema('item');
-        $this->assertNotNull($tableSchema);
+        $this->assertSame($expectedColNames, $colNames);
 
-        $this->assertEquals('item_id_seq_2', $tableSchema->getSequenceName());
+        foreach ($table->getColumns() as $name => $column) {
+            $expected = $columns[$name];
 
-        $db->createCommand(
-            'ALTER TABLE "item" ALTER COLUMN "id" SET DEFAULT nextval(\'' . $sequenceName . '\')'
-        )->execute();
-        $db->getSchema()->refreshTableSchema('item');
-
-        $tableSchema = $db->getSchema()->getTableSchema('item');
-        $this->assertNotNull($tableSchema);
-
-        $this->assertEquals($sequenceName, $tableSchema->getSequenceName());
+            $this->assertSame(
+                $expected['dbType'],
+                $column->getDbType(),
+                "dbType of column $name does not match. type is {$column->getType()}, dbType is {$column->getDbType()}."
+            );
+            $this->assertSame(
+                $expected['phpType'],
+                $column->getPhpType(),
+                "phpType of column $name does not match. type is {$column->getType()}, dbType is {$column->getDbType()}."
+            );
+            $this->assertSame($expected['type'], $column->getType(), "type of column $name does not match.");
+            $this->assertSame(
+                $expected['allowNull'],
+                $column->isAllowNull(),
+                "allowNull of column $name does not match."
+            );
+            $this->assertSame(
+                $expected['autoIncrement'],
+                $column->isAutoIncrement(),
+                "autoIncrement of column $name does not match."
+            );
+            $this->assertSame(
+                $expected['enumValues'],
+                $column->getEnumValues(),
+                "enumValues of column $name does not match."
+            );
+            $this->assertSame($expected['size'], $column->getSize(), "size of column $name does not match.");
+            $this->assertSame(
+                $expected['precision'],
+                $column->getPrecision(),
+                "precision of column $name does not match."
+            );
+            $this->assertSame($expected['scale'], $column->getScale(), "scale of column $name does not match.");
+            if (is_object($expected['defaultValue'])) {
+                $this->assertIsObject(
+                    $column->getDefaultValue(),
+                    "defaultValue of column $name is expected to be an object but it is not."
+                );
+                $this->assertSame(
+                    (string) $expected['defaultValue'],
+                    (string) $column->getDefaultValue(),
+                    "defaultValue of column $name does not match."
+                );
+            } else {
+                $this->assertSame(
+                    $expected['defaultValue'],
+                    $column->getDefaultValue(),
+                    "defaultValue of column $name does not match."
+                );
+            }
+            /* Pgsql only */
+            if (isset($expected['dimension'])) {
+                /** @psalm-suppress UndefinedMethod */
+                $this->assertSame(
+                    $expected['dimension'],
+                    $column->getDimension(),
+                    "dimension of column $name does not match"
+                );
+            }
+        }
     }
 
     public function testGeneratedValues(): void
     {
-        if (version_compare($this->getConnection()->getServerVersion(), '12.0', '<')) {
+        $this->fixture = 'pgsql12.sql';
+
+        $db = $this->getConnection(true);
+
+        if (version_compare($db->getServerVersion(), '12.0', '<')) {
             $this->markTestSkipped('PostgreSQL < 12.0 does not support GENERATED AS IDENTITY columns.');
         }
 
-        $db = $this->getConnection(true, null, __DIR__ . '/Support/Fixture/pgsql12.sql');
-        $table = $db->getSchema()->getTableSchema('generated');
+        $schema = $db->getSchema();
+        $table = $schema->getTableSchema('generated');
 
         $this->assertNotNull($table);
         $this->assertTrue($table->getColumn('id_always')?->isAutoIncrement());
@@ -418,188 +146,154 @@ final class SchemaTest extends TestCase
         $this->assertTrue($table->getColumn('id_default')?->isAutoIncrement());
     }
 
-    public function testPartitionedTable(): void
-    {
-        if (version_compare($this->getConnection()->getServerVersion(), '10.0', '<')) {
-            $this->markTestSkipped('PostgreSQL < 10.0 does not support PARTITION BY clause.');
-        }
-
-        $db = $this->getConnection(true, null, __DIR__ . '/Support/Fixture/pgsql10.sql');
-        $this->assertNotNull($db->getSchema()->getTableSchema('partitioned'));
-    }
-
-    public function testFindSchemaNames(): void
-    {
-        $schema = $this->getConnection(true)->getSchema();
-        $this->assertCount(3, $schema->getSchemaNames());
-    }
-
-    /**
-     * @see https://github.com/yiisoft/yii2/issues/12483
-     */
-    public function testParenthesisDefaultValue(): void
+    public function testGetDefaultSchema(): void
     {
         $db = $this->getConnection();
 
-        if ($db->getSchema()->getTableSchema('test_default_parenthesis') !== null) {
-            $db->createCommand()->dropTable('test_default_parenthesis')->execute();
-        }
+        $schema = $db->getSchema();
 
-        $db->createCommand()->createTable('test_default_parenthesis', [
-            'id' => 'pk',
-            'user_timezone' => 'numeric(5,2) DEFAULT (0)::numeric NOT NULL',
-        ])->execute();
-
-        $db->getSchema()->refreshTableSchema('test_default_parenthesis');
-        $tableSchema = $db->getSchema()->getTableSchema('test_default_parenthesis');
-        $this->assertNotNull($tableSchema);
-
-        $column = $tableSchema->getColumn('user_timezone');
-        $this->assertNotNull($column);
-        $this->assertFalse($column->isAllowNull());
-        $this->assertEquals('numeric', $column->getDbType());
-        $this->assertEquals(0, $column->getDefaultValue());
+        $this->assertSame('public', $schema->getDefaultSchema());
     }
 
-    /**
-     * @see https://github.com/yiisoft/yii2/issues/14192
-     */
-    public function testTimestampNullDefaultValue(): void
+    public function testGetSchemaDefaultValues(): void
     {
         $db = $this->getConnection();
 
-        if ($db->getSchema()->getTableSchema('test_timestamp_default_null') !== null) {
-            $db->createCommand()->dropTable('test_timestamp_default_null')->execute();
-        }
+        $this->expectException(NotSupportedException::class);
+        $this->expectExceptionMessage(
+            'Yiisoft\Db\Pgsql\Schema::loadTableDefaultValues is not supported by PostgreSQL.'
+        );
 
-        $db->createCommand()->createTable('test_timestamp_default_null', [
-            'id' => 'pk',
-            'timestamp' => 'timestamp DEFAULT NULL',
-        ])->execute();
-        $db->getSchema()->refreshTableSchema('test_timestamp_default_null');
-        $tableSchema = $db->getSchema()->getTableSchema('test_timestamp_default_null');
-
-        $this->assertNotNull($tableSchema);
-
-        $columnSchema = $tableSchema->getColumn('timestamp');
-
-        $this->assertNotNull($columnSchema);
-        $this->assertNull($columnSchema->getDefaultValue());
+        $db->getSchema()->getSchemaDefaultValues();
     }
 
-    /**
-     * @dataProvider pdoAttributesProviderTrait
-     *
-     * @throws Exception
-     * @throws InvalidConfigException
-     */
-    public function testGetTableNames(array $pdoAttributes): void
+    public function testGetSchemaNames(): void
     {
         $db = $this->getConnection(true);
 
-        foreach ($pdoAttributes as $name => $value) {
-            $db->getActivePDO()->setAttribute($name, $value);
-        }
-
+        $expectedSchemas = ['public', 'schema1', 'schema2'];
         $schema = $db->getSchema();
-        $tables = $schema->getTableNames();
+        $schemas = $schema->getSchemaNames();
 
-        if ($db->getDriver()->getDriverName() === 'sqlsrv') {
-            $tables = array_map(static fn ($item) => trim($item, '[]'), $tables);
+        $this->assertNotEmpty($schemas);
+
+        foreach ($expectedSchemas as $schema) {
+            $this->assertContains($schema, $schemas);
         }
-
-        $this->assertContains('customer', $tables);
-        $this->assertContains('category', $tables);
-        $this->assertContains('item', $tables);
-        $this->assertContains('order', $tables);
-        $this->assertContains('order_item', $tables);
-        $this->assertContains('type', $tables);
-        $this->assertContains('animal', $tables);
-        $this->assertContains('animal_view', $tables);
     }
 
     /**
-     * @dataProvider pdoAttributesProviderTrait
+     * @dataProvider \Yiisoft\Db\Pgsql\Tests\Provider\SchemaProvider::columnsTypeChar()
      */
-    public function testGetTableSchemas(array $pdoAttributes): void
+    public function testGetStringFieldsSize(
+        string $columnName,
+        string $columnType,
+        int|null $columnSize,
+        string $columnDbType
+    ): void {
+        parent::testGetStringFieldsSize($columnName, $columnType, $columnSize, $columnDbType);
+    }
+
+    public function testGetTableSchemasNotSchemaDeafult(): void
     {
         $db = $this->getConnection(true);
 
-        foreach ($pdoAttributes as $name => $value) {
-            $db->getActivePDO()->setAttribute($name, $value);
-        }
-
         $schema = $db->getSchema();
-        $tables = $schema->getTableSchemas();
-        $this->assertCount(count($schema->getTableNames()), $tables);
+        $tables = $schema->getTableSchemas('schema1');
+
+        $this->assertCount(count($schema->getTableNames('schema1')), $tables);
 
         foreach ($tables as $table) {
             $this->assertInstanceOf(TableSchemaInterface::class, $table);
         }
     }
 
-    public function constraintsProvider(): array
-    {
-        $result = $this->constraintsProviderTrait();
-        $result['1: check'][2][0]->expression('CHECK ((("C_check")::text <> \'\'::text))');
-        $result['3: foreign key'][2][0]->foreignSchemaName('public');
-        $result['3: index'][2] = [];
-        return $result;
-    }
-
     /**
-     * @dataProvider constraintsProvider
+     * @link https://github.com/yiisoft/yii2/issues/12483
      */
-    public function testTableSchemaConstraints(string $tableName, string $type, mixed $expected): void
+    public function testParenthesisDefaultValue(): void
     {
-        if ($expected === false) {
-            $this->expectException(NotSupportedException::class);
-        }
-
-        $constraints = $this->getConnection()->getSchema()->{'getTable' . ucfirst($type)}($tableName);
-        $this->assertMetadataEquals($expected, $constraints);
-    }
-
-    /**
-     * @dataProvider lowercaseConstraintsProviderTrait
-     *
-     * @throws Exception
-     * @throws InvalidConfigException
-     */
-    public function testTableSchemaConstraintsWithPdoLowercase(string $tableName, string $type, mixed $expected): void
-    {
-        if ($expected === false) {
-            $this->expectException(NotSupportedException::class);
-        }
-
         $db = $this->getConnection();
-        $db->getActivePDO()->setAttribute(PDO::ATTR_CASE, PDO::CASE_LOWER);
-        $constraints = $db->getSchema()->{'getTable' . ucfirst($type)}($tableName, true);
-        $this->assertMetadataEquals($expected, $constraints);
-    }
 
-    /**
-     * @dataProvider uppercaseConstraintsProviderTrait
-     *
-     * @throws Exception
-     * @throws InvalidConfigException
-     */
-    public function testTableSchemaConstraintsWithPdoUppercase(string $tableName, string $type, mixed $expected): void
-    {
-        if ($expected === false) {
-            $this->expectException(NotSupportedException::class);
+        $command = $db->createCommand();
+        $schema = $db->getSchema();
+
+        if ($schema->getTableSchema('test_default_parenthesis') !== null) {
+            $command->dropTable('test_default_parenthesis')->execute();
         }
 
-        $db = $this->getConnection();
-        $db->getActivePDO()->setAttribute(PDO::ATTR_CASE, PDO::CASE_UPPER);
-        $constraints = $db->getSchema()->{'getTable' . ucfirst($type)}($tableName, true);
-        $this->assertMetadataEquals($expected, $constraints);
+        $command->createTable(
+            'test_default_parenthesis',
+            [
+                'id' => 'pk',
+                'user_timezone' => 'numeric(5,2) DEFAULT (0)::numeric NOT NULL',
+            ],
+        )->execute();
+
+        $schema->refreshTableSchema('test_default_parenthesis');
+        $tableSchema = $schema->getTableSchema('test_default_parenthesis');
+
+        $this->assertNotNull($tableSchema);
+
+        $column = $tableSchema->getColumn('user_timezone');
+
+        $this->assertNotNull($column);
+        $this->assertFalse($column->isAllowNull());
+        $this->assertEquals('numeric', $column->getDbType());
+        $this->assertEquals(0, $column->getDefaultValue());
+    }
+
+    public function testPartitionedTable(): void
+    {
+        $this->fixture = 'pgsql10.sql';
+
+        $db = $this->getConnection(true);
+
+        if (version_compare($db->getServerVersion(), '10.0', '<')) {
+            $this->markTestSkipped('PostgreSQL < 10.0 does not support PARTITION BY clause.');
+        }
+
+        $schema = $db->getSchema();
+
+        $this->assertNotNull($schema->getTableSchema('partitioned'));
+    }
+
+    public function testSequenceName(): void
+    {
+        $db = $this->getConnection(true);
+
+        $command = $db->createCommand();
+        $schema = $db->getSchema();
+        $tableSchema = $schema->getTableSchema('item');
+
+        $this->assertNotNull($tableSchema);
+
+        $sequenceName = $tableSchema->getSequenceName();
+        $command->setSql(
+            <<<SQL
+            ALTER TABLE "item" ALTER COLUMN "id" SET DEFAULT nextval('item_id_seq_2')
+            SQL,
+        )->execute();
+        $schema->refreshTableSchema('item');
+        $tableSchema = $schema->getTableSchema('item');
+
+        $this->assertNotNull($tableSchema);
+        $this->assertEquals('item_id_seq_2', $tableSchema->getSequenceName());
+
+        $command->setSql(
+            <<<SQL
+            ALTER TABLE "item" ALTER COLUMN "id" SET DEFAULT nextval('$sequenceName')
+            SQL,
+        )->execute();
+        $schema->refreshTableSchema('item');
+        $tableSchema = $schema->getTableSchema('item');
+
+        $this->assertNotNull($tableSchema);
+        $this->assertEquals($sequenceName, $tableSchema->getSequenceName());
     }
 
     /**
-     * @depends testSchemaCache
-     *
-     * @dataProvider tableSchemaCachePrefixesProviderTrait
+     * @dataProvider \Yiisoft\Db\Pgsql\Tests\Provider\SchemaProvider::tableSchemaCacheWithTablePrefixes()
      */
     public function testTableSchemaCacheWithTablePrefixes(
         string $tablePrefix,
@@ -608,24 +302,24 @@ final class SchemaTest extends TestCase
         string $testTableName
     ): void {
         $db = $this->getConnection();
+
         $schema = $db->getSchema();
-
-        $this->assertNotNull($this->schemaCache);
-
-        $this->schemaCache->setEnable(true);
-
+        $schema->schemaCacheEnable(true);
         $db->setTablePrefix($tablePrefix);
         $noCacheTable = $schema->getTableSchema($tableName, true);
+
         $this->assertInstanceOf(TableSchemaInterface::class, $noCacheTable);
 
         /* Compare */
         $db->setTablePrefix($testTablePrefix);
         $testNoCacheTable = $schema->getTableSchema($testTableName);
+
         $this->assertSame($noCacheTable, $testNoCacheTable);
 
         $db->setTablePrefix($tablePrefix);
         $schema->refreshTableSchema($tableName);
         $refreshedTable = $schema->getTableSchema($tableName, false);
+
         $this->assertInstanceOf(TableSchemaInterface::class, $refreshedTable);
         $this->assertNotSame($noCacheTable, $refreshedTable);
 
@@ -633,144 +327,100 @@ final class SchemaTest extends TestCase
         $db->setTablePrefix($testTablePrefix);
         $schema->refreshTableSchema($testTablePrefix);
         $testRefreshedTable = $schema->getTableSchema($testTableName, false);
+
         $this->assertInstanceOf(TableSchemaInterface::class, $testRefreshedTable);
-        $this->assertEquals($refreshedTable, $testRefreshedTable);
+        $this->assertSame($refreshedTable, $testRefreshedTable);
         $this->assertNotSame($testNoCacheTable, $testRefreshedTable);
     }
 
-    public function testFindUniqueIndexes(): void
+    /**
+     * @dataProvider \Yiisoft\Db\Pgsql\Tests\Provider\SchemaProvider::constraints()
+     *
+     * @throws Exception
+     */
+    public function testTableSchemaConstraints(string $tableName, string $type, mixed $expected): void
     {
-        $db = $this->getConnection();
-
-        try {
-            $db->createCommand()->dropTable('uniqueIndex')->execute();
-        } catch (Exception) {
-        }
-
-        $db->createCommand()->createTable('uniqueIndex', [
-            'somecol' => 'string',
-            'someCol2' => 'string',
-        ])->execute();
-
-        $schema = $db->getSchema();
-
-        $uq = $schema->getTableSchema('uniqueIndex', true);
-        $this->assertNotNull($uq);
-
-        $uniqueIndexes = $schema->findUniqueIndexes($uq);
-        $this->assertEquals([], $uniqueIndexes);
-
-        $db->getActivePDO()->setAttribute(PDO::ATTR_CASE, PDO::CASE_UPPER);
-        $db->createCommand()->createIndex('somecolUnique', 'uniqueIndex', 'somecol', QueryBuilder::INDEX_UNIQUE)->execute();
-
-        $uq = $schema->getTableSchema('uniqueIndex', true);
-        $this->assertNotNull($uq);
-
-        $uniqueIndexes = $schema->findUniqueIndexes($uq);
-        $this->assertEquals(['somecolUnique' => ['somecol']], $uniqueIndexes);
-
-        $db->getActivePDO()->setAttribute(PDO::ATTR_CASE, PDO::CASE_LOWER);
-
-        /**
-         * create another column with upper case letter that fails postgres
-         * {@see https://github.com/yiisoft/yii2/issues/10613}
-         */
-        $db->createCommand()->createIndex('someCol2Unique', 'uniqueIndex', 'someCol2', QueryBuilder::INDEX_UNIQUE)->execute();
-
-        $uq = $schema->getTableSchema('uniqueIndex', true);
-        $this->assertNotNull($uq);
-
-        $uniqueIndexes = $schema->findUniqueIndexes($uq);
-        $this->assertEquals(['somecolUnique' => ['somecol'], 'someCol2Unique' => ['someCol2']], $uniqueIndexes);
-
-        /**
-         * {@see https://github.com/yiisoft/yii2/issues/13814}
-         */
-        $db->createCommand()->createIndex('another unique index', 'uniqueIndex', 'someCol2', QueryBuilder::INDEX_UNIQUE)->execute();
-
-        $uq = $schema->getTableSchema('uniqueIndex', true);
-        $this->assertNotNull($uq);
-
-        $uniqueIndexes = $schema->findUniqueIndexes($uq);
-        $this->assertEquals([
-            'somecolUnique' => ['somecol'],
-            'someCol2Unique' => ['someCol2'],
-            'another unique index' => ['someCol2'],
-        ], $uniqueIndexes);
-    }
-
-    public function testGetSchemaDefaultValues(): void
-    {
-        $this->markTestSkipped('PostgreSQL does not support default value constraints.');
+        parent::testTableSchemaConstraints($tableName, $type, $expected);
     }
 
     /**
-     * @dataProvider tableSchemaWithDbSchemesDataProvider
+     * @dataProvider \Yiisoft\Db\Pgsql\Tests\Provider\SchemaProvider::constraints()
+     *
+     * @throws Exception
+     * @throws InvalidConfigException
+     * @throws NotSupportedException
      */
-    public function testTableSchemaWithDbSchemes(string $tableName, string $expectedTableName, string $expectedSchemaName = ''): void
+    public function testTableSchemaConstraintsWithPdoLowercase(string $tableName, string $type, mixed $expected): void
     {
+        parent::testTableSchemaConstraintsWithPdoLowercase($tableName, $type, $expected);
+    }
+
+    /**
+     * @dataProvider \Yiisoft\Db\Pgsql\Tests\Provider\SchemaProvider::constraints()
+     *
+     * @throws Exception
+     */
+    public function testTableSchemaConstraintsWithPdoUppercase(string $tableName, string $type, mixed $expected): void
+    {
+        parent::testTableSchemaConstraintsWithPdoUppercase($tableName, $type, $expected);
+    }
+
+    /**
+     * @dataProvider \Yiisoft\Db\Pgsql\Tests\Provider\SchemaProvider::tableSchemaWithDbSchemes()
+     */
+    public function testTableSchemaWithDbSchemes(
+        string $tableName,
+        string $expectedTableName,
+        string $expectedSchemaName = ''
+    ): void {
         $db = $this->getConnection();
 
         $commandMock = $this->createMock(CommandInterface::class);
-        $commandMock
-            ->method('queryAll')
-            ->willReturn([]);
+        $commandMock->method('queryAll')->willReturn([]);
 
         $mockDb = $this->createMock(ConnectionInterface::class);
-
-        $mockDb->method('getQuoter')
-            ->willReturn($db->getQuoter());
+        $mockDb->method('getQuoter')->willReturn($db->getQuoter());
 
         $mockDb
             ->expects(self::atLeastOnce())
             ->method('createCommand')
             ->with(self::callback(fn ($sql) => true), self::callback(function ($params) use ($expectedTableName, $expectedSchemaName) {
-                $this->assertEquals($expectedTableName, $params[':tableName']);
-                $this->assertEquals($expectedSchemaName, $params[':schemaName']);
+                $this->assertSame($expectedTableName, $params[':tableName']);
+                $this->assertSame($expectedSchemaName, $params[':schemaName']);
                 return true;
             }))
             ->willReturn($commandMock);
 
-        $schema = new Schema($mockDb, $this->createSchemaCache());
-
+        $schema = new Schema($mockDb, DbHelper::getSchemaCache());
         $schema->getTableSchema($tableName);
     }
 
-    public function tableSchemaWithDbSchemesDataProvider(): array
-    {
-        return [
-            ['animal', 'animal', 'public'],
-            ['public.animal', 'animal', 'public'],
-            ['"public"."animal"', 'animal', 'public'],
-            ['"other"."animal2"', 'animal2', 'other',],
-            ['other."animal2"', 'animal2', 'other',],
-            ['other.animal2', 'animal2', 'other',],
-            ['catalog.other.animal2', 'animal2', 'other'],
-        ];
-    }
-
     /**
-     * @dataProvider quoterTablePartsDataProvider
+     * @link https://github.com/yiisoft/yii2/issues/14192
      */
-    public function testQuoterTableParts(string $tableName, ...$expectedParts): void
+    public function testTimestampNullDefaultValue(): void
     {
-        $quoter = $this->getConnection()->getQuoter();
+        $db = $this->getConnection();
 
-        $parts = $quoter->getTableNameParts($tableName);
+        $command = $db->createCommand();
+        $schema = $db->getSchema();
 
-        $this->assertEquals($expectedParts, array_reverse($parts));
-    }
+        if ($schema->getTableSchema('test_timestamp_default_null') !== null) {
+            $command->dropTable('test_timestamp_default_null')->execute();
+        }
 
-    public function quoterTablePartsDataProvider(): array
-    {
-        return [
-            ['animal', 'animal',],
-            ['dbo.animal', 'animal', 'dbo'],
-            ['"dbo"."animal"', 'animal', 'dbo'],
-            ['"other"."animal2"', 'animal2', 'other'],
-            ['other."animal2"', 'animal2', 'other'],
-            ['other.animal2', 'animal2', 'other'],
-            ['catalog.other.animal2', 'animal2', 'other'],
-        ];
+        $command->createTable(
+            'test_timestamp_default_null',
+            ['id' => 'pk', 'timestamp' => 'timestamp DEFAULT NULL']
+        )->execute();
+        $schema->refreshTableSchema('test_timestamp_default_null');
+        $tableSchema = $schema->getTableSchema('test_timestamp_default_null');
+
+        $this->assertNotNull($tableSchema);
+
+        $columnSchema = $tableSchema->getColumn('timestamp');
+
+        $this->assertNotNull($columnSchema);
+        $this->assertNull($columnSchema->getDefaultValue());
     }
 }
