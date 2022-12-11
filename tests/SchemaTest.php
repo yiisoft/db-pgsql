@@ -46,7 +46,7 @@ final class SchemaTest extends CommonSchemaTest
     {
         $db = $this->getConnection(true);
 
-        if (version_compare($db->getServerVersion(), '9', '>')) {
+        if (version_compare($db->getServerVersion(), '10', '>')) {
             $columns['ts_default']['defaultValue'] = new Expression('CURRENT_TIMESTAMP');
         }
 
