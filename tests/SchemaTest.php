@@ -53,6 +53,26 @@ final class SchemaTest extends CommonSchemaTest
         $this->columnSchema($columns);
     }
 
+    public function testColumnSchemaTypeMapNoExist(): void
+    {
+        $db = $this->getConnection();
+
+        $command = $db->createCommand();
+        $schema = $db->getSchema();
+
+        if ($schema->getTableSchema('type_range') !== null) {
+            $command->dropTable('type_range')->execute();
+        }
+
+        $command->createTable('type_range', ['id' => 'int', 'during tsrange'])->execute();
+
+        $table = $schema->getTableSchema('type_range', true);
+
+        $this->assertNotNull($table);
+        $this->assertNotNull($table->getColumn('during'));
+        $this->assertSame('string', $table->getColumn('during')->getType());
+    }
+
     public function testGeneratedValues(): void
     {
         $this->fixture = 'pgsql12.sql';
