@@ -4,8 +4,11 @@ declare(strict_types=1);
 
 namespace Yiisoft\Db\Pgsql\Tests;
 
+use Throwable;
 use Yiisoft\Db\Command\CommandInterface;
 use Yiisoft\Db\Connection\ConnectionInterface;
+use Yiisoft\Db\Exception\Exception;
+use Yiisoft\Db\Exception\InvalidConfigException;
 use Yiisoft\Db\Exception\NotSupportedException;
 use Yiisoft\Db\Expression\Expression;
 use Yiisoft\Db\Pgsql\Schema;
@@ -16,11 +19,17 @@ use Yiisoft\Db\Tests\Support\DbHelper;
 
 /**
  * @group pgsql
+ *
+ * @psalm-suppress PropertyNotSetInConstructor
  */
 final class SchemaTest extends CommonSchemaTest
 {
     use TestTrait;
 
+    /**
+     * @throws Exception
+     * @throws InvalidConfigException
+     */
     public function testBooleanDefaultValues(): void
     {
         $db = $this->getConnection(true);
@@ -41,10 +50,12 @@ final class SchemaTest extends CommonSchemaTest
 
     /**
      * @dataProvider \Yiisoft\Db\Pgsql\Tests\Provider\SchemaProvider::columns()
+     *
+     * @throws Exception
      */
     public function testColumnSchema(array $columns): void
     {
-        $db = $this->getConnection(true);
+        $db = $this->getConnection();
 
         if (version_compare($db->getServerVersion(), '10', '>')) {
             $columns['ts_default']['defaultValue'] = new Expression('CURRENT_TIMESTAMP');
@@ -53,6 +64,11 @@ final class SchemaTest extends CommonSchemaTest
         $this->columnSchema($columns);
     }
 
+    /**
+     * @throws Exception
+     * @throws InvalidConfigException
+     * @throws Throwable
+     */
     public function testColumnSchemaTypeMapNoExist(): void
     {
         $db = $this->getConnection();
@@ -73,12 +89,16 @@ final class SchemaTest extends CommonSchemaTest
         $this->assertSame('string', $table->getColumn('during')->getType());
     }
 
+    /**
+     * @throws Exception
+     * @throws InvalidConfigException
+     */
     public function testGeneratedValues(): void
     {
         $this->fixture = 'pgsql12.sql';
 
         if (version_compare($this->getConnection()->getServerVersion(), '12.0', '<')) {
-            $this->markTestSkipped('PostgreSQL < 12.0 does not support GENERATED AS IDENTITY columns.');
+            $this->markTestSkipped('PostgresSQL < 12.0 does not support GENERATED AS IDENTITY columns.');
         }
 
         $db = $this->getConnection(true);
@@ -93,6 +113,10 @@ final class SchemaTest extends CommonSchemaTest
         $this->assertTrue($table->getColumn('id_default')?->isAutoIncrement());
     }
 
+    /**
+     * @throws Exception
+     * @throws InvalidConfigException
+     */
     public function testGetDefaultSchema(): void
     {
         $db = $this->getConnection();
@@ -102,6 +126,10 @@ final class SchemaTest extends CommonSchemaTest
         $this->assertSame('public', $schema->getDefaultSchema());
     }
 
+    /**
+     * @throws Exception
+     * @throws InvalidConfigException
+     */
     public function testGetSchemaDefaultValues(): void
     {
         $db = $this->getConnection();
@@ -114,6 +142,11 @@ final class SchemaTest extends CommonSchemaTest
         $db->getSchema()->getSchemaDefaultValues();
     }
 
+    /**
+     * @throws Exception
+     * @throws InvalidConfigException
+     * @throws NotSupportedException
+     */
     public function testGetSchemaNames(): void
     {
         $db = $this->getConnection(true);
@@ -141,7 +174,12 @@ final class SchemaTest extends CommonSchemaTest
         parent::testGetStringFieldsSize($columnName, $columnType, $columnSize, $columnDbType);
     }
 
-    public function testGetTableSchemasNotSchemaDeafult(): void
+    /**
+     * @throws Exception
+     * @throws InvalidConfigException
+     * @throws NotSupportedException
+     */
+    public function testGetTableSchemasNotSchemaDefault(): void
     {
         $db = $this->getConnection(true);
 
@@ -157,6 +195,9 @@ final class SchemaTest extends CommonSchemaTest
 
     /**
      * @link https://github.com/yiisoft/yii2/issues/12483
+     *
+     * @throws Exception
+     * @throws Throwable
      */
     public function testParenthesisDefaultValue(): void
     {
@@ -190,12 +231,16 @@ final class SchemaTest extends CommonSchemaTest
         $this->assertEquals(0, $column->getDefaultValue());
     }
 
+    /**
+     * @throws Exception
+     * @throws InvalidConfigException
+     */
     public function testPartitionedTable(): void
     {
         $this->fixture = 'pgsql10.sql';
 
         if (version_compare($this->getConnection()->getServerVersion(), '10.0', '<')) {
-            $this->markTestSkipped('PostgreSQL < 10.0 does not support PARTITION BY clause.');
+            $this->markTestSkipped('PostgresSQL < 10.0 does not support PARTITION BY clause.');
         }
 
         $db = $this->getConnection(true);
@@ -205,6 +250,11 @@ final class SchemaTest extends CommonSchemaTest
         $this->assertNotNull($schema->getTableSchema('partitioned'));
     }
 
+    /**
+     * @throws Exception
+     * @throws InvalidConfigException
+     * @throws Throwable
+     */
     public function testSequenceName(): void
     {
         $db = $this->getConnection(true);
@@ -241,6 +291,8 @@ final class SchemaTest extends CommonSchemaTest
 
     /**
      * @dataProvider \Yiisoft\Db\Pgsql\Tests\Provider\SchemaProvider::tableSchemaCacheWithTablePrefixes()
+     *
+     * @throws Exception
      */
     public function testTableSchemaCacheWithTablePrefixes(
         string $tablePrefix,
@@ -265,7 +317,7 @@ final class SchemaTest extends CommonSchemaTest
 
         $db->setTablePrefix($tablePrefix);
         $schema->refreshTableSchema($tableName);
-        $refreshedTable = $schema->getTableSchema($tableName, false);
+        $refreshedTable = $schema->getTableSchema($tableName);
 
         $this->assertInstanceOf(TableSchemaInterface::class, $refreshedTable);
         $this->assertNotSame($noCacheTable, $refreshedTable);
@@ -273,7 +325,7 @@ final class SchemaTest extends CommonSchemaTest
         /* Compare */
         $db->setTablePrefix($testTablePrefix);
         $schema->refreshTableSchema($testTablePrefix);
-        $testRefreshedTable = $schema->getTableSchema($testTableName, false);
+        $testRefreshedTable = $schema->getTableSchema($testTableName);
 
         $this->assertInstanceOf(TableSchemaInterface::class, $testRefreshedTable);
         $this->assertSame($refreshedTable, $testRefreshedTable);
@@ -314,6 +366,8 @@ final class SchemaTest extends CommonSchemaTest
 
     /**
      * @dataProvider \Yiisoft\Db\Pgsql\Tests\Provider\SchemaProvider::tableSchemaWithDbSchemes()
+     *
+     * @throws Exception
      */
     public function testTableSchemaWithDbSchemes(
         string $tableName,
@@ -324,26 +378,32 @@ final class SchemaTest extends CommonSchemaTest
 
         $commandMock = $this->createMock(CommandInterface::class);
         $commandMock->method('queryAll')->willReturn([]);
-
         $mockDb = $this->createMock(ConnectionInterface::class);
         $mockDb->method('getQuoter')->willReturn($db->getQuoter());
-
         $mockDb
             ->expects(self::atLeastOnce())
             ->method('createCommand')
-            ->with(self::callback(fn ($sql) => true), self::callback(function ($params) use ($expectedTableName, $expectedSchemaName) {
-                $this->assertSame($expectedTableName, $params[':tableName']);
-                $this->assertSame($expectedSchemaName, $params[':schemaName']);
-                return true;
-            }))
-            ->willReturn($commandMock);
+            ->with(
+                self::callback(static fn ($sql) => true),
+                self::callback(
+                    function ($params) use ($expectedTableName, $expectedSchemaName) {
+                        $this->assertSame($expectedTableName, $params[':tableName']);
+                        $this->assertSame($expectedSchemaName, $params[':schemaName']);
 
+                        return true;
+                    }
+                )
+            )
+            ->willReturn($commandMock);
         $schema = new Schema($mockDb, DbHelper::getSchemaCache());
         $schema->getTableSchema($tableName);
     }
 
     /**
      * @link https://github.com/yiisoft/yii2/issues/14192
+     *
+     * @throws Exception
+     * @throws Throwable
      */
     public function testTimestampNullDefaultValue(): void
     {
