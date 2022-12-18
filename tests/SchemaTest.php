@@ -11,6 +11,7 @@ use Yiisoft\Db\Exception\Exception;
 use Yiisoft\Db\Exception\InvalidConfigException;
 use Yiisoft\Db\Exception\NotSupportedException;
 use Yiisoft\Db\Expression\Expression;
+use Yiisoft\Db\Pgsql\QueryBuilder;
 use Yiisoft\Db\Pgsql\Schema;
 use Yiisoft\Db\Pgsql\Tests\Support\TestTrait;
 use Yiisoft\Db\Schema\TableSchemaInterface;
@@ -429,5 +430,46 @@ final class SchemaTest extends CommonSchemaTest
 
         $this->assertNotNull($columnSchema);
         $this->assertNull($columnSchema->getDefaultValue());
+    }
+
+    public function testWorkWithDefaultValueConstraint(): void
+    {
+        $this->expectException(NotSupportedException::class);
+        $this->expectExceptionMessage(
+            'Yiisoft\Db\Pgsql\DDLQueryBuilder::addDefaultValue is not supported by PostgreSQL.'
+        );
+
+        parent::testWorkWithDefaultValueConstraint();
+    }
+
+    public function withIndexDataProvider(): array
+    {
+        return array_merge(parent::withIndexDataProvider(), [
+            [
+                'indexType' => null,
+                'indexMethod' => QueryBuilder::INDEX_B_TREE,
+                'columnType' => 'varchar(16)',
+            ],
+            [
+                'indexType' => null,
+                'indexMethod' => QueryBuilder::INDEX_HASH,
+                'columnType' => 'varchar(16)',
+            ],
+            [
+                'indexType' => null,
+                'indexMethod' => QueryBuilder::INDEX_BRIN,
+                'columnType' => 'varchar(16)',
+            ],
+            [
+                'indexType' => null,
+                'indexMethod' => QueryBuilder::INDEX_GIN,
+                'columnType' => 'jsonb',
+            ],
+            [
+                'indexType' => null,
+                'indexMethod' => QueryBuilder::INDEX_GIST,
+                'columnType' => 'tsvector',
+            ],
+        ]);
     }
 }
