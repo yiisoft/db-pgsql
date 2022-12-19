@@ -269,6 +269,9 @@ final class CommandTest extends CommonCommandTest
 
     /**
      * @dataProvider \Yiisoft\Db\Pgsql\Tests\Provider\CommandProvider::update()
+     *
+     * @throws Exception
+     * @throws Throwable
      */
     public function testUpdate(
         string $table,
@@ -282,6 +285,9 @@ final class CommandTest extends CommonCommandTest
 
     /**
      * @dataProvider \Yiisoft\Db\Pgsql\Tests\Provider\CommandProvider::upsert()
+     *
+     * @throws Exception
+     * @throws Throwable
      */
     public function testUpsert(array $firstData, array $secondData): void
     {

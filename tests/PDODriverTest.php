@@ -6,6 +6,8 @@ namespace Yiisoft\Db\Pgsql\Tests;
 
 use PDO;
 use PHPUnit\Framework\TestCase;
+use Yiisoft\Db\Exception\Exception;
+use Yiisoft\Db\Exception\InvalidConfigException;
 use Yiisoft\Db\Pgsql\PDODriver;
 use Yiisoft\Db\Pgsql\Tests\Support\TestTrait;
 
@@ -18,6 +20,10 @@ final class PDODriverTest extends TestCase
 {
     use TestTrait;
 
+    /**
+     * @throws Exception
+     * @throws InvalidConfigException
+     */
     public function testConnectionCharset(): void
     {
         $db = $this->getConnection();

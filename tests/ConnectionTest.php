@@ -5,18 +5,28 @@ declare(strict_types=1);
 namespace Yiisoft\Db\Pgsql\Tests;
 
 use PDO;
+use Throwable;
 use Yiisoft\Db\Connection\ConnectionInterface;
+use Yiisoft\Db\Exception\Exception;
+use Yiisoft\Db\Exception\InvalidConfigException;
+use Yiisoft\Db\Exception\NotSupportedException;
 use Yiisoft\Db\Pgsql\Tests\Support\TestTrait;
 use Yiisoft\Db\Tests\Common\CommonConnectionTest;
 use Yiisoft\Db\Transaction\TransactionInterface;
 
 /**
  * @group pgsql
+ *
+ * @psalm-suppress PropertyNotSetInConstructor
  */
 final class ConnectionTest extends CommonConnectionTest
 {
     use TestTrait;
 
+    /**
+     * @throws Exception
+     * @throws InvalidConfigException
+     */
     public function testInitConnection(): void
     {
         $db = $this->getConnection();
@@ -29,6 +39,10 @@ final class ConnectionTest extends CommonConnectionTest
         $db->close();
     }
 
+    /**
+     * @throws Exception
+     * @throws InvalidConfigException
+     */
     public function testSettingDefaultAttributes(): void
     {
         $db = $this->getConnection();
@@ -39,17 +53,23 @@ final class ConnectionTest extends CommonConnectionTest
         $db->setEmulatePrepare(true);
         $db->open();
 
-        $this->assertSame('1', $db->getActivePDO()->getAttribute(PDO::ATTR_EMULATE_PREPARES));
+        $this->assertEquals(true, $db->getActivePDO()->getAttribute(PDO::ATTR_EMULATE_PREPARES));
 
         $db->close();
         $db->setEmulatePrepare(false);
         $db->open();
 
-        $this->assertSame(0, $db->getActivePDO()->getAttribute(PDO::ATTR_EMULATE_PREPARES));
+        $this->assertEquals(false, $db->getActivePDO()->getAttribute(PDO::ATTR_EMULATE_PREPARES));
 
         $db->close();
     }
 
+    /**
+     * @throws Exception
+     * @throws InvalidConfigException
+     * @throws NotSupportedException
+     * @throws Throwable
+     */
     public function testTransactionIsolation(): void
     {
         $db = $this->getConnection();
@@ -80,6 +100,11 @@ final class ConnectionTest extends CommonConnectionTest
         $db->close();
     }
 
+    /**
+     * @throws Exception
+     * @throws InvalidConfigException
+     * @throws Throwable
+     */
     public function testTransactionShortcutCustom(): void
     {
         $db = $this->getConnection(true);

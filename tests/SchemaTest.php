@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Yiisoft\Db\Pgsql\Tests;
 
+use JsonException;
 use Throwable;
 use Yiisoft\Db\Command\CommandInterface;
 use Yiisoft\Db\Connection\ConnectionInterface;
@@ -91,7 +92,7 @@ final class SchemaTest extends CommonSchemaTest
 
         $this->assertNotNull($table);
         $this->assertNotNull($table->getColumn('during'));
-        $this->assertSame('string', $table->getColumn('during')->getType());
+        $this->assertSame('string', $table->getColumn('during')?->getType());
 
         $db->close();
     }
@@ -359,6 +360,7 @@ final class SchemaTest extends CommonSchemaTest
      * @dataProvider \Yiisoft\Db\Pgsql\Tests\Provider\SchemaProvider::constraints()
      *
      * @throws Exception
+     * @throws JsonException
      */
     public function testTableSchemaConstraints(string $tableName, string $type, mixed $expected): void
     {
@@ -370,6 +372,7 @@ final class SchemaTest extends CommonSchemaTest
      *
      * @throws Exception
      * @throws InvalidConfigException
+     * @throws JsonException
      * @throws NotSupportedException
      */
     public function testTableSchemaConstraintsWithPdoLowercase(string $tableName, string $type, mixed $expected): void
@@ -381,6 +384,7 @@ final class SchemaTest extends CommonSchemaTest
      * @dataProvider \Yiisoft\Db\Pgsql\Tests\Provider\SchemaProvider::constraints()
      *
      * @throws Exception
+     * @throws JsonException
      */
     public function testTableSchemaConstraintsWithPdoUppercase(string $tableName, string $type, mixed $expected): void
     {

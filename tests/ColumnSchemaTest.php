@@ -4,7 +4,11 @@ declare(strict_types=1);
 
 namespace Yiisoft\Db\Pgsql\Tests;
 
+use JsonException;
 use PHPUnit\Framework\TestCase;
+use Throwable;
+use Yiisoft\Db\Exception\Exception;
+use Yiisoft\Db\Exception\InvalidConfigException;
 use Yiisoft\Db\Expression\ArrayExpression;
 use Yiisoft\Db\Expression\JsonExpression;
 use Yiisoft\Db\Pgsql\ColumnSchema;
@@ -20,6 +24,11 @@ final class ColumnSchemaTest extends TestCase
 {
     use TestTrait;
 
+    /**
+     * @throws Exception
+     * @throws InvalidConfigException
+     * @throws Throwable
+     */
     public function testPhpTypeCast(): void
     {
         $db = $this->getConnection(true);
@@ -63,10 +72,10 @@ final class ColumnSchemaTest extends TestCase
         $this->assertSame(1, $intColPhpTypeCast);
         $this->assertSame(str_repeat('x', 100), $charColPhpTypeCast);
         $this->assertSame(1.234, $floatColPhpTypeCast);
-        $this->assertSame(false, $boolColPhpTypeCast);
+        $this->assertFalse($boolColPhpTypeCast);
         $this->assertSame('33.22', $numericColPhpTypeCast);
         $this->assertSame([1, -2, null, 42], $intArrayColPhpType);
-        $this->assertSame(null, $textArray2ColPhpType);
+        $this->assertNull($textArray2ColPhpType);
         $this->assertSame([['a' => 1, 'b' => null, 'c' => [1, 3, 5]]], $jsonColPhpType);
         $this->assertSame(['1', '2', '3'], $jsonBColPhpType);
         $this->assertSame([[[',', 'null', true, 'false', 'f']]], $jsonArrayColPhpType);
@@ -74,6 +83,9 @@ final class ColumnSchemaTest extends TestCase
         $db->close();
     }
 
+    /**
+     * @throws JsonException
+     */
     public function testPhpTypeCastBool(): void
     {
         $columnSchema = new ColumnSchema();
