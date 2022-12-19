@@ -5,9 +5,7 @@ declare(strict_types=1);
 namespace Yiisoft\Db\Pgsql\Tests;
 
 use PDO;
-use Yiisoft\Cache\CacheKeyNormalizer;
 use Yiisoft\Db\Connection\ConnectionInterface;
-use Yiisoft\Db\Exception\InvalidConfigException;
 use Yiisoft\Db\Pgsql\Tests\Support\TestTrait;
 use Yiisoft\Db\Tests\Common\CommonConnectionTest;
 use Yiisoft\Db\Transaction\TransactionInterface;

@@ -19,7 +19,7 @@ use Yiisoft\Db\Query\Query;
 final class ColumnSchemaTest extends TestCase
 {
     use TestTrait;
-    
+
     public function testPhpTypeCast(): void
     {
         $db = $this->getConnection(true);

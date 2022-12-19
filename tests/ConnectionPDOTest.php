@@ -37,7 +37,7 @@ final class ConnectionPDOTest extends CommonConnectionPDOTest
             [
                 'name' => 'Some {{weird}} name',
                 'email' => 'test@example.com',
-                'address' => 'Some {{%weird}} address'
+                'address' => 'Some {{%weird}} address',
             ]
         )->execute();
 
