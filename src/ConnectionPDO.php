@@ -49,7 +49,7 @@ final class ConnectionPDO extends AbstractConnectionPDO
     public function getLastInsertID(string $sequenceName = null): string
     {
         if ($sequenceName === null) {
-            throw new InvalidArgumentException('PgSQL not support lastInsertId without sequence name');
+            throw new InvalidArgumentException('PostgreSQL not support lastInsertId without sequence name.');
         }
 
         return parent::getLastInsertID($sequenceName);

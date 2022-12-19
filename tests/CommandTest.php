@@ -41,6 +41,8 @@ final class CommandTest extends CommonCommandTest
         );
 
         $command->addDefaultValue('{{name}}', '{{table}}', 'column', 'value');
+
+        $db->close();
     }
 
     /**
@@ -93,6 +95,8 @@ final class CommandTest extends CommonCommandTest
         );
 
         $this->assertSame(1, $command->queryScalar());
+
+        $db->close();
     }
 
     /**
@@ -124,6 +128,8 @@ final class CommandTest extends CommonCommandTest
         );
 
         $this->assertSame(1, $command->queryScalar());
+
+        $db->close();
     }
 
     /**
@@ -148,6 +154,8 @@ final class CommandTest extends CommonCommandTest
         $command->setSql($chekSql);
 
         $this->assertSame(1, $command->queryScalar());
+
+        $db->close();
     }
 
     /**
@@ -166,6 +174,8 @@ final class CommandTest extends CommonCommandTest
         );
 
         $command->dropDefaultValue('{{name}}', '{{table}}');
+
+        $db->close();
     }
 
     /**
@@ -209,6 +219,8 @@ final class CommandTest extends CommonCommandTest
 
         $this->assertSame(1, $found);
         $this->assertSame(1, $command->delete('{{array_and_json_types}}')->execute());
+
+        $db->close();
     }
 
     /**
@@ -251,6 +263,8 @@ final class CommandTest extends CommonCommandTest
         $command->update('{{type}}', ['blob_col' => serialize($db)], ['char_col' => 'serialize']);
 
         $this->assertSame(1, $command->execute());
+
+        $db->close();
     }
 
     /**

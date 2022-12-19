@@ -46,6 +46,8 @@ final class QueryBuilderTest extends CommonQueryBuilderTest
         );
 
         $qb->addDefaultValue('CN_pk', 'T_constraints_1', 'C_default', 1);
+
+        $db->close();
     }
 
     /**
@@ -162,6 +164,8 @@ final class QueryBuilderTest extends CommonQueryBuilderTest
             SQL,
             $qb->alterColumn('foo1', 'bar', $this->string(30)->unique()),
         );
+
+        $this->db->close();
     }
 
     /**
@@ -259,6 +263,8 @@ final class QueryBuilderTest extends CommonQueryBuilderTest
             SQL . ' ',
             $qb->checkIntegrity('public', 'item'),
         );
+
+        $db->close();
     }
 
     /**
@@ -319,6 +325,8 @@ final class QueryBuilderTest extends CommonQueryBuilderTest
                 ],
             ),
         );
+
+        $db->close();
     }
 
     /**
@@ -345,6 +353,8 @@ final class QueryBuilderTest extends CommonQueryBuilderTest
             SQL,
             $qb->dropCommentFromColumn('customer', 'id'),
         );
+
+        $db->close();
     }
 
     /**
@@ -416,6 +426,8 @@ final class QueryBuilderTest extends CommonQueryBuilderTest
             SQL,
             $qb->dropIndex('index', '{{%schema.table}}'),
         );
+
+        $db->close();
     }
 
     /**
@@ -460,6 +472,8 @@ final class QueryBuilderTest extends CommonQueryBuilderTest
             SQL,
             $qb->renameTable('alpha', 'alpha-test'),
         );
+
+        $db->close();
     }
 
     /**
@@ -493,6 +507,8 @@ final class QueryBuilderTest extends CommonQueryBuilderTest
             SQL,
             $qb->resetSequence('item', '1'),
         );
+
+        $db->close();
     }
 
     /**
@@ -532,6 +548,8 @@ final class QueryBuilderTest extends CommonQueryBuilderTest
             SQL,
             $qb->resetSequence('item', '1'),
         );
+
+        $db->close();
     }
 
     /**
@@ -560,6 +578,8 @@ final class QueryBuilderTest extends CommonQueryBuilderTest
             SQL,
             $sql,
         );
+
+        $db->close();
     }
 
     /**

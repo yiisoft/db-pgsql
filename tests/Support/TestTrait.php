@@ -13,7 +13,8 @@ use Yiisoft\Db\Tests\Support\DbHelper;
 
 trait TestTrait
 {
-    protected string $fixture = 'pgsql.sql';
+    private string $dsn = 'pgsql:host=127.0.0.1;dbname=yiitest;port=5432';
+    private string $fixture = 'pgsql.sql';
 
     /**
      * @throws InvalidConfigException
@@ -21,11 +22,10 @@ trait TestTrait
      */
     protected function getConnection(bool $fixture = false): ConnectionPDOInterface
     {
-        $db = new ConnectionPDO(
-            new PDODriver('pgsql:host=127.0.0.1;dbname=yiitest;port=5432', 'root', 'root'),
-            DbHelper::getQueryCache(),
-            DbHelper::getSchemaCache(),
-        );
+        $pdoDriver = new PDODriver($this->dsn, 'root', 'root');
+        $pdoDriver->setCharset('utf8');
+
+        $db = new ConnectionPDO($pdoDriver, DbHelper::getQueryCache(), DbHelper::getSchemaCache());
 
         if ($fixture) {
             DbHelper::loadFixture($db, __DIR__ . "/Fixture/$this->fixture");
@@ -37,6 +37,11 @@ trait TestTrait
     protected function getDriverName(): string
     {
         return 'pgsql';
+    }
+
+    protected function setDsn(string $dsn): void
+    {
+        $this->dsn = $dsn;
     }
 
     protected function setFixture(string $fixture): void

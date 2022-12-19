@@ -47,6 +47,8 @@ final class SchemaTest extends CommonSchemaTest
         $this->assertNotNull($columnFalse);
         $this->assertTrue($columnTrue->getDefaultValue());
         $this->assertFalse($columnFalse->getDefaultValue());
+
+        $db->close();
     }
 
     /**
@@ -63,6 +65,8 @@ final class SchemaTest extends CommonSchemaTest
         }
 
         $this->columnSchema($columns);
+
+        $db->close();
     }
 
     /**
@@ -88,6 +92,8 @@ final class SchemaTest extends CommonSchemaTest
         $this->assertNotNull($table);
         $this->assertNotNull($table->getColumn('during'));
         $this->assertSame('string', $table->getColumn('during')->getType());
+
+        $db->close();
     }
 
     /**
@@ -112,6 +118,8 @@ final class SchemaTest extends CommonSchemaTest
         $this->assertTrue($table->getColumn('id_primary')?->isAutoIncrement());
         $this->assertTrue($table->getColumn('id_primary')?->isAutoIncrement());
         $this->assertTrue($table->getColumn('id_default')?->isAutoIncrement());
+
+        $db->close();
     }
 
     /**
@@ -125,6 +133,8 @@ final class SchemaTest extends CommonSchemaTest
         $schema = $db->getSchema();
 
         $this->assertSame('public', $schema->getDefaultSchema());
+
+        $db->close();
     }
 
     /**
@@ -161,6 +171,8 @@ final class SchemaTest extends CommonSchemaTest
         foreach ($expectedSchemas as $schema) {
             $this->assertContains($schema, $schemas);
         }
+
+        $db->close();
     }
 
     /**
@@ -192,6 +204,8 @@ final class SchemaTest extends CommonSchemaTest
         foreach ($tables as $table) {
             $this->assertInstanceOf(TableSchemaInterface::class, $table);
         }
+
+        $db->close();
     }
 
     /**
@@ -230,6 +244,8 @@ final class SchemaTest extends CommonSchemaTest
         $this->assertFalse($column->isAllowNull());
         $this->assertEquals('numeric', $column->getDbType());
         $this->assertEquals(0, $column->getDefaultValue());
+
+        $db->close();
     }
 
     /**
@@ -249,6 +265,8 @@ final class SchemaTest extends CommonSchemaTest
         $schema = $db->getSchema();
 
         $this->assertNotNull($schema->getTableSchema('partitioned'));
+
+        $db->close();
     }
 
     /**
@@ -288,6 +306,8 @@ final class SchemaTest extends CommonSchemaTest
 
         $this->assertNotNull($tableSchema);
         $this->assertEquals($sequenceName, $tableSchema->getSequenceName());
+
+        $db->close();
     }
 
     /**
@@ -331,6 +351,8 @@ final class SchemaTest extends CommonSchemaTest
         $this->assertInstanceOf(TableSchemaInterface::class, $testRefreshedTable);
         $this->assertSame($refreshedTable, $testRefreshedTable);
         $this->assertNotSame($testNoCacheTable, $testRefreshedTable);
+
+        $db->close();
     }
 
     /**
@@ -398,6 +420,8 @@ final class SchemaTest extends CommonSchemaTest
             ->willReturn($commandMock);
         $schema = new Schema($mockDb, DbHelper::getSchemaCache());
         $schema->getTableSchema($tableName);
+
+        $db->close();
     }
 
     /**
@@ -430,6 +454,8 @@ final class SchemaTest extends CommonSchemaTest
 
         $this->assertNotNull($columnSchema);
         $this->assertNull($columnSchema->getDefaultValue());
+
+        $db->close();
     }
 
     public function testWorkWithDefaultValueConstraint(): void
