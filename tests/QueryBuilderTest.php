@@ -13,7 +13,6 @@ use Yiisoft\Db\Exception\NotSupportedException;
 use Yiisoft\Db\Expression\ExpressionInterface;
 use Yiisoft\Db\Pgsql\Tests\Support\TestTrait;
 use Yiisoft\Db\Query\QueryInterface;
-use Yiisoft\Db\Schema\SchemaBuilderTrait;
 use Yiisoft\Db\Tests\Common\CommonQueryBuilderTest;
 
 use function version_compare;
@@ -25,7 +24,6 @@ use function version_compare;
  */
 final class QueryBuilderTest extends CommonQueryBuilderTest
 {
-    use SchemaBuilderTrait;
     use TestTrait;
 
     protected ConnectionPDOInterface $db;
