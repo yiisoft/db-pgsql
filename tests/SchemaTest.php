@@ -57,15 +57,17 @@ final class SchemaTest extends CommonSchemaTest
      *
      * @throws Exception
      */
-    public function testColumnSchema(array $columns): void
+    public function testColumnSchema(array $columns, string $tableName): void
     {
         $db = $this->getConnection();
 
         if (version_compare($db->getServerVersion(), '10', '>')) {
-            $columns['ts_default']['defaultValue'] = new Expression('CURRENT_TIMESTAMP');
+            if ($tableName === 'type') {
+                $columns['ts_default']['defaultValue'] = new Expression('CURRENT_TIMESTAMP');
+            }
         }
 
-        $this->columnSchema($columns);
+        $this->columnSchema($columns, $tableName);
 
         $db->close();
     }
