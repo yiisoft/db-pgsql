@@ -475,6 +475,11 @@ final class QueryBuilderProvider extends AbstractQueryBuilderProvider
                     SQL,
                 ],
             ],
+            'no columns to update with unique' => [
+                3 => <<<SQL
+                    INSERT INTO {{%T_upsert}} ("email") VALUES (:qp0) ON CONFLICT DO NOTHING
+                    SQL,
+            ],
         ];
 
         $upsert = parent::upsert();
