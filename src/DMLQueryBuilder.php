@@ -286,7 +286,10 @@ final class DMLQueryBuilder extends AbstractDMLQueryBuilder
         $normalizeColumns = [];
         $rawTableName = $this->schema->getRawTableName($table);
         $columnSchemas = $tableSchema->getColumns();
-        /** @var mixed $value */
+        /**
+         * @var string $name
+         * @var mixed $value
+         */
         foreach ($columns as $name => $value) {
             $parts = $this->quoter->getTableNameParts($name, true);
 
@@ -303,10 +306,12 @@ final class DMLQueryBuilder extends AbstractDMLQueryBuilder
                 /** explicitly setup PDO param type for binary column */
                 $normalizeColumns[$name] = new Param($value, PDO::PARAM_LOB);
             } else {
+                /** @psalm-suppress MixedAssignment */
                 $normalizeColumns[$name] = $value;
             }
         }
 
+        /** @psalm-var mixed[] $normalizeColumns */
         return $normalizeColumns;
     }
 }
