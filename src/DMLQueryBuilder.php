@@ -277,21 +277,36 @@ final class DMLQueryBuilder extends AbstractDMLQueryBuilder
             return $columns;
         }
 
-        if (($tableSchema = $this->schema->getTableSchema($table)) !== null) {
-            $columnSchemas = $tableSchema->getColumns();
-            /** @var mixed $value */
-            foreach ($columns as $name => $value) {
-                if (
-                    isset($columnSchemas[$name]) &&
-                    $columnSchemas[$name]->getType() === Schema::TYPE_BINARY &&
-                    is_string($value)
-                ) {
-                    /** explicitly setup PDO param type for binary column */
-                    $columns[$name] = new Param($value, PDO::PARAM_LOB);
-                }
+        $tableSchema = $this->schema->getTableSchema($table);
+
+        if ($tableSchema === null) {
+            return $columns;
+        }
+
+        $normalizeColumns = [];
+        $rawTableName = $this->schema->getRawTableName($table);
+        $columnSchemas = $tableSchema->getColumns();
+        /** @var mixed $value */
+        foreach ($columns as $name => $value) {
+            $parts = $this->quoter->getTableNameParts($name, true);
+
+            if (count($parts) === 2 && $this->schema->getRawTableName($parts[0]) !== $rawTableName) {
+                continue;
+            }
+
+            $name = $parts[count($parts) - 1];
+            if (
+                isset($columnSchemas[$name]) &&
+                $columnSchemas[$name]->getType() === Schema::TYPE_BINARY &&
+                is_string($value)
+            ) {
+                /** explicitly setup PDO param type for binary column */
+                $normalizeColumns[$name] = new Param($value, PDO::PARAM_LOB);
+            } else {
+                $normalizeColumns[$name] = $value;
             }
         }
 
-        return $columns;
+        return $normalizeColumns;
     }
 }
