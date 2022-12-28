@@ -9,14 +9,14 @@ use Yiisoft\Db\Exception\Exception;
 use Yiisoft\Db\Exception\InvalidConfigException;
 use Yiisoft\Db\Pgsql\Tests\Support\TestTrait;
 use Yiisoft\Db\Query\Query;
-use Yiisoft\Db\Tests\AbstractQueryTest;
+use Yiisoft\Db\Tests\Common\CommonQueryTest;
 
 /**
  * @group pgsql
  *
  * @psalm-suppress PropertyNotSetInConstructor
  */
-final class QueryTest extends AbstractQueryTest
+final class QueryTest extends CommonQueryTest
 {
     use TestTrait;
 
