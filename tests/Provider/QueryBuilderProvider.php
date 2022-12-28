@@ -262,6 +262,10 @@ final class QueryBuilderProvider extends AbstractQueryBuilderProvider
         INSERT INTO "customer" DEFAULT VALUES
         SQL;
 
+        $insert['params-and-expressions'][3] = <<<SQL
+        INSERT INTO {{%type}} ([[related_id]], [[time]]) VALUES (:qp0, now())
+        SQL;
+
         return $insert;
     }
 
@@ -296,7 +300,7 @@ final class QueryBuilderProvider extends AbstractQueryBuilderProvider
                 ['{{%type}}.[[related_id]]' => null, '[[time]]' => new Expression('now()')],
                 [],
                 <<<SQL
-                INSERT INTO {{%type}} ({{%type}}.[[related_id]], [[time]]) VALUES (:qp0, now())
+                INSERT INTO {{%type}} ([[related_id]], [[time]]) VALUES (:qp0, now())
                 SQL,
                 [':qp0' => null],
             ],
@@ -357,128 +361,82 @@ final class QueryBuilderProvider extends AbstractQueryBuilderProvider
 
     public function upsert(): array
     {
+        $db = $this->getConnection();
+
         $concreteData = [
             'regular values' => [
-                3 => [
-                    <<<SQL
-                    WITH "EXCLUDED" ("email", "address", "status", "profile_id") AS (VALUES (CAST(:qp0 AS varchar), CAST(:qp1 AS text), CAST(:qp2 AS int2), CAST(:qp3 AS int4))), "upsert" AS (UPDATE "T_upsert" SET "address"="EXCLUDED"."address", "status"="EXCLUDED"."status", "profile_id"="EXCLUDED"."profile_id" FROM "EXCLUDED" WHERE (("T_upsert"."email"="EXCLUDED"."email")) RETURNING "T_upsert".*) INSERT INTO "T_upsert" ("email", "address", "status", "profile_id") SELECT "email", "address", "status", "profile_id" FROM "EXCLUDED" WHERE NOT EXISTS (SELECT 1 FROM "upsert" WHERE (("upsert"."email"="EXCLUDED"."email")))
-                    SQL,
-                    <<<SQL
-                    INSERT INTO "T_upsert" ("email", "address", "status", "profile_id") VALUES (:qp0, :qp1, :qp2, :qp3) ON CONFLICT ("email") DO UPDATE SET "address"=EXCLUDED."address", "status"=EXCLUDED."status", "profile_id"=EXCLUDED."profile_id"
-                    SQL,
-                ],
-                4 => [[':qp0' => 'test@example.com', ':qp1' => 'bar {{city}}', ':qp2' => 1, ':qp3' => null]],
+                3 => 'INSERT INTO "T_upsert" ("email", "address", "status", "profile_id") ' .
+                    'VALUES (:qp0, :qp1, :qp2, :qp3) ON CONFLICT ("email") ' .
+                    'DO UPDATE SET "address"=EXCLUDED."address", "status"=EXCLUDED."status", "profile_id"=EXCLUDED."profile_id"',
             ],
             'regular values with update part' => [
-                3 => [
-                    <<<SQL
-                    WITH "EXCLUDED" ("email", "address", "status", "profile_id") AS (VALUES (CAST(:qp0 AS varchar), CAST(:qp1 AS text), CAST(:qp2 AS int2), CAST(:qp3 AS int4))), "upsert" AS (UPDATE "T_upsert" SET "address"=:qp4, "status"=:qp5, "orders"=T_upsert.orders + 1 FROM "EXCLUDED" WHERE (("T_upsert"."email"="EXCLUDED"."email")) RETURNING "T_upsert".*) INSERT INTO "T_upsert" ("email", "address", "status", "profile_id") SELECT "email", "address", "status", "profile_id" FROM "EXCLUDED" WHERE NOT EXISTS (SELECT 1 FROM "upsert" WHERE (("upsert"."email"="EXCLUDED"."email")))
-                    SQL,
-                    <<<SQL
-                    INSERT INTO "T_upsert" ("email", "address", "status", "profile_id") VALUES (:qp0, :qp1, :qp2, :qp3) ON CONFLICT ("email") DO UPDATE SET "address"=:qp4, "status"=:qp5, "orders"=T_upsert.orders + 1
-                    SQL,
-                ],
-                4 => [
-                    [
-                        ':qp0' => 'test@example.com',
-                        ':qp1' => 'bar {{city}}',
-                        ':qp2' => 1,
-                        ':qp3' => null,
-                        ':qp4' => 'foo {{city}}',
-                        ':qp5' => 2,
-                    ],
-                ],
+                2 => ['address' => 'foo {{city}}', 'status' => 2, 'orders' => new Expression('"T_upsert"."orders" + 1')],
+                3 => 'INSERT INTO "T_upsert" ("email", "address", "status", "profile_id") ' .
+                    'VALUES (:qp0, :qp1, :qp2, :qp3) ON CONFLICT ("email") ' .
+                    'DO UPDATE SET "address"=:qp4, "status"=:qp5, "orders"="T_upsert"."orders" + 1',
             ],
             'regular values without update part' => [
-                3 => [
-                    <<<SQL
-                    WITH "EXCLUDED" ("email", "address", "status", "profile_id") AS (VALUES (CAST(:qp0 AS varchar), CAST(:qp1 AS text), CAST(:qp2 AS int2), CAST(:qp3 AS int4))) INSERT INTO "T_upsert" ("email", "address", "status", "profile_id") SELECT "email", "address", "status", "profile_id" FROM "EXCLUDED" WHERE NOT EXISTS (SELECT 1 FROM "T_upsert" WHERE (("T_upsert"."email"="EXCLUDED"."email")))
-                    SQL,
-                    <<<SQL
-                    INSERT INTO "T_upsert" ("email", "address", "status", "profile_id") VALUES (:qp0, :qp1, :qp2, :qp3) ON CONFLICT DO NOTHING
-                    SQL,
-                ],
-                4 => [[':qp0' => 'test@example.com', ':qp1' => 'bar {{city}}', ':qp2' => 1, ':qp3' => null]],
+                3 => 'INSERT INTO "T_upsert" ("email", "address", "status", "profile_id") ' .
+                    'VALUES (:qp0, :qp1, :qp2, :qp3) ON CONFLICT DO NOTHING',
             ],
             'query' => [
-                3 => [
-                    <<<SQL
-                    WITH "EXCLUDED" ("email", "status") AS (SELECT "email", 2 AS "status" FROM "customer" WHERE "name"=:qp0 LIMIT 1), "upsert" AS (UPDATE "T_upsert" SET "status"="EXCLUDED"."status" FROM "EXCLUDED" WHERE (("T_upsert"."email"="EXCLUDED"."email")) RETURNING "T_upsert".*) INSERT INTO "T_upsert" ("email", "status") SELECT "email", "status" FROM "EXCLUDED" WHERE NOT EXISTS (SELECT 1 FROM "upsert" WHERE (("upsert"."email"="EXCLUDED"."email")))
-                    SQL,
-                    <<<SQL
-                    INSERT INTO "T_upsert" ("email", "status") SELECT "email", 2 AS "status" FROM "customer" WHERE "name"=:qp0 LIMIT 1 ON CONFLICT ("email") DO UPDATE SET "status"=EXCLUDED."status"
-                    SQL,
-                ],
+                3 => 'INSERT INTO "T_upsert" ("email", "status") SELECT "email", 2 AS "status" FROM "customer" ' .
+                    'WHERE "name"=:qp0 LIMIT 1 ON CONFLICT ("email") DO UPDATE SET "status"=EXCLUDED."status"',
             ],
             'query with update part' => [
-                3 => [
-                    <<<SQL
-                    WITH "EXCLUDED" ("email", "status") AS (SELECT "email", 2 AS "status" FROM "customer" WHERE "name"=:qp0 LIMIT 1), "upsert" AS (UPDATE "T_upsert" SET "address"=:qp1, "status"=:qp2, "orders"=T_upsert.orders + 1 FROM "EXCLUDED" WHERE (("T_upsert"."email"="EXCLUDED"."email")) RETURNING "T_upsert".*) INSERT INTO "T_upsert" ("email", "status") SELECT "email", "status" FROM "EXCLUDED" WHERE NOT EXISTS (SELECT 1 FROM "upsert" WHERE (("upsert"."email"="EXCLUDED"."email")))
-                    SQL,
-                    <<<SQL
-                    INSERT INTO "T_upsert" ("email", "status") SELECT "email", 2 AS "status" FROM "customer" WHERE "name"=:qp0 LIMIT 1 ON CONFLICT ("email") DO UPDATE SET "address"=:qp1, "status"=:qp2, "orders"=T_upsert.orders + 1
-                    SQL,
-                ],
+                2 => ['address' => 'foo {{city}}', 'status' => 2, 'orders' => new Expression('"T_upsert"."orders" + 1')],
+                3 => 'INSERT INTO "T_upsert" ("email", "status") SELECT "email", 2 AS "status" FROM "customer" ' .
+                    'WHERE "name"=:qp0 LIMIT 1 ON CONFLICT ("email") DO UPDATE SET "address"=:qp1, "status"=:qp2, "orders"="T_upsert"."orders" + 1',
             ],
             'query without update part' => [
-                3 => [
-                    <<<SQL
-                    WITH "EXCLUDED" ("email", "status") AS (SELECT "email", 2 AS "status" FROM "customer" WHERE "name"=:qp0 LIMIT 1) INSERT INTO "T_upsert" ("email", "status") SELECT "email", "status" FROM "EXCLUDED" WHERE NOT EXISTS (SELECT 1 FROM "T_upsert" WHERE (("T_upsert"."email"="EXCLUDED"."email")))
-                    SQL,
-                    <<<SQL
-                    INSERT INTO "T_upsert" ("email", "status") SELECT "email", 2 AS "status" FROM "customer" WHERE "name"=:qp0 LIMIT 1 ON CONFLICT DO NOTHING
-                    SQL,
-                ],
+                3 => 'INSERT INTO "T_upsert" ("email", "status") SELECT "email", 2 AS "status" FROM "customer" ' .
+                    'WHERE "name"=:qp0 LIMIT 1 ON CONFLICT DO NOTHING',
             ],
             'values and expressions' => [
-                3 => <<<SQL
-                INSERT INTO {{%T_upsert}} ({{%T_upsert}}.[[email]], [[ts]]) VALUES (:qp0, now())
-                SQL,
+                1 => ['{{%T_upsert}}.[[email]]' => 'dynamic@example.com', '[[ts]]' => new Expression('extract(epoch from now()) * 1000')],
+                3 => 'INSERT INTO {{%T_upsert}} ([[email]], [[ts]]) VALUES (:qp0, extract(epoch from now()) * 1000) ' .
+                    'ON CONFLICT ("email") DO UPDATE SET [[ts]]=EXCLUDED.[[ts]]',
             ],
             'values and expressions with update part' => [
-                3 => <<<SQL
-                INSERT INTO {{%T_upsert}} ({{%T_upsert}}.[[email]], [[ts]]) VALUES (:qp0, now())
-                SQL,
+                1 => ['{{%T_upsert}}.[[email]]' => 'dynamic@example.com', '[[ts]]' => new Expression('extract(epoch from now()) * 1000')],
+                2 => ['[[orders]]' => new Expression('EXCLUDED.orders + 1')],
+                3 => 'INSERT INTO {{%T_upsert}} ([[email]], [[ts]]) VALUES (:qp0, extract(epoch from now()) * 1000) ' .
+                    'ON CONFLICT ("email") DO UPDATE SET [[orders]]=EXCLUDED.orders + 1',
             ],
             'values and expressions without update part' => [
-                3 => <<<SQL
-                INSERT INTO {{%T_upsert}} ({{%T_upsert}}.[[email]], [[ts]]) VALUES (:qp0, now())
-                SQL,
+                1 => ['{{%T_upsert}}.[[email]]' => 'dynamic@example.com', '[[ts]]' => new Expression('extract(epoch from now()) * 1000')],
+                3 => 'INSERT INTO {{%T_upsert}} ([[email]], [[ts]]) VALUES (:qp0, extract(epoch from now()) * 1000) ON CONFLICT DO NOTHING',
             ],
             'query, values and expressions with update part' => [
-                3 => [
-                    <<<SQL
-                    WITH "EXCLUDED" ("email", [[time]]) AS (SELECT :phEmail AS "email", now() AS [[time]]), "upsert" AS (UPDATE {{%T_upsert}} SET "ts"=:qp1, [[orders]]=T_upsert.orders + 1 FROM "EXCLUDED" WHERE (({{%T_upsert}}."email"="EXCLUDED"."email")) RETURNING {{%T_upsert}}.*) INSERT INTO {{%T_upsert}} ("email", [[time]]) SELECT "email", [[time]] FROM "EXCLUDED" WHERE NOT EXISTS (SELECT 1 FROM "upsert" WHERE (("upsert"."email"="EXCLUDED"."email")))
-                    SQL,
-                    <<<SQL
-                    INSERT INTO {{%T_upsert}} ("email", [[time]]) SELECT :phEmail AS "email", now() AS [[time]] ON CONFLICT ("email") DO UPDATE SET "ts"=:qp1, [[orders]]=T_upsert.orders + 1
-                    SQL,
-                ],
+                1 => (new Query($db))
+                    ->select(
+                        [
+                            'email' => new Expression(':phEmail', [':phEmail' => 'dynamic@example.com']),
+                            '[[ts]]' => new Expression('extract(epoch from now()) * 1000'),
+                        ],
+                    ),
+                2 => ['ts' => 0, '[[orders]]' => new Expression('EXCLUDED.orders + 1')],
+                3 => 'INSERT INTO {{%T_upsert}} ("email", [[ts]]) SELECT :phEmail AS "email", extract(epoch from now()) * 1000 AS [[ts]] ' .
+                    'ON CONFLICT ("email") DO UPDATE SET "ts"=:qp1, [[orders]]=EXCLUDED.orders + 1',
             ],
             'query, values and expressions without update part' => [
-                3 => [
-                    <<<SQL
-                    WITH "EXCLUDED" ("email", [[time]]) AS (SELECT :phEmail AS "email", now() AS [[time]]), "upsert" AS (UPDATE {{%T_upsert}} SET "ts"=:qp1, [[orders]]=T_upsert.orders + 1 FROM "EXCLUDED" WHERE (({{%T_upsert}}."email"="EXCLUDED"."email")) RETURNING {{%T_upsert}}.*) INSERT INTO {{%T_upsert}} ("email", [[time]]) SELECT "email", [[time]] FROM "EXCLUDED" WHERE NOT EXISTS (SELECT 1 FROM "upsert" WHERE (("upsert"."email"="EXCLUDED"."email")))
-                    SQL,
-                    <<<SQL
-                    INSERT INTO {{%T_upsert}} ("email", [[time]]) SELECT :phEmail AS "email", now() AS [[time]] ON CONFLICT ("email") DO UPDATE SET "ts"=:qp1, [[orders]]=T_upsert.orders + 1
-                    SQL,
-                ],
+                1 => (new Query($db))
+                    ->select(
+                        [
+                            'email' => new Expression(':phEmail', [':phEmail' => 'dynamic@example.com']),
+                            '[[ts]]' => new Expression('extract(epoch from now()) * 1000'),
+                        ],
+                    ),
+                3 => 'INSERT INTO {{%T_upsert}} ("email", [[ts]]) SELECT :phEmail AS "email", extract(epoch from now()) * 1000 AS [[ts]] ON CONFLICT DO NOTHING',
             ],
             'no columns to update' => [
-                3 => [
-                    <<<SQL
-                    WITH "EXCLUDED" ("a") AS (VALUES (CAST(:qp0 AS int2))) INSERT INTO "T_upsert_1" ("a") SELECT "a" FROM "EXCLUDED" WHERE NOT EXISTS (SELECT 1 FROM "T_upsert_1" WHERE (("T_upsert_1"."a"="EXCLUDED"."a")))
-                    SQL,
-                    <<<SQL
-                    INSERT INTO "T_upsert_1" ("a") VALUES (:qp0) ON CONFLICT DO NOTHING
-                    SQL,
-                ],
+                3 => 'INSERT INTO "T_upsert_1" ("a") VALUES (:qp0) ON CONFLICT DO NOTHING',
             ],
             'no columns to update with unique' => [
-                3 => <<<SQL
-                    INSERT INTO {{%T_upsert}} ("email") VALUES (:qp0) ON CONFLICT DO NOTHING
-                    SQL,
+                3 => 'INSERT INTO {{%T_upsert}} ("email") VALUES (:qp0) ON CONFLICT DO NOTHING',
+            ],
+            'no unique columns in table - simple insert' => [
+                3 => 'INSERT INTO {{%animal}} ("type") VALUES (:qp0)',
             ],
         ];
 
