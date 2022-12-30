@@ -262,10 +262,6 @@ final class QueryBuilderProvider extends AbstractQueryBuilderProvider
         INSERT INTO "customer" DEFAULT VALUES
         SQL;
 
-        $insert['params-and-expressions'][3] = <<<SQL
-        INSERT INTO {{%type}} ([[related_id]], [[time]]) VALUES (:qp0, now())
-        SQL;
-
         return $insert;
     }
 
@@ -300,7 +296,7 @@ final class QueryBuilderProvider extends AbstractQueryBuilderProvider
                 ['{{%type}}.[[related_id]]' => null, '[[time]]' => new Expression('now()')],
                 [],
                 <<<SQL
-                INSERT INTO {{%type}} ([[related_id]], [[time]]) VALUES (:qp0, now())
+                INSERT INTO {{%type}} ("related_id", "time") VALUES (:qp0, now())
                 SQL,
                 [':qp0' => null],
             ],
@@ -394,18 +390,18 @@ final class QueryBuilderProvider extends AbstractQueryBuilderProvider
             ],
             'values and expressions' => [
                 1 => ['{{%T_upsert}}.[[email]]' => 'dynamic@example.com', '[[ts]]' => new Expression('extract(epoch from now()) * 1000')],
-                3 => 'INSERT INTO {{%T_upsert}} ([[email]], [[ts]]) VALUES (:qp0, extract(epoch from now()) * 1000) ' .
-                    'ON CONFLICT ("email") DO UPDATE SET [[ts]]=EXCLUDED.[[ts]]',
+                3 => 'INSERT INTO {{%T_upsert}} ("email", "ts") VALUES (:qp0, extract(epoch from now()) * 1000) ' .
+                    'ON CONFLICT ("email") DO UPDATE SET "ts"=EXCLUDED."ts"',
             ],
             'values and expressions with update part' => [
                 1 => ['{{%T_upsert}}.[[email]]' => 'dynamic@example.com', '[[ts]]' => new Expression('extract(epoch from now()) * 1000')],
                 2 => ['[[orders]]' => new Expression('EXCLUDED.orders + 1')],
-                3 => 'INSERT INTO {{%T_upsert}} ([[email]], [[ts]]) VALUES (:qp0, extract(epoch from now()) * 1000) ' .
-                    'ON CONFLICT ("email") DO UPDATE SET [[orders]]=EXCLUDED.orders + 1',
+                3 => 'INSERT INTO {{%T_upsert}} ("email", "ts") VALUES (:qp0, extract(epoch from now()) * 1000) ' .
+                    'ON CONFLICT ("email") DO UPDATE SET "orders"=EXCLUDED.orders + 1',
             ],
             'values and expressions without update part' => [
                 1 => ['{{%T_upsert}}.[[email]]' => 'dynamic@example.com', '[[ts]]' => new Expression('extract(epoch from now()) * 1000')],
-                3 => 'INSERT INTO {{%T_upsert}} ([[email]], [[ts]]) VALUES (:qp0, extract(epoch from now()) * 1000) ON CONFLICT DO NOTHING',
+                3 => 'INSERT INTO {{%T_upsert}} ("email", "ts") VALUES (:qp0, extract(epoch from now()) * 1000) ON CONFLICT DO NOTHING',
             ],
             'query, values and expressions with update part' => [
                 1 => (new Query($db))
@@ -417,7 +413,7 @@ final class QueryBuilderProvider extends AbstractQueryBuilderProvider
                     ),
                 2 => ['ts' => 0, '[[orders]]' => new Expression('EXCLUDED.orders + 1')],
                 3 => 'INSERT INTO {{%T_upsert}} ("email", [[ts]]) SELECT :phEmail AS "email", extract(epoch from now()) * 1000 AS [[ts]] ' .
-                    'ON CONFLICT ("email") DO UPDATE SET "ts"=:qp1, [[orders]]=EXCLUDED.orders + 1',
+                    'ON CONFLICT ("email") DO UPDATE SET "ts"=:qp1, "orders"=EXCLUDED.orders + 1',
             ],
             'query, values and expressions without update part' => [
                 1 => (new Query($db))

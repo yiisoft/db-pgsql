@@ -17,9 +17,6 @@ final class CommandProvider extends AbstractCommandProvider
     {
         $batchInsert = parent::batchInsert();
 
-        // @todo need fix with using normalizer as in upsert
-        unset($batchInsert['wrongBehavior']);
-
         $batchInsert['batchInsert binds params from jsonExpression'] = [
             '{{%type}}',
             ['json_col', 'int_col', 'float_col', 'char_col', 'bool_col'],
