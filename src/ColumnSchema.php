@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Yiisoft\Db\Pgsql;
 
 use JsonException;
+use PDO;
+use Yiisoft\Db\Command\Param;
 use Yiisoft\Db\Expression\ArrayExpression;
 use Yiisoft\Db\Expression\ExpressionInterface;
 use Yiisoft\Db\Expression\JsonExpression;
@@ -59,6 +61,11 @@ final class ColumnSchema extends AbstractColumnSchema
 
         if (in_array($this->getDbType(), [AbstractSchema::TYPE_JSON, Schema::TYPE_JSONB], true)) {
             return new JsonExpression($value, $this->getDbType());
+        }
+
+        if ($this->getType() === Schema::TYPE_BINARY && is_string($value)) {
+            /** explicitly setup PDO param type for binary column */
+            return new Param($value, PDO::PARAM_LOB);
         }
 
         return $this->typecast($value);
