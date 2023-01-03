@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Yiisoft\Db\Pgsql;
 
 use JsonException;
-use PDO;
 use Yiisoft\Db\Command\Param;
 use Yiisoft\Db\Exception\Exception;
 use Yiisoft\Db\Exception\InvalidArgumentException;
@@ -17,12 +16,9 @@ use Yiisoft\Db\QueryBuilder\QueryBuilderInterface;
 use Yiisoft\Db\Query\Query;
 use Yiisoft\Db\Query\QueryInterface;
 use Yiisoft\Db\Schema\QuoterInterface;
-use Yiisoft\Db\Schema\Schema;
 use Yiisoft\Db\Schema\SchemaInterface;
 
 use function implode;
-use function is_array;
-use function is_string;
 use function reset;
 
 final class DMLQueryBuilder extends AbstractDMLQueryBuilder
