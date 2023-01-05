@@ -445,16 +445,16 @@ final class QueryBuilderTest extends CommonQueryBuilderTest
     }
 
     /**
-     * @dataProvider \Yiisoft\Db\Pgsql\Tests\Provider\QueryBuilderProvider::insertEx()
+     * @dataProvider \Yiisoft\Db\Pgsql\Tests\Provider\QueryBuilderProvider::insertWithReturningPks()
      */
-    public function testInsertEx(
+    public function testInsertWithReturningPks(
         string $table,
         array|QueryInterface $columns,
         array $params,
         string $expectedSQL,
         array $expectedParams
     ): void {
-        parent::testInsertEx($table, $columns, $params, $expectedSQL, $expectedParams);
+        parent::testInsertWithReturningPks($table, $columns, $params, $expectedSQL, $expectedParams);
     }
 
     /**

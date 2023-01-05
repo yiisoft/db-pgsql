@@ -21,7 +21,7 @@ final class CommandPDO extends AbstractCommandPDO
     public function insertWithReturningPks(string $table, array $columns): bool|array
     {
         $params = [];
-        $sql = $this->queryBuilder()->insertEx($table, $columns, $params);
+        $sql = $this->queryBuilder()->insertWithReturningPks($table, $columns, $params);
 
         $this->setSql($sql)->bindValues($params);
         $this->prepare(false);
