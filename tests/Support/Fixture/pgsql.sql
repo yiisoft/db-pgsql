@@ -16,6 +16,7 @@ DROP TABLE IF EXISTS "constraints" CASCADE;
 DROP TABLE IF EXISTS "bool_values" CASCADE;
 DROP TABLE IF EXISTS "animal" CASCADE;
 DROP TABLE IF EXISTS "default_pk" CASCADE;
+DROP TABLE IF EXISTS "notauto_pk" CASCADE;
 DROP TABLE IF EXISTS "document" CASCADE;
 DROP TABLE IF EXISTS "comment" CASCADE;
 DROP TABLE IF EXISTS "dossier";
@@ -180,6 +181,13 @@ CREATE TABLE "animal" (
 CREATE TABLE "default_pk" (
   id integer not null default 5 primary key,
   type varchar(255) not null
+);
+
+CREATE TABLE "notauto_pk" (
+  id_1 INTEGER,
+  id_2 INTEGER,
+  type VARCHAR(255) NOT NULL,
+  PRIMARY KEY (id_1, id_2)
 );
 
 CREATE TABLE "document" (
