@@ -352,6 +352,15 @@ final class QueryBuilderProvider extends AbstractQueryBuilderProvider
                     ':phFoo' => 'foo',
                 ],
             ],
+            [
+                '{{%order_item}}',
+                ['order_id' => 1, 'item_id' => 1, 'quantity' => 1, 'subtotal' => 1.0],
+                [],
+                <<<SQL
+                INSERT INTO {{%order_item}} ("order_id", "item_id", "quantity", "subtotal") VALUES (:qp0, :qp1, :qp2, :qp3) RETURNING "order_id", "item_id"
+                SQL,
+                [':qp0' => 1, ':qp1' => 1, ':qp2' => 1, ':qp3' => '1',],
+            ],
         ];
     }
 
