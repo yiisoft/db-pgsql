@@ -64,5 +64,7 @@ final class ConnectionPDOTest extends CommonConnectionPDOTest
         $this->expectExceptionMessage('PostgreSQL not support lastInsertId without sequence name.');
 
         $db->getLastInsertID();
+
+        $db->close();
     }
 }

@@ -293,6 +293,8 @@ final class QueryBuilderTest extends CommonQueryBuilderTest
         );
 
         $command->execute();
+
+        $db->close();
     }
 
     /**
