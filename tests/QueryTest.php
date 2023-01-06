@@ -39,6 +39,8 @@ final class QueryTest extends CommonQueryTest
             ->column();
 
         $this->assertSame([1 => 'user1 in profile customer 1', 3 => 'user3 in profile customer 3'], $result);
+
+        $db->close();
     }
 
     /**
