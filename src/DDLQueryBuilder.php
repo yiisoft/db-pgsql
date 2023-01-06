@@ -92,11 +92,13 @@ final class DDLQueryBuilder extends AbstractDDLQueryBuilder
     }
 
     /**
-     * @throws Exception|NotSupportedException|Throwable
+     * @throws Exception
+     * @throws NotSupportedException
+     * @throws Throwable
      */
     public function checkIntegrity(string $schema = '', string $table = '', bool $check = true): string
     {
-        /** @var Schema $schemaInstance */
+        /** @psalm-var Schema $schemaInstance */
         $schemaInstance = $this->schema;
         $enable = $check ? 'ENABLE' : 'DISABLE';
         $schema = $schema ?: $schemaInstance->getDefaultSchema();
