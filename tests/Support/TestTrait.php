@@ -25,7 +25,10 @@ trait TestTrait
     {
         $pdoDriver = new PDODriver($this->getDsn(), 'root', 'root');
         $pdoDriver->setCharset('utf8');
-        $db = new ConnectionPDO($pdoDriver, DbHelper::getQueryCache(), DbHelper::getSchemaCache());
+        $db = new ConnectionPDO(
+            $pdoDriver,
+            DbHelper::getSchemaCache()
+        );
 
         if ($fixture) {
             DbHelper::loadFixture($db, __DIR__ . "/Fixture/$this->fixture");
