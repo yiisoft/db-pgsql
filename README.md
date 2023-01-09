@@ -9,7 +9,7 @@
     <br>
 </p>
 
-Yii DataBase PostgreSQL Extension is a [PostgreSQL] database adapter for the [Yii Framework]. Yii is a high-performance PHP framework for developing web applications. The Yii DataBase PostgreSQL package provides a database connection interface and a set of classes for interacting with a [PostgreSQL] database from within a Yii application. It allows you to perform common database operations such as executing queries, building and executing INSERT, UPDATE, and DELETE statements, and working with transactions. It also provides support for PostgreSQL-specific features such as stored procedures and server-side cursors.
+Yii Database PostgreSQL Extension is a [PostgreSQL] database adapter for the [Yii Framework]. Yii is a high-performance PHP framework for developing web applications. The  package provides a database connection interface and a set of classes for interacting with a [PostgreSQL] database from within a Yii application. It allows you to perform common database operations such as executing queries, building and executing INSERT, UPDATE, and DELETE statements, and working with transactions. It also provides support for PostgreSQL-specific features such as stored procedures and server-side cursors.
 
 It is used in [Yii Framework] but can be used separately.
 
@@ -38,9 +38,9 @@ composer require yiisoft/db-pgsql
 
 ### Config with [Yii Framework]
 
-The configuration with [container di](https://github.com/yiisoft/di) of [YiiFramework].
+The configuration with [DI container](https://github.com/yiisoft/di) of [Yii Framework].
 
-Also you can use any container di which implements [PSR-11](https://www.php-fig.org/psr/psr-11/).
+Also you can use any DI container which implements [PSR-11](https://www.php-fig.org/psr/psr-11/).
 
 db.php
 
