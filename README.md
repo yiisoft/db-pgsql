@@ -9,12 +9,12 @@
     <br>
 </p>
 
-This package provides [PostgreSQL] extension for [Yii DataBase] library.
-It is used in [Yii Framework] but is supposed to be usable separately.
+Yii Database PostgreSQL Extension is a [PostgreSQL] database adapter for the [Yii Framework]. Yii is a high-performance PHP framework for developing web applications. The  package provides a database connection interface and a set of classes for interacting with a [PostgreSQL] database from within a Yii application. It allows you to perform common database operations such as executing queries, building and executing INSERT, UPDATE, and DELETE statements, and working with transactions. It also provides support for PostgreSQL-specific features such as stored procedures and server-side cursors.
+
+It is used in [Yii Framework] but can be used separately.
 
 [PostgreSQL]: https://www.postgresql.org/
-[Yii DataBase]: https://github.com/yiisoft/db
-[Yii Framework]: https://github.com/yiisoft/core
+[Yii Framework]: https://www.yiiframework.com
 
 [![Latest Stable Version](https://poser.pugx.org/yiisoft/db-pgsql/v/stable.png)](https://packagist.org/packages/yiisoft/db-pgsql)
 [![Total Downloads](https://poser.pugx.org/yiisoft/db-pgsql/downloads.png)](https://packagist.org/packages/yiisoft/db-pgsql)
@@ -22,15 +22,13 @@ It is used in [Yii Framework] but is supposed to be usable separately.
 [![codecov](https://codecov.io/gh/yiisoft/db-pgsql/branch/master/graph/badge.svg?token=3FGN91IVZA)](https://codecov.io/gh/yiisoft/db-pgsql)
 [![StyleCI](https://github.styleci.io/repos/145220173/shield?branch=master)](https://github.styleci.io/repos/145220173?branch=master)
 
-
-## Support version
+### Support version
 
 |  PHP | Pgsql Version            |  CI-Actions
 |:----:|:------------------------:|:---:|
 |**8.0 - 8.2**| **9.0 - 15.0**|[![build](https://github.com/yiisoft/db-pgsql/actions/workflows/build.yml/badge.svg?branch=dev)](https://github.com/yiisoft/db-pgsql/actions/workflows/build.yml) [![Mutation testing badge](https://img.shields.io/endpoint?style=flat&url=https%3A%2F%2Fbadge-api.stryker-mutator.io%2Fgithub.com%2Fyiisoft%2Fdb-pgsql%2Fmaster)](https://dashboard.stryker-mutator.io/reports/github.com/yiisoft/db-pgsql/master) [![static analysis](https://github.com/yiisoft/db-pgsql/actions/workflows/static.yml/badge.svg?branch=dev)](https://github.com/yiisoft/db-pgsql/actions/workflows/static.yml) [![type-coverage](https://shepherd.dev/github/yiisoft/db-pgsql/coverage.svg)](https://shepherd.dev/github/yiisoft/db-pgsql)
 
-
-## Installation
+### Installation
 
 The package could be installed via composer:
 
@@ -38,40 +36,76 @@ The package could be installed via composer:
 composer require yiisoft/db-pgsql
 ```
 
-## Configuration
+### Config with [Yii Framework]
 
-Using yiisoft/composer-config-plugin automatically get the settings of `Yiisoft\Cache\CacheInterface::class`, `LoggerInterface::class`, and `Profiler::class`.
+The configuration with [DI container](https://github.com/yiisoft/di) of [Yii Framework].
 
-Di-Container:
+Also you can use any DI container which implements [PSR-11](https://www.php-fig.org/psr/psr-11/).
+
+db.php
 
 ```php
+<?php
+
+declare(strict_types=1);
+
 use Yiisoft\Db\Connection\ConnectionInterface;
 use Yiisoft\Db\Pgsql\ConnectionPDO;
+use Yiisoft\Db\Pgsql\PDODriver;
+
+/** @var array $params */
 
 return [
     ConnectionInterface::class => [
         'class' => ConnectionPDO::class,
         '__construct()' => [
-            'dsn' => $params['yiisoft/db-pgsql']['dsn']
-        ],
-        'setUsername()' => [$params['yiisoft/db-pgsql']['username']],
-        'setPassword()' => [$params['yiisoft/db-pgsql']['password']],
+            'driver' => new PDODriver($params['yiisoft/db-pgsql']['dsn']),
+        ]
     ]
 ];
 ```
 
-Params.php
+params.php
 
 ```php
-use Yiisoft\Db\Connection\Dsn;
+<?php
+
+declare(strict_types=1);
+
+use Yiisoft\Db\Pgsql\Dsn;
 
 return [
     'yiisoft/db-pgsql' => [
-        'dsn' => (new Dsn('pgsql', '127.0.0.1', 'yiitest', '5432'))->asString(),
-        'username' => 'root',
-        'password' => 'root',
+        'dsn' => (new Dsn('pgsql', '127.0.0.1', 'yiitest', '5432'))->asString();,
     ]
 ];
+```
+
+### Config without [Yii Framework]
+
+```php
+<?php
+
+declare(strict_types=1);
+
+use Yiisoft\Cache\ArrayCache;
+use Yiisoft\Cache\Cache;
+use Yiisoft\Db\Cache\SchemaCache;
+use Yiisoft\Db\Pgsql\ConnectionPDO;
+use Yiisoft\Db\Pgsql\Dsn;
+use Yiisoft\Db\Pgsql\PDODriver;
+
+// Or any other PSR-16 cache implementation.
+$arrayCache = new ArrayCache();
+
+// Or any other PSR-6 cache implementation.
+$cache = new Cache($arrayCache); 
+$dsn = (new Dsn('pgsql', '127.0.0.1', 'yiitest', '5432'))->asString();
+
+// Or any other PDO driver.
+$pdoDriver = new PDODriver($dsn); 
+$schemaCache = new SchemaCache($cache);
+$db = new ConnectionPDO($pdoDriver, $schemaCache);
 ```
 
 ### Unit testing
@@ -129,7 +163,7 @@ To run the checker, execute the following command:
 [![Facebook](https://img.shields.io/badge/facebook-join-1DA1F2?style=flat&logo=facebook&logoColor=ffffff)](https://www.facebook.com/groups/yiitalk)
 [![Slack](https://img.shields.io/badge/slack-join-1DA1F2?style=flat&logo=slack)](https://yiiframework.com/go/slack)
 
-## License
+### License
 
 The Yii DataBase PostgreSQL Extension is free software. It is released under the terms of the BSD License.
 Please see [`LICENSE`](./LICENSE.md) for more information.
