@@ -9,12 +9,12 @@
     <br>
 </p>
 
-Yii DataBase PostgreSQL Extension is a [PostgreSQL] database adapter for the [YiiFramework]. Yii is a high-performance PHP framework for developing web applications. The Yii DataBase PostgreSQL package provides a database connection interface and a set of classes for interacting with a [PostgreSQL] database from within a Yii application. It allows you to perform common database operations such as executing queries, building and executing INSERT, UPDATE, and DELETE statements, and working with transactions. It also provides support for PostgreSQL-specific features such as stored procedures and server-side cursors.
+Yii DataBase PostgreSQL Extension is a [PostgreSQL] database adapter for the [Yii Framework]. Yii is a high-performance PHP framework for developing web applications. The Yii DataBase PostgreSQL package provides a database connection interface and a set of classes for interacting with a [PostgreSQL] database from within a Yii application. It allows you to perform common database operations such as executing queries, building and executing INSERT, UPDATE, and DELETE statements, and working with transactions. It also provides support for PostgreSQL-specific features such as stored procedures and server-side cursors.
 
-It is used in [YiiFramework] but can be used separately.
+It is used in [Yii Framework] but can be used separately.
 
 [PostgreSQL]: https://www.postgresql.org/
-[YiiFramework]: https://github.com/yiisoft/core
+[Yii Framework]: https://www.yiiframework.com
 
 [![Latest Stable Version](https://poser.pugx.org/yiisoft/db-pgsql/v/stable.png)](https://packagist.org/packages/yiisoft/db-pgsql)
 [![Total Downloads](https://poser.pugx.org/yiisoft/db-pgsql/downloads.png)](https://packagist.org/packages/yiisoft/db-pgsql)
@@ -36,7 +36,7 @@ The package could be installed via composer:
 composer require yiisoft/db-pgsql
 ```
 
-### Config with [YiiFramework]
+### Config with [Yii Framework]
 
 The configuration with [container di](https://github.com/yiisoft/di) of [YiiFramework].
 
@@ -81,7 +81,7 @@ return [
 ];
 ```
 
-### Config without [YiiFramework]
+### Config without [Yii Framework]
 
 ```php
 <?php
