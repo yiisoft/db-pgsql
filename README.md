@@ -74,7 +74,7 @@ params.php
 
 declare(strict_types=1);
 
-use Yiisoft\Db\Sqlite\Dsn;
+use Yiisoft\Db\Pgsql\Dsn;
 
 return [
     'yiisoft/db-pgsql' => [
