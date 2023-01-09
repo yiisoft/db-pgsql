@@ -10,7 +10,7 @@ use Yiisoft\Db\Exception\InvalidArgumentException;
 use Yiisoft\Db\Exception\NotSupportedException;
 use Yiisoft\Db\QueryBuilder\AbstractDDLQueryBuilder;
 use Yiisoft\Db\QueryBuilder\QueryBuilderInterface;
-use Yiisoft\Db\Schema\ColumnSchemaBuilder;
+use Yiisoft\Db\Schema\AbstractColumnSchemaBuilder;
 use Yiisoft\Db\Schema\QuoterInterface;
 use Yiisoft\Db\Schema\SchemaInterface;
 
@@ -40,7 +40,7 @@ final class DDLQueryBuilder extends AbstractDDLQueryBuilder
         throw new NotSupportedException(__METHOD__ . ' is not supported by PostgreSQL.');
     }
 
-    public function alterColumn(string $table, string $column, ColumnSchemaBuilder|string $type): string
+    public function alterColumn(string $table, string $column, AbstractColumnSchemaBuilder|string $type): string
     {
         $columnName = $this->quoter->quoteColumnName($column);
         $tableName = $this->quoter->quoteTableName($table);
