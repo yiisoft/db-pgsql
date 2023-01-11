@@ -10,7 +10,7 @@ use Yiisoft\Db\Command\Param;
 use Yiisoft\Db\Expression\ArrayExpression;
 use Yiisoft\Db\Expression\ExpressionInterface;
 use Yiisoft\Db\Expression\JsonExpression;
-use Yiisoft\Db\Schema\ColumnSchema as AbstractColumnSchema;
+use Yiisoft\Db\Schema\AbstractColumnSchema;
 use Yiisoft\Db\Schema\Schema as AbstractSchema;
 
 use function array_walk_recursive;
