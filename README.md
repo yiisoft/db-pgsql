@@ -59,7 +59,11 @@ return [
     ConnectionInterface::class => [
         'class' => ConnectionPDO::class,
         '__construct()' => [
-            'driver' => new PDODriver($params['yiisoft/db-pgsql']['dsn']),
+            'driver' => new PDODriver(
+                $params['yiisoft/db-pgsql']['dsn'],
+                $params['yiisoft/db-pgsql']['username'],
+                $params['yiisoft/db-pgsql']['password'],
+            ),
         ]
     ]
 ];
@@ -77,6 +81,8 @@ use Yiisoft\Db\Pgsql\Dsn;
 return [
     'yiisoft/db-pgsql' => [
         'dsn' => (new Dsn('pgsql', '127.0.0.1', 'yiitest', '5432'))->asString();,
+        'username' => 'user',
+        'password' => 'password',
     ]
 ];
 ```
@@ -103,7 +109,7 @@ $cache = new Cache($arrayCache);
 $dsn = (new Dsn('pgsql', '127.0.0.1', 'yiitest', '5432'))->asString();
 
 // Or any other PDO driver.
-$pdoDriver = new PDODriver($dsn); 
+$pdoDriver = new PDODriver($dsn, 'user', 'password'); 
 $schemaCache = new SchemaCache($cache);
 $db = new ConnectionPDO($pdoDriver, $schemaCache);
 ```
