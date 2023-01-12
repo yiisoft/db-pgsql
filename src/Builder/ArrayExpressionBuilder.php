@@ -14,9 +14,9 @@ use Yiisoft\Db\Expression\ExpressionBuilderInterface;
 use Yiisoft\Db\Expression\ExpressionInterface;
 use Yiisoft\Db\Expression\JsonExpression;
 use Yiisoft\Db\Pgsql\Schema;
-use Yiisoft\Db\QueryBuilder\QueryBuilderInterface;
 use Yiisoft\Db\Query\QueryInterface;
-use Yiisoft\Db\Schema\Schema as AbstractSchema;
+use Yiisoft\Db\QueryBuilder\QueryBuilderInterface;
+use Yiisoft\Db\Schema\SchemaInterface;
 
 use function implode;
 use function in_array;
@@ -166,7 +166,7 @@ final class ArrayExpressionBuilder implements ExpressionBuilderInterface
             return $value;
         }
 
-        if (in_array($expression->getType(), [AbstractSchema::TYPE_JSON, Schema::TYPE_JSONB], true)) {
+        if (in_array($expression->getType(), [SchemaInterface::TYPE_JSON, Schema::TYPE_JSONB], true)) {
             return new JsonExpression($value);
         }
 

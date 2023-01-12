@@ -6,7 +6,6 @@ namespace Yiisoft\Db\Pgsql;
 
 use Yiisoft\Db\QueryBuilder\AbstractQueryBuilder;
 use Yiisoft\Db\Schema\QuoterInterface;
-use Yiisoft\Db\Schema\Schema;
 use Yiisoft\Db\Schema\SchemaInterface;
 
 /**
@@ -45,28 +44,28 @@ final class QueryBuilder extends AbstractQueryBuilder
      * @psalm-var string[]
      */
     protected array $typeMap = [
-        Schema::TYPE_PK => 'serial NOT NULL PRIMARY KEY',
-        Schema::TYPE_UPK => 'serial NOT NULL PRIMARY KEY',
-        Schema::TYPE_BIGPK => 'bigserial NOT NULL PRIMARY KEY',
-        Schema::TYPE_UBIGPK => 'bigserial NOT NULL PRIMARY KEY',
-        Schema::TYPE_CHAR => 'char(1)',
-        Schema::TYPE_STRING => 'varchar(255)',
-        Schema::TYPE_TEXT => 'text',
-        Schema::TYPE_TINYINT => 'smallint',
-        Schema::TYPE_SMALLINT => 'smallint',
-        Schema::TYPE_INTEGER => 'integer',
-        Schema::TYPE_BIGINT => 'bigint',
-        Schema::TYPE_FLOAT => 'double precision',
-        Schema::TYPE_DOUBLE => 'double precision',
-        Schema::TYPE_DECIMAL => 'numeric(10,0)',
-        Schema::TYPE_DATETIME => 'timestamp(0)',
-        Schema::TYPE_TIMESTAMP => 'timestamp(0)',
-        Schema::TYPE_TIME => 'time(0)',
-        Schema::TYPE_DATE => 'date',
-        Schema::TYPE_BINARY => 'bytea',
-        Schema::TYPE_BOOLEAN => 'boolean',
-        Schema::TYPE_MONEY => 'numeric(19,4)',
-        Schema::TYPE_JSON => 'jsonb',
+        SchemaInterface::TYPE_PK => 'serial NOT NULL PRIMARY KEY',
+        SchemaInterface::TYPE_UPK => 'serial NOT NULL PRIMARY KEY',
+        SchemaInterface::TYPE_BIGPK => 'bigserial NOT NULL PRIMARY KEY',
+        SchemaInterface::TYPE_UBIGPK => 'bigserial NOT NULL PRIMARY KEY',
+        SchemaInterface::TYPE_CHAR => 'char(1)',
+        SchemaInterface::TYPE_STRING => 'varchar(255)',
+        SchemaInterface::TYPE_TEXT => 'text',
+        SchemaInterface::TYPE_TINYINT => 'smallint',
+        SchemaInterface::TYPE_SMALLINT => 'smallint',
+        SchemaInterface::TYPE_INTEGER => 'integer',
+        SchemaInterface::TYPE_BIGINT => 'bigint',
+        SchemaInterface::TYPE_FLOAT => 'double precision',
+        SchemaInterface::TYPE_DOUBLE => 'double precision',
+        SchemaInterface::TYPE_DECIMAL => 'numeric(10,0)',
+        SchemaInterface::TYPE_DATETIME => 'timestamp(0)',
+        SchemaInterface::TYPE_TIMESTAMP => 'timestamp(0)',
+        SchemaInterface::TYPE_TIME => 'time(0)',
+        SchemaInterface::TYPE_DATE => 'date',
+        SchemaInterface::TYPE_BINARY => 'bytea',
+        SchemaInterface::TYPE_BOOLEAN => 'boolean',
+        SchemaInterface::TYPE_MONEY => 'numeric(19,4)',
+        SchemaInterface::TYPE_JSON => 'jsonb',
     ];
     private DDLQueryBuilder $ddlBuilder;
     private DMLQueryBuilder $dmlBuilder;
