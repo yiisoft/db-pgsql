@@ -45,11 +45,15 @@ final class DDLQueryBuilder extends AbstractDDLQueryBuilder
         $columnName = $this->quoter->quoteColumnName($column);
         $tableName = $this->quoter->quoteTableName($table);
 
+        if ($type instanceof ColumnSchemaBuilderInterface) {
+            $type = $type->asString();
+        }
+
         /**
          * {@see https://github.com/yiisoft/yii2/issues/4492}
          * {@see http://www.postgresql.org/docs/9.1/static/sql-altertable.html}
          */
-        if (preg_match('/^(DROP|SET|RESET|USING)\s+/i', $type->asString())) {
+        if (preg_match('/^(DROP|SET|RESET|USING)\s+/i', $type)) {
             return "ALTER TABLE $tableName ALTER COLUMN $columnName $type";
         }
 
