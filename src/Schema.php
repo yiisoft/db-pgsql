@@ -6,7 +6,6 @@ namespace Yiisoft\Db\Pgsql;
 
 use JsonException;
 use Throwable;
-use Yiisoft\Arrays\ArrayHelper;
 use Yiisoft\Db\Constraint\CheckConstraint;
 use Yiisoft\Db\Constraint\Constraint;
 use Yiisoft\Db\Constraint\DefaultValueConstraint;
@@ -16,6 +15,7 @@ use Yiisoft\Db\Exception\Exception;
 use Yiisoft\Db\Exception\InvalidConfigException;
 use Yiisoft\Db\Exception\NotSupportedException;
 use Yiisoft\Db\Expression\Expression;
+use Yiisoft\Db\Helper\ArrayHelper;
 use Yiisoft\Db\Schema\AbstractSchema;
 use Yiisoft\Db\Schema\ColumnSchemaBuilderInterface;
 use Yiisoft\Db\Schema\ColumnSchemaInterface;
@@ -372,7 +372,7 @@ final class Schema extends AbstractSchema
 
         /** @var array[] $indexes */
         $indexes = $this->normalizeRowKeyCase($indexes, true);
-        $indexes = ArrayHelper::index($indexes, null, 'name');
+        $indexes = ArrayHelper::index($indexes, null, ['name']);
         $result = [];
 
         /**
