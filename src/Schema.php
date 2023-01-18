@@ -643,7 +643,7 @@ final class Schema extends AbstractSchema
 
             $column = $row['columnname'];
 
-            if (str_starts_with($column, '"')) {
+            if (str_starts_with($column, '"') && str_ends_with($column, '"')) {
                 /**
                  * postgres will quote names that are not lowercase-only.
                  *
