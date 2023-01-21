@@ -411,3 +411,17 @@ CREATE TABLE "T_upsert_1"
 (
     "a" INT NOT NULL PRIMARY KEY
 );
+
+DROP TYPE IF EXISTS "my_type";
+DROP TYPE IF EXISTS "schema2"."my_type2";
+
+CREATE TYPE "my_type" AS enum('VAL1', 'VAL2', 'VAL3');
+CREATE TYPE "schema2"."my_type2" AS enum('VAL1', 'VAL2', 'VAL3');
+
+CREATE TABLE "schema2"."custom_type_test_table" (
+    "id" SERIAL NOT NULL PRIMARY KEY,
+    "test_type" "my_type"[],
+    "test_type2" "schema2"."my_type2"[]
+);
+INSERT INTO "schema2"."custom_type_test_table" ("test_type", "test_type2")
+ VALUES (array['VAL1']::"my_type"[], array['VAL2']::"schema2"."my_type2"[]);
