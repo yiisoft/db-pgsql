@@ -41,6 +41,7 @@ use function substr;
  *   column_name: string,
  *   data_type: string,
  *   type_type: string|null,
+ *   type_scheme: string|null,
  *   character_maximum_length: int,
  *   column_comment: string|null,
  *   modifier: int,
@@ -832,6 +833,7 @@ final class Schema extends AbstractSchema
      *   column_name: string,
      *   data_type: string,
      *   type_type: string|null,
+     *   type_scheme: string|null,
      *   character_maximum_length: int,
      *   column_comment: string|null,
      *   modifier: int,
@@ -856,7 +858,7 @@ final class Schema extends AbstractSchema
         $column->autoIncrement($info['is_autoinc']);
         $column->comment($info['column_comment']);
 
-        if ($info['type_scheme'] !== null && !in_array($info['type_scheme'], [$this->defaultSchema, 'pg_catalog'], true)
+        if (!in_array($info['type_scheme'], [$this->defaultSchema, 'pg_catalog'], true)
         ) {
             $column->dbType($info['type_scheme'] . '.' . $info['data_type']);
         } else {
