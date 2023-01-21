@@ -76,4 +76,15 @@ final class CommandProvider extends AbstractCommandProvider
 
         return $batchInsert;
     }
+
+    public function rawSql(): array
+    {
+        return array_merge(parent::rawSql(), [
+            [
+                'SELECT * FROM customer WHERE id::integer IN (:in, :out)',
+                [':in' => 1, ':out' => 2],
+                'SELECT * FROM customer WHERE id::integer IN (1, 2)',
+            ],
+        ]);
+    }
 }
