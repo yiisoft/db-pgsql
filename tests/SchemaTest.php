@@ -504,4 +504,13 @@ final class SchemaTest extends CommonSchemaTest
             ],
         ]);
     }
+
+    public function testCustomTypeInNonDefaultSchema()
+    {
+        $db = $this->getConnection(true);
+
+        $schema = $db->getSchema()->getTableSchema('schema2.custom_type_test_table');
+        $this->assertEquals('my_type', $schema->getColumn('test_type')->getDbType());
+        $this->assertEquals('schema2.my_type2', $schema->getColumn('test_type2')->getDbType());
+    }
 }

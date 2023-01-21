@@ -41,6 +41,7 @@ use function substr;
  *   column_name: string,
  *   data_type: string,
  *   type_type: string|null,
+ *   type_scheme: string|null,
  *   character_maximum_length: int,
  *   column_comment: string|null,
  *   modifier: int,
@@ -685,6 +686,7 @@ final class Schema extends AbstractSchema
             a.attname AS column_name,
             COALESCE(td.typname, tb.typname, t.typname) AS data_type,
             COALESCE(td.typtype, tb.typtype, t.typtype) AS type_type,
+            (SELECT nspname FROM pg_namespace WHERE oid = COALESCE(td.typnamespace, tb.typnamespace, t.typnamespace)) AS type_scheme,
             a.attlen AS character_maximum_length,
             pg_catalog.col_description(c.oid, a.attnum) AS column_comment,
             a.atttypmod AS modifier,
@@ -831,6 +833,7 @@ final class Schema extends AbstractSchema
      *   column_name: string,
      *   data_type: string,
      *   type_type: string|null,
+     *   type_scheme: string|null,
      *   character_maximum_length: int,
      *   column_comment: string|null,
      *   modifier: int,
@@ -854,7 +857,14 @@ final class Schema extends AbstractSchema
         $column->allowNull($info['is_nullable']);
         $column->autoIncrement($info['is_autoinc']);
         $column->comment($info['column_comment']);
-        $column->dbType($info['data_type']);
+
+        if (!in_array($info['type_scheme'], [$this->defaultSchema, 'pg_catalog'], true)
+        ) {
+            $column->dbType($info['type_scheme'] . '.' . $info['data_type']);
+        } else {
+            $column->dbType($info['data_type']);
+        }
+
         $column->defaultValue($info['column_default']);
         $column->enumValues(($info['enum_values'] !== null)
             ? explode(',', str_replace(["''"], ["'"], $info['enum_values'])) : null);
