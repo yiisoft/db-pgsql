@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Yiisoft\Db\Pgsql;
 
 use JsonException;
-use Yiisoft\Db\Command\Param;
 use Yiisoft\Db\Exception\Exception;
 use Yiisoft\Db\Exception\InvalidArgumentException;
 use Yiisoft\Db\Exception\InvalidConfigException;
