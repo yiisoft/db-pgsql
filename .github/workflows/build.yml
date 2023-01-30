@@ -26,7 +26,8 @@ jobs:
     name: PHP ${{ matrix.php }}-pgsql-${{ matrix.pgsql }}
 
     env:
-      extensions: pdo, pdo_pgsql
+      COMPOSER_ROOT_VERSION: dev-master
+      EXTENSIONS: pdo, pdo_pgsql
 
     runs-on: ${{ matrix.os }}
 
@@ -68,7 +69,7 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ matrix.php }}
-          extensions: ${{ env.extensions }}
+          extensions: ${{ env.EXTENSIONS }}
           ini-values: date.timezone='UTC'
           coverage: pcov
           tools: composer:v2
@@ -76,13 +77,16 @@ jobs:
       - name: Update composer.
         run: composer self-update
 
+      - name: Set environment variables pull request linux.
+        uses: yiisoft/actions/db/environment-linux@master
+
       - name: Install db.
-        uses: ./.github/actions/subpackage_install
+        uses: yiisoft/actions/db/subpackage-install@master
         with:
-          CURRENT_PACKAGE: db
-          BRANCH_NAME: ${{ env.BRANCH_NAME }}
-          FULL_BRANCH_NAME: ${{ env.FULL_BRANCH_NAME }}
+          BRANCH_NAME: ${{ github.head_ref }}
           COMPOSER_ROOT_VERSION: ${{ env.COMPOSER_ROOT_VERSION }}
+          CURRENT_PACKAGE: db
+          FULL_BRANCH_NAME: ${{ env.FULL_BRANCH_NAME }}
           WORK_PACKAGE_URL: ${{ env.WORK_PACKAGE_URL }}
 
       - name: Install dependencies with composer.
