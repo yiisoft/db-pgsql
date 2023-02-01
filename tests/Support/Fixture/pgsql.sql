@@ -33,6 +33,7 @@ DROP TABLE IF EXISTS "T_constraints_2";
 DROP TABLE IF EXISTS "T_constraints_1";
 DROP TABLE IF EXISTS "T_upsert";
 DROP TABLE IF EXISTS "T_upsert_1";
+DROP TABLE IF EXISTS "table_with_array_col";
 
 DROP SCHEMA IF EXISTS "schema1" CASCADE;
 DROP SCHEMA IF EXISTS "schema2" CASCADE;
@@ -425,3 +426,8 @@ CREATE TABLE "schema2"."custom_type_test_table" (
 );
 INSERT INTO "schema2"."custom_type_test_table" ("test_type", "test_type2")
  VALUES (array['VAL1']::"my_type"[], array['VAL2']::"schema2"."my_type2"[]);
+
+CREATE TABLE "table_with_array_col" (
+    "id" SERIAL NOT NULL PRIMARY KEY,
+    "array_col"  integer ARRAY[4]
+);
