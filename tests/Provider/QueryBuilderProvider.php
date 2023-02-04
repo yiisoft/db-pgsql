@@ -11,6 +11,7 @@ use Yiisoft\Db\Expression\Expression;
 use Yiisoft\Db\Expression\JsonExpression;
 use Yiisoft\Db\Pgsql\Tests\Support\TestTrait;
 use Yiisoft\Db\Query\Query;
+use Yiisoft\Db\Schema\SchemaInterface;
 use Yiisoft\Db\Tests\Provider\AbstractQueryBuilderProvider;
 use Yiisoft\Db\Tests\Support\TraversableObject;
 
@@ -201,7 +202,7 @@ final class QueryBuilderProvider extends AbstractQueryBuilderProvider
                     [':qp0' => '{"a":null,"b":123,"c":[4,5]}', ':qp1' => '[true]'],
                 ],
                 'Items in ArrayExpression of type json should be casted to Json' => [
-                    ['=', 'colname', new ArrayExpression([['a' => null, 'b' => 123, 'c' => [4, 5]], [true]], 'json')],
+                    ['=', 'colname', new ArrayExpression([['a' => null, 'b' => 123, 'c' => [4, 5]], [true]], SchemaInterface::TYPE_JSON)],
                     '"colname" = ARRAY[:qp0, :qp1]::json[]',
                     [':qp0' => '{"a":null,"b":123,"c":[4,5]}', ':qp1' => '[true]'],
                 ],

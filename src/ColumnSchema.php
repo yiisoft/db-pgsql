@@ -59,11 +59,11 @@ final class ColumnSchema extends AbstractColumnSchema
             return new ArrayExpression($value, $this->getDbType(), $this->dimension);
         }
 
-        if (in_array($this->getDbType(), [SchemaInterface::TYPE_JSON, Schema::TYPE_JSONB], true)) {
+        if (in_array($this->getDbType(), [SchemaInterface::TYPE_JSON, SchemaInterface::TYPE_JSONB], true)) {
             return new JsonExpression($value, $this->getDbType());
         }
 
-        if ($this->getType() === Schema::TYPE_BINARY && is_string($value)) {
+        if ($this->getType() === SchemaInterface::TYPE_BINARY && is_string($value)) {
             /** explicitly setup PDO param type for binary column */
             return new Param($value, PDO::PARAM_LOB);
         }
