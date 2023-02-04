@@ -82,8 +82,6 @@ use function substr;
  */
 final class Schema extends AbstractSchema
 {
-    public const TYPE_JSONB = 'jsonb';
-
     /**
      * @var array The mapping from physical column types (keys) to abstract column types (values).
      *

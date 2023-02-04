@@ -14,31 +14,6 @@ use Yiisoft\Db\Schema\SchemaInterface;
 final class QueryBuilder extends AbstractQueryBuilder
 {
     /**
-     * Defines a B-tree index method for {@see createIndex()}.
-     */
-    public const INDEX_B_TREE = 'btree';
-
-    /**
-     * Defines a hash index method for {@see createIndex()}.
-     */
-    public const INDEX_HASH = 'hash';
-
-    /**
-     * Defines a GiST index method for {@see createIndex()}.
-     */
-    public const INDEX_GIST = 'gist';
-
-    /**
-     * Defines a GIN index method for {@see createIndex()}.
-     */
-    public const INDEX_GIN = 'gin';
-
-    /**
-     * Defines a BRIN index method for {@see createIndex()}.
-     */
-    public const INDEX_BRIN = 'brin';
-
-    /**
      * @var array mapping from abstract column types (keys) to physical column types (values).
      *
      * @psalm-var string[]

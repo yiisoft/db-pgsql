@@ -12,9 +12,9 @@ use Yiisoft\Db\Exception\Exception;
 use Yiisoft\Db\Exception\InvalidConfigException;
 use Yiisoft\Db\Exception\NotSupportedException;
 use Yiisoft\Db\Expression\Expression;
-use Yiisoft\Db\Pgsql\QueryBuilder;
 use Yiisoft\Db\Pgsql\Schema;
 use Yiisoft\Db\Pgsql\Tests\Support\TestTrait;
+use Yiisoft\Db\Schema\SchemaInterface;
 use Yiisoft\Db\Schema\TableSchemaInterface;
 use Yiisoft\Db\Tests\Common\CommonSchemaTest;
 use Yiisoft\Db\Tests\Support\DbHelper;
@@ -479,27 +479,27 @@ final class SchemaTest extends CommonSchemaTest
         return array_merge(parent::withIndexDataProvider(), [
             [
                 'indexType' => null,
-                'indexMethod' => QueryBuilder::INDEX_B_TREE,
+                'indexMethod' => SchemaInterface::INDEX_BTREE,
                 'columnType' => 'varchar(16)',
             ],
             [
                 'indexType' => null,
-                'indexMethod' => QueryBuilder::INDEX_HASH,
+                'indexMethod' => SchemaInterface::INDEX_HASH,
                 'columnType' => 'varchar(16)',
             ],
             [
                 'indexType' => null,
-                'indexMethod' => QueryBuilder::INDEX_BRIN,
+                'indexMethod' => SchemaInterface::INDEX_BRIN,
                 'columnType' => 'varchar(16)',
             ],
             [
                 'indexType' => null,
-                'indexMethod' => QueryBuilder::INDEX_GIN,
+                'indexMethod' => SchemaInterface::INDEX_GIN,
                 'columnType' => 'jsonb',
             ],
             [
                 'indexType' => null,
-                'indexMethod' => QueryBuilder::INDEX_GIST,
+                'indexMethod' => SchemaInterface::INDEX_GIST,
                 'columnType' => 'tsvector',
             ],
         ]);
