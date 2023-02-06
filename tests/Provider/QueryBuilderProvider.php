@@ -360,7 +360,7 @@ final class QueryBuilderProvider extends AbstractQueryBuilderProvider
                 <<<SQL
                 INSERT INTO {{%order_item}} ("order_id", "item_id", "quantity", "subtotal") VALUES (:qp0, :qp1, :qp2, :qp3) RETURNING "order_id", "item_id"
                 SQL,
-                [':qp0' => 1, ':qp1' => 1, ':qp2' => 1, ':qp3' => '1',],
+                [':qp0' => 1, ':qp1' => 1, ':qp2' => 1, ':qp3' => 1.0,],
             ],
         ];
     }
