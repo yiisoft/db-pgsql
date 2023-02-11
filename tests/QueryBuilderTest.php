@@ -12,10 +12,11 @@ use Yiisoft\Db\Exception\IntegrityException;
 use Yiisoft\Db\Exception\InvalidConfigException;
 use Yiisoft\Db\Exception\NotSupportedException;
 use Yiisoft\Db\Expression\ExpressionInterface;
+use Yiisoft\Db\Pgsql\ColumnSchemaBuilder;
 use Yiisoft\Db\Pgsql\Tests\Support\TestTrait;
 use Yiisoft\Db\Query\QueryInterface;
+use Yiisoft\Db\Schema\SchemaInterface;
 use Yiisoft\Db\Tests\Common\CommonQueryBuilderTest;
-use Yiisoft\Db\Tests\Support\Stub\MigrationBuilder;
 
 use function version_compare;
 
@@ -59,7 +60,6 @@ final class QueryBuilderTest extends CommonQueryBuilderTest
         $db = $this->getConnection();
 
         $qb = $db->getQueryBuilder();
-        $mb = new MigrationBuilder($db->getSchema());
 
         $this->assertSame(
             <<<SQL
@@ -93,7 +93,11 @@ final class QueryBuilderTest extends CommonQueryBuilderTest
             <<<SQL
             ALTER TABLE "foo1" ALTER COLUMN "bar" TYPE varchar(255)
             SQL,
-            $qb->alterColumn('foo1', 'bar', $mb->string(255)),
+            $qb->alterColumn(
+                'foo1',
+                'bar',
+                (new ColumnSchemaBuilder(SchemaInterface::TYPE_STRING, 255))->asString()
+            ),
         );
 
         $this->assertSame(
@@ -114,56 +118,88 @@ final class QueryBuilderTest extends CommonQueryBuilderTest
             <<<SQL
             ALTER TABLE "foo1" ALTER COLUMN "bar" TYPE varchar(255), ALTER COLUMN "bar" SET NOT NULL
             SQL,
-            $qb->alterColumn('foo1', 'bar', $mb->string(255)->notNull()),
+            $qb->alterColumn(
+                'foo1',
+                'bar',
+                (new ColumnSchemaBuilder(SchemaInterface::TYPE_STRING, 255))->notNull()->asString()
+            ),
         );
 
         $this->assertSame(
             <<<SQL
             ALTER TABLE "foo1" ALTER COLUMN "bar" TYPE varchar(255), ALTER COLUMN "bar" SET DEFAULT NULL, ALTER COLUMN "bar" DROP NOT NULL
             SQL,
-            $qb->alterColumn('foo1', 'bar', $mb->string(255)->null()),
+            $qb->alterColumn(
+                'foo1',
+                'bar',
+                (new ColumnSchemaBuilder(SchemaInterface::TYPE_STRING, 255))->null()->asString()
+            ),
         );
 
         $this->assertSame(
             <<<SQL
             ALTER TABLE "foo1" ALTER COLUMN "bar" TYPE varchar(255), ALTER COLUMN "bar" SET DEFAULT 'xxx', ALTER COLUMN "bar" DROP NOT NULL
             SQL,
-            $qb->alterColumn('foo1', 'bar', $mb->string(255)->null()->defaultValue('xxx')),
+            $qb->alterColumn(
+                'foo1',
+                'bar',
+                (new ColumnSchemaBuilder(SchemaInterface::TYPE_STRING, 255))->null()->defaultValue('xxx')->asString()
+            ),
         );
 
         $this->assertSame(
             <<<SQL
             ALTER TABLE "foo1" ALTER COLUMN "bar" TYPE varchar(255), ADD CONSTRAINT foo1_bar_check CHECK (char_length(bar) > 5)
             SQL,
-            $qb->alterColumn('foo1', 'bar', $mb->string(255)->check('char_length(bar) > 5')),
+            $qb->alterColumn(
+                'foo1',
+                'bar',
+                (new ColumnSchemaBuilder(SchemaInterface::TYPE_STRING, 255))->check('char_length(bar) > 5')->asString()
+            ),
         );
 
         $this->assertSame(
             <<<SQL
             ALTER TABLE "foo1" ALTER COLUMN "bar" TYPE varchar(255), ALTER COLUMN "bar" SET DEFAULT ''
             SQL,
-            $qb->alterColumn('foo1', 'bar', $mb->string(255)->defaultValue('')),
+            $qb->alterColumn(
+                'foo1',
+                'bar',
+                (new ColumnSchemaBuilder(SchemaInterface::TYPE_STRING, 255))->defaultValue('')->asString()
+            ),
         );
 
         $this->assertSame(
             <<<SQL
             ALTER TABLE "foo1" ALTER COLUMN "bar" TYPE varchar(255), ALTER COLUMN "bar" SET DEFAULT 'AbCdE'
             SQL,
-            $qb->alterColumn('foo1', 'bar', $mb->string(255)->defaultValue('AbCdE')),
+            $qb->alterColumn(
+                'foo1',
+                'bar',
+                (new ColumnSchemaBuilder(SchemaInterface::TYPE_STRING, 255))->defaultValue('AbCdE')->asString()
+            ),
         );
 
         $this->assertSame(
             <<<SQL
             ALTER TABLE "foo1" ALTER COLUMN "bar" TYPE timestamp(0), ALTER COLUMN "bar" SET DEFAULT CURRENT_TIMESTAMP
             SQL,
-            $qb->alterColumn('foo1', 'bar', $mb->timestamp()->defaultExpression('CURRENT_TIMESTAMP')),
+            $qb->alterColumn(
+                'foo1',
+                'bar',
+                (new ColumnSchemaBuilder(SchemaInterface::TYPE_TIMESTAMP))->defaultExpression('CURRENT_TIMESTAMP')->asString()
+            ),
         );
 
         $this->assertSame(
             <<<SQL
             ALTER TABLE "foo1" ALTER COLUMN "bar" TYPE varchar(30), ADD UNIQUE ("bar")
             SQL,
-            $qb->alterColumn('foo1', 'bar', $mb->string(30)->unique()),
+            $qb->alterColumn(
+                'foo1',
+                'bar',
+                (new ColumnSchemaBuilder(SchemaInterface::TYPE_STRING, 30))->unique()->asString()
+            ),
         );
 
         $db->close();
