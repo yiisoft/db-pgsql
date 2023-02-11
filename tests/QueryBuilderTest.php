@@ -17,7 +17,6 @@ use Yiisoft\Db\Pgsql\Tests\Support\TestTrait;
 use Yiisoft\Db\Query\QueryInterface;
 use Yiisoft\Db\Schema\SchemaInterface;
 use Yiisoft\Db\Tests\Common\CommonQueryBuilderTest;
-use Yiisoft\Db\Tests\Support\Stub\MigrationBuilder;
 
 use function version_compare;
 
