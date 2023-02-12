@@ -24,7 +24,7 @@ trait TestTrait
     protected function getConnection(bool $fixture = false): ConnectionPDOInterface
     {
         $pdoDriver = new PDODriver($this->getDsn(), 'root', 'root');
-        $pdoDriver->setCharset('utf8');
+        $pdoDriver->charset('utf8');
         $db = new ConnectionPDO(
             $pdoDriver,
             DbHelper::getSchemaCache()
