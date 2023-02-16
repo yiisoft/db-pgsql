@@ -12,12 +12,11 @@ use Yiisoft\Db\Expression\JsonExpression;
 use Yiisoft\Db\Pgsql\Tests\Support\TestTrait;
 use Yiisoft\Db\Query\Query;
 use Yiisoft\Db\Schema\SchemaInterface;
-use Yiisoft\Db\Tests\Provider\AbstractQueryBuilderProvider;
 use Yiisoft\Db\Tests\Support\TraversableObject;
 
 use function array_replace;
 
-final class QueryBuilderProvider extends AbstractQueryBuilderProvider
+final class QueryBuilderProvider extends \Yiisoft\Db\Tests\Provider\QueryBuilderProvider
 {
     use TestTrait;
 

@@ -7,9 +7,8 @@ namespace Yiisoft\Db\Pgsql\Tests\Provider;
 use Yiisoft\Db\Expression\ArrayExpression;
 use Yiisoft\Db\Expression\JsonExpression;
 use Yiisoft\Db\Pgsql\Tests\Support\TestTrait;
-use Yiisoft\Db\Tests\Provider\AbstractCommandProvider;
 
-final class CommandProvider extends AbstractCommandProvider
+final class CommandProvider extends \Yiisoft\Db\Tests\Provider\CommandProvider
 {
     use TestTrait;
 
