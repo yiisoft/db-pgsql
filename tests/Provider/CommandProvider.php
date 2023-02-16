@@ -27,7 +27,7 @@ final class CommandProvider extends \Yiisoft\Db\Tests\Provider\CommandProvider
                     false,
                 ],
             ],
-            'expected' => static fn(string $driverName): string => <<<SQL
+            'expected' => static fn (string $driverName): string => <<<SQL
             INSERT INTO "type" ("json_col", "int_col", "float_col", "char_col", "bool_col") VALUES (:qp0, :qp1, :qp2, :qp3, :qp4)
             SQL,
             'expectedParams' => [
@@ -43,7 +43,7 @@ final class CommandProvider extends \Yiisoft\Db\Tests\Provider\CommandProvider
             '{{%type}}',
             ['intarray_col', 'int_col', 'float_col', 'char_col', 'bool_col'],
             [[new ArrayExpression([1,null,3], 'int'), 1, 1, '', false]],
-            'expected' => static fn(string $driverName): string => <<<SQL
+            'expected' => static fn (string $driverName): string => <<<SQL
             INSERT INTO "type" ("intarray_col", "int_col", "float_col", "char_col", "bool_col") VALUES (ARRAY[:qp0, :qp1, :qp2]::int[], :qp3, :qp4, :qp5, :qp6)
             SQL,
             'expectedParams' => [':qp0' => 1, ':qp1' => null, ':qp2' => 3, ':qp3' => 1, ':qp4' => 1.0, ':qp5' => '', ':qp6' => false],
@@ -53,7 +53,7 @@ final class CommandProvider extends \Yiisoft\Db\Tests\Provider\CommandProvider
             '{{%type}}',
             ['int_col', 'float_col', 'char_col', 'bool_col'],
             [['3', '1.1', '', false]],
-            'expected' => static fn(string $driverName): string => <<<SQL
+            'expected' => static fn (string $driverName): string => <<<SQL
             INSERT INTO "type" ("int_col", "float_col", "char_col", "bool_col") VALUES (:qp0, :qp1, :qp2, :qp3)
             SQL,
             'expectedParams' => [':qp0' => 3, ':qp1' => 1.1, ':qp2' => '', ':qp3' => false],
@@ -63,7 +63,7 @@ final class CommandProvider extends \Yiisoft\Db\Tests\Provider\CommandProvider
             '{{%type}}',
             ['jsonb_col', 'int_col', 'float_col', 'char_col', 'bool_col'],
             [[new JsonExpression(['a' => true]), 1, 1.1, '', false]],
-            'expected' => static fn(string $driverName): string => <<<SQL
+            'expected' => static fn (string $driverName): string => <<<SQL
             INSERT INTO "type" ("jsonb_col", "int_col", "float_col", "char_col", "bool_col") VALUES (:qp0, :qp1, :qp2, :qp3, :qp4)
             SQL,
             'expectedParams' => [':qp0' => '{"a":true}', ':qp1' => 1, ':qp2' => 1.1, ':qp3' => '', ':qp4' => false],
@@ -79,7 +79,7 @@ final class CommandProvider extends \Yiisoft\Db\Tests\Provider\CommandProvider
             [
                 'SELECT * FROM customer WHERE id::integer IN (:in, :out)',
                 [':in' => 1, ':out' => 2],
-                static fn(string $driverName): string => <<<SQL
+                static fn (string $driverName): string => <<<SQL
                 SELECT * FROM customer WHERE id::integer IN (1, 2)
                 SQL,
             ],
