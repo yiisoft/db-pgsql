@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Yiisoft\Db\Pgsql\Tests;
 
+use Closure;
 use Throwable;
 use Yiisoft\Db\Exception\Exception;
 use Yiisoft\Db\Exception\InvalidConfigException;
@@ -46,7 +47,7 @@ final class CommandTest extends CommonCommandTest
     }
 
     /**
-     * @dataProvider \Yiisoft\Db\Pgsql\Tests\Provider\CommandProvider::batchInsert()
+     * @dataProvider \Yiisoft\Db\Pgsql\Tests\Provider\CommandProvider::batchInsert
      *
      * @throws Throwable
      */
@@ -54,7 +55,7 @@ final class CommandTest extends CommonCommandTest
         string $table,
         array $columns,
         array $values,
-        string $expected,
+        Closure $expected,
         array $expectedParams = [],
         int $insertedRow = 1
     ): void {
@@ -224,13 +225,13 @@ final class CommandTest extends CommonCommandTest
     }
 
     /**
-     * @dataProvider \Yiisoft\Db\Pgsql\Tests\Provider\CommandProvider::rawSql()
+     * @dataProvider \Yiisoft\Db\Pgsql\Tests\Provider\CommandProvider::rawSql
      *
      * @throws Exception
      * @throws InvalidConfigException
      * @throws NotSupportedException
      */
-    public function testGetRawSql(string $sql, array $params, string $expectedRawSql): void
+    public function testGetRawSql(string $sql, array $params, Closure $expectedRawSql): void
     {
         parent::testGetRawSql($sql, $params, $expectedRawSql);
     }
@@ -268,7 +269,7 @@ final class CommandTest extends CommonCommandTest
     }
 
     /**
-     * @dataProvider \Yiisoft\Db\Pgsql\Tests\Provider\CommandProvider::update()
+     * @dataProvider \Yiisoft\Db\Pgsql\Tests\Provider\CommandProvider::update
      *
      * @throws Exception
      * @throws Throwable
@@ -278,13 +279,13 @@ final class CommandTest extends CommonCommandTest
         array $columns,
         array|string $conditions,
         array $params,
-        string $expected
+        Closure $expected
     ): void {
         parent::testUpdate($table, $columns, $conditions, $params, $expected);
     }
 
     /**
-     * @dataProvider \Yiisoft\Db\Pgsql\Tests\Provider\CommandProvider::upsert()
+     * @dataProvider \Yiisoft\Db\Pgsql\Tests\Provider\CommandProvider::upsert
      *
      * @throws Exception
      * @throws Throwable
