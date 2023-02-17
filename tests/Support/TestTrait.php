@@ -27,7 +27,7 @@ trait TestTrait
         $pdoDriver->charset('utf8');
         $db = new ConnectionPDO(
             $pdoDriver,
-            DbHelper::getSchemaCache()
+            DbHelper::getSchemaCache(),
         );
 
         if ($fixture) {
@@ -35,6 +35,16 @@ trait TestTrait
         }
 
         return $db;
+    }
+
+    protected static function getDb(): ConnectionPDOInterface
+    {
+        $dsn = (new Dsn('pgsql', '127.0.0.1', 'yiitest', '5432'))->asString();
+
+        return new ConnectionPDO(
+            new PDODriver($dsn, 'root', 'root'),
+            DbHelper::getSchemaCache(),
+        );
     }
 
     protected function getDsn(): string

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Yiisoft\Db\Pgsql\Tests;
 
-use Closure;
 use Throwable;
 use Yiisoft\Db\Exception\Exception;
 use Yiisoft\Db\Exception\InvalidConfigException;
@@ -55,7 +54,7 @@ final class CommandTest extends CommonCommandTest
         string $table,
         array $columns,
         array $values,
-        Closure $expected,
+        string $expected,
         array $expectedParams = [],
         int $insertedRow = 1
     ): void {
@@ -231,7 +230,7 @@ final class CommandTest extends CommonCommandTest
      * @throws InvalidConfigException
      * @throws NotSupportedException
      */
-    public function testGetRawSql(string $sql, array $params, Closure $expectedRawSql): void
+    public function testGetRawSql(string $sql, array $params, string $expectedRawSql): void
     {
         parent::testGetRawSql($sql, $params, $expectedRawSql);
     }
@@ -279,7 +278,7 @@ final class CommandTest extends CommonCommandTest
         array $columns,
         array|string $conditions,
         array $params,
-        Closure $expected
+        string $expected
     ): void {
         parent::testUpdate($table, $columns, $conditions, $params, $expected);
     }
