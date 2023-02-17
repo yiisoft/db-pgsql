@@ -6,7 +6,7 @@ namespace Yiisoft\Db\Pgsql\Tests\Provider;
 
 final class QuoterProvider extends \Yiisoft\Db\Tests\Provider\QuoterProvider
 {
-    public function tableNameParts(): array
+    public static function tableNameParts(): array
     {
         return [
             ['', ''],

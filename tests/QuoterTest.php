@@ -17,7 +17,7 @@ final class QuoterTest extends AbstractQuoterTest
     use TestTrait;
 
     /**
-     * @dataProvider \Yiisoft\Db\Pgsql\Tests\Provider\QuoterProvider::tableNameParts()
+     * @dataProvider \Yiisoft\Db\Pgsql\Tests\Provider\QuoterProvider::tableNameParts
      */
     public function testGetTableNameParts(string $tableName, string ...$expected): void
     {
