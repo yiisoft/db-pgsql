@@ -17,7 +17,7 @@ final class CommandPDOTest extends CommonCommandPDOTest
     use TestTrait;
 
     /**
-     * @dataProvider \Yiisoft\Db\Pgsql\Tests\Provider\CommandPDOProvider::bindParam()
+     * @dataProvider \Yiisoft\Db\Pgsql\Tests\Provider\CommandPDOProvider::bindParam
      */
     public function testBindParam(
         string $field,
@@ -29,14 +29,6 @@ final class CommandPDOTest extends CommonCommandPDOTest
         array $expected,
     ): void {
         parent::testBindParam($field, $name, $value, $dataType, $length, $driverOptions, $expected);
-    }
-
-    /**
-     * @dataProvider \Yiisoft\Db\Pgsql\Tests\Provider\CommandPDOProvider::bindParamsNonWhere()
-     */
-    public function testBindParamsNonWhere(string $sql): void
-    {
-        parent::testBindParamsNonWhere($sql);
     }
 
     /**

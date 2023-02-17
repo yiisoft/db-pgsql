@@ -6,7 +6,7 @@ namespace Yiisoft\Db\Pgsql\Tests\Provider;
 
 final class CommandPDOProvider extends \Yiisoft\Db\Tests\Provider\CommandPDOProvider
 {
-    public function bindParam(): array
+    public static function bindParam(): array
     {
         $bindParam = parent::bindParam();
 
