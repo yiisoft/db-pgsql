@@ -8,7 +8,7 @@ use Yiisoft\Db\Expression\Expression;
 
 final class SchemaProvider extends \Yiisoft\Db\Tests\Provider\SchemaProvider
 {
-    public function columns(): array
+    public static function columns(): array
     {
         return [
             [
@@ -341,7 +341,7 @@ final class SchemaProvider extends \Yiisoft\Db\Tests\Provider\SchemaProvider
         ];
     }
 
-    public function columnsTypeChar(): array
+    public static function columnsTypeChar(): array
     {
         $columnsTypeChar = parent::columnsTypeChar();
 
@@ -351,7 +351,7 @@ final class SchemaProvider extends \Yiisoft\Db\Tests\Provider\SchemaProvider
         return $columnsTypeChar;
     }
 
-    public function constraints(): array
+    public static function constraints(): array
     {
         $constraints = parent::constraints();
 
@@ -362,7 +362,7 @@ final class SchemaProvider extends \Yiisoft\Db\Tests\Provider\SchemaProvider
         return $constraints;
     }
 
-    public function tableSchemaCacheWithTablePrefixes(): array
+    public static function tableSchemaCacheWithTablePrefixes(): array
     {
         $configs = [
             ['prefix' => '', 'name' => 'type'],
@@ -397,7 +397,7 @@ final class SchemaProvider extends \Yiisoft\Db\Tests\Provider\SchemaProvider
         return $data;
     }
 
-    public function tableSchemaWithDbSchemes(): array
+    public static function tableSchemaWithDbSchemes(): array
     {
         return [
             ['animal', 'animal', 'public'],
