@@ -187,7 +187,9 @@ final class QueryBuilderTest extends CommonQueryBuilderTest
             $qb->alterColumn(
                 'foo1',
                 'bar',
-                (new ColumnSchemaBuilder(SchemaInterface::TYPE_TIMESTAMP))->defaultExpression('CURRENT_TIMESTAMP')->asString()
+                (new ColumnSchemaBuilder(SchemaInterface::TYPE_TIMESTAMP))
+                    ->defaultExpression('CURRENT_TIMESTAMP')
+                    ->asString()
             ),
         );
 
@@ -206,7 +208,7 @@ final class QueryBuilderTest extends CommonQueryBuilderTest
     }
 
     /**
-     * @dataProvider \Yiisoft\Db\Pgsql\Tests\Provider\QueryBuilderProvider::addForeignKey()
+     * @dataProvider \Yiisoft\Db\Pgsql\Tests\Provider\QueryBuilderProvider::addForeignKey
      */
     public function testAddForeignKey(
         string $name,
@@ -222,7 +224,7 @@ final class QueryBuilderTest extends CommonQueryBuilderTest
     }
 
     /**
-     * @dataProvider \Yiisoft\Db\Pgsql\Tests\Provider\QueryBuilderProvider::addPrimaryKey()
+     * @dataProvider \Yiisoft\Db\Pgsql\Tests\Provider\QueryBuilderProvider::addPrimaryKey
      */
     public function testAddPrimaryKey(string $name, string $table, array|string $columns, string $expected): void
     {
@@ -230,7 +232,7 @@ final class QueryBuilderTest extends CommonQueryBuilderTest
     }
 
     /**
-     * @dataProvider \Yiisoft\Db\Pgsql\Tests\Provider\QueryBuilderProvider::addUnique()
+     * @dataProvider \Yiisoft\Db\Pgsql\Tests\Provider\QueryBuilderProvider::addUnique
      */
     public function testAddUnique(string $name, string $table, array|string $columns, string $expected): void
     {
@@ -238,7 +240,7 @@ final class QueryBuilderTest extends CommonQueryBuilderTest
     }
 
     /**
-     * @dataProvider \Yiisoft\Db\Pgsql\Tests\Provider\QueryBuilderProvider::batchInsert()
+     * @dataProvider \Yiisoft\Db\Pgsql\Tests\Provider\QueryBuilderProvider::batchInsert
      */
     public function testBatchInsert(string $table, array $columns, iterable|Generator $rows, string $expected): void
     {
@@ -246,7 +248,7 @@ final class QueryBuilderTest extends CommonQueryBuilderTest
     }
 
     /**
-     * @dataProvider \Yiisoft\Db\Pgsql\Tests\Provider\QueryBuilderProvider::buildCondition()
+     * @dataProvider \Yiisoft\Db\Pgsql\Tests\Provider\QueryBuilderProvider::buildCondition
      */
     public function testBuildCondition(
         array|ExpressionInterface|string $condition,
@@ -257,7 +259,7 @@ final class QueryBuilderTest extends CommonQueryBuilderTest
     }
 
     /**
-     * @dataProvider \Yiisoft\Db\Pgsql\Tests\Provider\QueryBuilderProvider::buildLikeCondition()
+     * @dataProvider \Yiisoft\Db\Pgsql\Tests\Provider\QueryBuilderProvider::buildLikeCondition
      */
     public function testBuildLikeCondition(
         array|ExpressionInterface $condition,
@@ -268,7 +270,7 @@ final class QueryBuilderTest extends CommonQueryBuilderTest
     }
 
     /**
-     * @dataProvider \Yiisoft\Db\Pgsql\Tests\Provider\QueryBuilderProvider::buildFrom()
+     * @dataProvider \Yiisoft\Db\Pgsql\Tests\Provider\QueryBuilderProvider::buildFrom
      */
     public function testBuildWithFrom(mixed $table, string $expectedSql, array $expectedParams = []): void
     {
@@ -276,7 +278,7 @@ final class QueryBuilderTest extends CommonQueryBuilderTest
     }
 
     /**
-     * @dataProvider \Yiisoft\Db\Pgsql\Tests\Provider\QueryBuilderProvider::buildWhereExists()
+     * @dataProvider \Yiisoft\Db\Pgsql\Tests\Provider\QueryBuilderProvider::buildWhereExists
      */
     public function testBuildWithWhereExists(string $cond, string $expectedQuerySql): void
     {
@@ -369,7 +371,7 @@ final class QueryBuilderTest extends CommonQueryBuilderTest
     }
 
     /**
-     * @dataProvider \Yiisoft\Db\Pgsql\Tests\Provider\QueryBuilderProvider::delete()
+     * @dataProvider \Yiisoft\Db\Pgsql\Tests\Provider\QueryBuilderProvider::delete
      */
     public function testDelete(string $table, array|string $condition, string $expectedSQL, array $expectedParams): void
     {
@@ -470,7 +472,7 @@ final class QueryBuilderTest extends CommonQueryBuilderTest
     }
 
     /**
-     * @dataProvider \Yiisoft\Db\Pgsql\Tests\Provider\QueryBuilderProvider::insert()
+     * @dataProvider \Yiisoft\Db\Pgsql\Tests\Provider\QueryBuilderProvider::insert
      */
     public function testInsert(
         string $table,
@@ -483,7 +485,7 @@ final class QueryBuilderTest extends CommonQueryBuilderTest
     }
 
     /**
-     * @dataProvider \Yiisoft\Db\Pgsql\Tests\Provider\QueryBuilderProvider::insertWithReturningPks()
+     * @dataProvider \Yiisoft\Db\Pgsql\Tests\Provider\QueryBuilderProvider::insertWithReturningPks
      */
     public function testInsertWithReturningPks(
         string $table,
@@ -622,7 +624,7 @@ final class QueryBuilderTest extends CommonQueryBuilderTest
     }
 
     /**
-     * @dataProvider \Yiisoft\Db\Pgsql\Tests\Provider\QueryBuilderProvider::update()
+     * @dataProvider \Yiisoft\Db\Pgsql\Tests\Provider\QueryBuilderProvider::update
      */
     public function testUpdate(
         string $table,
@@ -635,7 +637,7 @@ final class QueryBuilderTest extends CommonQueryBuilderTest
     }
 
     /**
-     * @dataProvider \Yiisoft\Db\Pgsql\Tests\Provider\QueryBuilderProvider::upsert()
+     * @dataProvider \Yiisoft\Db\Pgsql\Tests\Provider\QueryBuilderProvider::upsert
      */
     public function testUpsert(
         string $table,
@@ -648,7 +650,7 @@ final class QueryBuilderTest extends CommonQueryBuilderTest
     }
 
     /**
-     * @dataProvider \Yiisoft\Db\Pgsql\Tests\Provider\QueryBuilderProvider::upsert()
+     * @dataProvider \Yiisoft\Db\Pgsql\Tests\Provider\QueryBuilderProvider::upsert
      */
     public function testUpsertExecute(
         string $table,
