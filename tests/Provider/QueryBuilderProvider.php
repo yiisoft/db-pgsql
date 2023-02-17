@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Yiisoft\Db\Pgsql\Tests\Provider;
 
-use Yiisoft\Db\Exception\Exception;
-use Yiisoft\Db\Exception\InvalidConfigException;
 use Yiisoft\Db\Expression\ArrayExpression;
 use Yiisoft\Db\Expression\Expression;
 use Yiisoft\Db\Expression\JsonExpression;
@@ -20,17 +18,10 @@ final class QueryBuilderProvider extends \Yiisoft\Db\Tests\Provider\QueryBuilder
 {
     use TestTrait;
 
-    protected string $likeEscapeCharSql = '';
-    protected array $likeParameterReplacements = [];
+    protected static string $driverName = 'pgsql';
 
-    /**
-     * @throws Exception
-     * @throws InvalidConfigException
-     */
-    public function buildCondition(): array
+    public static function buildCondition(): array
     {
-        $db = $this->getConnection();
-
         $buildCondition = parent::buildCondition();
 
         return array_merge(
@@ -113,7 +104,9 @@ final class QueryBuilderProvider extends \Yiisoft\Db\Tests\Provider\QueryBuilder
                     [
                         '@>',
                         'id',
-                        new ArrayExpression((new Query($db))->select('id')->from('users')->where(['active' => 1])),
+                        new ArrayExpression(
+                            (new Query(self::getDb()))->select('id')->from('users')->where(['active' => 1])
+                        ),
                     ],
                     '[[id]] @> ARRAY(SELECT [[id]] FROM [[users]] WHERE [[active]]=:qp0)',
                     [':qp0' => 1],
@@ -124,7 +117,7 @@ final class QueryBuilderProvider extends \Yiisoft\Db\Tests\Provider\QueryBuilder
                         'id',
                         new ArrayExpression(
                             [
-                                (new Query($db))->select('id')->from('users')->where(['active' => 1]),
+                                (new Query(self::getDb()))->select('id')->from('users')->where(['active' => 1]),
                             ],
                             'integer'
                         ),
@@ -172,7 +165,9 @@ final class QueryBuilderProvider extends \Yiisoft\Db\Tests\Provider\QueryBuilder
                     [
                         '=',
                         'jsoncol',
-                        new JsonExpression((new Query($db))->select('params')->from('user')->where(['id' => 1])),
+                        new JsonExpression(
+                            (new Query(self::getDb()))->select('params')->from('user')->where(['id' => 1])
+                        ),
                     ],
                     '[[jsoncol]] = (SELECT [[params]] FROM [[user]] WHERE [[id]]=:qp0)',
                     [':qp0' => 1],
@@ -182,7 +177,7 @@ final class QueryBuilderProvider extends \Yiisoft\Db\Tests\Provider\QueryBuilder
                         '=',
                         'jsoncol',
                         new JsonExpression(
-                            (new Query($db))->select('params')->from('user')->where(['id' => 1]),
+                            (new Query(self::getDb()))->select('params')->from('user')->where(['id' => 1]),
                             'jsonb'
                         ),
                     ],
@@ -254,7 +249,7 @@ final class QueryBuilderProvider extends \Yiisoft\Db\Tests\Provider\QueryBuilder
         );
     }
 
-    public function insert(): array
+    public static function insert(): array
     {
         $insert = parent::insert();
 
@@ -265,10 +260,8 @@ final class QueryBuilderProvider extends \Yiisoft\Db\Tests\Provider\QueryBuilder
         return $insert;
     }
 
-    public function insertWithReturningPks(): array
+    public static function insertWithReturningPks(): array
     {
-        $db = $this->getConnection();
-
         return [
             'regular-values' => [
                 'customer',
@@ -326,7 +319,7 @@ final class QueryBuilderProvider extends \Yiisoft\Db\Tests\Provider\QueryBuilder
             ],
             'carry passed params (query)' => [
                 'customer',
-                (new Query($db))
+                (new Query(self::getDb()))
                     ->select(['email', 'name', 'address', 'is_active', 'related_id'])
                     ->from('customer')
                     ->where(
@@ -364,10 +357,8 @@ final class QueryBuilderProvider extends \Yiisoft\Db\Tests\Provider\QueryBuilder
         ];
     }
 
-    public function upsert(): array
+    public static function upsert(): array
     {
-        $db = $this->getConnection();
-
         $concreteData = [
             'regular values' => [
                 3 => 'INSERT INTO "T_upsert" ("email", "address", "status", "profile_id") ' .
@@ -413,7 +404,7 @@ final class QueryBuilderProvider extends \Yiisoft\Db\Tests\Provider\QueryBuilder
                 3 => 'INSERT INTO {{%T_upsert}} ("email", "ts") VALUES (:qp0, extract(epoch from now()) * 1000) ON CONFLICT DO NOTHING',
             ],
             'query, values and expressions with update part' => [
-                1 => (new Query($db))
+                1 => (new Query(self::getDb()))
                     ->select(
                         [
                             'email' => new Expression(':phEmail', [':phEmail' => 'dynamic@example.com']),
@@ -425,7 +416,7 @@ final class QueryBuilderProvider extends \Yiisoft\Db\Tests\Provider\QueryBuilder
                     'ON CONFLICT ("email") DO UPDATE SET "ts"=:qp1, "orders"=EXCLUDED.orders + 1',
             ],
             'query, values and expressions without update part' => [
-                1 => (new Query($db))
+                1 => (new Query(self::getDb()))
                     ->select(
                         [
                             'email' => new Expression(':phEmail', [':phEmail' => 'dynamic@example.com']),
