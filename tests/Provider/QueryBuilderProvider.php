@@ -30,7 +30,7 @@ final class QueryBuilderProvider extends \Yiisoft\Db\Tests\Provider\QueryBuilder
                 /**
                 * adding conditions for ILIKE i.e. case insensitive LIKE.
                 *
-                * {@see http://www.postgresql.org/docs/8.3/static/functions-matching.html#FUNCTIONS-LIKE}
+                * {@see https://www.postgresql.org/docs/8.3/static/functions-matching.html#FUNCTIONS-LIKE}
                 */
                 /* empty values */
                 [['ilike', 'name', []], '0=1', []],

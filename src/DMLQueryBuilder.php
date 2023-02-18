@@ -73,7 +73,7 @@ final class DMLQueryBuilder extends AbstractDMLQueryBuilder
 
         if ($table !== null && ($sequence = $table->getSequenceName()) !== null) {
             /**
-             * {@see http://www.postgresql.org/docs/8.1/static/functions-sequence.html}
+             * {@see https://www.postgresql.org/docs/8.1/static/functions-sequence.html}
              */
             $sequence = $this->quoter->quoteTableName($sequence);
             $tableName = $this->quoter->quoteTableName($tableName);
