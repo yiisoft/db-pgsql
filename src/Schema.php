@@ -785,9 +785,9 @@ final class Schema extends AbstractSchema
             } elseif ($defaultValue) {
                 /** @var string $columnCategory */
                 $columnCategory = $this->createColumnSchemaBuilder(
-                        $loadColumnSchema->getType(),
-                        $loadColumnSchema->getSize()
-                    )->getCategoryMap()[$loadColumnSchema->getType()] ?? '';
+                    $loadColumnSchema->getType(),
+                    $loadColumnSchema->getSize()
+                )->getCategoryMap()[$loadColumnSchema->getType()] ?? '';
 
                 if (
                     is_string($defaultValue) &&
@@ -813,7 +813,7 @@ final class Schema extends AbstractSchema
                 ) {
                     if ($matches[2] === 'NULL') {
                         $loadColumnSchema->defaultValue(null);
-                    } elseif(
+                    } elseif (
                         in_array($columnCategory, [
                             AbstractColumnSchemaBuilder::CATEGORY_STRING,
                             AbstractColumnSchemaBuilder::CATEGORY_TIME,
