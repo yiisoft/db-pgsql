@@ -16,6 +16,7 @@ use Yiisoft\Db\Exception\InvalidConfigException;
 use Yiisoft\Db\Exception\NotSupportedException;
 use Yiisoft\Db\Expression\Expression;
 use Yiisoft\Db\Helper\ArrayHelper;
+use Yiisoft\Db\Schema\AbstractColumnSchemaBuilder;
 use Yiisoft\Db\Schema\AbstractSchema;
 use Yiisoft\Db\Schema\ColumnSchemaBuilderInterface;
 use Yiisoft\Db\Schema\ColumnSchemaInterface;
@@ -782,13 +783,14 @@ final class Schema extends AbstractSchema
 
                 $loadColumnSchema->defaultValue(null);
             } elseif ($defaultValue) {
+                $columnCategory = $this->createColumnSchemaBuilder(
+                        $loadColumnSchema->getType(),
+                        $loadColumnSchema->getSize()
+                    )->getCategoryMap()[$loadColumnSchema->getType()] ?? '';
+
                 if (
                     is_string($defaultValue) &&
-                    in_array(
-                        $loadColumnSchema->getType(),
-                        [self::TYPE_TIMESTAMP, self::TYPE_DATE, self::TYPE_TIME],
-                        true
-                    ) &&
+                    $columnCategory === AbstractColumnSchemaBuilder::CATEGORY_TIME &&
                     in_array(
                         strtoupper($defaultValue),
                         ['NOW()', 'CURRENT_TIMESTAMP', 'CURRENT_DATE', 'CURRENT_TIME'],
@@ -810,6 +812,14 @@ final class Schema extends AbstractSchema
                 ) {
                     if ($matches[2] === 'NULL') {
                         $loadColumnSchema->defaultValue(null);
+                    } elseif(
+                        in_array($columnCategory, [
+                            AbstractColumnSchemaBuilder::CATEGORY_STRING,
+                            AbstractColumnSchemaBuilder::CATEGORY_TIME
+                        ], true) &&
+                        !str_starts_with('\'', $defaultValue)
+                    ) {
+                        $loadColumnSchema->defaultValue(new Expression($matches[2]));
                     } else {
                         $loadColumnSchema->defaultValue($loadColumnSchema->phpTypecast($matches[2]));
                     }

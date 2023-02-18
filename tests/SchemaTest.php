@@ -513,4 +513,53 @@ final class SchemaTest extends CommonSchemaTest
         $this->assertEquals('my_type', $schema->getColumn('test_type')->getDbType());
         $this->assertEquals('schema2.my_type2', $schema->getColumn('test_type2')->getDbType());
     }
+
+    /**
+     * @throws Exception
+     * @throws InvalidConfigException
+     * @throws Throwable
+     */
+    public function testDefaultValueDatetimeColumn(): void
+    {
+        $tableName = '{{%datetime_test}}';
+        $db = $this->getConnection();
+
+        $columnsData = [
+            'id' => ['int NOT NULL PRIMARY KEY', '', false],
+            'd' => ['date DEFAULT \'2011-11-11\'', '2011-11-11', false],
+            'dt' => ['datetime NOT NULL DEFAULT CURRENT_TIMESTAMP', 'CURRENT_TIMESTAMP', true],
+            'dt1' => ['datetime DEFAULT \'2011-11-11 00:00:00\'', '2011-11-11 00:00:00', false],
+            'dt2' => ['datetime DEFAULT CURRENT_TIMESTAMP', 'CURRENT_TIMESTAMP', true],
+            'ts1' => ['timestamp DEFAULT \'2011-11-11 00:00:00\'', '2011-11-11 00:00:00', false],
+            'ts2' => ['timestamp DEFAULT CURRENT_TIMESTAMP', 'CURRENT_TIMESTAMP', true],
+            'ts4' => ['date DEFAULT (CURRENT_DATE + INTERVAL \'2 YEAR\')', 'CURRENT_DATE + \'2 years\'::interval', true],
+            'simple_int' => ['int DEFAULT \'0\'', '0', false],
+            'simple_col' => ['varchar(40) DEFAULT \'uuid()\'', 'uuid()', false],
+            'uuid_col' => ['varchar(40) DEFAULT gen_random_uuid()', 'gen_random_uuid()', true],
+        ];
+        $columns = [];
+        foreach ($columnsData as $column => $columnData) {
+            $columns[$column] = $columnData[0];
+        }
+
+//        var_dump($db->getTableSchema($tableName));die;
+        if ($db->getTableSchema($tableName) !== null) {
+            $db->createCommand()->dropTable($tableName)->execute();
+        }
+
+        $db->createCommand()->createTable($tableName, $columns)->execute();
+
+        $tableSchema = $db->getTableSchema($tableName, true);
+        $this->assertNotNull($tableSchema);
+
+        foreach ($tableSchema->getColumns() as $column) {
+            $columnName = $column->getName();
+            if ($columnsData[$columnName][2]) {
+                $this->assertInstanceOf(Expression::class, $column->getDefaultValue(), $columnName);
+            } else {
+                $this->assertNotInstanceOf(Expression::class, $column->getDefaultValue(), $columnName);
+            }
+            $this->assertSame($columnsData[$columnName][1], (string) $column->getDefaultValue());
+        }
+    }
 }
