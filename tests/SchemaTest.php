@@ -535,6 +535,7 @@ final class SchemaTest extends CommonSchemaTest
             'ts4' => ['date DEFAULT (CURRENT_DATE + INTERVAL \'2 YEAR\')', 'CURRENT_DATE + \'2 years\'::interval', true],
             'simple_int' => ['int DEFAULT \'0\'', '0', false],
             'simple_col' => ['varchar(40) DEFAULT \'uuid()\'', 'uuid()', false],
+            'simple_col2' => ['varchar(40) DEFAULT (\'uuid()\')::varchar', 'uuid()', false],
             'uuid_col' => ['varchar(40) DEFAULT md5(\'abc\')', 'md5(\'abc\'::text)', true],
             'uuid_col2' => ['varchar(40) DEFAULT md5(\'abc\')::varchar', 'md5(\'abc\'::text)', true],
         ];
