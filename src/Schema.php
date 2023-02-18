@@ -85,7 +85,7 @@ final class Schema extends AbstractSchema
     /**
      * @var array The mapping from physical column types (keys) to abstract column types (values).
      *
-     * {@see http://www.postgresql.org/docs/current/static/datatype.html#DATATYPE-TABLE}
+     * {@see https://www.postgresql.org/docs/current/static/datatype.html#DATATYPE-TABLE}
      *
      * @psalm-var string[]
      */
@@ -488,7 +488,7 @@ final class Schema extends AbstractSchema
     {
         /**
          * We need to extract the constraints de hard way since:
-         * {@see http://www.postgresql.org/message-id/26677.1086673982@sss.pgh.pa.us}
+         * {@see https://www.postgresql.org/message-id/26677.1086673982@sss.pgh.pa.us}
          */
 
         $sql = <<<SQL
