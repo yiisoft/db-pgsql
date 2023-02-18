@@ -813,6 +813,8 @@ final class Schema extends AbstractSchema
                 ) {
                     if ($matches[2] === 'NULL') {
                         $loadColumnSchema->defaultValue(null);
+                    } elseif (str_starts_with($defaultValue, "(")) {
+                        $loadColumnSchema->defaultValue(new Expression($matches[2]));
                     } elseif (
                         in_array($columnCategory, [
                             AbstractColumnSchemaBuilder::CATEGORY_STRING,
@@ -820,7 +822,7 @@ final class Schema extends AbstractSchema
                         ], true) &&
                         !str_starts_with($defaultValue, "'")
                     ) {
-                        $loadColumnSchema->defaultValue(new Expression($matches[2]));
+                        $loadColumnSchema->defaultValue(new Expression($matches[0]));
                     } else {
                         $loadColumnSchema->defaultValue($loadColumnSchema->phpTypecast($matches[2]));
                     }
