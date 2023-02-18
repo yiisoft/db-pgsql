@@ -783,6 +783,7 @@ final class Schema extends AbstractSchema
 
                 $loadColumnSchema->defaultValue(null);
             } elseif ($defaultValue) {
+                /** @var string $columnCategory */
                 $columnCategory = $this->createColumnSchemaBuilder(
                         $loadColumnSchema->getType(),
                         $loadColumnSchema->getSize()
@@ -817,7 +818,7 @@ final class Schema extends AbstractSchema
                             AbstractColumnSchemaBuilder::CATEGORY_STRING,
                             AbstractColumnSchemaBuilder::CATEGORY_TIME
                         ], true) &&
-                        !str_starts_with('\'', $defaultValue)
+                        !str_starts_with($defaultValue, "'")
                     ) {
                         $loadColumnSchema->defaultValue(new Expression($matches[2]));
                     } else {
