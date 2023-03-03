@@ -23,7 +23,7 @@ use function is_array;
 use function str_repeat;
 
 /**
- * Builds {@see `Yiisoft\Db\Expression\ArrayExpression`} for PostgresSQL Server.
+ * Builds expressions for {@see `Yiisoft\Db\Expression\ArrayExpression`} for PostgresSQL Server.
  */
 final class ArrayExpressionBuilder implements ExpressionBuilderInterface
 {
