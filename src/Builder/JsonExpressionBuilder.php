@@ -18,7 +18,7 @@ use Yiisoft\Db\Query\QueryInterface;
 use Yiisoft\Json\Json;
 
 /**
- * The class JsonExpressionBuilder builds {@see JsonExpression} for PostgreSQL DBMS.
+ * Builds expressions for {@see `Yiisoft\Db\Expression\JsonExpression`} for PostgresSQL Server.
  */
 final class JsonExpressionBuilder implements ExpressionBuilderInterface
 {
@@ -29,18 +29,23 @@ final class JsonExpressionBuilder implements ExpressionBuilderInterface
     /**
      * Method builds the raw SQL from the $expression that will not be additionally escaped or quoted.
      *
-     * @param ExpressionInterface $expression the expression to be built.
-     * @param array $params the binding parameters.
+     * @param ExpressionInterface $expression The expression to be built.
+     * @param array $params The binding parameters.
      *
-     * @throws Exception|InvalidArgumentException|InvalidConfigException|JsonException|NotSupportedException
+     * @throws Exception
+     * @throws InvalidArgumentException
+     * @throws InvalidConfigException
+     * @throws JsonException
+     * @throws NotSupportedException
      *
-     * @return string the raw SQL that will not be additionally escaped or quoted.
+     * @return string The raw SQL that will not be additionally escaped or quoted.
+     *
+     * @psalm-param JsonExpression $expression
      */
     public function build(ExpressionInterface $expression, array &$params = []): string
     {
         /**
-         * @var JsonExpression $expression
-         * @var array|mixed|QueryInterface $value
+         * @psalm-var array|mixed|QueryInterface $value
          */
         $value = $expression->getValue();
 
@@ -59,14 +64,15 @@ final class JsonExpressionBuilder implements ExpressionBuilderInterface
     }
 
     /**
-     * @return string the typecast expression based on {@see type}.
+     * @return string The typecast expression based on {@see JsonExpression::getType()}.
      */
     protected function getTypecast(JsonExpression $expression): string
     {
-        if ($expression->getType() === null) {
-            return '';
-        }
+        $type = $expression->getType();
 
-        return '::' . (string) $expression->getType();
+        return match ($type !== null) {
+            true => '::' . $type,
+            default => '',
+        };
     }
 }
