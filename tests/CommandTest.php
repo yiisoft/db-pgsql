@@ -310,7 +310,7 @@ final class CommandTest extends CommonCommandTest
         $this->assertIsString($result['uuid']);
 
         // for example ['uuid' => 738146be-87b1-49f2-9913-36142fb6fcbe]
-        $this->assertStringMatchesFormat("%s-%s-%s-%s-%s", $result['uuid']);
+        $this->assertStringMatchesFormat('%s-%s-%s-%s-%s', $result['uuid']);
 
         $this->assertEquals(36, strlen($result['uuid']));
 
