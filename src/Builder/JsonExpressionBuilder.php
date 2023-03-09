@@ -18,7 +18,7 @@ use Yiisoft\Db\Query\QueryInterface;
 use Yiisoft\Json\Json;
 
 /**
- * Builds expressions for {@see `Yiisoft\Db\Expression\JsonExpression`} for PostgresSQL Server.
+ * Builds expressions for {@see `Yiisoft\Db\Expression\JsonExpression`} for PostgreSQL Server.
  */
 final class JsonExpressionBuilder implements ExpressionBuilderInterface
 {
@@ -27,7 +27,7 @@ final class JsonExpressionBuilder implements ExpressionBuilderInterface
     }
 
     /**
-     * Method builds the raw SQL from the $expression that will not be additionally escaped or quoted.
+     * The Method builds the raw SQL from the $expression that won't be additionally escaped or quoted.
      *
      * @param ExpressionInterface $expression The expression to be built.
      * @param array $params The binding parameters.
@@ -38,7 +38,7 @@ final class JsonExpressionBuilder implements ExpressionBuilderInterface
      * @throws JsonException
      * @throws NotSupportedException
      *
-     * @return string The raw SQL that will not be additionally escaped or quoted.
+     * @return string The raw SQL that won't be additionally escaped or quoted.
      *
      * @psalm-param JsonExpression $expression
      */

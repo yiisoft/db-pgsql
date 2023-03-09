@@ -21,28 +21,49 @@ use function json_decode;
 use function strtolower;
 
 /**
- * The class ColumnSchema for PostgreSQL database.
+ * Represents the metadata of a column in a database table for PostgreSQL Server.
+ *
+ * It provides information about the column's name, type, size, precision, and other details.
+ *
+ * Is used to store and retrieve metadata about a column in a database table. It's typically used in conjunction with
+ * the {@see TableSchema}, which represents the metadata of a database table as a whole.
+ *
+ * The following code shows how to use:
+ *
+ * ```php
+ * use Yiisoft\Db\Mssql\ColumnSchema;
+ *
+ * $column = new ColumnSchema();
+ * $column->name('id');
+ * $column->allowNull(false);
+ * $column->dbType('integer');
+ * $column->phpType('integer');
+ * $column->type('integer');
+ * $column->defaultValue(0);
+ * $column->autoIncrement(true);
+ * $column->primaryKey(true);
+ * ```
  */
 final class ColumnSchema extends AbstractColumnSchema
 {
     /**
-     * @var int the dimension of array. Defaults to 0, means this column is not an array.
+     * @var int The dimension of array. Defaults to 0, means this column isn't an array.
      */
     private int $dimension = 0;
 
     /**
-     * @var string|null name of associated sequence if column is auto-incremental.
+     * @var string|null Name of an associated sequence if column is auto incremental.
      */
     private string|null $sequenceName = null;
 
     /**
      * Converts the input value according to {@see type} and {@see dbType} for use in a db query.
      *
-     * If the value is null or an {@see Expression}, it will not be converted.
+     * If the value is null or an {@see Expression}, it won't be converted.
      *
      * @param mixed $value input value
      *
-     * @return mixed converted value. This may also be an array containing the value as the first element and the PDO
+     * @return mixed Converted value. This may also be an array containing the value as the first element and the PDO
      * type as the second element.
      */
     public function dbTypecast(mixed $value): mixed
@@ -74,13 +95,13 @@ final class ColumnSchema extends AbstractColumnSchema
     /**
      * Converts the input value according to {@see phpType} after retrieval from the database.
      *
-     * If the value is null or an {@see Expression}, it will not be converted.
+     * If the value is null or an {@see Expression}, it won't be converted.
      *
-     * @param mixed $value input value
+     * @param mixed $value The input value
      *
-     *@throws JsonException
+     * @throws JsonException
      *
-     * @return mixed converted value
+     * @return mixed The converted value
      */
     public function phpTypecast(mixed $value): mixed
     {
@@ -91,7 +112,7 @@ final class ColumnSchema extends AbstractColumnSchema
 
             if (is_array($value)) {
                 array_walk_recursive($value, function (string|null &$val) {
-                    /** @var mixed */
+                    /** @psalm-var mixed $val */
                     $val = $this->phpTypecastValue($val);
                 });
             } else {
@@ -117,7 +138,7 @@ final class ColumnSchema extends AbstractColumnSchema
 
         switch ($this->getType()) {
             case SchemaInterface::TYPE_BOOLEAN:
-                /** @var mixed */
+                /** @psalm-var mixed $value */
                 $value = is_string($value) ? strtolower($value) : $value;
 
                 return match ($value) {
@@ -141,7 +162,9 @@ final class ColumnSchema extends AbstractColumnSchema
     }
 
     /**
-     * @return int Get the dimension of array. Defaults to 0, means this column is not an array.
+     * @return int Get the dimension of the array.
+     *
+     * Defaults to 0, means this column isn't an array.
      */
     public function getDimension(): int
     {
@@ -149,7 +172,7 @@ final class ColumnSchema extends AbstractColumnSchema
     }
 
     /**
-     * @return string|null name of associated sequence if column is auto-incremental.
+     * @return string|null name of an associated sequence if column is auto incremental.
      */
     public function getSequenceName(): string|null
     {
@@ -157,7 +180,9 @@ final class ColumnSchema extends AbstractColumnSchema
     }
 
     /**
-     * Set dimension of array. Defaults to 0, means this column is not an array.
+     * Set dimension of an array.
+     *
+     * Defaults to 0, means this column isn't an array.
      */
     public function dimension(int $dimension): void
     {
@@ -165,7 +190,7 @@ final class ColumnSchema extends AbstractColumnSchema
     }
 
     /**
-     * Set name of associated sequence if column is auto-incremental.
+     * Set the name of an associated sequence if a column is auto incremental.
      */
     public function sequenceName(string|null $sequenceName): void
     {
