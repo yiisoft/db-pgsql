@@ -9,12 +9,12 @@ use Yiisoft\Db\Schema\QuoterInterface;
 use Yiisoft\Db\Schema\SchemaInterface;
 
 /**
- * The class QueryBuilder is the query builder for PostgresSQL databases.
+ * Implements the PostgreSQL Server specific query builder.
  */
 final class QueryBuilder extends AbstractQueryBuilder
 {
     /**
-     * @var array mapping from abstract column types (keys) to physical column types (values).
+     * @var array Mapping from abstract column types (keys) to physical column types (values).
      *
      * @psalm-var string[]
      */
@@ -42,15 +42,12 @@ final class QueryBuilder extends AbstractQueryBuilder
         SchemaInterface::TYPE_MONEY => 'numeric(19,4)',
         SchemaInterface::TYPE_JSON => 'jsonb',
     ];
-    private DDLQueryBuilder $ddlBuilder;
-    private DMLQueryBuilder $dmlBuilder;
-    private DQLQueryBuilder $dqlBuilder;
 
     public function __construct(QuoterInterface $quoter, SchemaInterface $schema)
     {
-        $this->ddlBuilder = new DDLQueryBuilder($this, $quoter, $schema);
-        $this->dmlBuilder = new DMLQueryBuilder($this, $quoter, $schema);
-        $this->dqlBuilder = new DQLQueryBuilder($this, $quoter, $schema);
-        parent::__construct($quoter, $schema, $this->ddlBuilder, $this->dmlBuilder, $this->dqlBuilder);
+        $ddlBuilder = new DDLQueryBuilder($this, $quoter, $schema);
+        $dmlBuilder = new DMLQueryBuilder($this, $quoter, $schema);
+        $dqlBuilder = new DQLQueryBuilder($this, $quoter, $schema);
+        parent::__construct($quoter, $schema, $ddlBuilder, $dmlBuilder, $dqlBuilder);
     }
 }

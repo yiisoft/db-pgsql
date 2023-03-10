@@ -4,12 +4,9 @@ declare(strict_types=1);
 
 namespace Yiisoft\Db\Pgsql;
 
-use PDO;
 use Yiisoft\Db\Driver\PDO\AbstractConnectionPDO;
 use Yiisoft\Db\Driver\PDO\CommandPDOInterface;
-use Yiisoft\Db\Exception\Exception;
 use Yiisoft\Db\Exception\InvalidArgumentException;
-use Yiisoft\Db\Exception\InvalidConfigException;
 use Yiisoft\Db\QueryBuilder\QueryBuilderInterface;
 use Yiisoft\Db\Schema\Quoter;
 use Yiisoft\Db\Schema\QuoterInterface;
@@ -17,8 +14,9 @@ use Yiisoft\Db\Schema\SchemaInterface;
 use Yiisoft\Db\Transaction\TransactionInterface;
 
 /**
- * Database connection class prefilled for PgSQL Server.
- * The class Connection represents a connection to a database via [PDO](https://secure.php.net/manual/en/book.pdo.php).
+ * Implements a connection to a database via PDO (PHP Data Objects) for PostgreSQL Server.
+ *
+ * @link https://www.php.net/manual/en/ref.pdo-pgsql.php
  */
 final class ConnectionPDO extends AbstractConnectionPDO
 {
@@ -55,9 +53,6 @@ final class ConnectionPDO extends AbstractConnectionPDO
         return parent::getLastInsertID($sequenceName);
     }
 
-    /**
-     * @throws Exception|InvalidConfigException
-     */
     public function getQueryBuilder(): QueryBuilderInterface
     {
         if ($this->queryBuilder === null) {

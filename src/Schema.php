@@ -32,8 +32,7 @@ use function str_replace;
 use function substr;
 
 /**
- * The class Schema is the class for retrieving metadata from a PostgreSQL database
- * (version 9.6 and above).
+ * Implements the MSSQL Server specific schema, supporting PostgreSQL Server version 9.6 and above.
  *
  * @psalm-type ColumnArray = array{
  *   table_schema: string,
@@ -85,7 +84,7 @@ final class Schema extends AbstractSchema
     /**
      * @var array The mapping from physical column types (keys) to abstract column types (values).
      *
-     * {@see https://www.postgresql.org/docs/current/static/datatype.html#DATATYPE-TABLE}
+     * @link https://www.postgresql.org/docs/current/static/datatype.html#DATATYPE-TABLE
      *
      * @psalm-var string[]
      */
@@ -126,7 +125,7 @@ final class Schema extends AbstractSchema
         'integer' => self::TYPE_INTEGER,
         'bigint' => self::TYPE_BIGINT,
         'int8' => self::TYPE_BIGINT,
-        'oid' => self::TYPE_BIGINT, // should not be used. it's pg internal!
+        'oid' => self::TYPE_BIGINT, // shouldn't be used. it's pg internal!
         'smallserial' => self::TYPE_SMALLINT,
         'serial2' => self::TYPE_SMALLINT,
         'serial4' => self::TYPE_INTEGER,
@@ -156,33 +155,31 @@ final class Schema extends AbstractSchema
     ];
 
     /**
-     * @var string|null the default schema used for the current session.
+     * @var string|null The default schema used for the current session.
      */
     protected string|null $defaultSchema = 'public';
 
     /**
-     * @var string|string[] character used to quote schema, table, etc. names. An array of 2 characters can be used in
-     * case starting and ending characters are different.
+     * @var string|string[] Character used to quote schema, table, etc. names.
+     *
+     * An array of 2 characters can be used in case starting and ending characters are different.
      */
     protected string|array $tableQuoteCharacter = '"';
 
     /**
      * Resolves the table name and schema name (if any).
      *
-     * @param string $name the table name.
+     * @param string $name The table name.
      *
-     * @return TableSchemaInterface with resolved table, schema, etc. names.
+     * @return TableSchemaInterface With resolved table, schema, etc. names.
      *
-     * {@see TableSchemaInterface}
+     * @see TableSchemaInterface
      */
     protected function resolveTableName(string $name): TableSchemaInterface
     {
         $resolvedName = new TableSchema();
 
-        $parts = array_reverse(
-            $this->db->getQuoter()->getTableNameParts($name)
-        );
-
+        $parts = array_reverse($this->db->getQuoter()->getTableNameParts($name));
         $resolvedName->name($parts[0] ?? '');
         $resolvedName->schemaName($parts[1] ?? $this->defaultSchema);
 
@@ -197,14 +194,14 @@ final class Schema extends AbstractSchema
     /**
      * Returns all schema names in the database, including the default one but not system schemas.
      *
-     * This method should be overridden by child classes in order to support this feature because the default
-     * implementation simply throws an exception.
+     * This method should be overridden by child classes to support this feature because the default implementation
+     * simply throws an exception.
      *
      * @throws Exception
      * @throws InvalidConfigException
      * @throws Throwable
      *
-     * @return array All schema names in the database, except system schemas.
+     * @return array All schemas name in the database, except system schemas.
      */
     protected function findSchemaNames(): array
     {
@@ -218,6 +215,11 @@ final class Schema extends AbstractSchema
         return $this->db->createCommand($sql)->queryColumn();
     }
 
+    /**
+     * @throws Exception
+     * @throws InvalidConfigException
+     * @throws Throwable
+     */
     protected function findTableComment(TableSchemaInterface $tableSchema): void
     {
         $sql = <<<SQL
@@ -240,16 +242,17 @@ final class Schema extends AbstractSchema
     /**
      * Returns all table names in the database.
      *
-     * This method should be overridden by child classes in order to support this feature because the default
-     * implementation simply throws an exception.
+     * This method should be overridden by child classes to support this feature because the default implementation
+     * simply throws an exception.
      *
-     * @param string $schema the schema of the tables. Defaults to empty string, meaning the current or default schema.
+     * @param string $schema The schema of the tables.
+     * Defaults to empty string, meaning the current or default schema.
      *
      * @throws Exception
      * @throws InvalidConfigException
      * @throws Throwable
      *
-     * @return array All table names in the database. The names have NO schema name prefix.
+     * @return array All tables name in the database. The names have NO schema name prefix.
      */
     protected function findTableNames(string $schema = ''): array
     {
@@ -271,13 +274,13 @@ final class Schema extends AbstractSchema
     /**
      * Loads the metadata for the specified table.
      *
-     * @param string $name table name.
+     * @param string $name The table name.
      *
      * @throws Exception
      * @throws InvalidConfigException
      * @throws Throwable
      *
-     * @return TableSchemaInterface|null DBMS-dependent table metadata, `null` if the table does not exist.
+     * @return TableSchemaInterface|null DBMS-dependent table metadata, `null` if the table doesn't exist.
      */
     protected function loadTableSchema(string $name): TableSchemaInterface|null
     {
@@ -295,13 +298,13 @@ final class Schema extends AbstractSchema
     /**
      * Loads a primary key for the given table.
      *
-     * @param string $tableName table name.
+     * @param string $tableName The table name.
      *
      * @throws Exception
      * @throws InvalidConfigException
      * @throws Throwable
      *
-     * @return Constraint|null primary key for the given table, `null` if the table has no primary key.
+     * @return Constraint|null Primary key for the given table, `null` if the table has no primary key.
      */
     protected function loadTablePrimaryKey(string $tableName): Constraint|null
     {
@@ -313,13 +316,13 @@ final class Schema extends AbstractSchema
     /**
      * Loads all foreign keys for the given table.
      *
-     * @param string $tableName table name.
+     * @param string $tableName The table name.
      *
      * @throws Exception
      * @throws InvalidConfigException
      * @throws Throwable
      *
-     * @return array foreign keys for the given table.
+     * @return array Foreign keys for the given table.
      *
      * @psaml-return array|ForeignKeyConstraint[]
      */
@@ -333,13 +336,13 @@ final class Schema extends AbstractSchema
     /**
      * Loads all indexes for the given table.
      *
-     * @param string $tableName table name.
+     * @param string $tableName The table name.
      *
      * @throws Exception
      * @throws InvalidConfigException
      * @throws Throwable
      *
-     * @return IndexConstraint[] indexes for the given table.
+     * @return IndexConstraint[] Indexes for the given table.
      */
     protected function loadTableIndexes(string $tableName): array
     {
@@ -363,13 +366,12 @@ final class Schema extends AbstractSchema
         SQL;
 
         $resolvedName = $this->resolveTableName($tableName);
-
         $indexes = $this->db->createCommand($sql, [
             ':schemaName' => $resolvedName->getSchemaName(),
             ':tableName' => $resolvedName->getName(),
         ])->queryAll();
 
-        /** @var array[] $indexes */
+        /** @psalm-var array[] $indexes */
         $indexes = $this->normalizeRowKeyCase($indexes, true);
         $indexes = ArrayHelper::index($indexes, null, ['name']);
         $result = [];
@@ -402,13 +404,13 @@ final class Schema extends AbstractSchema
     /**
      * Loads all unique constraints for the given table.
      *
-     * @param string $tableName table name.
+     * @param string $tableName The table name.
      *
      * @throws Exception
      * @throws InvalidConfigException
      * @throws Throwable
      *
-     * @return array unique constraints for the given table.
+     * @return array Unique constraints for the given table.
      *
      * @psalm-return array|Constraint[]
      */
@@ -422,13 +424,13 @@ final class Schema extends AbstractSchema
     /**
      * Loads all check constraints for the given table.
      *
-     * @param string $tableName table name.
+     * @param string $tableName The table name.
      *
      * @throws Exception
      * @throws InvalidConfigException
      * @throws Throwable
      *
-     * @return array check constraints for the given table.
+     * @return array Check constraints for the given table.
      *
      * @psaml-return array|CheckConstraint[]
      */
@@ -442,11 +444,11 @@ final class Schema extends AbstractSchema
     /**
      * Loads all default value constraints for the given table.
      *
-     * @param string $tableName table name.
+     * @param string $tableName The table name.
      *
      * @throws NotSupportedException
      *
-     * @return DefaultValueConstraint[] default value constraints for the given table.
+     * @return DefaultValueConstraint[] Default value constraints for the given table.
      */
     protected function loadTableDefaultValues(string $tableName): array
     {
@@ -478,7 +480,7 @@ final class Schema extends AbstractSchema
     /**
      * Collects the foreign key column details for the given table.
      *
-     * @param TableSchemaInterface $table the table metadata
+     * @param TableSchemaInterface $table The table metadata
      *
      * @throws Exception
      * @throws InvalidConfigException
@@ -517,7 +519,7 @@ final class Schema extends AbstractSchema
             fns.nspname, fc.relname, a.attnum
         SQL;
 
-        /** @var array{array{tableName: string, columns: array}} $constraints */
+        /** @psalm-var array{array{tableName: string, columns: array}} $constraints */
         $constraints = [];
 
         /**
@@ -565,8 +567,8 @@ final class Schema extends AbstractSchema
         }
 
         /**
-         * @var int|string $foreingKeyName.
-         * @var array{tableName: string, columns: array} $constraint
+         * @psalm-var int|string $foreingKeyName.
+         * @psalm-var array{tableName: string, columns: array} $constraint
          */
         foreach ($constraints as $foreingKeyName => $constraint) {
             $table->foreignKey(
@@ -579,13 +581,13 @@ final class Schema extends AbstractSchema
     /**
      * Gets information about given table unique indexes.
      *
-     * @param TableSchemaInterface $table the table metadata.
+     * @param TableSchemaInterface $table The table metadata.
      *
      * @throws Exception
      * @throws InvalidConfigException
      * @throws Throwable
      *
-     * @return array with index and column names.
+     * @return array With index and column names.
      */
     protected function getUniqueIndexInformation(TableSchemaInterface $table): array
     {
@@ -623,28 +625,28 @@ final class Schema extends AbstractSchema
      * ]
      * ```
      *
-     * @param TableSchemaInterface $table the table metadata
+     * @param TableSchemaInterface $table The table metadata
      *
      * @throws Exception
      * @throws InvalidConfigException
      * @throws Throwable
      *
-     * @return array all unique indexes for the given table.
+     * @return array All unique indexes for the given table.
      */
     public function findUniqueIndexes(TableSchemaInterface $table): array
     {
         $uniqueIndexes = [];
 
-        /** @var array{indexname: string, columnname: string} $row */
+        /** @psalm-var array{indexname: string, columnname: string} $row */
         foreach ($this->getUniqueIndexInformation($table) as $row) {
-            /** @var array{indexname: string, columnname: string} $row */
+            /** @psalm-var array{indexname: string, columnname: string} $row */
             $row = $this->normalizeRowKeyCase($row, false);
 
             $column = $row['columnname'];
 
             if (str_starts_with($column, '"') && str_ends_with($column, '"')) {
                 /**
-                 * postgres will quote names that are not lowercase-only.
+                 * postgres will quote names that aren't lowercase-only.
                  *
                  * {@see https://github.com/yiisoft/yii2/issues/10613}
                  */
@@ -660,14 +662,14 @@ final class Schema extends AbstractSchema
     /**
      * Collects the metadata of table columns.
      *
-     * @param TableSchemaInterface $table the table metadata.
+     * @param TableSchemaInterface $table The table metadata.
      *
      * @throws Exception
      * @throws InvalidConfigException
      * @throws JsonException
      * @throws Throwable
      *
-     * @return bool whether the table exists in the database.
+     * @return bool Whether the table exists in the database.
      */
     protected function findColumns(TableSchemaInterface $table): bool
     {
@@ -760,7 +762,7 @@ final class Schema extends AbstractSchema
             return false;
         }
 
-        /** @var array $column */
+        /** @psalm-var array $column */
         foreach ($columns as $column) {
             /** @psalm-var ColumnArray $column */
             $column = $this->normalizeRowKeyCase($column, false);
@@ -845,9 +847,9 @@ final class Schema extends AbstractSchema
      *   size: string|null,
      *   is_pkey: bool|null,
      *   dimension: int
-     * } $info column information.
+     * } $info Column information.
      *
-     * @return ColumnSchemaInterface the column schema object.
+     * @return ColumnSchemaInterface The column schema object.
      */
     protected function loadColumnSchema(array $info): ColumnSchemaInterface
     {
@@ -875,8 +877,9 @@ final class Schema extends AbstractSchema
         $column->dimension($info['dimension']);
 
         /**
-         * pg_get_serial_sequence() doesn't track DEFAULT value change. GENERATED BY IDENTITY columns always have null
-         * default value.
+         * pg_get_serial_sequence() doesn't track DEFAULT value change.
+         *
+         * GENERATED BY IDENTITY columns always have a null default value.
          *
          * @psalm-var mixed $defaultValue
          */
@@ -911,8 +914,8 @@ final class Schema extends AbstractSchema
     /**
      * Loads multiple types of constraints and returns the specified ones.
      *
-     * @param string $tableName table name.
-     * @param string $returnType return type:
+     * @param string $tableName The table name.
+     * @param string $returnType The return type:
      * - primaryKey
      * - foreignKeys
      * - uniques
@@ -922,7 +925,9 @@ final class Schema extends AbstractSchema
      * @throws InvalidConfigException
      * @throws Throwable
      *
-     * @return array|Constraint|null (CheckConstraint|Constraint|ForeignKeyConstraint)[]|Constraint|null constraints.
+     * @return array|Constraint|null Constraints.
+     *
+     * @psalm-return CheckConstraint[]|Constraint[]|ForeignKeyConstraint[]|Constraint|null
      */
     private function loadTableConstraints(string $tableName, string $returnType): array|Constraint|null
     {
@@ -954,7 +959,7 @@ final class Schema extends AbstractSchema
         ORDER BY "a"."attnum" ASC, "fa"."attnum" ASC
         SQL;
 
-        /** @psalm-var array<array-key, string> $actionTypes */
+        /** @psalm-var string[] $actionTypes */
         $actionTypes = [
             'a' => 'NO ACTION',
             'r' => 'RESTRICT',
@@ -964,13 +969,12 @@ final class Schema extends AbstractSchema
         ];
 
         $resolvedName = $this->resolveTableName($tableName);
-
         $constraints = $this->db->createCommand($sql, [
             ':schemaName' => $resolvedName->getSchemaName(),
             ':tableName' => $resolvedName->getName(),
         ])->queryAll();
 
-        /** @var array<array-key, array> $constraints */
+        /** @psalm-var array[][] $constraints */
         $constraints = $this->normalizeRowKeyCase($constraints, true);
         $constraints = ArrayHelper::index($constraints, null, ['type', 'name']);
 
@@ -982,8 +986,8 @@ final class Schema extends AbstractSchema
         ];
 
         /**
-         * @var string $type
-         * @var array $names
+         * @psalm-var string $type
+         * @psalm-var array $names
          */
         foreach ($constraints as $type => $names) {
             /**
@@ -1040,8 +1044,6 @@ final class Schema extends AbstractSchema
      * Creates a column schema for the database.
      *
      * This method may be overridden by child classes to create a DBMS-specific column schema.
-     *
-     * @return ColumnSchema column schema instance.
      */
     private function createColumnSchema(): ColumnSchema
     {
@@ -1058,9 +1060,9 @@ final class Schema extends AbstractSchema
     /**
      * Returns the cache key for the specified table name.
      *
-     * @param string $name the table name.
+     * @param string $name The table name.
      *
-     * @return array the cache key.
+     * @return array The cache key.
      */
     protected function getCacheKey(string $name): array
     {
@@ -1072,7 +1074,7 @@ final class Schema extends AbstractSchema
      *
      * This allows {@see refresh()} to invalidate all cached table schemas.
      *
-     * @return string the cache tag name.
+     * @return string The cache tag name.
      */
     protected function getCacheTag(): string
     {

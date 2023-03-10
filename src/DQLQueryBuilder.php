@@ -14,13 +14,17 @@ use Yiisoft\Db\QueryBuilder\Condition\LikeCondition;
 
 use function array_merge;
 
+/**
+ * Implements a DQL (Data Query Language) SQL statements for PostgreSQL Server.
+ */
 final class DQLQueryBuilder extends AbstractDQLQueryBuilder
 {
     /**
-     * Contains array of default condition classes. Extend this method, if you want to change default condition classes
-     * for the query builder.
+     * Has an array of default condition classes.
      *
-     * See {@see conditionClasses} docs for details.
+     * Extend this method if you want to change default condition classes for the query builder.
+     *
+     * {@see conditionClasses} docs for details.
      */
     protected function defaultConditionClasses(): array
     {
@@ -33,10 +37,11 @@ final class DQLQueryBuilder extends AbstractDQLQueryBuilder
     }
 
     /**
-     * Contains array of default expression builders. Extend this method and override it, if you want to change default
-     * expression builders for this query builder.
+     * Has an array of default expression builders.
      *
-     * See {@see ExpressionBuilder} docs for details.
+     * Extend this method and override it if you want to change default expression builders for this query builder.
+     *
+     * {@see ExpressionBuilder} docs for details.
      *
      * @psalm-return array<string, class-string<ExpressionBuilderInterface>>
      */
