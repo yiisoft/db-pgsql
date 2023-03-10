@@ -5,8 +5,6 @@ declare(strict_types=1);
 namespace Yiisoft\Db\Pgsql;
 
 use Throwable;
-use Yiisoft\Db\Exception\Exception;
-use Yiisoft\Db\Exception\InvalidArgumentException;
 use Yiisoft\Db\Exception\NotSupportedException;
 use Yiisoft\Db\QueryBuilder\AbstractDDLQueryBuilder;
 use Yiisoft\Db\QueryBuilder\QueryBuilderInterface;
@@ -22,6 +20,9 @@ use function preg_match;
 use function preg_replace;
 use function str_contains;
 
+/**
+ * Implements a (Data Definition Language) SQL statements for PostgreSQL Server.
+ */
 final class DDLQueryBuilder extends AbstractDDLQueryBuilder
 {
     public function __construct(
@@ -32,9 +33,6 @@ final class DDLQueryBuilder extends AbstractDDLQueryBuilder
         parent::__construct($queryBuilder, $quoter, $schema);
     }
 
-    /**
-     * @throws NotSupportedException
-     */
     public function addDefaultValue(string $name, string $table, string $column, mixed $value): string
     {
         throw new NotSupportedException(__METHOD__ . ' is not supported by PostgreSQL.');
@@ -50,8 +48,8 @@ final class DDLQueryBuilder extends AbstractDDLQueryBuilder
         }
 
         /**
-         * {@see https://github.com/yiisoft/yii2/issues/4492}
-         * {@see https://www.postgresql.org/docs/9.1/static/sql-altertable.html}
+         * @link https://github.com/yiisoft/yii2/issues/4492
+         * @link https://www.postgresql.org/docs/9.1/static/sql-altertable.html
          */
         if (preg_match('/^(DROP|SET|RESET|USING)\s+/i', $type)) {
             return "ALTER TABLE $tableName ALTER COLUMN $columnName $type";
@@ -96,8 +94,6 @@ final class DDLQueryBuilder extends AbstractDDLQueryBuilder
     }
 
     /**
-     * @throws Exception
-     * @throws NotSupportedException
      * @throws Throwable
      */
     public function checkIntegrity(string $schema = '', string $table = '', bool $check = true): string
@@ -123,16 +119,9 @@ final class DDLQueryBuilder extends AbstractDDLQueryBuilder
             $command .= "ALTER TABLE $tableName $enable TRIGGER ALL; ";
         }
 
-        /** enable to have ability to alter several tables */
-        //$pdo = $db->getSlavePdo();
-        //$pdo?->setAttribute(PDO::ATTR_EMULATE_PREPARES, true);
-
         return $command;
     }
 
-    /**
-     * @throws Exception|InvalidArgumentException
-     */
     public function createIndex(string $name, string $table, array|string $columns, ?string $indexType = null, ?string $indexMethod = null): string
     {
         return 'CREATE ' . ($indexType ? ($indexType . ' ') : '') . 'INDEX '
@@ -142,9 +131,6 @@ final class DDLQueryBuilder extends AbstractDDLQueryBuilder
             . ' (' . $this->queryBuilder->buildColumns($columns) . ')';
     }
 
-    /**
-     * @throws NotSupportedException
-     */
     public function dropDefaultValue(string $name, string $table): string
     {
         throw new NotSupportedException(__METHOD__ . ' is not supported by PostgreSQL.');

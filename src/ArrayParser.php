@@ -8,19 +8,19 @@ use function in_array;
 use function strlen;
 
 /**
- * The class converts PostgresSQL array representation to PHP array.
+ * Array representation to PHP array parser for PostgreSQL Server.
  */
 final class ArrayParser
 {
     /**
-     * @var string Character used in array
+     * @var string Character used in an array.
      */
     private string $delimiter = ',';
 
     /**
-     * Convert array from PostgresSQL to PHP
+     * Convert an array from PostgresSQL to PHP.
      *
-     * @param string|null $value string to be converted
+     * @param string|null $value String to be converted.
      */
     public function parse(string|null $value): array|null
     {
@@ -36,8 +36,9 @@ final class ArrayParser
     }
 
     /**
-     * Pares PgSQL array encoded in string.
+     * Parse PostgreSQL array encoded in string.
      *
+     * @param string $value String to be parsed.
      * @param int $i parse starting position.
      */
     private function parseArray(string $value, int &$i = 0): array
@@ -72,9 +73,10 @@ final class ArrayParser
     }
 
     /**
-     * Parses PgSQL encoded string.
+     * Parses PostgreSQL encoded string.
      *
-     * @param int $i parse starting position.
+     * @param string $value String to be parsed.
+     * @param int $i Parse starting position.
      */
     private function parseString(string $value, int &$i): string|null
     {
