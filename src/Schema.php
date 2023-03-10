@@ -32,7 +32,7 @@ use function str_replace;
 use function substr;
 
 /**
- * Implements the MSSQL Server specific schema, supporting PostgreSQL Server version 9.6 and above.
+ * Implements the PostgreSQL Server specific schema, supporting PostgreSQL Server version 9.6 and above.
  *
  * @psalm-type ColumnArray = array{
  *   table_schema: string,
