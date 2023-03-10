@@ -338,6 +338,37 @@ final class SchemaProvider extends \Yiisoft\Db\Tests\Provider\SchemaProvider
                 ],
                 'animal',
             ],
+            [
+                [
+                    'uuid' => [
+                        'type' => 'string',
+                        'dbType' => 'uuid',
+                        'phpType' => 'string',
+                        'primaryKey' => true,
+                        'allowNull' => false,
+                        'autoIncrement' => false,
+                        'enumValues' => null,
+                        'size' => null,
+                        'precision' => null,
+                        'scale' => null,
+                        'defaultValue' => null,
+                    ],
+                    'col' => [
+                        'type' => 'string',
+                        'dbType' => 'varchar',
+                        'phpType' => 'string',
+                        'primaryKey' => false,
+                        'allowNull' => true,
+                        'autoIncrement' => false,
+                        'enumValues' => null,
+                        'size' => 16,
+                        'precision' => null,
+                        'scale' => null,
+                        'defaultValue' => null,
+                    ],
+                ],
+                'table_uuid',
+            ],
         ];
     }
 

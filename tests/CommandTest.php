@@ -293,4 +293,27 @@ final class CommandTest extends CommonCommandTest
     {
         parent::testUpsert($firstData, $secondData);
     }
+
+    public function testinsertWithReturningPksUuid(): void
+    {
+        $db = $this->getConnection(true);
+        $insertedUuid = '875343b3-6bd0-4bec-81bb-aa68bb52d945';
+
+        $command = $db->createCommand();
+        $result = $command->insertWithReturningPks(
+            '{{%table_uuid}}',
+            [
+                'col' => 'test',
+            ],
+        );
+
+        $this->assertIsString($result['uuid']);
+
+        // for example ['uuid' => 738146be-87b1-49f2-9913-36142fb6fcbe]
+        $this->assertStringMatchesFormat('%s-%s-%s-%s-%s', $result['uuid']);
+
+        $this->assertEquals(36, strlen($result['uuid']));
+
+        $db->close();
+    }
 }

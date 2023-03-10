@@ -34,12 +34,15 @@ DROP TABLE IF EXISTS "T_constraints_1";
 DROP TABLE IF EXISTS "T_upsert";
 DROP TABLE IF EXISTS "T_upsert_1";
 DROP TABLE IF EXISTS "table_with_array_col";
+DROP TABLE IF EXISTS "table_uuid";
 
 DROP SCHEMA IF EXISTS "schema1" CASCADE;
 DROP SCHEMA IF EXISTS "schema2" CASCADE;
 
 CREATE SCHEMA "schema1";
 CREATE SCHEMA "schema2";
+
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 CREATE TABLE "constraints"
 (
@@ -430,4 +433,9 @@ INSERT INTO "schema2"."custom_type_test_table" ("test_type", "test_type2")
 CREATE TABLE "table_with_array_col" (
     "id" SERIAL NOT NULL PRIMARY KEY,
     "array_col"  integer ARRAY[4]
+);
+
+CREATE TABLE "table_uuid" (
+    "uuid" uuid NOT NULL PRIMARY KEY DEFAULT uuid_generate_v4(),
+    "col" varchar(16)
 );
