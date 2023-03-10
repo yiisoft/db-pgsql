@@ -17,7 +17,7 @@ use Yiisoft\Db\Exception\NotSupportedException;
 use Yiisoft\Db\Expression\Expression;
 use Yiisoft\Db\Helper\ArrayHelper;
 use Yiisoft\Db\Schema\AbstractSchema;
-use Yiisoft\Db\Schema\ColumnSchemaBuilderInterface;
+use Yiisoft\Db\Schema\Builder\ColumnInterface;
 use Yiisoft\Db\Schema\ColumnSchemaInterface;
 use Yiisoft\Db\Schema\TableSchemaInterface;
 
@@ -1046,13 +1046,6 @@ final class Schema extends AbstractSchema
     private function createColumnSchema(): ColumnSchema
     {
         return new ColumnSchema();
-    }
-
-    public function createColumnSchemaBuilder(
-        string $type,
-        int|string|array|null $length = null
-    ): ColumnSchemaBuilderInterface {
-        return new ColumnSchemaBuilder($type, $length);
     }
 
     /**
