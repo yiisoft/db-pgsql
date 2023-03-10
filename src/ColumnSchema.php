@@ -31,7 +31,7 @@ use function strtolower;
  * The following code shows how to use:
  *
  * ```php
- * use Yiisoft\Db\Mssql\ColumnSchema;
+ * use Yiisoft\Db\Pgsql\ColumnSchema;
  *
  * $column = new ColumnSchema();
  * $column->name('id');
