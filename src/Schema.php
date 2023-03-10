@@ -166,6 +166,11 @@ final class Schema extends AbstractSchema
      */
     protected string|array $tableQuoteCharacter = '"';
 
+    public function createColumn(string $type, array|int|string $length = null): ColumnInterface
+    {
+        return (new Column($type, $length));
+    }
+
     /**
      * Resolves the table name and schema name (if any).
      *
