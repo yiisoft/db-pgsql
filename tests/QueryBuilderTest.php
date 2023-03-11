@@ -12,7 +12,7 @@ use Yiisoft\Db\Exception\IntegrityException;
 use Yiisoft\Db\Exception\InvalidConfigException;
 use Yiisoft\Db\Exception\NotSupportedException;
 use Yiisoft\Db\Expression\ExpressionInterface;
-use Yiisoft\Db\Pgsql\ColumnSchemaBuilder;
+use Yiisoft\Db\Pgsql\Column;
 use Yiisoft\Db\Pgsql\Tests\Support\TestTrait;
 use Yiisoft\Db\Query\QueryInterface;
 use Yiisoft\Db\Schema\SchemaInterface;
@@ -96,7 +96,7 @@ final class QueryBuilderTest extends CommonQueryBuilderTest
             $qb->alterColumn(
                 'foo1',
                 'bar',
-                (new ColumnSchemaBuilder(SchemaInterface::TYPE_STRING, 255))->asString()
+                (new Column(SchemaInterface::TYPE_STRING, 255))->asString()
             ),
         );
 
@@ -121,7 +121,7 @@ final class QueryBuilderTest extends CommonQueryBuilderTest
             $qb->alterColumn(
                 'foo1',
                 'bar',
-                (new ColumnSchemaBuilder(SchemaInterface::TYPE_STRING, 255))->notNull()->asString()
+                (new Column(SchemaInterface::TYPE_STRING, 255))->notNull()->asString()
             ),
         );
 
@@ -132,7 +132,7 @@ final class QueryBuilderTest extends CommonQueryBuilderTest
             $qb->alterColumn(
                 'foo1',
                 'bar',
-                (new ColumnSchemaBuilder(SchemaInterface::TYPE_STRING, 255))->null()->asString()
+                (new Column(SchemaInterface::TYPE_STRING, 255))->null()->asString()
             ),
         );
 
@@ -143,7 +143,7 @@ final class QueryBuilderTest extends CommonQueryBuilderTest
             $qb->alterColumn(
                 'foo1',
                 'bar',
-                (new ColumnSchemaBuilder(SchemaInterface::TYPE_STRING, 255))->null()->defaultValue('xxx')->asString()
+                (new Column(SchemaInterface::TYPE_STRING, 255))->null()->defaultValue('xxx')->asString()
             ),
         );
 
@@ -154,7 +154,7 @@ final class QueryBuilderTest extends CommonQueryBuilderTest
             $qb->alterColumn(
                 'foo1',
                 'bar',
-                (new ColumnSchemaBuilder(SchemaInterface::TYPE_STRING, 255))->check('char_length(bar) > 5')->asString()
+                (new Column(SchemaInterface::TYPE_STRING, 255))->check('char_length(bar) > 5')->asString()
             ),
         );
 
@@ -165,7 +165,7 @@ final class QueryBuilderTest extends CommonQueryBuilderTest
             $qb->alterColumn(
                 'foo1',
                 'bar',
-                (new ColumnSchemaBuilder(SchemaInterface::TYPE_STRING, 255))->defaultValue('')->asString()
+                (new Column(SchemaInterface::TYPE_STRING, 255))->defaultValue('')->asString()
             ),
         );
 
@@ -176,7 +176,7 @@ final class QueryBuilderTest extends CommonQueryBuilderTest
             $qb->alterColumn(
                 'foo1',
                 'bar',
-                (new ColumnSchemaBuilder(SchemaInterface::TYPE_STRING, 255))->defaultValue('AbCdE')->asString()
+                (new Column(SchemaInterface::TYPE_STRING, 255))->defaultValue('AbCdE')->asString()
             ),
         );
 
@@ -187,7 +187,7 @@ final class QueryBuilderTest extends CommonQueryBuilderTest
             $qb->alterColumn(
                 'foo1',
                 'bar',
-                (new ColumnSchemaBuilder(SchemaInterface::TYPE_TIMESTAMP))
+                (new Column(SchemaInterface::TYPE_TIMESTAMP))
                     ->defaultExpression('CURRENT_TIMESTAMP')
                     ->asString()
             ),
@@ -200,7 +200,7 @@ final class QueryBuilderTest extends CommonQueryBuilderTest
             $qb->alterColumn(
                 'foo1',
                 'bar',
-                (new ColumnSchemaBuilder(SchemaInterface::TYPE_STRING, 30))->unique()->asString()
+                (new Column(SchemaInterface::TYPE_STRING, 30))->unique()->asString()
             ),
         );
 
