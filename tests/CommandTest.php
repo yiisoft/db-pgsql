@@ -297,7 +297,6 @@ final class CommandTest extends CommonCommandTest
     public function testinsertWithReturningPksUuid(): void
     {
         $db = $this->getConnection(true);
-        $insertedUuid = '875343b3-6bd0-4bec-81bb-aa68bb52d945';
 
         $command = $db->createCommand();
         $result = $command->insertWithReturningPks(
