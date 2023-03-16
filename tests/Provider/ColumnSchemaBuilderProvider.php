@@ -23,8 +23,6 @@ final class ColumnSchemaBuilderProvider extends \Yiisoft\Db\Tests\Provider\Colum
         $types['uuid pk not null with default'][0] = '"column" uuid PRIMARY KEY NOT NULL DEFAULT uuid_generate_v4()';
         $types['uuid pk not null with default'][3] = [['notNull'],['defaultExpression', 'uuid_generate_v4()']];
 
-        $types['uuid pk sequence'][0] = '"column" uuid PRIMARY KEY NOT NULL DEFAULT uuid_generate_v4()';
-
         return $types;
     }
 }
