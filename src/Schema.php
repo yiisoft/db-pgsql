@@ -55,7 +55,6 @@ use function substr;
  *   is_pkey: bool|null,
  *   dimension: int
  * }
- *
  * @psalm-type ConstraintArray = array<
  *   array-key,
  *   array {
@@ -70,7 +69,6 @@ use function substr;
  *     check_expr: string
  *   }
  * >
- *
  * @psalm-type FindConstraintArray = array{
  *   constraint_name: string,
  *   column_name: string,
@@ -804,7 +802,7 @@ final class Schema extends AbstractSchema
                 ) {
                     $loadColumnSchema->defaultValue(new Expression($defaultValue));
                 } elseif ($loadColumnSchema->getType() === 'boolean') {
-                    $loadColumnSchema->defaultValue(($defaultValue  === 'true'));
+                    $loadColumnSchema->defaultValue($defaultValue  === 'true');
                 } elseif (is_string($defaultValue) && preg_match("/^B'(.*?)'::/", $defaultValue, $matches)) {
                     $loadColumnSchema->defaultValue(bindec($matches[1]));
                 } elseif (is_string($defaultValue) && preg_match("/^'(\d+)'::\"bit\"$/", $defaultValue, $matches)) {
