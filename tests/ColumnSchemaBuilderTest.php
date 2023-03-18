@@ -15,4 +15,12 @@ use Yiisoft\Db\Tests\Common\CommonColumnSchemaBuilderTest;
 final class ColumnSchemaBuilderTest extends CommonColumnSchemaBuilderTest
 {
     use TestTrait;
+
+    /**
+     * @dataProvider \Yiisoft\Db\Pgsql\Tests\Provider\ColumnSchemaBuilderProvider::createColumnTypes
+     */
+    public function testCreateColumnTypes(string $expected, string $type, ?int $length, array $calls): void
+    {
+        parent::testCreateColumnTypes($expected, $type, $length, $calls);
+    }
 }
