@@ -902,8 +902,8 @@ final class Schema extends AbstractSchema
             $column->sequenceName($this->resolveTableName($sequenceName)->getFullName());
         }
 
-        if (isset($this->typeMap[$column->getDbType()])) {
-            $column->type($this->typeMap[$column->getDbType()]);
+        if (isset($this->typeMap[$column->getDbType() ?? ''])) {
+            $column->type($this->typeMap[$column->getDbType() ?? '']);
         } else {
             $column->type(self::TYPE_STRING);
         }
