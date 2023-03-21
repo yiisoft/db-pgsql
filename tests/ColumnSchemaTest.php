@@ -89,7 +89,7 @@ final class ColumnSchemaTest extends TestCase
      */
     public function testPhpTypeCastBool(): void
     {
-        $columnSchema = new ColumnSchema();
+        $columnSchema = new ColumnSchema('boolean');
 
         $columnSchema->type('boolean');
 

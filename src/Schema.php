@@ -856,7 +856,7 @@ final class Schema extends AbstractSchema
      */
     protected function loadColumnSchema(array $info): ColumnSchemaInterface
     {
-        $column = $this->createColumnSchema();
+        $column = $this->createColumnSchema($info['column_name']);
         $column->allowNull($info['is_nullable']);
         $column->autoIncrement($info['is_autoinc']);
         $column->comment($info['column_comment']);
@@ -873,7 +873,6 @@ final class Schema extends AbstractSchema
             ? explode(',', str_replace(["''"], ["'"], $info['enum_values'])) : null);
         $column->unsigned(false); // has no meaning in PG
         $column->primaryKey((bool) $info['is_pkey']);
-        $column->name($info['column_name']);
         $column->precision($info['numeric_precision']);
         $column->scale($info['numeric_scale']);
         $column->size($info['size'] === null ? null : (int) $info['size']);
@@ -1047,10 +1046,14 @@ final class Schema extends AbstractSchema
      * Creates a column schema for the database.
      *
      * This method may be overridden by child classes to create a DBMS-specific column schema.
+     *
+     * @param string $name Name of the column.
+     *
+     * @return ColumnSchema
      */
-    private function createColumnSchema(): ColumnSchema
+    private function createColumnSchema(string $name): ColumnSchema
     {
-        return new ColumnSchema();
+        return new ColumnSchema($name);
     }
 
     /**
