@@ -46,7 +46,7 @@ final class QueryBuilderTest extends CommonQueryBuilderTest
             'Yiisoft\Db\Pgsql\DDLQueryBuilder::addDefaultValue is not supported by PostgreSQL.'
         );
 
-        $qb->addDefaultValue('CN_pk', 'T_constraints_1', 'C_default', 1);
+        $qb->addDefaultValue('T_constraints_1', 'CN_pk', 'C_default', 1);
 
         $db->close();
     }
@@ -413,7 +413,7 @@ final class QueryBuilderTest extends CommonQueryBuilderTest
             'Yiisoft\Db\Pgsql\DDLQueryBuilder::dropDefaultValue is not supported by PostgreSQL.'
         );
 
-        $qb->dropDefaultValue('CN_pk', 'T_constraints_1');
+        $qb->dropDefaultValue('T_constraints_1', 'CN_pk');
     }
 
     /**
@@ -430,42 +430,42 @@ final class QueryBuilderTest extends CommonQueryBuilderTest
             <<<SQL
             DROP INDEX "index"
             SQL,
-            $qb->dropIndex('index', '{{table}}'),
+            $qb->dropIndex('{{table}}', 'index'),
         );
 
         $this->assertSame(
             <<<SQL
             DROP INDEX "schema"."index"
             SQL,
-            $qb->dropIndex('index', 'schema.table'),
+            $qb->dropIndex('schema.table', 'index'),
         );
 
         $this->assertSame(
             <<<SQL
             DROP INDEX "schema"."index"
             SQL,
-            $qb->dropIndex('index', '{{schema.table}}'),
+            $qb->dropIndex('{{schema.table}}', 'index'),
         );
 
         $this->assertEquals(
             <<<SQL
             DROP INDEX "schema"."index"
             SQL,
-            $qb->dropIndex('schema.index', '{{schema2.table}}'),
+            $qb->dropIndex('{{schema2.table}}', 'schema.index'),
         );
 
         $this->assertSame(
             <<<SQL
             DROP INDEX "schema"."index"
             SQL,
-            $qb->dropIndex('index', '{{schema.%table}}'),
+            $qb->dropIndex('{{schema.%table}}', 'index'),
         );
 
         $this->assertSame(
             <<<SQL
             DROP INDEX {{%schema.index}}
             SQL,
-            $qb->dropIndex('index', '{{%schema.table}}'),
+            $qb->dropIndex('{{%schema.table}}', 'index'),
         );
 
         $db->close();
