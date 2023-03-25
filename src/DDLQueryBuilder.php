@@ -33,7 +33,7 @@ final class DDLQueryBuilder extends AbstractDDLQueryBuilder
         parent::__construct($queryBuilder, $quoter, $schema);
     }
 
-    public function addDefaultValue(string $name, string $table, string $column, mixed $value): string
+    public function addDefaultValue(string $table, string $name, string $column, mixed $value): string
     {
         throw new NotSupportedException(__METHOD__ . ' is not supported by PostgreSQL.');
     }
@@ -122,7 +122,7 @@ final class DDLQueryBuilder extends AbstractDDLQueryBuilder
         return $command;
     }
 
-    public function createIndex(string $name, string $table, array|string $columns, ?string $indexType = null, ?string $indexMethod = null): string
+    public function createIndex(string $table, string $name, array|string $columns, ?string $indexType = null, ?string $indexMethod = null): string
     {
         return 'CREATE ' . ($indexType ? ($indexType . ' ') : '') . 'INDEX '
             . $this->quoter->quoteTableName($name) . ' ON '
@@ -131,12 +131,12 @@ final class DDLQueryBuilder extends AbstractDDLQueryBuilder
             . ' (' . $this->queryBuilder->buildColumns($columns) . ')';
     }
 
-    public function dropDefaultValue(string $name, string $table): string
+    public function dropDefaultValue(string $table, string $name): string
     {
         throw new NotSupportedException(__METHOD__ . ' is not supported by PostgreSQL.');
     }
 
-    public function dropIndex(string $name, string $table): string
+    public function dropIndex(string $table, string $name): string
     {
         if (str_contains($table, '.') && !str_contains($name, '.')) {
             if (str_contains($table, '{{')) {

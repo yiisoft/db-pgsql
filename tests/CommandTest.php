@@ -40,7 +40,7 @@ final class CommandTest extends CommonCommandTest
             'Yiisoft\Db\Pgsql\DDLQueryBuilder::addDefaultValue is not supported by PostgreSQL.'
         );
 
-        $command->addDefaultValue('{{name}}', '{{table}}', 'column', 'value');
+        $command->addDefaultValue('{{table}}', '{{name}}', 'column', 'value');
 
         $db->close();
     }
@@ -173,7 +173,7 @@ final class CommandTest extends CommonCommandTest
             'Yiisoft\Db\Pgsql\DDLQueryBuilder::dropDefaultValue is not supported by PostgreSQL.'
         );
 
-        $command->dropDefaultValue('{{name}}', '{{table}}');
+        $command->dropDefaultValue('{{table}}', '{{name}}');
 
         $db->close();
     }
