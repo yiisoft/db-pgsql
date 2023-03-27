@@ -23,7 +23,7 @@ use function is_array;
 use function str_repeat;
 
 /**
- * Builds expressions for {@see `Yiisoft\Db\Expression\ArrayExpression`} for PostgreSQL Server.
+ * Builds expressions for {@see ArrayExpression} for PostgreSQL Server.
  */
 final class ArrayExpressionBuilder implements ExpressionBuilderInterface
 {
@@ -34,7 +34,7 @@ final class ArrayExpressionBuilder implements ExpressionBuilderInterface
     /**
      * The Method builds the raw SQL from the expression that won't be additionally escaped or quoted.
      *
-     * @param ExpressionInterface $expression The expression to be built.
+     * @param ExpressionInterface $expression The expression build.
      * @param array $params The binding parameters.
      *
      * @throws Exception
