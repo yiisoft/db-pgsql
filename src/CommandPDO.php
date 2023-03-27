@@ -12,7 +12,7 @@ use Yiisoft\Db\Exception\ConvertException;
 use Yiisoft\Db\QueryBuilder\QueryBuilderInterface;
 
 /**
- * Implements a database command that can be executed against a PDO (PHP Data Object) database connection for PostgreSQL
+ * Implements a database command that can be executed with a PDO (PHP Data Object) database connection for PostgreSQL
  * Server.
  */
 final class CommandPDO extends AbstractCommandPDO
