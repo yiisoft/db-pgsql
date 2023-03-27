@@ -58,7 +58,7 @@ final class DDLQueryBuilder extends AbstractDDLQueryBuilder
         if ($count) {
             $multiAlterStatement[] = "ALTER COLUMN $columnName SET NOT NULL";
         } else {
-            /** remove additional null if any */
+            /** remove extra null if any */
             $type = preg_replace('/\s+NULL/i', '', $type, -1, $count);
             if ($count) {
                 $multiAlterStatement[] = "ALTER COLUMN $columnName DROP NOT NULL";

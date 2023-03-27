@@ -49,7 +49,7 @@ final class QueryBuilder extends AbstractQueryBuilder
     {
         $ddlBuilder = new DDLQueryBuilder($this, $quoter, $schema);
         $dmlBuilder = new DMLQueryBuilder($this, $quoter, $schema);
-        $dqlBuilder = new DQLQueryBuilder($this, $quoter, $schema);
+        $dqlBuilder = new DQLQueryBuilder($this, $quoter);
         parent::__construct($quoter, $schema, $ddlBuilder, $dmlBuilder, $dqlBuilder);
     }
 }

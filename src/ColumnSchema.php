@@ -25,7 +25,7 @@ use function strtolower;
  *
  * It provides information about the column's name, type, size, precision, and other details.
  *
- * Is used to store and retrieve metadata about a column in a database table. It's typically used in conjunction with
+ * It's used to store and retrieve metadata about a column in a database table and is typically used in conjunction with
  * the {@see TableSchema}, which represents the metadata of a database table as a whole.
  *
  * The following code shows how to use:
@@ -84,7 +84,7 @@ final class ColumnSchema extends AbstractColumnSchema
             return new JsonExpression($value, $this->getDbType());
         }
 
-        if ($this->getType() === SchemaInterface::TYPE_BINARY && is_string($value)) {
+        if (is_string($value) && $this->getType() === SchemaInterface::TYPE_BINARY) {
             /** explicitly setup PDO param type for binary column */
             return new Param($value, PDO::PARAM_LOB);
         }
