@@ -22,7 +22,7 @@
         "php": "^8.0",
         "ext-json": "*",
         "ext-pdo": "*",
-        "yiisoft/db": "dev-master",
+        "yiisoft/db": "@dev",
         "yiisoft/json": "^1.0"
     },
     "require-dev": {
