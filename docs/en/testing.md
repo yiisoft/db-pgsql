@@ -4,7 +4,7 @@
 
 For greater ease it is recommended to use docker containers, for this you can use the [docker-compose.yml](https://docs.docker.com/compose/compose-file/) file that is in the docs folder.
 
-1. [PostgreSQL 15](/tests/Support/docker/docker-compose.yml)
+1. [PostgreSQL 15](/docker-compose.yml)
 
 For running the docker containers you can use the following command:
 
