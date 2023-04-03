@@ -17,7 +17,7 @@ use Yiisoft\Db\QueryBuilder\QueryBuilderInterface;
  */
 final class CommandPDO extends AbstractCommandPDO
 {
-    public function queryBuilder(): QueryBuilderInterface
+    protected function getQueryBuilder(): QueryBuilderInterface
     {
         return $this->db->getQueryBuilder();
     }
