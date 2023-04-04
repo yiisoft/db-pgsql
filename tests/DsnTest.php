@@ -22,6 +22,30 @@ final class DsnTest extends TestCase
         );
     }
 
+    public function testAsStringWithDatabaseName(): void
+    {
+        $this->assertSame(
+            'pgsql:host=localhost;dbname=postgres;port=5432',
+            (new Dsn('pgsql', 'localhost'))->asString(),
+        );
+    }
+
+    public function testAsStringWithDatabaseNameWithEmptyString(): void
+    {
+        $this->assertSame(
+            'pgsql:host=localhost;dbname=postgres;port=5432',
+            (new Dsn('pgsql', 'localhost', ''))->asString(),
+        );
+    }
+
+    public function testAsStringWithDatabaseNameWithNull(): void
+    {
+        $this->assertSame(
+            'pgsql:host=localhost;dbname=postgres;port=5432',
+            (new Dsn('pgsql', 'localhost', null))->asString(),
+        );
+    }
+
     public function testAsStringWithOptions(): void
     {
         $this->assertSame(
