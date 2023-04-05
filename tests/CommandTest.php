@@ -9,9 +9,9 @@ use Yiisoft\Db\Exception\Exception;
 use Yiisoft\Db\Exception\InvalidConfigException;
 use Yiisoft\Db\Exception\NotSupportedException;
 use Yiisoft\Db\Expression\JsonExpression;
-use Yiisoft\Db\Pgsql\ConnectionPDO;
+use Yiisoft\Db\Pgsql\PdoConnection;
 use Yiisoft\Db\Pgsql\Dsn;
-use Yiisoft\Db\Pgsql\PDODriver;
+use Yiisoft\Db\Pgsql\PdoDriver;
 use Yiisoft\Db\Pgsql\Tests\Support\TestTrait;
 use Yiisoft\Db\Tests\Common\CommonCommandTest;
 use Yiisoft\Db\Tests\Support\DbHelper;
@@ -323,7 +323,7 @@ final class CommandTest extends CommonCommandTest
     public function testShowDatabases(): void
     {
         $dsn = new Dsn('pgsql', '127.0.0.1');
-        $db = new ConnectionPDO(new PDODriver($dsn->asString(), 'root', 'root'), DbHelper::getSchemaCache());
+        $db = new PdoConnection(new PdoDriver($dsn->asString(), 'root', 'root'), DbHelper::getSchemaCache());
 
         $command = $db->createCommand();
 
