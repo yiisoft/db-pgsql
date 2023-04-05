@@ -16,7 +16,7 @@ use Yiisoft\Db\Exception\Exception;
 use Yiisoft\Db\Exception\InvalidConfigException;
 use Yiisoft\Db\Exception\NotSupportedException;
 use Yiisoft\Db\Expression\Expression;
-use Yiisoft\Db\Helper\ArrayHelper;
+use Yiisoft\Db\Helper\DbArrayHelper;
 use Yiisoft\Db\Schema\Builder\ColumnInterface;
 use Yiisoft\Db\Schema\ColumnSchemaInterface;
 use Yiisoft\Db\Schema\TableSchemaInterface;
@@ -376,7 +376,7 @@ final class Schema extends PdoAbstractSchema
 
         /** @psalm-var array[] $indexes */
         $indexes = $this->normalizeRowKeyCase($indexes, true);
-        $indexes = ArrayHelper::index($indexes, null, ['name']);
+        $indexes = DbArrayHelper::index($indexes, null, ['name']);
         $result = [];
 
         /**
@@ -394,7 +394,7 @@ final class Schema extends PdoAbstractSchema
         foreach ($indexes as $name => $index) {
             $ic = (new IndexConstraint())
                 ->name($name)
-                ->columnNames(ArrayHelper::getColumn($index, 'column_name'))
+                ->columnNames(DbArrayHelper::getColumn($index, 'column_name'))
                 ->primary($index[0]['index_is_primary'])
                 ->unique($index[0]['index_is_unique']);
 
@@ -978,7 +978,7 @@ final class Schema extends PdoAbstractSchema
 
         /** @psalm-var array[][] $constraints */
         $constraints = $this->normalizeRowKeyCase($constraints, true);
-        $constraints = ArrayHelper::index($constraints, null, ['type', 'name']);
+        $constraints = DbArrayHelper::index($constraints, null, ['type', 'name']);
 
         $result = [
             self::PRIMARY_KEY => null,
@@ -1001,7 +1001,7 @@ final class Schema extends PdoAbstractSchema
                     case 'p':
                         $result[self::PRIMARY_KEY] = (new Constraint())
                             ->name($name)
-                            ->columnNames(ArrayHelper::getColumn($constraint, 'column_name'));
+                            ->columnNames(DbArrayHelper::getColumn($constraint, 'column_name'));
                         break;
                     case 'f':
                         $onDelete = $actionTypes[$constraint[0]['on_delete']] ?? null;
@@ -1010,12 +1010,12 @@ final class Schema extends PdoAbstractSchema
                         $result[self::FOREIGN_KEYS][] = (new ForeignKeyConstraint())
                             ->name($name)
                             ->columnNames(array_values(
-                                array_unique(ArrayHelper::getColumn($constraint, 'column_name'))
+                                array_unique(DbArrayHelper::getColumn($constraint, 'column_name'))
                             ))
                             ->foreignSchemaName($constraint[0]['foreign_table_schema'])
                             ->foreignTableName($constraint[0]['foreign_table_name'])
                             ->foreignColumnNames(array_values(
-                                array_unique(ArrayHelper::getColumn($constraint, 'foreign_column_name'))
+                                array_unique(DbArrayHelper::getColumn($constraint, 'foreign_column_name'))
                             ))
                             ->onDelete($onDelete)
                             ->onUpdate($onUpdate);
@@ -1023,12 +1023,12 @@ final class Schema extends PdoAbstractSchema
                     case 'u':
                         $result[self::UNIQUES][] = (new Constraint())
                             ->name($name)
-                            ->columnNames(ArrayHelper::getColumn($constraint, 'column_name'));
+                            ->columnNames(DbArrayHelper::getColumn($constraint, 'column_name'));
                         break;
                     case 'c':
                         $result[self::CHECKS][] = (new CheckConstraint())
                             ->name($name)
-                            ->columnNames(ArrayHelper::getColumn($constraint, 'column_name'))
+                            ->columnNames(DbArrayHelper::getColumn($constraint, 'column_name'))
                             ->expression($constraint[0]['check_expr']);
                         break;
                 }
