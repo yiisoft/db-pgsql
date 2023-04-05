@@ -7,9 +7,9 @@ namespace Yiisoft\Db\Pgsql\Tests\Support;
 use Yiisoft\Db\Driver\PDO\ConnectionPDOInterface;
 use Yiisoft\Db\Exception\Exception;
 use Yiisoft\Db\Exception\InvalidConfigException;
-use Yiisoft\Db\Pgsql\ConnectionPDO;
+use Yiisoft\Db\Pgsql\Connection;
+use Yiisoft\Db\Pgsql\Driver;
 use Yiisoft\Db\Pgsql\Dsn;
-use Yiisoft\Db\Pgsql\PDODriver;
 use Yiisoft\Db\Tests\Support\DbHelper;
 
 trait TestTrait
@@ -23,9 +23,9 @@ trait TestTrait
      */
     protected function getConnection(bool $fixture = false): ConnectionPDOInterface
     {
-        $pdoDriver = new PDODriver($this->getDsn(), 'root', 'root');
+        $pdoDriver = new Driver($this->getDsn(), 'root', 'root');
         $pdoDriver->charset('utf8');
-        $db = new ConnectionPDO($pdoDriver, DbHelper::getSchemaCache());
+        $db = new Connection($pdoDriver, DbHelper::getSchemaCache());
 
         if ($fixture) {
             DbHelper::loadFixture($db, __DIR__ . "/Fixture/$this->fixture");
@@ -38,7 +38,7 @@ trait TestTrait
     {
         $dsn = (new Dsn('pgsql', '127.0.0.1', 'yiitest', '5432'))->asString();
 
-        return new ConnectionPDO(new PDODriver($dsn, 'root', 'root'), DbHelper::getSchemaCache());
+        return new Connection(new Driver($dsn, 'root', 'root'), DbHelper::getSchemaCache());
     }
 
     protected function getDsn(): string

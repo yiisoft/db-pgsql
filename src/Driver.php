@@ -12,7 +12,7 @@ use Yiisoft\Db\Driver\PDO\AbstractPDODriver;
  *
  * @link https://www.php.net/manual/en/ref.pdo-pgsql.php
  */
-final class PDODriver extends AbstractPDODriver
+final class Driver extends AbstractPDODriver
 {
     public function createConnection(): PDO
     {
