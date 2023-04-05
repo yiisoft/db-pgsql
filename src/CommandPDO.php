@@ -17,6 +17,15 @@ use Yiisoft\Db\QueryBuilder\QueryBuilderInterface;
  */
 final class CommandPDO extends AbstractCommandPDO
 {
+    public function showDatabases(): array
+    {
+        $sql = <<<SQL
+        SELECT datname FROM pg_database WHERE datistemplate = false AND datname NOT IN ('postgres', 'template0', 'template1')
+        SQL;
+
+        return $this->setSql($sql)->queryColumn();
+    }
+
     protected function getQueryBuilder(): QueryBuilderInterface
     {
         return $this->db->getQueryBuilder();

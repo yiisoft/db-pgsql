@@ -9,8 +9,12 @@ use Yiisoft\Db\Exception\Exception;
 use Yiisoft\Db\Exception\InvalidConfigException;
 use Yiisoft\Db\Exception\NotSupportedException;
 use Yiisoft\Db\Expression\JsonExpression;
+use Yiisoft\Db\Pgsql\ConnectionPDO;
+use Yiisoft\Db\Pgsql\Dsn;
+use Yiisoft\Db\Pgsql\PDODriver;
 use Yiisoft\Db\Pgsql\Tests\Support\TestTrait;
 use Yiisoft\Db\Tests\Common\CommonCommandTest;
+use Yiisoft\Db\Tests\Support\DbHelper;
 
 use function serialize;
 
@@ -314,5 +318,16 @@ final class CommandTest extends CommonCommandTest
         $this->assertEquals(36, strlen($result['uuid']));
 
         $db->close();
+    }
+
+    public function testShowDatabases(): void
+    {
+        $dsn = new Dsn('pgsql', '127.0.0.1');
+        $db = new ConnectionPDO(new PDODriver($dsn->asString(), 'root', 'root'), DbHelper::getSchemaCache());
+
+        $command = $db->createCommand();
+
+        $this->assertSame('pgsql:host=127.0.0.1;dbname=postgres;port=5432', $db->getDriver()->getDsn());
+        $this->assertSame(['yiitest'], $command->showDatabases());
     }
 }
