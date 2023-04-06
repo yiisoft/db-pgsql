@@ -16,7 +16,7 @@ final class CommandTest extends \Yiisoft\Db\Tests\Common\Pdo\CommonCommandTest
     use TestTrait;
 
     /**
-     * @dataProvider \Yiisoft\Db\Pgsql\Tests\Provider\CommandPDOProvider::bindParam
+     * @dataProvider \Yiisoft\Db\Pgsql\Tests\Provider\Pdo\CommandProvider::bindParam
      */
     public function testBindParam(
         string $field,

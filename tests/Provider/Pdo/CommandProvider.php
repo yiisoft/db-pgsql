@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Yiisoft\Db\Pgsql\Tests\Provider;
+namespace Yiisoft\Db\Pgsql\Tests\Provider\Pdo;
 
-final class CommandPDOProvider extends \Yiisoft\Db\Tests\Provider\CommandPDOProvider
+final class CommandProvider extends \Yiisoft\Db\Tests\Provider\Pdo\CommandProvider
 {
     public static function bindParam(): array
     {
