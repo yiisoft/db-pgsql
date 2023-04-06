@@ -6,7 +6,7 @@ namespace Yiisoft\Db\Pgsql\Tests;
 
 use Generator;
 use Throwable;
-use Yiisoft\Db\Driver\PDO\ConnectionPDOInterface;
+use Yiisoft\Db\Driver\Pdo\PdoConnectionInterface;
 use Yiisoft\Db\Exception\Exception;
 use Yiisoft\Db\Exception\IntegrityException;
 use Yiisoft\Db\Exception\InvalidConfigException;
@@ -29,7 +29,7 @@ final class QueryBuilderTest extends CommonQueryBuilderTest
 {
     use TestTrait;
 
-    protected ConnectionPDOInterface $db;
+    protected PdoConnectionInterface $db;
 
     /**
      * @throws Exception
