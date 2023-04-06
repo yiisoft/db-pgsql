@@ -6,7 +6,7 @@ namespace Yiisoft\Db\Pgsql\Tests;
 
 use Generator;
 use Throwable;
-use Yiisoft\Db\Driver\PDO\ConnectionPDOInterface;
+use Yiisoft\Db\Driver\Pdo\ConnectionInterface;
 use Yiisoft\Db\Exception\Exception;
 use Yiisoft\Db\Exception\IntegrityException;
 use Yiisoft\Db\Exception\InvalidConfigException;
@@ -16,7 +16,6 @@ use Yiisoft\Db\Pgsql\Column;
 use Yiisoft\Db\Pgsql\Tests\Support\TestTrait;
 use Yiisoft\Db\Query\QueryInterface;
 use Yiisoft\Db\Schema\SchemaInterface;
-use Yiisoft\Db\Tests\Common\CommonQueryBuilderTest;
 
 use function version_compare;
 
@@ -25,11 +24,11 @@ use function version_compare;
  *
  * @psalm-suppress PropertyNotSetInConstructor
  */
-final class QueryBuilderTest extends CommonQueryBuilderTest
+final class QueryBuilderTest extends \Yiisoft\Db\Tests\Common\CommonQueryBuilderTest
 {
     use TestTrait;
 
-    protected ConnectionPDOInterface $db;
+    protected ConnectionInterface $db;
 
     /**
      * @throws Exception

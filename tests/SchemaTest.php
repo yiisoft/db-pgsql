@@ -7,8 +7,7 @@ namespace Yiisoft\Db\Pgsql\Tests;
 use JsonException;
 use Throwable;
 use Yiisoft\Db\Command\CommandInterface;
-use Yiisoft\Db\Connection\ConnectionInterface;
-use Yiisoft\Db\Driver\PDO\ConnectionPDOInterface;
+use Yiisoft\Db\Driver\Pdo\ConnectionInterface;
 use Yiisoft\Db\Exception\Exception;
 use Yiisoft\Db\Exception\InvalidConfigException;
 use Yiisoft\Db\Exception\NotSupportedException;
@@ -17,7 +16,6 @@ use Yiisoft\Db\Pgsql\Schema;
 use Yiisoft\Db\Pgsql\Tests\Support\TestTrait;
 use Yiisoft\Db\Schema\SchemaInterface;
 use Yiisoft\Db\Schema\TableSchemaInterface;
-use Yiisoft\Db\Tests\Common\CommonSchemaTest;
 use Yiisoft\Db\Tests\Support\DbHelper;
 
 /**
@@ -25,7 +23,7 @@ use Yiisoft\Db\Tests\Support\DbHelper;
  *
  * @psalm-suppress PropertyNotSetInConstructor
  */
-final class SchemaTest extends CommonSchemaTest
+final class SchemaTest extends \Yiisoft\Db\Tests\Common\CommonSchemaTest
 {
     use TestTrait;
 
@@ -408,7 +406,7 @@ final class SchemaTest extends CommonSchemaTest
 
         $commandMock = $this->createMock(CommandInterface::class);
         $commandMock->method('queryAll')->willReturn([]);
-        $mockDb = $this->createMock(ConnectionPDOInterface::class);
+        $mockDb = $this->createMock(ConnectionInterface::class);
         $mockDb->method('getQuoter')->willReturn($db->getQuoter());
         $mockDb
             ->expects(self::atLeastOnce())
@@ -513,16 +511,5 @@ final class SchemaTest extends CommonSchemaTest
         $schema = $db->getSchema()->getTableSchema('schema2.custom_type_test_table');
         $this->assertEquals('my_type', $schema->getColumn('test_type')->getDbType());
         $this->assertEquals('schema2.my_type2', $schema->getColumn('test_type2')->getDbType());
-    }
-
-    public function testNotConnectionPDO(): void
-    {
-        $db = $this->createMock(ConnectionInterface::class);
-        $schema = new Schema($db, DbHelper::getSchemaCache(), 'system');
-
-        $this->expectException(NotSupportedException::class);
-        $this->expectExceptionMessage('Only PDO connections are supported.');
-
-        $schema->refreshTableSchema('customer');
     }
 }

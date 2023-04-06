@@ -11,7 +11,6 @@ use Yiisoft\Db\Constraint\Constraint;
 use Yiisoft\Db\Constraint\DefaultValueConstraint;
 use Yiisoft\Db\Constraint\ForeignKeyConstraint;
 use Yiisoft\Db\Constraint\IndexConstraint;
-use Yiisoft\Db\Driver\PDO\PdoAbstractSchema;
 use Yiisoft\Db\Exception\Exception;
 use Yiisoft\Db\Exception\InvalidConfigException;
 use Yiisoft\Db\Exception\NotSupportedException;
@@ -77,7 +76,7 @@ use function substr;
  *   foreign_column_name: string,
  * }
  */
-final class Schema extends PdoAbstractSchema
+final class Schema extends \Yiisoft\Db\Driver\Pdo\AbstractSchema
 {
     /**
      * @var array The mapping from physical column types (keys) to abstract column types (values).

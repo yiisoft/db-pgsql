@@ -4,8 +4,7 @@ declare(strict_types=1);
 
 namespace Yiisoft\Db\Pgsql;
 
-use Yiisoft\Db\Driver\PDO\AbstractConnectionPDO;
-use Yiisoft\Db\Driver\PDO\CommandPDOInterface;
+use Yiisoft\Db\Driver\Pdo\CommandInterface;
 use Yiisoft\Db\Exception\InvalidArgumentException;
 use Yiisoft\Db\QueryBuilder\QueryBuilderInterface;
 use Yiisoft\Db\Schema\Quoter;
@@ -18,9 +17,9 @@ use Yiisoft\Db\Transaction\TransactionInterface;
  *
  * @link https://www.php.net/manual/en/ref.pdo-pgsql.php
  */
-final class Connection extends AbstractConnectionPDO
+final class Connection extends \Yiisoft\Db\Driver\Pdo\AbstractConnection
 {
-    public function createCommand(string $sql = null, array $params = []): CommandPDOInterface
+    public function createCommand(string $sql = null, array $params = []): CommandInterface
     {
         $command = new Command($this);
 

@@ -2,17 +2,16 @@
 
 declare(strict_types=1);
 
-namespace Yiisoft\Db\Pgsql\Tests;
+namespace Yiisoft\Db\Pgsql\Tests\Pdo;
 
 use Yiisoft\Db\Pgsql\Tests\Support\TestTrait;
-use Yiisoft\Db\Tests\Common\CommonCommandPDOTest;
 
 /**
  * @group pgsql
  *
  * @psalm-suppress PropertyNotSetInConstructor
  */
-final class CommandPDOTest extends CommonCommandPDOTest
+final class CommandTest extends \Yiisoft\Db\Tests\Common\Pdo\CommonCommandTest
 {
     use TestTrait;
 

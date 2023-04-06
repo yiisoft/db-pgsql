@@ -5,14 +5,13 @@ declare(strict_types=1);
 namespace Yiisoft\Db\Pgsql;
 
 use PDO;
-use Yiisoft\Db\Driver\PDO\AbstractPDODriver;
 
 /**
  * Implements the PostgreSQL Server driver based on the PDO (PHP Data Objects) extension.
  *
  * @link https://www.php.net/manual/en/ref.pdo-pgsql.php
  */
-final class Driver extends AbstractPDODriver
+final class Driver extends \Yiisoft\Db\Driver\Pdo\AbstractDriver
 {
     public function createConnection(): PDO
     {

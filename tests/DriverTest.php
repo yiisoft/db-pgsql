@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Yiisoft\Db\Pgsql\Tests;
 
 use PDO;
-use PHPUnit\Framework\TestCase;
 use Yiisoft\Db\Exception\Exception;
 use Yiisoft\Db\Exception\InvalidConfigException;
 use Yiisoft\Db\Pgsql\Driver;
@@ -16,7 +15,7 @@ use Yiisoft\Db\Pgsql\Tests\Support\TestTrait;
  *
  * @psalm-suppress PropertyNotSetInConstructor
  */
-final class PDODriverTest extends TestCase
+final class DriverTest extends \PHPUnit\Framework\TestCase
 {
     use TestTrait;
 
