@@ -773,7 +773,7 @@ final class Schema extends AbstractPdoSchema
             /** @psalm-var ColumnSchema $loadColumnSchema */
             $loadColumnSchema = $this->loadColumnSchema($column);
 
-            $table->columns($loadColumnSchema->getName(), $loadColumnSchema);
+            $table->column($loadColumnSchema->getName(), $loadColumnSchema);
 
             /** @psalm-var mixed $defaultValue */
             $defaultValue = $loadColumnSchema->getDefaultValue();
