@@ -10,14 +10,14 @@ use Yiisoft\Db\Exception\InvalidArgumentException;
 use Yiisoft\Db\Exception\InvalidCallException;
 use Yiisoft\Db\Exception\InvalidConfigException;
 use Yiisoft\Db\Pgsql\Tests\Support\TestTrait;
-use Yiisoft\Db\Tests\Common\CommonConnectionPDOTest;
+use Yiisoft\Db\Tests\Common\CommonPdoConnectionTest;
 
 /**
  * @group pgsql
  *
  * @psalm-suppress PropertyNotSetInConstructor
  */
-final class ConnectionPDOTest extends CommonConnectionPDOTest
+final class PdoConnectionTest extends CommonPdoConnectionTest
 {
     use TestTrait;
 

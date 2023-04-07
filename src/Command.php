@@ -6,8 +6,8 @@ namespace Yiisoft\Db\Pgsql;
 
 use Exception;
 use Throwable;
-use Yiisoft\Db\Driver\PDO\AbstractCommandPDO;
-use Yiisoft\Db\Driver\PDO\ConnectionPDOInterface;
+use Yiisoft\Db\Driver\Pdo\AbstractPdoCommand;
+use Yiisoft\Db\Driver\Pdo\PdoConnectionInterface;
 use Yiisoft\Db\Exception\ConvertException;
 use Yiisoft\Db\QueryBuilder\QueryBuilderInterface;
 
@@ -15,7 +15,7 @@ use Yiisoft\Db\QueryBuilder\QueryBuilderInterface;
  * Implements a database command that can be executed with a PDO (PHP Data Object) database connection for PostgreSQL
  * Server.
  */
-final class Command extends AbstractCommandPDO
+final class Command extends AbstractPdoCommand
 {
     public function showDatabases(): array
     {
@@ -49,7 +49,7 @@ final class Command extends AbstractCommandPDO
                     && $this->db->getTransaction() === null
                 ) {
                     $this->db->transaction(
-                        fn (ConnectionPDOInterface $db) => $this->internalExecute($rawSql),
+                        fn (PdoConnectionInterface $db) => $this->internalExecute($rawSql),
                         $this->isolationLevel
                     );
                 } else {

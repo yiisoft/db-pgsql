@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Yiisoft\Db\Pgsql\Tests\Support;
 
-use Yiisoft\Db\Driver\PDO\ConnectionPDOInterface;
+use Yiisoft\Db\Driver\Pdo\PdoConnectionInterface;
 use Yiisoft\Db\Exception\Exception;
 use Yiisoft\Db\Exception\InvalidConfigException;
 use Yiisoft\Db\Pgsql\Connection;
@@ -21,7 +21,7 @@ trait TestTrait
      * @throws InvalidConfigException
      * @throws Exception
      */
-    protected function getConnection(bool $fixture = false): ConnectionPDOInterface
+    protected function getConnection(bool $fixture = false): PdoConnectionInterface
     {
         $pdoDriver = new Driver($this->getDsn(), 'root', 'root');
         $pdoDriver->charset('utf8');
@@ -34,7 +34,7 @@ trait TestTrait
         return $db;
     }
 
-    protected static function getDb(): ConnectionPDOInterface
+    protected static function getDb(): PdoConnectionInterface
     {
         $dsn = (new Dsn('pgsql', '127.0.0.1', 'yiitest', '5432'))->asString();
 
