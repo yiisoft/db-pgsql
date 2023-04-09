@@ -39,31 +39,31 @@ final class DMLQueryBuilder extends AbstractDMLQueryBuilder
         return $sql;
     }
 
-    public function resetSequence(string $tableName, int|string $value = null): string
+    public function resetSequence(string $table, int|string $value = null): string
     {
-        $table = $this->schema->getTableSchema($tableName);
+        $tableSchema = $this->schema->getTableSchema($table);
 
-        if ($table !== null && ($sequence = $table->getSequenceName()) !== null) {
+        if ($tableSchema !== null && ($sequence = $tableSchema->getSequenceName()) !== null) {
             /**
              * @link https://www.postgresql.org/docs/8.1/static/functions-sequence.html
              */
             $sequence = $this->quoter->quoteTableName($sequence);
-            $tableName = $this->quoter->quoteTableName($tableName);
+            $table = $this->quoter->quoteTableName($table);
 
             if ($value === null) {
-                $pk = $table->getPrimaryKey();
+                $pk = $tableSchema->getPrimaryKey();
                 $key = $this->quoter->quoteColumnName(reset($pk));
-                $value = "(SELECT COALESCE(MAX($key),0) FROM $tableName)+1";
+                $value = "(SELECT COALESCE(MAX($key),0) FROM $table)+1";
             }
 
             return "SELECT SETVAL('$sequence',$value,false)";
         }
 
-        if ($table === null) {
-            throw new InvalidArgumentException("Table not found: '$tableName'.");
+        if ($tableSchema === null) {
+            throw new InvalidArgumentException("Table not found: '$table'.");
         }
 
-        throw new InvalidArgumentException("There is not sequence associated with table '$tableName'.");
+        throw new InvalidArgumentException("There is not sequence associated with table '$table'.");
     }
 
     public function upsert(
