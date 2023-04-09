@@ -68,7 +68,7 @@ final class PdoCommandTest extends CommonPdoCommandTest
             SQL,
             $db->getDriverName(),
         );
-        $command->setLogger($this->createQueryLogger($sql, [sprintf('Yiisoft\Db\%s\Command::%s', ucfirst($db->getDriverName()), 'insertWithReturningPks')]));
+        $command->setLogger($this->createQueryLogger($sql, ['Yiisoft\Db\Driver\Pdo\AbstractPdoCommand::insertWithReturningPks']));
         $command->insertWithReturningPks('{{%customer}}', ['name' => 'test', 'email' => 'email@email']);
 
         $db->close();;
