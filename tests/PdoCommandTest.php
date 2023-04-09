@@ -9,7 +9,6 @@ use Yiisoft\Db\Driver\Pdo\AbstractPdoCommand;
 use Yiisoft\Db\Driver\Pdo\PdoCommandInterface;
 use Yiisoft\Db\Pgsql\Tests\Support\TestTrait;
 use Yiisoft\Db\Tests\Common\CommonPdoCommandTest;
-use Yiisoft\Db\Tests\Support\DbHelper;
 
 /**
  * @group pgsql
