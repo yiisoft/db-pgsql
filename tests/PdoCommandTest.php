@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace Yiisoft\Db\Pgsql\Tests;
 
+use Yiisoft\Db\Driver\Pdo\AbstractPdoCommand;
 use Yiisoft\Db\Pgsql\Tests\Support\TestTrait;
 use Yiisoft\Db\Tests\Common\CommonPdoCommandTest;
+use Yiisoft\Db\Tests\Support\DbHelper;
 
 /**
  * @group pgsql
@@ -50,5 +52,25 @@ final class PdoCommandTest extends CommonPdoCommandTest
         $columnSchema = $db->getTableSchema('{{%table_with_array_col}}')->getColumn('array_col');
 
         $this->assertSame($arrValue, $columnSchema->phpTypecast($selectData['array_col']));
+    }
+
+    public function testCommandLogging(): void
+    {
+        parent::testCommandLogging();
+        $db = $this->getConnection(true);
+
+        /** @var AbstractPdoCommand $command */
+        $command = $db->createCommand();
+
+        $sql = DbHelper::replaceQuotes(
+            <<<SQL
+            INSERT INTO [[customer]] ([[name]], [[email]]) VALUES ('test', 'email@email') RETURNING [[id]]
+            SQL,
+            $db->getDriverName(),
+        );
+        $command->setLogger($this->createQueryLogger($sql, [sprintf('Yiisoft\Db\%s\Command::%s', ucfirst($db->getDriverName()), 'insertWithReturningPks')]));
+        $command->insertWithReturningPks('{{%customer}}', ['name' => 'test', 'email' => 'email@email']);
+
+        $db->close();;
     }
 }
