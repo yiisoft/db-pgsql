@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace Yiisoft\Db\Pgsql\Tests;
 
+use Psr\Log\LoggerAwareInterface;
 use Yiisoft\Db\Driver\Pdo\AbstractPdoCommand;
+use Yiisoft\Db\Driver\Pdo\PdoCommandInterface;
 use Yiisoft\Db\Pgsql\Tests\Support\TestTrait;
 use Yiisoft\Db\Tests\Common\CommonPdoCommandTest;
 use Yiisoft\Db\Tests\Support\DbHelper;
@@ -56,11 +58,40 @@ final class PdoCommandTest extends CommonPdoCommandTest
 
     public function testCommandLogging(): void
     {
-        parent::testCommandLogging();
         $db = $this->getConnection(true);
 
+        /** @psalm-var $sql */
+        $sql = DbHelper::replaceQuotes(
+            <<<SQL
+            SELECT * FROM [[customer]] LIMIT 1
+            SQL,
+            $db->getDriverName(),
+        );
         /** @var AbstractPdoCommand $command */
         $command = $db->createCommand();
+        $this->assertInstanceOf(PdoCommandInterface::class, $command);
+        $this->assertInstanceOf(LoggerAwareInterface::class, $command);
+        $command->setSql($sql);
+
+        $this->assertSame($sql, $command->getSql());
+
+        $command->setLogger($this->createQueryLogger($sql, ['Yiisoft\Db\Driver\Pdo\AbstractPdoCommand::queryOne']));
+        $command->queryOne();
+
+        $command->setLogger($this->createQueryLogger($sql, ['Yiisoft\Db\Driver\Pdo\AbstractPdoCommand::queryAll']));
+        $command->queryAll();
+
+        $command->setLogger($this->createQueryLogger($sql, ['Yiisoft\Db\Driver\Pdo\AbstractPdoCommand::queryColumn']));
+        $command->queryColumn();
+
+        $command->setLogger($this->createQueryLogger($sql, ['Yiisoft\Db\Driver\Pdo\AbstractPdoCommand::queryScalar']));
+        $command->queryScalar();
+
+        $command->setLogger($this->createQueryLogger($sql, ['Yiisoft\Db\Driver\Pdo\AbstractPdoCommand::query']));
+        $command->query();
+
+        $command->setLogger($this->createQueryLogger($sql, ['Yiisoft\Db\Driver\Pdo\AbstractPdoCommand::execute']));
+        $command->execute();
 
         $sql = DbHelper::replaceQuotes(
             <<<SQL
@@ -71,6 +102,6 @@ final class PdoCommandTest extends CommonPdoCommandTest
         $command->setLogger($this->createQueryLogger($sql, ['Yiisoft\Db\Driver\Pdo\AbstractPdoCommand::insertWithReturningPks']));
         $command->insertWithReturningPks('{{%customer}}', ['name' => 'test', 'email' => 'email@email']);
 
-        $db->close();;
+        $db->close();
     }
 }
