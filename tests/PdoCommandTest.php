@@ -60,13 +60,8 @@ final class PdoCommandTest extends CommonPdoCommandTest
     {
         $db = $this->getConnection(true);
 
-        /** @psalm-var $sql */
-        $sql = DbHelper::replaceQuotes(
-            <<<SQL
-            SELECT * FROM [[customer]] LIMIT 1
-            SQL,
-            $db->getDriverName(),
-        );
+        $sql = 'SELECT * FROM "customer" LIMIT 1';
+
         /** @var AbstractPdoCommand $command */
         $command = $db->createCommand();
         $this->assertInstanceOf(PdoCommandInterface::class, $command);
@@ -93,12 +88,7 @@ final class PdoCommandTest extends CommonPdoCommandTest
         $command->setLogger($this->createQueryLogger($sql, ['Yiisoft\Db\Driver\Pdo\AbstractPdoCommand::execute']));
         $command->execute();
 
-        $sql = DbHelper::replaceQuotes(
-            <<<SQL
-            INSERT INTO [[customer]] ([[name]], [[email]]) VALUES ('test', 'email@email') RETURNING [[id]]
-            SQL,
-            $db->getDriverName(),
-        );
+        $sql = 'INSERT INTO "customer" ("name", "email") VALUES (\'test\', \'email@email\') RETURNING "id"';
         $command->setLogger($this->createQueryLogger($sql, ['Yiisoft\Db\Driver\Pdo\AbstractPdoCommand::insertWithReturningPks']));
         $command->insertWithReturningPks('{{%customer}}', ['name' => 'test', 'email' => 'email@email']);
 
