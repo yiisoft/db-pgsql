@@ -328,7 +328,7 @@ final class SchemaTest extends CommonSchemaTest
         $db = $this->getConnection();
 
         $schema = $db->getSchema();
-        $schema->schemaCacheEnable(true);
+        $schema->enableCache(true);
         $db->setTablePrefix($tablePrefix);
         $noCacheTable = $schema->getTableSchema($tableName, true);
 
