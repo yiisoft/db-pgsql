@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace Yiisoft\Db\Pgsql\Tests;
 
+use Psr\Log\LoggerAwareInterface;
+use Yiisoft\Db\Driver\Pdo\AbstractPdoCommand;
+use Yiisoft\Db\Driver\Pdo\PdoCommandInterface;
 use Yiisoft\Db\Pgsql\Tests\Support\TestTrait;
 use Yiisoft\Db\Tests\Common\CommonPdoCommandTest;
 
@@ -50,5 +53,44 @@ final class PdoCommandTest extends CommonPdoCommandTest
         $columnSchema = $db->getTableSchema('{{%table_with_array_col}}')->getColumn('array_col');
 
         $this->assertSame($arrValue, $columnSchema->phpTypecast($selectData['array_col']));
+    }
+
+    public function testCommandLogging(): void
+    {
+        $db = $this->getConnection(true);
+
+        $sql = 'SELECT * FROM "customer" LIMIT 1';
+
+        /** @var AbstractPdoCommand $command */
+        $command = $db->createCommand();
+        $this->assertInstanceOf(PdoCommandInterface::class, $command);
+        $this->assertInstanceOf(LoggerAwareInterface::class, $command);
+        $command->setSql($sql);
+
+        $this->assertSame($sql, $command->getSql());
+
+        $command->setLogger($this->createQueryLogger($sql, ['Yiisoft\Db\Driver\Pdo\AbstractPdoCommand::queryOne']));
+        $command->queryOne();
+
+        $command->setLogger($this->createQueryLogger($sql, ['Yiisoft\Db\Driver\Pdo\AbstractPdoCommand::queryAll']));
+        $command->queryAll();
+
+        $command->setLogger($this->createQueryLogger($sql, ['Yiisoft\Db\Driver\Pdo\AbstractPdoCommand::queryColumn']));
+        $command->queryColumn();
+
+        $command->setLogger($this->createQueryLogger($sql, ['Yiisoft\Db\Driver\Pdo\AbstractPdoCommand::queryScalar']));
+        $command->queryScalar();
+
+        $command->setLogger($this->createQueryLogger($sql, ['Yiisoft\Db\Driver\Pdo\AbstractPdoCommand::query']));
+        $command->query();
+
+        $command->setLogger($this->createQueryLogger($sql, ['Yiisoft\Db\Driver\Pdo\AbstractPdoCommand::execute']));
+        $command->execute();
+
+        $sql = 'INSERT INTO "customer" ("name", "email") VALUES (\'test\', \'email@email\') RETURNING "id"';
+        $command->setLogger($this->createQueryLogger($sql, ['Yiisoft\Db\Driver\Pdo\AbstractPdoCommand::insertWithReturningPks']));
+        $command->insertWithReturningPks('{{%customer}}', ['name' => 'test', 'email' => 'email@email']);
+
+        $db->close();
     }
 }
