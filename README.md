@@ -5,16 +5,17 @@
     <a href="https://www.postgresql.org/" target="_blank">
         <img src="https://www.postgresql.org/media/img/about/press/elephant.png" height="80px">
     </a>
-    <h1 align="center">Yii DataBase PostgreSQL Extension</h1>
+    <h1 align="center">PostgreSQL driver for Yii Database</h1>
     <br>
 </p>
 
-Yii Database PostgreSQL Extension is a [PostgreSQL] database adapter for the [Yii Framework]. Yii is a high-performance PHP framework for developing web applications. The  package provides a database connection interface and a set of classes for interacting with a [PostgreSQL] database from within a Yii application. It allows you to perform common database operations such as executing queries, building and executing INSERT, UPDATE, and DELETE statements, and working with transactions. It also provides support for PostgreSQL-specific features such as stored procedures and server-side cursors.
-
-It is used in [Yii Framework] but can be used separately.
+PostgreSQL driver for [Yii Database](https://github.com/yiisoft/db) is a [PostgreSQL] database adapter. 
+The package provides a database connection interface and a set of classes for interacting with a [PostgreSQL] database.
+It allows you to perform common database operations such as executing queries, building and executing `INSERT`, `UPDATE`,
+and `DELETE` statements, and working with transactions. It also provides support for PostgreSQL-specific features such
+as stored procedures and server-side cursors.
 
 [PostgreSQL]: https://www.postgresql.org/
-[Yii Framework]: https://www.yiiframework.com
 
 [![Latest Stable Version](https://poser.pugx.org/yiisoft/db-pgsql/v/stable.png)](https://packagist.org/packages/yiisoft/db-pgsql)
 [![Total Downloads](https://poser.pugx.org/yiisoft/db-pgsql/downloads.png)](https://packagist.org/packages/yiisoft/db-pgsql)

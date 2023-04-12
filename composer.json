@@ -1,10 +1,14 @@
 {
     "name": "yiisoft/db-pgsql",
     "type": "library",
-    "description": "Yii DataBase PostgreSQL Extension",
+    "description": "PostgreSQL driver for Yii Database",
     "keywords": [
         "yii",
-        "pgsql"
+        "pgsql",
+        "database",
+        "sql",
+        "dbal",
+        "query-builder"
     ],
     "homepage": "https://www.yiiframework.com/",
     "license": "BSD-3-Clause",
@@ -16,13 +20,11 @@
         "chat": "https://t.me/yii3en",
         "irc": "irc://irc.freenode.net/yii"
     },
-    "minimum-stability": "dev",
-    "prefer-stable": true,
     "require": {
         "php": "^8.0",
         "ext-json": "*",
         "ext-pdo": "*",
-        "yiisoft/db": "@dev",
+        "yiisoft/db": "^1.0",
         "yiisoft/json": "^1.0"
     },
     "require-dev": {
@@ -46,11 +48,6 @@
         "psr-4": {
             "Yiisoft\\Db\\Pgsql\\Tests\\": "tests",
             "Yiisoft\\Db\\Tests\\": "vendor/yiisoft/db/tests"
-        }
-    },
-    "extra": {
-        "branch-alias": {
-            "dev-master": "3.0.x-dev"
         }
     },
     "config": {
