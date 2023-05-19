@@ -41,7 +41,7 @@ composer require yiisoft/db-pgsql
 
 For config connection to Oracle database check [Connecting PostgreSQL](https://github.com/yiisoft/db/blob/master/docs/en/connection/pgsql.md).
 
-[Check the documentation docs](https://github.com/yiisoft/db/blob/master/docs/en/getting-started.md) to learn about usage.
+[Check the documentation docs](https://github.com/yiisoft/db/blob/master/docs/en/README.md) to learn about usage.
 
 ## Testing
 
