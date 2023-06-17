@@ -246,6 +246,7 @@ final class SchemaProvider extends \Yiisoft\Db\Tests\Provider\SchemaProvider
                         'precision' => 32,
                         'scale' => 0,
                         'defaultValue' => null,
+                        'dimension' => 1,
                     ],
                     'numericarray_col' => [
                         'type' => 'decimal',
