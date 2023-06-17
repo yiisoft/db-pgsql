@@ -106,7 +106,7 @@ final class ColumnSchema extends AbstractColumnSchema
     public function phpTypecast(mixed $value): mixed
     {
         if ($this->dimension > 0) {
-            if (!is_array($value) && (is_string($value) || $value === null)) {
+            if (is_string($value)) {
                 $value = $this->getArrayParser()->parse($value);
             }
 

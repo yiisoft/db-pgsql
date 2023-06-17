@@ -48,6 +48,7 @@ final class ColumnSchemaTest extends TestCase
                 'bool_col' => false,
                 'bigint_col' => 9_223_372_036_854_775_806,
                 'intarray_col' => [1, -2, null, '42'],
+                'numericarray_col' => [1.2, -2.2, null],
                 'textarray2_col' => new ArrayExpression(null),
                 'json_col' => [['a' => 1, 'b' => null, 'c' => [1, 3, 5]]],
                 'jsonb_col' => new JsonExpression(new ArrayExpression([1, 2, 3])),
@@ -65,6 +66,7 @@ final class ColumnSchemaTest extends TestCase
         $boolColPhpTypeCast = $tableSchema->getColumn('bool_col')?->phpTypecast($query['bool_col']);
         $numericColPhpTypeCast = $tableSchema->getColumn('numeric_col')?->phpTypecast($query['numeric_col']);
         $intArrayColPhpType = $tableSchema->getColumn('intarray_col')?->phpTypecast($query['intarray_col']);
+        $numericArrayColPhpTypeCast = $tableSchema->getColumn('numericarray_col')?->phpTypecast($query['numericarray_col']);
         $textArray2ColPhpType = $tableSchema->getColumn('textarray2_col')?->phpTypecast($query['textarray2_col']);
         $jsonColPhpType = $tableSchema->getColumn('json_col')?->phpTypecast($query['json_col']);
         $jsonBColPhpType = $tableSchema->getColumn('jsonb_col')?->phpTypecast($query['jsonb_col']);
@@ -76,6 +78,7 @@ final class ColumnSchemaTest extends TestCase
         $this->assertFalse($boolColPhpTypeCast);
         $this->assertSame(33.22, $numericColPhpTypeCast);
         $this->assertSame([1, -2, null, 42], $intArrayColPhpType);
+        $this->assertSame([1.2, -2.2, null], $numericArrayColPhpTypeCast);
         $this->assertNull($textArray2ColPhpType);
         $this->assertSame([['a' => 1, 'b' => null, 'c' => [1, 3, 5]]], $jsonColPhpType);
         $this->assertSame(['1', '2', '3'], $jsonBColPhpType);
