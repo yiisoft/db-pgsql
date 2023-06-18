@@ -533,11 +533,11 @@ final class SchemaTest extends CommonSchemaTest
         $command = $db->createCommand();
         $schema = $db->getSchema();
 
-        $command->setSql('DROP DOMAIN IF EXISTS sex_char')->execute();
+        $command->setSql('DROP DOMAIN IF EXISTS sex_char CASCADE')->execute();
         $command->setSql(
             'CREATE DOMAIN sex_char AS "char" NOT NULL DEFAULT \'x\' CHECK (VALUE in (\'m\', \'f\', \'x\'))'
         )->execute();
-        
+
         if ($schema->getTableSchema('test_domain_type') !== null) {
             $command->dropTable('test_domain_type')->execute();
         }

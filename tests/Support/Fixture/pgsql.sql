@@ -156,7 +156,7 @@ CREATE TABLE "type" (
   bigint_col BIGINT,
   intarray_col integer[],
   numericarray_col numeric(5,2)[],
-  chararray_col varchar(100)[],
+  varchararray_col varchar(100)[],
   textarray2_col text[][],
   json_col json DEFAULT '{"a":1}',
   jsonb_col jsonb,

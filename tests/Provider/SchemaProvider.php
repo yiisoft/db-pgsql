@@ -262,7 +262,7 @@ final class SchemaProvider extends \Yiisoft\Db\Tests\Provider\SchemaProvider
                         'defaultValue' => null,
                         'dimension' => 1,
                     ],
-                    'chararray_col' => [
+                    'varchararray_col' => [
                         'type' => 'string',
                         'dbType' => 'varchar',
                         'phpType' => 'string',

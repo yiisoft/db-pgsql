@@ -49,6 +49,7 @@ final class ColumnSchemaTest extends TestCase
                 'bigint_col' => 9_223_372_036_854_775_806,
                 'intarray_col' => [1, -2, null, '42'],
                 'numericarray_col' => [1.2, -2.2, null],
+                'varchararray_col' => ['', 'some text', null],
                 'textarray2_col' => new ArrayExpression(null),
                 'json_col' => [['a' => 1, 'b' => null, 'c' => [1, 3, 5]]],
                 'jsonb_col' => new JsonExpression(new ArrayExpression([1, 2, 3])),
@@ -67,6 +68,7 @@ final class ColumnSchemaTest extends TestCase
         $numericColPhpTypeCast = $tableSchema->getColumn('numeric_col')?->phpTypecast($query['numeric_col']);
         $intArrayColPhpType = $tableSchema->getColumn('intarray_col')?->phpTypecast($query['intarray_col']);
         $numericArrayColPhpTypeCast = $tableSchema->getColumn('numericarray_col')?->phpTypecast($query['numericarray_col']);
+        $varcharArrayColPhpTypeCast = $tableSchema->getColumn('varchararray_col')?->phpTypecast($query['varchararray_col']);
         $textArray2ColPhpType = $tableSchema->getColumn('textarray2_col')?->phpTypecast($query['textarray2_col']);
         $jsonColPhpType = $tableSchema->getColumn('json_col')?->phpTypecast($query['json_col']);
         $jsonBColPhpType = $tableSchema->getColumn('jsonb_col')?->phpTypecast($query['jsonb_col']);
@@ -79,6 +81,7 @@ final class ColumnSchemaTest extends TestCase
         $this->assertSame(33.22, $numericColPhpTypeCast);
         $this->assertSame([1, -2, null, 42], $intArrayColPhpType);
         $this->assertSame([1.2, -2.2, null], $numericArrayColPhpTypeCast);
+        $this->assertSame(['', 'some text', null], $varcharArrayColPhpTypeCast);
         $this->assertNull($textArray2ColPhpType);
         $this->assertSame([['a' => 1, 'b' => null, 'c' => [1, 3, 5]]], $jsonColPhpType);
         $this->assertSame(['1', '2', '3'], $jsonBColPhpType);
