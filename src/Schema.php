@@ -708,7 +708,6 @@ final class Schema extends AbstractPdoSchema
                 ',')
                 ELSE NULL
             END AS enum_values,
-            COALESCE(td.oid, tb.oid, a.atttypid) AS type_id,
             information_schema._pg_numeric_precision(
                 COALESCE(td.oid, tb.oid, a.atttypid),
                 information_schema._pg_truetypmod(a, t)
