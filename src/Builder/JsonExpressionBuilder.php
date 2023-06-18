@@ -70,9 +70,10 @@ final class JsonExpressionBuilder implements ExpressionBuilderInterface
     {
         $type = $expression->getType();
 
-        return match ($type !== null) {
-            true => '::' . $type,
-            default => '',
-        };
+        if ($type === null) {
+            return '';
+        }
+
+        return '::' . $type;
     }
 }
