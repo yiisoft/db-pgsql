@@ -692,10 +692,10 @@ final class Schema extends AbstractPdoSchema
             (SELECT nspname FROM pg_namespace WHERE oid = COALESCE(td.typnamespace, tb.typnamespace, t.typnamespace)) AS type_scheme,
             a.attlen AS character_maximum_length,
             pg_catalog.col_description(c.oid, a.attnum) AS column_comment,
-            a.atttypmod AS modifier,
-            a.attnotnull = false AS is_nullable,
-            CAST(pg_get_expr(ad.adbin, ad.adrelid) AS varchar) AS column_default,
-            coalesce(pg_get_expr(ad.adbin, ad.adrelid) ~ 'nextval',false) $orIdentity AS is_autoinc,
+            information_schema._pg_truetypmod(a, t) AS modifier,
+            NOT (a.attnotnull OR t.typnotnull) AS is_nullable,
+            COALESCE(t.typdefault, pg_get_expr(ad.adbin, ad.adrelid)) AS column_default,
+            COALESCE(pg_get_expr(ad.adbin, ad.adrelid) ~ 'nextval', false) $orIdentity AS is_autoinc,
             pg_get_serial_sequence(quote_ident(d.nspname) || '.' || quote_ident(c.relname), a.attname)
             AS sequence_name,
             CASE WHEN COALESCE(td.typtype, tb.typtype, t.typtype) = 'e'::char
@@ -708,52 +708,36 @@ final class Schema extends AbstractPdoSchema
                 ',')
                 ELSE NULL
             END AS enum_values,
-            CASE atttypid
-                WHEN 21 /*int2*/ THEN 16
-                WHEN 23 /*int4*/ THEN 32
-                WHEN 20 /*int8*/ THEN 64
-                WHEN 1700 /*numeric*/ THEN
-                    CASE WHEN atttypmod = -1
-                        THEN null
-                        ELSE ((atttypmod - 4) >> 16) & 65535
-                        END
-                WHEN 700 /*float4*/ THEN 24 /*FLT_MANT_DIG*/
-                WHEN 701 /*float8*/ THEN 53 /*DBL_MANT_DIG*/
-                    ELSE null
-                    END   AS numeric_precision,
-            CASE
-                WHEN atttypid IN (21, 23, 20) THEN 0
-                WHEN atttypid IN (1700) THEN
-            CASE
-                WHEN atttypmod = -1 THEN null
-                    ELSE (atttypmod - 4) & 65535
-                    END
-                    ELSE null
-                    END AS numeric_scale,
-                    CAST(
-                        information_schema._pg_char_max_length(
-                        information_schema._pg_truetypid(a, t),
-                        information_schema._pg_truetypmod(a, t)
-                        ) AS numeric
-                    ) AS size,
-                    a.attnum = any (ct.conkey) as is_pkey,
-                    COALESCE(NULLIF(a.attndims, 0), NULLIF(t.typndims, 0), (t.typcategory='A')::int) AS dimension
-            FROM
-                pg_class c
-                LEFT JOIN pg_attribute a ON a.attrelid = c.oid
-                LEFT JOIN pg_attrdef ad ON a.attrelid = ad.adrelid AND a.attnum = ad.adnum
-                LEFT JOIN pg_type t ON a.atttypid = t.oid
-                LEFT JOIN pg_type tb ON (a.attndims > 0 OR t.typcategory='A') AND t.typelem > 0 AND t.typelem = tb.oid
-                                            OR t.typbasetype > 0 AND t.typbasetype = tb.oid
-                LEFT JOIN pg_type td ON t.typndims > 0 AND t.typbasetype > 0 AND tb.typelem = td.oid
-                LEFT JOIN pg_namespace d ON d.oid = c.relnamespace
-                LEFT JOIN pg_constraint ct ON ct.conrelid = c.oid AND ct.contype = 'p'
-            WHERE
-                a.attnum > 0 AND t.typname != '' AND NOT a.attisdropped
-                AND c.relname = :tableName
-                AND d.nspname = :schemaName
-            ORDER BY
-                a.attnum;
+            information_schema._pg_numeric_precision(
+                COALESCE(td.oid, tb.oid, a.atttypid),
+                information_schema._pg_truetypmod(a, t)
+            ) AS numeric_precision,
+            information_schema._pg_numeric_scale(
+                COALESCE(td.oid, tb.oid, a.atttypid),
+                information_schema._pg_truetypmod(a, t)
+            ) AS numeric_scale,
+            information_schema._pg_char_max_length(
+                COALESCE(td.oid, tb.oid, a.atttypid),
+                information_schema._pg_truetypmod(a, t)
+            ) AS size,
+            a.attnum = any (ct.conkey) as is_pkey,
+            COALESCE(NULLIF(a.attndims, 0), NULLIF(t.typndims, 0), (t.typcategory='A')::int) AS dimension
+        FROM
+            pg_class c
+            LEFT JOIN pg_attribute a ON a.attrelid = c.oid
+            LEFT JOIN pg_attrdef ad ON a.attrelid = ad.adrelid AND a.attnum = ad.adnum
+            LEFT JOIN pg_type t ON a.atttypid = t.oid
+            LEFT JOIN pg_type tb ON (a.attndims > 0 OR t.typcategory='A') AND t.typelem > 0 AND t.typelem = tb.oid
+                                        OR t.typbasetype > 0 AND t.typbasetype = tb.oid
+            LEFT JOIN pg_type td ON t.typndims > 0 AND t.typbasetype > 0 AND tb.typelem = td.oid
+            LEFT JOIN pg_namespace d ON d.oid = c.relnamespace
+            LEFT JOIN pg_constraint ct ON ct.conrelid = c.oid AND ct.contype = 'p'
+        WHERE
+            a.attnum > 0 AND t.typname != '' AND NOT a.attisdropped
+            AND c.relname = :tableName
+            AND d.nspname = :schemaName
+        ORDER BY
+            a.attnum;
         SQL;
 
         $columns = $this->db->createCommand($sql, [

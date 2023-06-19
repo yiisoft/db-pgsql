@@ -525,4 +525,36 @@ final class SchemaTest extends CommonSchemaTest
 
         $schema->refreshTableSchema('customer');
     }
+
+    public function testDomainType(): void
+    {
+        $db = $this->getConnection();
+
+        $command = $db->createCommand();
+        $schema = $db->getSchema();
+
+        $command->setSql('DROP DOMAIN IF EXISTS sex_char CASCADE')->execute();
+        $command->setSql(
+            'CREATE DOMAIN sex_char AS "char" NOT NULL DEFAULT \'x\' CHECK (VALUE in (\'m\', \'f\', \'x\'))'
+        )->execute();
+
+        if ($schema->getTableSchema('test_domain_type') !== null) {
+            $command->dropTable('test_domain_type')->execute();
+        }
+        $command->createTable('test_domain_type', ['id' => 'pk', 'sex' => 'sex_char'])->execute();
+
+        $schema->refreshTableSchema('test_domain_type');
+        $tableSchema = $schema->getTableSchema('test_domain_type');
+        $column = $tableSchema->getColumn('sex');
+
+        $this->assertFalse($column->isAllowNull());
+        $this->assertEquals('char', $column->getDbType());
+        $this->assertEquals('x', $column->getDefaultValue());
+
+        $command->insert('test_domain_type', ['sex' => 'm'])->execute();
+        $sex = $command->setSql('SELECT sex FROM test_domain_type')->queryScalar();
+        $this->assertEquals('m', $sex);
+
+        $db->close();
+    }
 }
