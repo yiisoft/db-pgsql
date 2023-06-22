@@ -14,15 +14,12 @@ use Yiisoft\Db\Schema\AbstractColumnSchema;
 use Yiisoft\Db\Schema\SchemaInterface;
 
 use function array_walk_recursive;
-use function get_resource_type;
 use function hex2bin;
 use function in_array;
 use function is_array;
-use function is_resource;
 use function is_string;
 use function json_decode;
 use function str_starts_with;
-use function stream_get_contents;
 use function strtolower;
 use function substr;
 
@@ -153,9 +150,7 @@ final class ColumnSchema extends AbstractColumnSchema
                     default => (bool)$value,
                 };
             case SchemaInterface::TYPE_BINARY:
-                if (is_resource($value) && get_resource_type($value) === 'stream') {
-                    return stream_get_contents($value);
-                } elseif (is_string($value) && str_starts_with($value, '\\x')) {
+                if (is_string($value) && str_starts_with($value, '\\x')) {
                     return hex2bin(substr($value, 2));
                 }
                 break;

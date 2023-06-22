@@ -559,32 +559,4 @@ final class SchemaTest extends CommonSchemaTest
 
         $db->close();
     }
-
-    public function testBinaryType(): void
-    {
-        $db = $this->getConnection();
-
-        $command = $db->createCommand();
-        $schema = $db->getSchema();
-
-        if ($schema->getTableSchema('test_binary_type') !== null) {
-            $command->dropTable('test_binary_type')->execute();
-        }
-        $command->createTable('test_binary_type', ['id' => 'pk', 'value' => "bytea NOT NULL DEFAULT 'a binary value'"])->execute();
-
-        $schema->refreshTableSchema('test_domain_type');
-        $tableSchema = $schema->getTableSchema('test_binary_type');
-        $column = $tableSchema->getColumn('value');
-
-        $this->assertFalse($column->isAllowNull());
-        $this->assertEquals('bytea', $column->getDbType());
-        $this->assertEquals("a binary value", $column->getDefaultValue());
-
-        $command->insert('test_binary_type', ['value' => "other binary value\x01\x02\xFF"])->execute();
-        $value = (new Query($db))->select('value')->from('test_binary_type')->scalar();
-        var_export($value);
-        $this->assertEquals("other binary value\x01\x02\xFF", $column->phpTypecast($value));
-
-        $db->close();
-    }
 }
