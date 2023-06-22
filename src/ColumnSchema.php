@@ -14,11 +14,17 @@ use Yiisoft\Db\Schema\AbstractColumnSchema;
 use Yiisoft\Db\Schema\SchemaInterface;
 
 use function array_walk_recursive;
+use function get_resource_type;
+use function hex2bin;
 use function in_array;
 use function is_array;
+use function is_resource;
 use function is_string;
 use function json_decode;
+use function str_starts_with;
+use function stream_get_contents;
 use function strtolower;
+use function substr;
 
 /**
  * Represents the metadata of a column in a database table for PostgreSQL Server.
@@ -146,6 +152,13 @@ final class ColumnSchema extends AbstractColumnSchema
                     'f', 'false' => false,
                     default => (bool)$value,
                 };
+            case SchemaInterface::TYPE_BINARY:
+                if (is_resource($value) && get_resource_type($value) === 'stream') {
+                    return stream_get_contents($value);
+                } elseif (is_string($value) && str_starts_with($value, '\\x')) {
+                    return hex2bin(substr($value, 2));
+                }
+                break;
             case SchemaInterface::TYPE_JSON:
                 return json_decode((string) $value, true, 512, JSON_THROW_ON_ERROR);
         }

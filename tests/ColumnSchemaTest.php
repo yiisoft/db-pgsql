@@ -16,6 +16,8 @@ use Yiisoft\Db\Pgsql\Tests\Support\TestTrait;
 use Yiisoft\Db\Query\Query;
 use Yiisoft\Db\Schema\SchemaInterface;
 
+use function stream_get_contents;
+
 /**
  * @group pgsql
  *
@@ -64,6 +66,7 @@ final class ColumnSchemaTest extends TestCase
         $intColPhpTypeCast = $tableSchema->getColumn('int_col')?->phpTypecast($query['int_col']);
         $charColPhpTypeCast = $tableSchema->getColumn('char_col')?->phpTypecast($query['char_col']);
         $floatColPhpTypeCast = $tableSchema->getColumn('float_col')?->phpTypecast($query['float_col']);
+        $blobColPhpTypeCast = $tableSchema->getColumn('blob_col')?->phpTypecast($query['blob_col']);
         $boolColPhpTypeCast = $tableSchema->getColumn('bool_col')?->phpTypecast($query['bool_col']);
         $numericColPhpTypeCast = $tableSchema->getColumn('numeric_col')?->phpTypecast($query['numeric_col']);
         $intArrayColPhpType = $tableSchema->getColumn('intarray_col')?->phpTypecast($query['intarray_col']);
@@ -77,6 +80,7 @@ final class ColumnSchemaTest extends TestCase
         $this->assertSame(1, $intColPhpTypeCast);
         $this->assertSame(str_repeat('x', 100), $charColPhpTypeCast);
         $this->assertSame(1.234, $floatColPhpTypeCast);
+        $this->assertSame("\x10\x11\x12", stream_get_contents($blobColPhpTypeCast));
         $this->assertFalse($boolColPhpTypeCast);
         $this->assertSame(33.22, $numericColPhpTypeCast);
         $this->assertSame([1, -2, null, 42], $intArrayColPhpType);

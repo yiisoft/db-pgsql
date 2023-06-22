@@ -7,6 +7,7 @@ namespace Yiisoft\Db\Pgsql\Tests;
 use JsonException;
 use Throwable;
 use Yiisoft\Db\Command\CommandInterface;
+use Yiisoft\Db\Command\Param;
 use Yiisoft\Db\Connection\ConnectionInterface;
 use Yiisoft\Db\Driver\Pdo\PdoConnectionInterface;
 use Yiisoft\Db\Exception\Exception;
@@ -15,6 +16,7 @@ use Yiisoft\Db\Exception\NotSupportedException;
 use Yiisoft\Db\Expression\Expression;
 use Yiisoft\Db\Pgsql\Schema;
 use Yiisoft\Db\Pgsql\Tests\Support\TestTrait;
+use Yiisoft\Db\Query\Query;
 use Yiisoft\Db\Schema\SchemaInterface;
 use Yiisoft\Db\Schema\TableSchemaInterface;
 use Yiisoft\Db\Tests\Common\CommonSchemaTest;
@@ -554,6 +556,34 @@ final class SchemaTest extends CommonSchemaTest
         $command->insert('test_domain_type', ['sex' => 'm'])->execute();
         $sex = $command->setSql('SELECT sex FROM test_domain_type')->queryScalar();
         $this->assertEquals('m', $sex);
+
+        $db->close();
+    }
+
+    public function testBinaryType(): void
+    {
+        $db = $this->getConnection();
+
+        $command = $db->createCommand();
+        $schema = $db->getSchema();
+
+        if ($schema->getTableSchema('test_binary_type') !== null) {
+            $command->dropTable('test_binary_type')->execute();
+        }
+        $command->createTable('test_binary_type', ['id' => 'pk', 'value' => "bytea NOT NULL DEFAULT 'a binary value'"])->execute();
+
+        $schema->refreshTableSchema('test_domain_type');
+        $tableSchema = $schema->getTableSchema('test_binary_type');
+        $column = $tableSchema->getColumn('value');
+
+        $this->assertFalse($column->isAllowNull());
+        $this->assertEquals('bytea', $column->getDbType());
+        $this->assertEquals("a binary value", $column->getDefaultValue());
+
+        $command->insert('test_binary_type', ['value' => "other binary value\x01\x02\xFF"])->execute();
+        $value = (new Query($db))->select('value')->from('test_binary_type')->scalar();
+        var_export($value);
+        $this->assertEquals("other binary value\x01\x02\xFF", $column->phpTypecast($value));
 
         $db->close();
     }
