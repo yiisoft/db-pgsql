@@ -12,6 +12,7 @@ use Yiisoft\Db\Expression\JsonExpression;
 use Yiisoft\Db\Pgsql\Connection;
 use Yiisoft\Db\Pgsql\Dsn;
 use Yiisoft\Db\Pgsql\Driver;
+use Yiisoft\Db\Pgsql\Tests\Support\TestEnvironment;
 use Yiisoft\Db\Pgsql\Tests\Support\TestTrait;
 use Yiisoft\Db\Tests\Common\CommonCommandTest;
 use Yiisoft\Db\Tests\Support\DbHelper;
@@ -322,12 +323,15 @@ final class CommandTest extends CommonCommandTest
 
     public function testShowDatabases(): void
     {
-        $dsn = new Dsn('pgsql', '127.0.0.1');
+        $dbHost = TestEnvironment::getPostgreSqlHost();
+        $dbPort = TestEnvironment::getPostgreSqlPort();
+
+        $dsn = new Dsn('pgsql', $dbHost, port: $dbPort);
         $db = new Connection(new Driver($dsn->asString(), 'root', 'root'), DbHelper::getSchemaCache());
 
         $command = $db->createCommand();
 
-        $this->assertSame('pgsql:host=127.0.0.1;dbname=postgres;port=5432', $db->getDriver()->getDsn());
+        $this->assertSame('pgsql:host=' . $dbHost . ';dbname=postgres;port=' . $dbPort, $db->getDriver()->getDsn());
         $this->assertSame(['yiitest'], $command->showDatabases());
     }
 }
