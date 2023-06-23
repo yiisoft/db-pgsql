@@ -324,14 +324,13 @@ final class CommandTest extends CommonCommandTest
     public function testShowDatabases(): void
     {
         $dbHost = TestEnvironment::getPostgreSqlHost();
-        $dbPort = TestEnvironment::getPostgreSqlPort();
 
-        $dsn = new Dsn('pgsql', $dbHost, port: $dbPort);
+        $dsn = new Dsn('pgsql', $dbHost);
         $db = new Connection(new Driver($dsn->asString(), 'root', 'root'), DbHelper::getSchemaCache());
 
         $command = $db->createCommand();
 
-        $this->assertSame('pgsql:host=' . $dbHost . ';dbname=postgres;port=' . $dbPort, $db->getDriver()->getDsn());
+        $this->assertSame('pgsql:host=' . $dbHost . ';dbname=postgres;port=5432', $db->getDriver()->getDsn());
         $this->assertSame(['yiitest'], $command->showDatabases());
     }
 }

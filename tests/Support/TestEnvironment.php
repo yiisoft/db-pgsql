@@ -11,10 +11,4 @@ final class TestEnvironment
         $host = getenv('YIISOFT_DB_PGSQL_TEST_HOST');
         return $host === false ? '127.0.0.1' : $host;
     }
-
-    public static function getPostgreSqlPort(): string
-    {
-        $port = getenv('YIISOFT_DB_PGSQL_TEST_PORT');
-        return $port === false ? '5432' : $port;
-    }
 }

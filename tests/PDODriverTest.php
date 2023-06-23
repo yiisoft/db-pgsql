@@ -34,10 +34,11 @@ final class PDODriverTest extends TestCase
 
         $this->assertEqualsIgnoringCase('UTF8', array_values($charset)[0]);
 
-        $dbHost = TestEnvironment::getPostgreSqlHost();
-        $dbPort = TestEnvironment::getPostgreSqlPort();
-
-        $pdoDriver = new Driver('pgsql:host=' . $dbHost . ';dbname=yiitest;port=' . $dbPort, 'root', 'root');
+        $pdoDriver = new Driver(
+            'pgsql:host=' . TestEnvironment::getPostgreSqlHost() . ';dbname=yiitest;port=5432',
+            'root',
+            'root'
+        );
         $pdoDriver->charset('latin1');
         $pdo = $pdoDriver->createConnection();
         $charset = $pdo->query('SHOW client_encoding', PDO::FETCH_ASSOC)->fetch();
