@@ -6,16 +6,21 @@ All our packages have github actions by default, so you can test your [contribut
 
 > Note: We recommend pull requesting in draft mode until all tests pass.
 
-## Docker image
+## Docker
 
-For greater ease it is recommended to use docker containers, for this you can use the [docker-compose.yml](https://docs.docker.com/compose/compose-file/) file that is in the docs folder.
+For greater ease it is recommended to use docker containers. 
 
-1. [PostgreSQL 15](/docker-compose.yml)
-
-For running the docker containers you can use the following command:
+For this you can use the [docker-compose.yml](https://docs.docker.com/compose/compose-file/) file with PostgreSQL 15 
+that is in the root of package:
 
 ```shell
 docker compose up -d
+```
+
+or run container directly via command:
+
+```shell
+docker run --name pgsql -e POSTGRES_PASSWORD=root -e POSTGRES_USER=root -e POSTGRES_DB=yiitest -d postgres:15
 ```
 
 ## Unit testing
@@ -24,13 +29,23 @@ The package is tested with [PHPUnit](https://phpunit.de/).
 
 The following steps are required to run the tests:
 
-1. Run the docker container for the dbms.
+1. Run the docker container with PostgreSQL database.
 2. Install the dependencies of the project with composer.
-3. Run the tests.
+3. Run the tests with the command:
 
 ```shell
 vendor/bin/phpunit
 ```
+
+If IP address at which the container with DB is accessible is different from `127.0.0.1`, then set environment variable 
+`YIISOFT_DB_PGSQL_TEST_HOST` to actual IP. For example:
+
+```shell
+export YIISOFT_DB_PGSQL_TEST_HOST=172.17.0.3
+````
+
+> Environment variable `YIISOFT_DB_PGSQL_TEST_HOST` usage only for this package tests. It's not need and not work for
+> your application or library that used `yiisoft/db-pgsql`. 
 
 ### Mutation testing
 
