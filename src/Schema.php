@@ -797,8 +797,9 @@ final class Schema extends AbstractPdoSchema
                 } elseif (is_string($defaultValue) && preg_match("/^'(.*?)'::/", $defaultValue, $matches)) {
                     if ($loadColumnSchema->getType() === 'binary' && is_string($matches[1]) && str_starts_with($matches[1], '\\x')) {
                         $loadColumnSchema->defaultValue(hex2bin(substr($matches[1], 2)));
+                    } else {
+                        $loadColumnSchema->defaultValue($loadColumnSchema->phpTypecast($matches[1]));
                     }
-                    $loadColumnSchema->defaultValue($loadColumnSchema->phpTypecast($matches[1]));
                 } elseif (
                     is_string($defaultValue) &&
                     preg_match('/^(\()?(.*?)(?(1)\))(?:::.+)?$/', $defaultValue, $matches)
