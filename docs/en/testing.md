@@ -30,8 +30,8 @@ If the IP address at which the container with DB is accessible is different from
 export YIISOFT_DB_PGSQL_TEST_HOST=172.17.0.3
 ````
 
-> Environment variable `YIISOFT_DB_PGSQL_TEST_HOST` usage only for this package testing. It's not need and not work for
-> your application or library that used `yiisoft/db-pgsql`.
+> Environment variable `YIISOFT_DB_PGSQL_TEST_HOST` is used only for this package testing. It's not needed for and isn't used in
+> your application or package that uses `yiisoft/db-pgsql`.
 
 ## Unit testing
 
