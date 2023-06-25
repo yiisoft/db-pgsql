@@ -149,11 +149,6 @@ final class ColumnSchema extends AbstractColumnSchema
                     'f', 'false' => false,
                     default => (bool)$value,
                 };
-            case SchemaInterface::TYPE_BINARY:
-                if (is_string($value) && str_starts_with($value, '\\x')) {
-                    return hex2bin(substr($value, 2));
-                }
-                break;
             case SchemaInterface::TYPE_JSON:
                 return json_decode((string) $value, true, 512, JSON_THROW_ON_ERROR);
         }
