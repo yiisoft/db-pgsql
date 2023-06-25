@@ -14,14 +14,11 @@ use Yiisoft\Db\Schema\AbstractColumnSchema;
 use Yiisoft\Db\Schema\SchemaInterface;
 
 use function array_walk_recursive;
-use function hex2bin;
 use function in_array;
 use function is_array;
 use function is_string;
 use function json_decode;
-use function str_starts_with;
 use function strtolower;
-use function substr;
 
 /**
  * Represents the metadata of a column in a database table for PostgreSQL Server.
