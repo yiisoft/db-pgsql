@@ -23,7 +23,7 @@ or run container directly via command:
 docker run --name pgsql -e POSTGRES_PASSWORD=root -e POSTGRES_USER=root -e POSTGRES_DB=yiitest -d postgres:15
 ```
 
-If IP address at which the container with DB is accessible is different from `127.0.0.1`, then set environment variable
+If the IP address at which the container with DB is accessible is different from `127.0.0.1`, then set environment variable
 `YIISOFT_DB_PGSQL_TEST_HOST` to actual IP. For example:
 
 ```shell
