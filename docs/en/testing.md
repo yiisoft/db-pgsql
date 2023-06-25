@@ -11,7 +11,7 @@ All our packages have github actions by default, so you can test your [contribut
 For greater ease it is recommended to use docker containers. 
 
 You can use the [docker-compose.yml](https://docs.docker.com/compose/compose-file/) file with PostgreSQL 15 
-that is in the root of package:
+that is in the root of the package:
 
 ```shell
 docker compose up -d
