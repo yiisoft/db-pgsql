@@ -146,7 +146,7 @@ CREATE TABLE "type" (
   char_col3 text,
   float_col double precision NOT NULL,
   float_col2 double precision DEFAULT '1.23',
-  blob_col bytea,
+  blob_col bytea DEFAULT 'a binary value',
   numeric_col decimal(5,2) DEFAULT '33.22',
   time timestamp NOT NULL DEFAULT '2002-01-01 00:00:00',
   bool_col boolean NOT NULL,

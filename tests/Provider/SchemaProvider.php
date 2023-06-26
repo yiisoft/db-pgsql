@@ -141,7 +141,7 @@ final class SchemaProvider extends \Yiisoft\Db\Tests\Provider\SchemaProvider
                         'size' => null,
                         'precision' => null,
                         'scale' => null,
-                        'defaultValue' => null,
+                        'defaultValue' => 'a binary value',
                     ],
                     'numeric_col' => [
                         'type' => 'decimal',
