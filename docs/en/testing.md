@@ -14,7 +14,7 @@ You can use the [docker-compose.yml](https://docs.docker.com/compose/compose-fil
 that is in the root of the package:
 
 ```shell
-docker compose up -d
+docker-compose up -d
 ```
 
 or run container directly via command:
@@ -39,9 +39,9 @@ The package is tested with [PHPUnit](https://phpunit.de/).
 
 The following steps are required to run the tests:
 
-1. Run the docker container with PostgreSQL database.
+1. Run the docker container with DBMS.
 2. Install the dependencies of the project with composer.
-3. Run the tests with the command:
+3. Run the tests:
 
 ```shell
 vendor/bin/phpunit
