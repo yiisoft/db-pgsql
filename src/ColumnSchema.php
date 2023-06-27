@@ -94,9 +94,7 @@ final class ColumnSchema extends AbstractColumnSchema
         }
 
         if (is_int($value) && $this->getType() === SchemaInterface::TYPE_BIT) {
-            return $this->getSize() !== null
-                ? str_pad(decbin($value), $this->getSize(), '0', STR_PAD_LEFT)
-                : decbin($value);
+            return str_pad(decbin($value), $this->getSize() ?? 0, '0', STR_PAD_LEFT);
         }
 
         return $this->typecast($value);
@@ -147,7 +145,7 @@ final class ColumnSchema extends AbstractColumnSchema
         }
 
         switch ($this->getType()) {
-            case Schema::TYPE_BIT:
+            case SchemaInterface::TYPE_BIT:
                 return is_string($value) ? bindec($value) : $value;
             case SchemaInterface::TYPE_BOOLEAN:
                 /** @psalm-var mixed $value */

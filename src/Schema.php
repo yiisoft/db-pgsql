@@ -24,7 +24,6 @@ use Yiisoft\Db\Schema\TableSchemaInterface;
 use function array_merge;
 use function array_unique;
 use function array_values;
-use function bindec;
 use function explode;
 use function hex2bin;
 use function is_string;
