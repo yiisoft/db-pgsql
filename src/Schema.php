@@ -90,9 +90,9 @@ final class Schema extends AbstractPdoSchema
      * @psalm-var string[]
      */
     private array $typeMap = [
-        'bit' => self::TYPE_INTEGER,
-        'bit varying' => self::TYPE_INTEGER,
-        'varbit' => self::TYPE_INTEGER,
+        'bit' => self::TYPE_BIT,
+        'bit varying' => self::TYPE_BIT,
+        'varbit' => self::TYPE_BIT,
         'bool' => self::TYPE_BOOLEAN,
         'boolean' => self::TYPE_BOOLEAN,
         'box' => self::TYPE_STRING,
@@ -790,11 +790,7 @@ final class Schema extends AbstractPdoSchema
                     $loadColumnSchema->defaultValue(new Expression($defaultValue));
                 } elseif ($loadColumnSchema->getType() === 'boolean') {
                     $loadColumnSchema->defaultValue($defaultValue  === 'true');
-                } elseif (is_string($defaultValue) && preg_match("/^B'(.*?)'::/", $defaultValue, $matches)) {
-                    $loadColumnSchema->defaultValue(bindec($matches[1]));
-                } elseif (is_string($defaultValue) && preg_match("/^'(\d+)'::\"bit\"$/", $defaultValue, $matches)) {
-                    $loadColumnSchema->defaultValue(bindec($matches[1]));
-                } elseif (is_string($defaultValue) && preg_match("/^'(.*?)'::/", $defaultValue, $matches)) {
+                } elseif (is_string($defaultValue) && preg_match("/^B?'(.*?)'::/", $defaultValue, $matches)) {
                     if ($loadColumnSchema->getType() === 'binary' && str_starts_with($matches[1], '\\x')) {
                         $loadColumnSchema->defaultValue(hex2bin(substr($matches[1], 2)));
                     } else {

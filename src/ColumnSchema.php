@@ -14,10 +14,14 @@ use Yiisoft\Db\Schema\AbstractColumnSchema;
 use Yiisoft\Db\Schema\SchemaInterface;
 
 use function array_walk_recursive;
+use function bindec;
+use function decbin;
 use function in_array;
 use function is_array;
+use function is_int;
 use function is_string;
 use function json_decode;
+use function str_pad;
 use function strtolower;
 
 /**
@@ -89,6 +93,12 @@ final class ColumnSchema extends AbstractColumnSchema
             return new Param($value, PDO::PARAM_LOB);
         }
 
+        if (is_int($value) && $this->getType() === SchemaInterface::TYPE_BIT) {
+            return $this->getSize() !== null
+                ? str_pad(decbin($value), $this->getSize(), '0', STR_PAD_LEFT)
+                : decbin($value);
+        }
+
         return $this->typecast($value);
     }
 
@@ -137,6 +147,8 @@ final class ColumnSchema extends AbstractColumnSchema
         }
 
         switch ($this->getType()) {
+            case Schema::TYPE_BIT:
+                return is_string($value) ? bindec($value) : $value;
             case SchemaInterface::TYPE_BOOLEAN:
                 /** @psalm-var mixed $value */
                 $value = is_string($value) ? strtolower($value) : $value;
