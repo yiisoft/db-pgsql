@@ -209,7 +209,7 @@ final class SchemaProvider extends \Yiisoft\Db\Tests\Provider\SchemaProvider
                         'defaultValue' => new Expression('now()'),
                     ],
                     'bit_col' => [
-                        'type' => 'bit',
+                        'type' => 'integer',
                         'dbType' => 'bit',
                         'phpType' => 'integer',
                         'primaryKey' => false,
@@ -219,20 +219,7 @@ final class SchemaProvider extends \Yiisoft\Db\Tests\Provider\SchemaProvider
                         'size' => 8,
                         'precision' => null,
                         'scale' => null,
-                        'defaultValue' => 0b1000_0010, // 130
-                    ],
-                    'varbit_col' => [
-                        'type' => 'bit',
-                        'dbType' => 'varbit',
-                        'phpType' => 'integer',
-                        'primaryKey' => false,
-                        'allowNull' => false,
-                        'autoIncrement' => false,
-                        'enumValues' => null,
-                        'size' => null,
-                        'precision' => null,
-                        'scale' => null,
-                        'defaultValue' => 0b100, // 4
+                        'defaultValue' => 130, //b '10000010'
                     ],
                     'bigint_col' => [
                         'type' => 'bigint',
