@@ -72,32 +72,28 @@ final class ColumnSchema extends AbstractColumnSchema
      */
     public function dbTypecast(mixed $value): mixed
     {
-        if ($value === null) {
-            return null;
-        }
-
-        if ($value instanceof ExpressionInterface) {
-            return $value;
-        }
-
-        if ($this->dimension > 0) {
-            return new ArrayExpression($value, $this->getDbType(), $this->dimension);
-        }
-
-        if (in_array($this->getDbType(), [SchemaInterface::TYPE_JSON, SchemaInterface::TYPE_JSONB], true)) {
-            return new JsonExpression($value, $this->getDbType());
-        }
-
-        if (is_string($value) && $this->getType() === SchemaInterface::TYPE_BINARY) {
-            /** explicitly setup PDO param type for binary column */
-            return new Param($value, PDO::PARAM_LOB);
-        }
-
-        if (is_int($value) && $this->getType() === SchemaInterface::TYPE_BIT) {
-            return str_pad(decbin($value), $this->getSize() ?? 0, '0', STR_PAD_LEFT);
-        }
-
-        return $this->typecast($value);
+        return match (true) {
+            $value === null,
+            $value instanceof ExpressionInterface
+                => $value,
+            $this->dimension > 0
+                => new ArrayExpression($value, $this->getDbType(), $this->dimension),
+            default
+                => match ($this->getType()) {
+                    SchemaInterface::TYPE_JSON
+                        => new JsonExpression($value, $this->getDbType()),
+                    SchemaInterface::TYPE_BINARY
+                        => is_string($value)
+                            ? new Param($value, PDO::PARAM_LOB) // explicitly setup PDO param type for binary column
+                            : $this->typecast($value),
+                    SchemaInterface::TYPE_BIT
+                        => is_int($value)
+                            ? str_pad(decbin($value), $this->getSize() ?? 0, '0', STR_PAD_LEFT)
+                            : $this->typecast($value),
+                    default
+                        => $this->typecast($value),
+            },
+        };
     }
 
     /**
@@ -144,23 +140,20 @@ final class ColumnSchema extends AbstractColumnSchema
             return null;
         }
 
-        switch ($this->getType()) {
-            case SchemaInterface::TYPE_BIT:
-                return is_string($value) ? bindec($value) : $value;
-            case SchemaInterface::TYPE_BOOLEAN:
-                /** @psalm-var mixed $value */
-                $value = is_string($value) ? strtolower($value) : $value;
-
-                return match ($value) {
+        return match ($this->getType()) {
+            SchemaInterface::TYPE_BIT
+                => is_string($value) ? bindec($value) : $value,
+            SchemaInterface::TYPE_BOOLEAN
+                => match (is_string($value) ? strtolower($value) : $value) {
                     't', 'true' => true,
                     'f', 'false' => false,
-                    default => (bool)$value,
-                };
-            case SchemaInterface::TYPE_JSON:
-                return json_decode((string) $value, true, 512, JSON_THROW_ON_ERROR);
-        }
-
-        return parent::phpTypecast($value);
+                    default => (bool) $value,
+                },
+            SchemaInterface::TYPE_JSON
+                => json_decode((string) $value, true, 512, JSON_THROW_ON_ERROR),
+            default
+                => parent::phpTypecast($value),
+        };
     }
 
     /**
