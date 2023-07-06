@@ -82,6 +82,11 @@ use function substr;
 final class Schema extends AbstractPdoSchema
 {
     /**
+     * Define the abstract column type as `bit`.
+     */
+    public const TYPE_BIT = 'bit';
+
+    /**
      * @var array The mapping from physical column types (keys) to abstract column types (values).
      *
      * @link https://www.postgresql.org/docs/current/static/datatype.html#DATATYPE-TABLE
@@ -897,6 +902,20 @@ final class Schema extends AbstractPdoSchema
         $column->phpType($this->getColumnPhpType($column));
 
         return $column;
+    }
+
+    /**
+     * Extracts the PHP type from an abstract DB type.
+     *
+     * @param ColumnSchemaInterface $column The column schema information.
+     *
+     * @return string The PHP type name.
+     */
+    protected function getColumnPhpType(ColumnSchemaInterface $column): string
+    {
+        return $column->getType() === self::TYPE_BIT
+            ? self::PHP_TYPE_INTEGER
+            : parent::getColumnPhpType($column);
     }
 
     /**

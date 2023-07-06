@@ -93,7 +93,7 @@ final class ColumnSchema extends AbstractColumnSchema
             return new Param($value, PDO::PARAM_LOB);
         }
 
-        if (is_int($value) && $this->getType() === SchemaInterface::TYPE_BIT) {
+        if (is_int($value) && $this->getType() === Schema::TYPE_BIT) {
             return str_pad(decbin($value), $this->getSize() ?? 0, '0', STR_PAD_LEFT);
         }
 
@@ -145,7 +145,7 @@ final class ColumnSchema extends AbstractColumnSchema
         }
 
         switch ($this->getType()) {
-            case SchemaInterface::TYPE_BIT:
+            case Schema::TYPE_BIT:
                 return is_string($value) ? bindec($value) : $value;
             case SchemaInterface::TYPE_BOOLEAN:
                 /** @psalm-var mixed $value */
