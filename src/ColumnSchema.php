@@ -16,7 +16,6 @@ use Yiisoft\Db\Schema\SchemaInterface;
 use function array_walk_recursive;
 use function bindec;
 use function decbin;
-use function in_array;
 use function is_array;
 use function is_int;
 use function is_string;
@@ -79,19 +78,19 @@ final class ColumnSchema extends AbstractColumnSchema
             $this->dimension > 0
                 => new ArrayExpression($value, $this->getDbType(), $this->dimension),
             default
-                => match ($this->getType()) {
-                    SchemaInterface::TYPE_JSON
-                        => new JsonExpression($value, $this->getDbType()),
-                    SchemaInterface::TYPE_BINARY
-                        => is_string($value)
-                            ? new Param($value, PDO::PARAM_LOB) // explicitly setup PDO param type for binary column
-                            : $this->typecast($value),
-                    SchemaInterface::TYPE_BIT
-                        => is_int($value)
-                            ? str_pad(decbin($value), $this->getSize() ?? 0, '0', STR_PAD_LEFT)
-                            : $this->typecast($value),
-                    default
-                        => $this->typecast($value),
+            => match ($this->getType()) {
+                SchemaInterface::TYPE_JSON
+                    => new JsonExpression($value, $this->getDbType()),
+                SchemaInterface::TYPE_BINARY
+                    => is_string($value)
+                        ? new Param($value, PDO::PARAM_LOB) // explicitly setup PDO param type for binary column
+                        : $this->typecast($value),
+                SchemaInterface::TYPE_BIT
+                    => is_int($value)
+                        ? str_pad(decbin($value), $this->getSize() ?? 0, '0', STR_PAD_LEFT)
+                        : $this->typecast($value),
+                default
+                => $this->typecast($value),
             },
         };
     }
@@ -152,7 +151,7 @@ final class ColumnSchema extends AbstractColumnSchema
             SchemaInterface::TYPE_JSON
                 => json_decode((string) $value, true, 512, JSON_THROW_ON_ERROR),
             default
-                => parent::phpTypecast($value),
+            => parent::phpTypecast($value),
         };
     }
 

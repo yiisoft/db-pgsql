@@ -864,6 +864,8 @@ final class Schema extends AbstractPdoSchema
      * @param ColumnSchemaInterface $columnSchema The column schema object.
      *
      * @return mixed The normalized default value.
+     *
+     * @psalm-suppress PossiblyNullArgument
      */
     private function normalizeDefaultValue(?string $defaultValue, ColumnSchemaInterface $columnSchema): mixed
     {
@@ -871,17 +873,18 @@ final class Schema extends AbstractPdoSchema
             $defaultValue === null,
             $columnSchema->isPrimaryKey()
                 => null,
+            /** @psalm-var string $defaultValue */
             in_array($columnSchema->getType(), [
-                    self::TYPE_TIMESTAMP,
-                    self::TYPE_DATE,
-                    self::TYPE_TIME
-                ], true)
+                self::TYPE_TIMESTAMP,
+                self::TYPE_DATE,
+                self::TYPE_TIME,
+            ], true)
                 && in_array(strtoupper($defaultValue), [
                     'NOW()',
                     'CURRENT_TIMESTAMP',
                     'CURRENT_DATE',
-                    'CURRENT_TIME'
-                ],true)
+                    'CURRENT_TIME',
+                ], true)
                     => new Expression($defaultValue),
             preg_match("/^B?'(.*?)'::/", $defaultValue, $matches) === 1
                 => $columnSchema->getType() === self::TYPE_BINARY
@@ -893,7 +896,7 @@ final class Schema extends AbstractPdoSchema
                     ? $columnSchema->phpTypecast($matches[2])
                     : null,
             default
-                => $columnSchema->phpTypecast($defaultValue),
+            => $columnSchema->phpTypecast($defaultValue),
         };
     }
 
