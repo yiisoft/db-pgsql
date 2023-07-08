@@ -12,37 +12,39 @@ use function in_array;
 final class ArrayParser
 {
     /**
-     * @var int Current parsing position
+     * Convert an array from PostgresSQL to PHP.
+     *
+     * @param string|null $value String to convert.
      */
-    private int $pos = 0;
-
-    /**
-     * @param string $value The parse string from PostgresSQL
-     */
-    public function __construct(
-        private string $value,
-    ) {
+    public function parse(string|null $value): array|null
+    {
+        return $value !== null
+            ? $this->parseArray($value)
+            : null;
     }
 
     /**
-     * Parses PostgreSQL encoded array.
+     * Parse PostgreSQL array encoded in string.
+     *
+     * @param string $value String to parse.
+     * @param int $i parse starting position.
      */
-    public function parse(): array
+    private function parseArray(string $value, int &$i = 0): array
     {
-        if ($this->value[++$this->pos] === '}') {
-            ++$this->pos;
+        if ($value[++$i] === '}') {
+            ++$i;
             return [];
         }
 
-        for ($result = [];; ++$this->pos) {
-            $result[] = match ($this->value[$this->pos]) {
-                '{' => $this->parse(),
+        for ($result = [];; ++$i) {
+            $result[] = match ($value[$i]) {
+                '{' => $this->parseArray($value, $i),
                 ',', '}' => null,
-                default => $this->parseString(),
+                default => $this->parseString($value, $i),
             };
 
-            if ($this->value[$this->pos] === '}') {
-                ++$this->pos;
+            if ($value[$i] === '}') {
+                ++$i;
                 return $result;
             }
         }
@@ -51,45 +53,43 @@ final class ArrayParser
     /**
      * Parses PostgreSQL encoded string.
      */
-    private function parseString(): string|null
+    private function parseString(string $value, int &$i = 0): string|null
     {
-        return $this->value[$this->pos] === '"'
-            ? $this->parseQuotedString()
-            : $this->parseUnquotedString();
+        return $value[$i] === '"'
+            ? $this->parseQuotedString($value, $i)
+            : $this->parseUnquotedString($value, $i);
     }
 
     /**
      * Parses quoted string.
-     *
-     * @psalm-suppress LoopInvalidation
      */
-    private function parseQuotedString(): string
+    private function parseQuotedString(string $value, int &$i = 0): string
     {
-        for ($result = '', ++$this->pos;; ++$this->pos) {
-            if ($this->value[$this->pos] === '\\') {
-                ++$this->pos;
-            } elseif ($this->value[$this->pos] === '"') {
-                ++$this->pos;
+        for ($result = '', ++$i;; ++$i) {
+            if ($value[$i] === '\\') {
+                ++$i;
+            } elseif ($value[$i] === '"') {
+                ++$i;
                 return $result;
             }
 
-            $result .= $this->value[$this->pos];
+            $result .= $value[$i];
         }
     }
 
     /**
      * Parses unquoted string.
      */
-    private function parseUnquotedString(): string|null
+    private function parseUnquotedString(string $value, int &$i = 0): string|null
     {
-        for ($result = '';; ++$this->pos) {
-            if (in_array($this->value[$this->pos], [',', '}'], true)) {
+        for ($result = '';; ++$i) {
+            if (in_array($value[$i], [',', '}'], true)) {
                 return $result !== 'NULL'
                     ? $result
                     : null;
             }
 
-            $result .= $this->value[$this->pos];
+            $result .= $value[$i];
         }
     }
 }
