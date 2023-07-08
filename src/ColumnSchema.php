@@ -99,6 +99,7 @@ final class ColumnSchema extends AbstractColumnSchema
      *
      * @param mixed $value The input value
      *
+     * @throws ArrayParserException
      * @throws JsonException
      *
      * @return mixed The converted value
@@ -107,7 +108,7 @@ final class ColumnSchema extends AbstractColumnSchema
     {
         if ($this->dimension > 0) {
             if (is_string($value)) {
-                $value = $this->getArrayParser()->parse($value);
+                $value = (new ArrayParser($value))->parse();
             }
 
             if (is_array($value)) {
@@ -151,14 +152,6 @@ final class ColumnSchema extends AbstractColumnSchema
         }
 
         return parent::phpTypecast($value);
-    }
-
-    /**
-     * Creates instance of ArrayParser.
-     */
-    protected function getArrayParser(): ArrayParser
-    {
-        return new ArrayParser();
     }
 
     /**

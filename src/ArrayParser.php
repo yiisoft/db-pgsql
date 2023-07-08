@@ -13,94 +13,104 @@ use function strlen;
 final class ArrayParser
 {
     /**
-     * @var string Character used in an array.
+     * @var int Length of the parse string
      */
-    private string $delimiter = ',';
+    private int $length;
 
     /**
-     * Convert an array from PostgresSQL to PHP.
-     *
-     * @param string|null $value String to convert.
+     * @var int Current parsing position
      */
-    public function parse(string|null $value): array|null
-    {
-        if ($value === null) {
-            return null;
-        }
+    private int $pos = 0;
 
-        if ($value === '{}') {
-            return [];
-        }
-
-        return $this->parseArray($value);
+    /**
+     * @param string $value The parse string from PostgresSQL
+     */
+    public function __construct(
+        private string $value,
+    ) {
+        $this->length = strlen($value);
     }
 
     /**
-     * Parse PostgreSQL array encoded in string.
+     * Parses PostgreSQL encoded array.
      *
-     * @param string $value String to parse.
-     * @param int $i parse starting position.
+     * @throws ArrayParserException
      */
-    private function parseArray(string $value, int &$i = 0): array
+    public function parse(): array
     {
-        $result = [];
-        $len = strlen($value);
+        if ($this->value[++$this->pos] === '}') {
+            ++$this->pos;
+            return [];
+        }
 
-        for (++$i; $i < $len; ++$i) {
-            switch ($value[$i]) {
-                case '{':
-                    $result[] = $this->parseArray($value, $i);
-                    break;
-                case '}':
-                    break 2;
-                case $this->delimiter:
-                    /** `{}` case */
-                    if (empty($result)) {
-                        $result[] = null;
-                    }
+        for ($result = []; $this->pos < $this->length; ++$this->pos) {
+            $result[] = match ($this->value[$this->pos]) {
+                '{' => $this->parse(),
+                ',', '}' => null,
+                default => $this->parseString(),
+            };
 
-                    /** `{,}` case */
-                    if (in_array($value[$i + 1], [$this->delimiter, '}'], true)) {
-                        $result[] = null;
-                    }
-                    break;
-                default:
-                    $result[] = $this->parseString($value, $i);
+            if ($this->value[$this->pos] === '}') {
+                ++$this->pos;
+                return $result;
             }
         }
 
-        return $result;
+        throw new ArrayParserException('Expected closing brace <}>');
     }
 
     /**
      * Parses PostgreSQL encoded string.
      *
-     * @param string $value String to parse.
-     * @param int $i Parse starting position.
+     * @throws ArrayParserException
      */
-    private function parseString(string $value, int &$i): string|null
+    private function parseString(): string|null
     {
-        $isQuoted = $value[$i] === '"';
-        $stringEndChars = $isQuoted ? ['"'] : [$this->delimiter, '}'];
-        $result = '';
-        $len = strlen($value);
+        return $this->value[$this->pos] === '"'
+            ? $this->parseQuotedString()
+            : $this->parseUnquotedString();
+    }
 
-        for ($i += $isQuoted ? 1 : 0; $i < $len; ++$i) {
-            if (in_array($value[$i], ['\\', '"'], true) && in_array($value[$i + 1], [$value[$i], '"'], true)) {
-                ++$i;
-            } elseif (in_array($value[$i], $stringEndChars, true)) {
-                break;
+    /**
+     * Parses quoted string.
+     *
+     * @throws ArrayParserException
+     * @psalm-suppress LoopInvalidation
+     */
+    private function parseQuotedString(): string
+    {
+        for ($result = '', ++$this->pos; $this->pos < $this->length; ++$this->pos) {
+            if ($this->value[$this->pos] === '\\') {
+                ++$this->pos;
+            } elseif ($this->value[$this->pos] === '"') {
+                ++$this->pos;
+                return $result;
             }
 
-            $result .= $value[$i];
+            $result .= $this->value[$this->pos];
         }
 
-        $i -= $isQuoted ? 0 : 1;
+        throw new ArrayParserException('Expected double quote <">');
+    }
 
-        if (!$isQuoted && $result === 'NULL') {
-            $result = null;
+    /**
+     * Parses unquoted string.
+     *
+     * @throws ArrayParserException
+     * @psalm-suppress PossiblyNullArrayAccess
+     */
+    private function parseUnquotedString(): string|null
+    {
+        for ($result = ''; $this->pos < $this->length; ++$this->pos) {
+            if (in_array($this->value[$this->pos], [',', '}'], true)) {
+                return $result !== 'NULL'
+                    ? $result
+                    : null;
+            }
+
+            $result .= $this->value[$this->pos];
         }
 
-        return $result;
+        throw new ArrayParserException('Expected comma <,> or closing brace <}>');
     }
 }
