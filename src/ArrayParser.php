@@ -52,6 +52,9 @@ final class ArrayParser
 
     /**
      * Parses PostgreSQL encoded string.
+     *
+     * @param string $value String to parse.
+     * @param int $i Parse starting position.
      */
     private function parseString(string $value, int &$i): string|null
     {
