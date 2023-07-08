@@ -53,7 +53,7 @@ final class ArrayParser
     /**
      * Parses PostgreSQL encoded string.
      */
-    private function parseString(string $value, int &$i = 0): string|null
+    private function parseString(string $value, int &$i): string|null
     {
         return $value[$i] === '"'
             ? $this->parseQuotedString($value, $i)
@@ -63,7 +63,7 @@ final class ArrayParser
     /**
      * Parses quoted string.
      */
-    private function parseQuotedString(string $value, int &$i = 0): string
+    private function parseQuotedString(string $value, int &$i): string
     {
         for ($result = '', ++$i;; ++$i) {
             if ($value[$i] === '\\') {
@@ -80,7 +80,7 @@ final class ArrayParser
     /**
      * Parses unquoted string.
      */
-    private function parseUnquotedString(string $value, int &$i = 0): string|null
+    private function parseUnquotedString(string $value, int &$i): string|null
     {
         for ($result = '';; ++$i) {
             if (in_array($value[$i], [',', '}'], true)) {
