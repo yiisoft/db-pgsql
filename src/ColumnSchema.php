@@ -99,7 +99,6 @@ final class ColumnSchema extends AbstractColumnSchema
      *
      * @param mixed $value The input value
      *
-     * @throws ArrayParserException
      * @throws JsonException
      *
      * @return mixed The converted value
