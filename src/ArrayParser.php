@@ -21,7 +21,8 @@ final class ArrayParser
      */
     public function __construct(
         private string $value,
-    ) {}
+    ) {
+    }
 
     /**
      * Parses PostgreSQL encoded array.
