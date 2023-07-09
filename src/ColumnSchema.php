@@ -85,7 +85,7 @@ final class ColumnSchema extends AbstractColumnSchema
                     => is_string($value)
                         ? new Param($value, PDO::PARAM_LOB) // explicitly setup PDO param type for binary column
                         : $this->typecast($value),
-                SchemaInterface::TYPE_BIT
+                Schema::TYPE_BIT
                     => is_int($value)
                         ? str_pad(decbin($value), (int) $this->getSize(), '0', STR_PAD_LEFT)
                         : $this->typecast($value),
@@ -140,7 +140,7 @@ final class ColumnSchema extends AbstractColumnSchema
         }
 
         return match ($this->getType()) {
-            SchemaInterface::TYPE_BIT
+            Schema::TYPE_BIT
                 => is_string($value) ? bindec($value) : $value,
             SchemaInterface::TYPE_BOOLEAN
                 => match (is_string($value) ? strtolower($value) : $value) {
