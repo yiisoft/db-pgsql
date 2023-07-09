@@ -152,7 +152,8 @@ CREATE TABLE "type" (
   bool_col boolean NOT NULL,
   bool_col2 boolean DEFAULT TRUE,
   ts_default TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  bit_col BIT(8) NOT NULL DEFAULT B'10000010',
+  bit_col BIT(8) NOT NULL DEFAULT B'10000010', -- 130
+  varbit_col VARBIT NOT NULL DEFAULT '100'::bit, -- 4
   bigint_col BIGINT,
   intarray_col integer[],
   numericarray_col numeric(5,2)[],

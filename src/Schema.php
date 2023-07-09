@@ -24,7 +24,6 @@ use Yiisoft\Db\Schema\TableSchemaInterface;
 use function array_merge;
 use function array_unique;
 use function array_values;
-use function bindec;
 use function explode;
 use function hex2bin;
 use function is_string;
@@ -83,6 +82,11 @@ use function substr;
 final class Schema extends AbstractPdoSchema
 {
     /**
+     * Define the abstract column type as `bit`.
+     */
+    public const TYPE_BIT = 'bit';
+
+    /**
      * @var array The mapping from physical column types (keys) to abstract column types (values).
      *
      * @link https://www.postgresql.org/docs/current/static/datatype.html#DATATYPE-TABLE
@@ -90,9 +94,9 @@ final class Schema extends AbstractPdoSchema
      * @psalm-var string[]
      */
     private array $typeMap = [
-        'bit' => self::TYPE_INTEGER,
-        'bit varying' => self::TYPE_INTEGER,
-        'varbit' => self::TYPE_INTEGER,
+        'bit' => self::TYPE_BIT,
+        'bit varying' => self::TYPE_BIT,
+        'varbit' => self::TYPE_BIT,
         'bool' => self::TYPE_BOOLEAN,
         'boolean' => self::TYPE_BOOLEAN,
         'box' => self::TYPE_STRING,
@@ -790,11 +794,7 @@ final class Schema extends AbstractPdoSchema
                     $loadColumnSchema->defaultValue(new Expression($defaultValue));
                 } elseif ($loadColumnSchema->getType() === 'boolean') {
                     $loadColumnSchema->defaultValue($defaultValue  === 'true');
-                } elseif (is_string($defaultValue) && preg_match("/^B'(.*?)'::/", $defaultValue, $matches)) {
-                    $loadColumnSchema->defaultValue(bindec($matches[1]));
-                } elseif (is_string($defaultValue) && preg_match("/^'(\d+)'::\"bit\"$/", $defaultValue, $matches)) {
-                    $loadColumnSchema->defaultValue(bindec($matches[1]));
-                } elseif (is_string($defaultValue) && preg_match("/^'(.*?)'::/", $defaultValue, $matches)) {
+                } elseif (is_string($defaultValue) && preg_match("/^B?'(.*?)'::/", $defaultValue, $matches)) {
                     if ($loadColumnSchema->getType() === 'binary' && str_starts_with($matches[1], '\\x')) {
                         $loadColumnSchema->defaultValue(hex2bin(substr($matches[1], 2)));
                     } else {
@@ -902,6 +902,22 @@ final class Schema extends AbstractPdoSchema
         $column->phpType($this->getColumnPhpType($column));
 
         return $column;
+    }
+
+    /**
+     * Extracts the PHP type from an abstract DB type.
+     *
+     * @param ColumnSchemaInterface $column The column schema information.
+     *
+     * @return string The PHP type name.
+     */
+    protected function getColumnPhpType(ColumnSchemaInterface $column): string
+    {
+        if ($column->getType() === self::TYPE_BIT) {
+            return self::PHP_TYPE_INTEGER;
+        }
+
+        return parent::getColumnPhpType($column);
     }
 
     /**
