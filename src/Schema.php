@@ -913,9 +913,11 @@ final class Schema extends AbstractPdoSchema
      */
     protected function getColumnPhpType(ColumnSchemaInterface $column): string
     {
-        return $column->getType() === self::TYPE_BIT
-            ? self::PHP_TYPE_INTEGER
-            : parent::getColumnPhpType($column);
+        if ($column->getType() === self::TYPE_BIT) {
+            return self::PHP_TYPE_INTEGER;
+        }
+
+        return parent::getColumnPhpType($column);
     }
 
     /**
