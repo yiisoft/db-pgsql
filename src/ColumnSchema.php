@@ -73,7 +73,9 @@ final class ColumnSchema extends AbstractColumnSchema
     {
         if ($value === null || $value instanceof ExpressionInterface) {
             return $value;
-        } elseif ($this->dimension > 0) {
+        }
+
+        if ($this->dimension > 0) {
             return new ArrayExpression($value, $this->getDbType(), $this->dimension);
         }
 
