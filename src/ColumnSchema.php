@@ -71,14 +71,9 @@ final class ColumnSchema extends AbstractColumnSchema
      */
     public function dbTypecast(mixed $value): mixed
     {
-        if (
-            $value === null
-            || $value instanceof ExpressionInterface
-        ) {
+        if ($value === null || $value instanceof ExpressionInterface) {
             return $value;
-        }
-
-        if ($this->dimension > 0) {
+        } elseif ($this->dimension > 0) {
             return new ArrayExpression($value, $this->getDbType(), $this->dimension);
         }
 
