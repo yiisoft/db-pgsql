@@ -83,18 +83,14 @@ final class ColumnSchema extends AbstractColumnSchema
         }
 
         return match ($this->getType()) {
-            SchemaInterface::TYPE_JSON
-                => new JsonExpression($value, $this->getDbType()),
-            SchemaInterface::TYPE_BINARY
-                => is_string($value)
-                    ? new Param($value, PDO::PARAM_LOB) // explicitly setup PDO param type for binary column
-                    : $this->typecast($value),
-            Schema::TYPE_BIT
-                => is_int($value)
-                    ? str_pad(decbin($value), (int) $this->getSize(), '0', STR_PAD_LEFT)
-                    : $this->typecast($value),
-            default
-            => $this->typecast($value),
+            SchemaInterface::TYPE_JSON => new JsonExpression($value, $this->getDbType()),
+            SchemaInterface::TYPE_BINARY => is_string($value)
+                ? new Param($value, PDO::PARAM_LOB) // explicitly setup PDO param type for binary column
+                : $this->typecast($value),
+            Schema::TYPE_BIT => is_int($value)
+                ? str_pad(decbin($value), (int) $this->getSize(), '0', STR_PAD_LEFT)
+                : $this->typecast($value),
+            default => $this->typecast($value),
         };
     }
 
@@ -143,8 +139,7 @@ final class ColumnSchema extends AbstractColumnSchema
         }
 
         return match ($this->getType()) {
-            Schema::TYPE_BIT
-                => is_string($value) ? bindec($value) : $value,
+            Schema::TYPE_BIT => is_string($value) ? bindec($value) : $value,
             SchemaInterface::TYPE_BOOLEAN
                 => match (is_string($value) ? strtolower($value) : $value) {
                     't', 'true' => true,
@@ -153,8 +148,7 @@ final class ColumnSchema extends AbstractColumnSchema
                 },
             SchemaInterface::TYPE_JSON
                 => json_decode((string) $value, true, 512, JSON_THROW_ON_ERROR),
-            default
-            => parent::phpTypecast($value),
+            default => parent::phpTypecast($value),
         };
     }
 
