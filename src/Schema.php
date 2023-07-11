@@ -740,21 +740,21 @@ final class Schema extends AbstractPdoSchema
             return false;
         }
 
-        /** @psalm-var array $column */
-        foreach ($columns as $column) {
-            /** @psalm-var ColumnArray $column */
-            $column = $this->normalizeRowKeyCase($column, false);
+        /** @psalm-var ColumnArray $info */
+        foreach ($columns as $info) {
+            /** @psalm-var ColumnArray $info */
+            $info = $this->normalizeRowKeyCase($info, false);
 
-            /** @psalm-var ColumnSchema $columnSchema */
-            $columnSchema = $this->loadColumnSchema($column);
+            /** @psalm-var ColumnSchema $column */
+            $column = $this->loadColumnSchema($info);
 
-            $table->column($columnSchema->getName(), $columnSchema);
+            $table->column($column->getName(), $column);
 
-            if ($columnSchema->isPrimaryKey()) {
-                $table->primaryKey($columnSchema->getName());
+            if ($column->isPrimaryKey()) {
+                $table->primaryKey($column->getName());
 
                 if ($table->getSequenceName() === null) {
-                    $table->sequenceName($columnSchema->getSequenceName());
+                    $table->sequenceName($column->getSequenceName());
                 }
             }
         }
