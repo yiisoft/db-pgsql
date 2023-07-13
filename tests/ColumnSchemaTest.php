@@ -52,8 +52,8 @@ final class ColumnSchemaTest extends TestCase
                 'varbit_col' => 0b1_1100_1000, // 456
                 'bigint_col' => 9_223_372_036_854_775_806,
                 'intarray_col' => [1, -2, null, '42'],
-                'numericarray_col' => [1.2, -2.2, null],
-                'varchararray_col' => ['', 'some text', null],
+                'numericarray_col' => [null, 1.2, -2.2, null, null],
+                'varchararray_col' => ['', 'some text', '""', '\\\\', '[",","null",true,"false","f"]', null],
                 'textarray2_col' => new ArrayExpression(null),
                 'json_col' => [['a' => 1, 'b' => null, 'c' => [1, 3, 5]]],
                 'jsonb_col' => new JsonExpression(new ArrayExpression([1, 2, 3])),
@@ -90,8 +90,8 @@ final class ColumnSchemaTest extends TestCase
         $this->assertSame(0b1_1100_1000, $varbitColPhpTypeCast);
         $this->assertSame(33.22, $numericColPhpTypeCast);
         $this->assertSame([1, -2, null, 42], $intArrayColPhpType);
-        $this->assertSame([1.2, -2.2, null], $numericArrayColPhpTypeCast);
-        $this->assertSame(['', 'some text', null], $varcharArrayColPhpTypeCast);
+        $this->assertSame([null, 1.2, -2.2, null, null], $numericArrayColPhpTypeCast);
+        $this->assertSame(['', 'some text', '""', '\\\\', '[",","null",true,"false","f"]', null], $varcharArrayColPhpTypeCast);
         $this->assertNull($textArray2ColPhpType);
         $this->assertSame([['a' => 1, 'b' => null, 'c' => [1, 3, 5]]], $jsonColPhpType);
         $this->assertSame(['1', '2', '3'], $jsonBColPhpType);
