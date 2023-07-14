@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Yiisoft\Db\Pgsql;
 
 use function in_array;
-use function strlen;
 
 /**
  * Array representation to PHP array parser for PostgreSQL Server.
@@ -13,26 +12,15 @@ use function strlen;
 final class ArrayParser
 {
     /**
-     * @var string Character used in an array.
-     */
-    private string $delimiter = ',';
-
-    /**
      * Convert an array from PostgresSQL to PHP.
      *
      * @param string|null $value String to convert.
      */
     public function parse(string|null $value): array|null
     {
-        if ($value === null) {
-            return null;
-        }
-
-        if ($value === '{}') {
-            return [];
-        }
-
-        return $this->parseArray($value);
+        return $value !== null
+            ? $this->parseArray($value)
+            : null;
     }
 
     /**
@@ -43,33 +31,23 @@ final class ArrayParser
      */
     private function parseArray(string $value, int &$i = 0): array
     {
-        $result = [];
-        $len = strlen($value);
-
-        for (++$i; $i < $len; ++$i) {
-            switch ($value[$i]) {
-                case '{':
-                    $result[] = $this->parseArray($value, $i);
-                    break;
-                case '}':
-                    break 2;
-                case $this->delimiter:
-                    /** `{}` case */
-                    if (empty($result)) {
-                        $result[] = null;
-                    }
-
-                    /** `{,}` case */
-                    if (in_array($value[$i + 1], [$this->delimiter, '}'], true)) {
-                        $result[] = null;
-                    }
-                    break;
-                default:
-                    $result[] = $this->parseString($value, $i);
-            }
+        if ($value[++$i] === '}') {
+            ++$i;
+            return [];
         }
 
-        return $result;
+        for ($result = [];; ++$i) {
+            $result[] = match ($value[$i]) {
+                '{' => $this->parseArray($value, $i),
+                ',', '}' => null,
+                default => $this->parseString($value, $i),
+            };
+
+            if ($value[$i] === '}') {
+                ++$i;
+                return $result;
+            }
+        }
     }
 
     /**
@@ -80,27 +58,41 @@ final class ArrayParser
      */
     private function parseString(string $value, int &$i): string|null
     {
-        $isQuoted = $value[$i] === '"';
-        $stringEndChars = $isQuoted ? ['"'] : [$this->delimiter, '}'];
-        $result = '';
-        $len = strlen($value);
+        return $value[$i] === '"'
+            ? $this->parseQuotedString($value, $i)
+            : $this->parseUnquotedString($value, $i);
+    }
 
-        for ($i += $isQuoted ? 1 : 0; $i < $len; ++$i) {
-            if (in_array($value[$i], ['\\', '"'], true) && in_array($value[$i + 1], [$value[$i], '"'], true)) {
+    /**
+     * Parses quoted string.
+     */
+    private function parseQuotedString(string $value, int &$i): string
+    {
+        for ($result = '', ++$i;; ++$i) {
+            if ($value[$i] === '\\') {
                 ++$i;
-            } elseif (in_array($value[$i], $stringEndChars, true)) {
-                break;
+            } elseif ($value[$i] === '"') {
+                ++$i;
+                return $result;
             }
 
             $result .= $value[$i];
         }
+    }
 
-        $i -= $isQuoted ? 0 : 1;
+    /**
+     * Parses unquoted string.
+     */
+    private function parseUnquotedString(string $value, int &$i): string|null
+    {
+        for ($result = '';; ++$i) {
+            if (in_array($value[$i], [',', '}'], true)) {
+                return $result !== 'NULL'
+                    ? $result
+                    : null;
+            }
 
-        if (!$isQuoted && $result === 'NULL') {
-            $result = null;
+            $result .= $value[$i];
         }
-
-        return $result;
     }
 }
