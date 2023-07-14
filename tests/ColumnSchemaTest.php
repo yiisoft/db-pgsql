@@ -110,8 +110,8 @@ final class ColumnSchemaTest extends TestCase
 
         $columnSchema->type('boolean');
 
-        $this->assertFalse($columnSchema->phpTypeCast('false'));
-        $this->assertTrue($columnSchema->phpTypeCast('true'));
+        $this->assertFalse($columnSchema->phpTypeCast('f'));
+        $this->assertTrue($columnSchema->phpTypeCast('t'));
     }
 
     public function testDbTypeCastJson(): void
