@@ -138,7 +138,7 @@ final class ColumnSchema extends AbstractColumnSchema
         return match ($this->getType()) {
             Schema::TYPE_BIT => is_string($value) ? bindec($value) : $value,
             SchemaInterface::TYPE_BOOLEAN
-                => match (is_string($value) ? strtolower($value) : $value) {
+                => match ($value) {
                     't', 'true' => true,
                     'f', 'false' => false,
                     default => (bool) $value,
