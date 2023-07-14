@@ -21,7 +21,6 @@ use function is_int;
 use function is_string;
 use function json_decode;
 use function str_pad;
-use function strtolower;
 
 /**
  * Represents the metadata of a column in a database table for PostgreSQL Server.

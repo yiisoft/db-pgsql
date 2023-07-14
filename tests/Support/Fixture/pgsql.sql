@@ -167,19 +167,19 @@ CREATE TABLE "type" (
 CREATE TABLE "bool_values" (
   id serial not null primary key,
   bool_col bool,
-  default_true bool not null default true,
-  default_qtrueq boolean not null default 'true',
-  default_t boolean not null default 't',
+  default_true bool not null default TRUE,
+  default_qtrueq boolean not null default 'TRUE',
+  default_t boolean not null default 'T',
   default_yes boolean not null default 'yes',
   default_on boolean not null default 'on',
   default_1 boolean not null default '1',
-  default_false boolean not null default false,
-  default_qfalseq boolean not null default 'false',
-  default_f boolean not null default 'f',
+  default_false boolean not null default FALSE,
+  default_qfalseq boolean not null default 'FALSE',
+  default_f boolean not null default 'F',
   default_no boolean not null default 'no',
   default_off boolean not null default 'off',
   default_0 boolean not null default '0',
-  default_array boolean[] not null default '{null,true,"true",t,yes,on,1,false,"false",f,no,off,0}'
+  default_array boolean[] not null default '{null,TRUE,"TRUE",T,yes,on,1,FALSE,"FALSE",F,no,off,0}'
 );
 
 CREATE TABLE "negative_default_values" (
