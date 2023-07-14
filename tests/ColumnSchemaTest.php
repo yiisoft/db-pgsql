@@ -120,7 +120,7 @@ final class ColumnSchemaTest extends TestCase
         $schema = $db->getSchema();
         $tableSchema = $schema->getTableSchema('type');
 
-        $this->assertEquals(new JsonExpression('' , 'json'), $tableSchema->getColumn('json_col')->dbTypecast(''));
+        $this->assertEquals(new JsonExpression('', 'json'), $tableSchema->getColumn('json_col')->dbTypecast(''));
         $this->assertEquals(new JsonExpression('', 'jsonb'), $tableSchema->getColumn('jsonb_col')->dbTypecast(''));
     }
 
