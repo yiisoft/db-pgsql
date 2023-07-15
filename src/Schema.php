@@ -841,34 +841,37 @@ final class Schema extends AbstractPdoSchema
      * @param ColumnSchemaInterface $column The column schema object.
      *
      * @return mixed The normalized default value.
-     *
-     * @psalm-suppress PossiblyNullArgument
      */
     private function normalizeDefaultValue(?string $defaultValue, ColumnSchemaInterface $column): mixed
     {
-        return match (true) {
-            $defaultValue === null, $column->isPrimaryKey() => null,
+        if ($defaultValue === null || $column->isPrimaryKey()) {
+            return null;
+        }
 
-            /** @var string $defaultValue */
-            $column->getType() === self::TYPE_BOOLEAN && in_array($defaultValue, ['true', 'false'], true)
-                => $defaultValue === 'true',
+        if ($column->getType() === self::TYPE_BOOLEAN && in_array($defaultValue, ['true', 'false'], true)) {
+            return $defaultValue === 'true';
+        }
 
+        if (
             in_array($column->getType(), [self::TYPE_TIMESTAMP, self::TYPE_DATE, self::TYPE_TIME], true)
             && in_array(strtoupper($defaultValue), ['NOW()', 'CURRENT_TIMESTAMP', 'CURRENT_DATE', 'CURRENT_TIME'], true)
-                => new Expression($defaultValue),
+        ) {
+            return new Expression($defaultValue);
+        }
 
-            preg_match("/^B?'(.*?)'::/", $defaultValue, $matches) === 1
-                => $column->getType() === self::TYPE_BINARY && str_starts_with($matches[1], '\\x')
-                    ? hex2bin(substr($matches[1], 2))
-                    : $column->phpTypecast($matches[1]),
+        if (preg_match("/^B?'(.*?)'::/", $defaultValue, $matches) === 1) {
+            return $column->getType() === self::TYPE_BINARY && str_starts_with($matches[1], '\\x')
+                ? hex2bin(substr($matches[1], 2))
+                : $column->phpTypecast($matches[1]);
+        }
 
-            preg_match('/^(\()?(.*?)(?(1)\))(?:::.+)?$/', $defaultValue, $matches) === 1
-                => $matches[2] !== 'NULL'
-                    ? $column->phpTypecast($matches[2])
-                    : null,
+        if (preg_match('/^(\()?(.*?)(?(1)\))(?:::.+)?$/', $defaultValue, $matches) === 1) {
+            return $matches[2] !== 'NULL'
+                ? $column->phpTypecast($matches[2])
+                : null;
+        }
 
-            default => $column->phpTypecast($defaultValue),
-        };
+        return $column->phpTypecast($defaultValue);
     }
 
     /**
