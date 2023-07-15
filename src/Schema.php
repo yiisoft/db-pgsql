@@ -847,23 +847,26 @@ final class Schema extends AbstractPdoSchema
     private function normalizeDefaultValue(?string $defaultValue, ColumnSchemaInterface $column): mixed
     {
         return match (true) {
-            $defaultValue === null,
-            $column->isPrimaryKey()
-                => null,
+            $defaultValue === null, $column->isPrimaryKey() => null,
+
             /** @var string $defaultValue */
             $column->getType() === self::TYPE_BOOLEAN && in_array($defaultValue, ['true', 'false'], true)
                 => $defaultValue === 'true',
+
             in_array($column->getType(), [self::TYPE_TIMESTAMP, self::TYPE_DATE, self::TYPE_TIME], true)
             && in_array(strtoupper($defaultValue), ['NOW()', 'CURRENT_TIMESTAMP', 'CURRENT_DATE', 'CURRENT_TIME'], true)
                 => new Expression($defaultValue),
+
             preg_match("/^B?'(.*?)'::/", $defaultValue, $matches) === 1
                 => $column->getType() === self::TYPE_BINARY && str_starts_with($matches[1], '\\x')
                     ? hex2bin(substr($matches[1], 2))
                     : $column->phpTypecast($matches[1]),
+
             preg_match('/^(\()?(.*?)(?(1)\))(?:::.+)?$/', $defaultValue, $matches) === 1
                 => $matches[2] !== 'NULL'
                     ? $column->phpTypecast($matches[2])
                     : null,
+
             default => $column->phpTypecast($defaultValue),
         };
     }
