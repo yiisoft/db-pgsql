@@ -47,7 +47,7 @@ use function substr;
  *   column_comment: string|null,
  *   modifier: int,
  *   is_nullable: bool,
- *   column_default: mixed,
+ *   column_default: string|null,
  *   is_autoinc: bool,
  *   sequence_name: string|null,
  *   enum_values: array<array-key, float|int|string>|string|null,
@@ -532,30 +532,14 @@ final class Schema extends AbstractPdoSchema
         /** @psalm-var array{array{tableName: string, columns: array}} $constraints */
         $constraints = [];
 
-        /**
-         * @psalm-var array<
-         *   array{
-         *     constraint_name: string,
-         *     column_name: string,
-         *     foreign_table_name: string,
-         *     foreign_table_schema: string,
-         *     foreign_column_name: string,
-         *   }
-         * > $rows
-         */
+        /** @psalm-var array<FindConstraintArray> $rows */
         $rows = $this->db->createCommand($sql, [
             ':schemaName' => $table->getSchemaName(),
             ':tableName' => $table->getName(),
         ])->queryAll();
 
         foreach ($rows as $constraint) {
-            /** @psalm-var array{
-             *     constraint_name: string,
-             *     column_name: string,
-             *     foreign_table_name: string,
-             *     foreign_table_schema: string,
-             *     foreign_column_name: string,
-             *   } $constraint */
+            /** @psalm-var FindConstraintArray $constraint */
             $constraint = $this->normalizeRowKeyCase($constraint, false);
 
             if ($constraint['foreign_table_schema'] !== $this->defaultSchema) {
@@ -756,61 +740,21 @@ final class Schema extends AbstractPdoSchema
             return false;
         }
 
-        /** @psalm-var array $column */
-        foreach ($columns as $column) {
-            /** @psalm-var ColumnArray $column */
-            $column = $this->normalizeRowKeyCase($column, false);
+        /** @psalm-var ColumnArray $info */
+        foreach ($columns as $info) {
+            /** @psalm-var ColumnArray $info */
+            $info = $this->normalizeRowKeyCase($info, false);
 
-            /** @psalm-var ColumnSchema $loadColumnSchema */
-            $loadColumnSchema = $this->loadColumnSchema($column);
+            /** @psalm-var ColumnSchema $column */
+            $column = $this->loadColumnSchema($info);
 
-            $table->column($loadColumnSchema->getName(), $loadColumnSchema);
+            $table->column($column->getName(), $column);
 
-            /** @psalm-var mixed $defaultValue */
-            $defaultValue = $loadColumnSchema->getDefaultValue();
-
-            if ($loadColumnSchema->isPrimaryKey()) {
-                $table->primaryKey($loadColumnSchema->getName());
+            if ($column->isPrimaryKey()) {
+                $table->primaryKey($column->getName());
 
                 if ($table->getSequenceName() === null) {
-                    $table->sequenceName($loadColumnSchema->getSequenceName());
-                }
-
-                $loadColumnSchema->defaultValue(null);
-            } elseif ($defaultValue) {
-                if (
-                    is_string($defaultValue) &&
-                    in_array(
-                        $loadColumnSchema->getType(),
-                        [self::TYPE_TIMESTAMP, self::TYPE_DATE, self::TYPE_TIME],
-                        true
-                    ) &&
-                    in_array(
-                        strtoupper($defaultValue),
-                        ['NOW()', 'CURRENT_TIMESTAMP', 'CURRENT_DATE', 'CURRENT_TIME'],
-                        true
-                    )
-                ) {
-                    $loadColumnSchema->defaultValue(new Expression($defaultValue));
-                } elseif ($loadColumnSchema->getType() === 'boolean') {
-                    $loadColumnSchema->defaultValue($defaultValue  === 'true');
-                } elseif (is_string($defaultValue) && preg_match("/^B?'(.*?)'::/", $defaultValue, $matches)) {
-                    if ($loadColumnSchema->getType() === 'binary' && str_starts_with($matches[1], '\\x')) {
-                        $loadColumnSchema->defaultValue(hex2bin(substr($matches[1], 2)));
-                    } else {
-                        $loadColumnSchema->defaultValue($loadColumnSchema->phpTypecast($matches[1]));
-                    }
-                } elseif (
-                    is_string($defaultValue) &&
-                    preg_match('/^(\()?(.*?)(?(1)\))(?:::.+)?$/', $defaultValue, $matches)
-                ) {
-                    if ($matches[2] === 'NULL') {
-                        $loadColumnSchema->defaultValue(null);
-                    } else {
-                        $loadColumnSchema->defaultValue($loadColumnSchema->phpTypecast($matches[2]));
-                    }
-                } else {
-                    $loadColumnSchema->defaultValue($loadColumnSchema->phpTypecast($defaultValue));
+                    $table->sequenceName($column->getSequenceName());
                 }
             }
         }
@@ -821,27 +765,7 @@ final class Schema extends AbstractPdoSchema
     /**
      * Loads the column information into a {@see ColumnSchemaInterface} object.
      *
-     * @psalm-param array{
-     *   table_schema: string,
-     *   table_name: string,
-     *   column_name: string,
-     *   data_type: string,
-     *   type_type: string|null,
-     *   type_scheme: string|null,
-     *   character_maximum_length: int,
-     *   column_comment: string|null,
-     *   modifier: int,
-     *   is_nullable: bool,
-     *   column_default: mixed,
-     *   is_autoinc: bool,
-     *   sequence_name: string|null,
-     *   enum_values: array<array-key, float|int|string>|string|null,
-     *   numeric_precision: int|null,
-     *   numeric_scale: int|null,
-     *   size: string|null,
-     *   is_pkey: bool|null,
-     *   dimension: int
-     * } $info Column information.
+     * @psalm-param ColumnArray $info Column information.
      *
      * @return ColumnSchemaInterface The column schema object.
      */
@@ -852,16 +776,15 @@ final class Schema extends AbstractPdoSchema
         $column->autoIncrement($info['is_autoinc']);
         $column->comment($info['column_comment']);
 
-        if (!in_array($info['type_scheme'], [$this->defaultSchema, 'pg_catalog'], true)
-        ) {
+        if (!in_array($info['type_scheme'], [$this->defaultSchema, 'pg_catalog'], true)) {
             $column->dbType($info['type_scheme'] . '.' . $info['data_type']);
         } else {
             $column->dbType($info['data_type']);
         }
 
-        $column->defaultValue($info['column_default']);
-        $column->enumValues(($info['enum_values'] !== null)
-            ? explode(',', str_replace(["''"], ["'"], $info['enum_values'])) : null);
+        $column->enumValues($info['enum_values'] !== null
+            ? explode(',', str_replace(["''"], ["'"], $info['enum_values']))
+            : null);
         $column->unsigned(false); // has no meaning in PG
         $column->primaryKey((bool) $info['is_pkey']);
         $column->precision($info['numeric_precision']);
@@ -871,35 +794,26 @@ final class Schema extends AbstractPdoSchema
 
         /**
          * pg_get_serial_sequence() doesn't track DEFAULT value change.
-         *
          * GENERATED BY IDENTITY columns always have a null default value.
-         *
-         * @psalm-var mixed $defaultValue
          */
-        $defaultValue = $column->getDefaultValue();
-        $sequenceName = $info['sequence_name'] ?? null;
+        $defaultValue = $info['column_default'];
 
         if (
-            isset($defaultValue) &&
-            is_string($defaultValue) &&
-            preg_match("/nextval\\('\"?\\w+\"?\.?\"?\\w+\"?'(::regclass)?\\)/", $defaultValue) === 1
+            $defaultValue !== null
+            && preg_match("/nextval\\('\"?\\w+\"?\.?\"?\\w+\"?'(::regclass)?\\)/", $defaultValue) === 1
         ) {
             $column->sequenceName(preg_replace(
                 ['/nextval/', '/::/', '/regclass/', '/\'\)/', '/\(\'/'],
                 '',
                 $defaultValue
             ));
-        } elseif ($sequenceName !== null) {
-            $column->sequenceName($this->resolveTableName($sequenceName)->getFullName());
+        } elseif ($info['sequence_name'] !== null) {
+            $column->sequenceName($this->resolveTableName($info['sequence_name'])->getFullName());
         }
 
-        if (isset($this->typeMap[$column->getDbType() ?? ''])) {
-            $column->type($this->typeMap[$column->getDbType() ?? '']);
-        } else {
-            $column->type(self::TYPE_STRING);
-        }
-
+        $column->type($this->typeMap[(string) $column->getDbType()] ?? self::TYPE_STRING);
         $column->phpType($this->getColumnPhpType($column));
+        $column->defaultValue($this->normalizeDefaultValue($defaultValue, $column));
 
         return $column;
     }
@@ -918,6 +832,46 @@ final class Schema extends AbstractPdoSchema
         }
 
         return parent::getColumnPhpType($column);
+    }
+
+    /**
+     * Converts column's default value according to {@see ColumnSchema::phpType} after retrieval from the database.
+     *
+     * @param string|null $defaultValue The default value retrieved from the database.
+     * @param ColumnSchemaInterface $column The column schema object.
+     *
+     * @return mixed The normalized default value.
+     */
+    private function normalizeDefaultValue(?string $defaultValue, ColumnSchemaInterface $column): mixed
+    {
+        if ($defaultValue === null || $column->isPrimaryKey()) {
+            return null;
+        }
+
+        if ($column->getType() === self::TYPE_BOOLEAN && in_array($defaultValue, ['true', 'false'], true)) {
+            return $defaultValue === 'true';
+        }
+
+        if (
+            in_array($column->getType(), [self::TYPE_TIMESTAMP, self::TYPE_DATE, self::TYPE_TIME], true)
+            && in_array(strtoupper($defaultValue), ['NOW()', 'CURRENT_TIMESTAMP', 'CURRENT_DATE', 'CURRENT_TIME'], true)
+        ) {
+            return new Expression($defaultValue);
+        }
+
+        if (preg_match("/^B?'(.*?)'::/", $defaultValue, $matches) === 1) {
+            return $column->getType() === self::TYPE_BINARY && str_starts_with($matches[1], '\\x')
+                ? hex2bin(substr($matches[1], 2))
+                : $column->phpTypecast($matches[1]);
+        }
+
+        if (preg_match('/^(\()?(.*?)(?(1)\))(?:::.+)?$/', $defaultValue, $matches) === 1) {
+            return $matches[2] !== 'NULL'
+                ? $column->phpTypecast($matches[2])
+                : null;
+        }
+
+        return $column->phpTypecast($defaultValue);
     }
 
     /**

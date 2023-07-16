@@ -6,6 +6,7 @@
 - Enh #284: Add tests for `binary` type and fix casting of default value (@Tigrov)
 - Bug #287: Fix `bit` type (@Tigrov)
 - Enh #289: Array parser refactoring (@Tigrov)
+- Chg #288: Typecast refactoring (@Tigrov)
 
 ## 1.0.0 April 12, 2023
 

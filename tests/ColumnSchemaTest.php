@@ -10,6 +10,7 @@ use Throwable;
 use Yiisoft\Db\Exception\Exception;
 use Yiisoft\Db\Exception\InvalidConfigException;
 use Yiisoft\Db\Expression\ArrayExpression;
+use Yiisoft\Db\Expression\Expression;
 use Yiisoft\Db\Expression\JsonExpression;
 use Yiisoft\Db\Pgsql\ColumnSchema;
 use Yiisoft\Db\Pgsql\Tests\Support\TestTrait;
@@ -109,7 +110,67 @@ final class ColumnSchemaTest extends TestCase
 
         $columnSchema->type('boolean');
 
-        $this->assertFalse($columnSchema->phpTypeCast('false'));
-        $this->assertTrue($columnSchema->phpTypeCast('true'));
+        $this->assertFalse($columnSchema->phpTypeCast('f'));
+        $this->assertTrue($columnSchema->phpTypeCast('t'));
+    }
+
+    public function testDbTypeCastJson(): void
+    {
+        $db = $this->getConnection(true);
+        $schema = $db->getSchema();
+        $tableSchema = $schema->getTableSchema('type');
+
+        $this->assertEquals(new JsonExpression('', 'json'), $tableSchema->getColumn('json_col')->dbTypecast(''));
+        $this->assertEquals(new JsonExpression('', 'jsonb'), $tableSchema->getColumn('jsonb_col')->dbTypecast(''));
+    }
+
+    public function testBoolDefault(): void
+    {
+        $db = $this->getConnection(true);
+
+        $command = $db->createCommand();
+        $schema = $db->getSchema();
+        $tableSchema = $schema->getTableSchema('bool_values');
+        $command->insert('bool_values', ['id' => new Expression('DEFAULT')]);
+        $command->execute();
+        $query = (new Query($db))->from('bool_values')->one();
+
+        $this->assertNull($query['bool_col']);
+        $this->assertTrue($query['default_true']);
+        $this->assertTrue($query['default_qtrueq']);
+        $this->assertTrue($query['default_t']);
+        $this->assertTrue($query['default_yes']);
+        $this->assertTrue($query['default_on']);
+        $this->assertTrue($query['default_1']);
+        $this->assertFalse($query['default_false']);
+        $this->assertFalse($query['default_qfalseq']);
+        $this->assertFalse($query['default_f']);
+        $this->assertFalse($query['default_no']);
+        $this->assertFalse($query['default_off']);
+        $this->assertFalse($query['default_0']);
+        $this->assertSame(
+            [null, true, true, true, true, true, true, false, false, false, false, false, false],
+            $tableSchema->getColumn('default_array')->phpTypecast($query['default_array'])
+        );
+
+        $this->assertNull($tableSchema->getColumn('bool_col')->getDefaultValue());
+        $this->assertTrue($tableSchema->getColumn('default_true')->getDefaultValue());
+        $this->assertTrue($tableSchema->getColumn('default_qtrueq')->getDefaultValue());
+        $this->assertTrue($tableSchema->getColumn('default_t')->getDefaultValue());
+        $this->assertTrue($tableSchema->getColumn('default_yes')->getDefaultValue());
+        $this->assertTrue($tableSchema->getColumn('default_on')->getDefaultValue());
+        $this->assertTrue($tableSchema->getColumn('default_1')->getDefaultValue());
+        $this->assertFalse($tableSchema->getColumn('default_false')->getDefaultValue());
+        $this->assertFalse($tableSchema->getColumn('default_qfalseq')->getDefaultValue());
+        $this->assertFalse($tableSchema->getColumn('default_f')->getDefaultValue());
+        $this->assertFalse($tableSchema->getColumn('default_no')->getDefaultValue());
+        $this->assertFalse($tableSchema->getColumn('default_off')->getDefaultValue());
+        $this->assertFalse($tableSchema->getColumn('default_0')->getDefaultValue());
+        $this->assertSame(
+            [null, true, true, true, true, true, true, false, false, false, false, false, false],
+            $tableSchema->getColumn('default_array')->getDefaultValue()
+        );
+
+        $db->close();
     }
 }
