@@ -36,7 +36,7 @@ trait TestTrait
 
     protected static function getDb(): PdoConnectionInterface
     {
-        $dsn = (new Dsn('pgsql', '127.0.0.1', 'yiitest', '5432'))->asString();
+        $dsn = (new Dsn('pgsql', TestEnvironment::getPostgreSqlHost(), 'yiitest', '5432'))->asString();
 
         return new Connection(new Driver($dsn, 'root', 'root'), DbHelper::getSchemaCache());
     }
@@ -44,7 +44,7 @@ trait TestTrait
     protected function getDsn(): string
     {
         if ($this->dsn === '') {
-            $this->dsn = (new Dsn('pgsql', '127.0.0.1', 'yiitest', '5432'))->asString();
+            $this->dsn = (new Dsn('pgsql', TestEnvironment::getPostgreSqlHost(), 'yiitest', '5432'))->asString();
         }
 
         return $this->dsn;
