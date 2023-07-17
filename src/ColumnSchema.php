@@ -140,12 +140,7 @@ final class ColumnSchema extends AbstractColumnSchema
         return match ($this->getType()) {
             Schema::TYPE_BIT => is_string($value) ? bindec($value) : $value,
 
-            SchemaInterface::TYPE_BOOLEAN
-                => match ($value) {
-                    't' => true,
-                    'f' => false,
-                    default => (bool) $value,
-                },
+            SchemaInterface::TYPE_BOOLEAN => $value && $value !== 'f',
 
             SchemaInterface::TYPE_JSON
                 => json_decode((string) $value, true, 512, JSON_THROW_ON_ERROR),
