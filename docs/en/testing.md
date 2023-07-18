@@ -6,16 +6,36 @@ All our packages have github actions by default, so you can test your [contribut
 
 > Note: We recommend pull requesting in draft mode until all tests pass.
 
-## Docker image
+## Docker
 
-For greater ease it is recommended to use docker containers, for this you can use the [docker-compose.yml](https://docs.docker.com/compose/compose-file/) file that is in the docs folder.
+For greater ease it is recommended to use docker containers. 
 
-1. [PostgreSQL 15](/docker-compose.yml)
-
-For running the docker containers you can use the following command:
+You can use the [docker-compose.yml](https://docs.docker.com/compose/compose-file/) file with PostgreSQL 15
+that is in the root of the package:
 
 ```shell
-docker compose up -d
+docker-compose up -d
+```
+
+Or run container directly via command:
+
+```shell
+docker run --rm --name yiisoft-db-pgsql-db -e POSTGRES_PASSWORD=root -e POSTGRES_USER=root -e POSTGRES_DB=yiitest -d -p 5432:5432 postgres:15
+```
+
+If you're running Docker on Linux (in WSL also), you can create [tmpfs volume](https://docs.docker.com/storage/tmpfs/)
+that persist database in the host memory and significantly speeds up the execution time of tests. Use `docker run` 
+command argument for it:
+
+```
+--mount type=tmpfs,destination=/var/lib/postgresql/data
+```
+
+DB must be accessible by address `127.0.0.1`. If you use PHP via docker container, run PHP container in network of DB
+container. Use `docker run` command argument for it:
+
+```
+ --network container:yiisoft-db-pgsql-db
 ```
 
 ## Unit testing
