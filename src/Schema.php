@@ -842,9 +842,13 @@ final class Schema extends AbstractPdoSchema
      *
      * @return mixed The normalized default value.
      */
-    private function normalizeDefaultValue(?string $defaultValue, ColumnSchemaInterface $column): mixed
+    private function normalizeDefaultValue(string|null $defaultValue, ColumnSchemaInterface $column): mixed
     {
-        if ($defaultValue === null || $column->isPrimaryKey()) {
+        if (
+            $defaultValue === null
+            || $column->isPrimaryKey()
+            || str_starts_with($defaultValue, 'NULL::')
+        ) {
             return null;
         }
 
@@ -859,19 +863,13 @@ final class Schema extends AbstractPdoSchema
             return new Expression($defaultValue);
         }
 
-        if (preg_match("/^B?'(.*?)'::/", $defaultValue, $matches) === 1) {
-            return $column->getType() === self::TYPE_BINARY && str_starts_with($matches[1], '\\x')
-                ? hex2bin(substr($matches[1], 2))
-                : $column->phpTypecast($matches[1]);
+        $value = preg_replace("/^B?['(](.*?)[)']::[^:]+$/", '$1', $defaultValue);
+
+        if ($column->getType() === self::TYPE_BINARY && str_starts_with($value, '\\x')) {
+            return hex2bin(substr($value, 2));
         }
 
-        if (preg_match('/^(\()?(.*?)(?(1)\))(?:::.+)?$/', $defaultValue, $matches) === 1) {
-            return $matches[2] !== 'NULL'
-                ? $column->phpTypecast($matches[2])
-                : null;
-        }
-
-        return $column->phpTypecast($defaultValue);
+        return $column->phpTypecast($value);
     }
 
     /**
