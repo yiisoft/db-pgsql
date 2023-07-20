@@ -8,7 +8,7 @@
 - Enh #289: Array parser refactoring (@Tigrov)
 - Chg #288: Typecast refactoring (@Tigrov)
 - Chg #291: Update phpTypecast for bool type (@Tigrov)
-- Chg #294: Update `Schema::normalizeDefaultValue()` (@Tigrov)
+- Enh #294: Refactoring of `Schema::normalizeDefaultValue()` method (@Tigrov)
 
 ## 1.0.0 April 12, 2023
 
