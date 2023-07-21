@@ -18,7 +18,7 @@ final class ArrayParser
      */
     public function parse(string|null $value): array|null
     {
-        return $value !== null
+        return $value !== null && $value[0] === '{'
             ? $this->parseArray($value)
             : null;
     }
