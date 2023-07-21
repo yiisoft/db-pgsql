@@ -89,7 +89,7 @@ final class SchemaProvider extends \Yiisoft\Db\Tests\Provider\SchemaProvider
                         'size' => 100,
                         'precision' => null,
                         'scale' => null,
-                        'defaultValue' => 'something',
+                        'defaultValue' => 'some\'thing',
                     ],
                     'char_col3' => [
                         'type' => 'text',
@@ -103,6 +103,19 @@ final class SchemaProvider extends \Yiisoft\Db\Tests\Provider\SchemaProvider
                         'precision' => null,
                         'scale' => null,
                         'defaultValue' => null,
+                    ],
+                    'char_col4' => [
+                        'type' => 'string',
+                        'dbType' => 'varchar',
+                        'phpType' => 'string',
+                        'primaryKey' => false,
+                        'allowNull' => true,
+                        'autoIncrement' => false,
+                        'enumValues' => null,
+                        'size' => null,
+                        'precision' => null,
+                        'scale' => null,
+                        'defaultValue' => "first line\nsecond line",
                     ],
                     'float_col' => [
                         'type' => 'double',
