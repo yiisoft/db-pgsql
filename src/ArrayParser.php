@@ -40,7 +40,8 @@ final class ArrayParser
             $result[] = match ($value[$i]) {
                 '{' => $this->parseArray($value, $i),
                 ',', '}' => null,
-                default => $this->parseString($value, $i),
+                '"' => $this->parseQuotedString($value, $i),
+                default => $this->parseUnquotedString($value, $i),
             };
 
             if ($value[$i] === '}') {
@@ -48,19 +49,6 @@ final class ArrayParser
                 return $result;
             }
         }
-    }
-
-    /**
-     * Parses PostgreSQL encoded string.
-     *
-     * @param string $value String to parse.
-     * @param int $i Parse starting position.
-     */
-    private function parseString(string $value, int &$i): string|null
-    {
-        return $value[$i] === '"'
-            ? $this->parseQuotedString($value, $i)
-            : $this->parseUnquotedString($value, $i);
     }
 
     /**
