@@ -10,11 +10,14 @@ use Throwable;
 use Yiisoft\Db\Exception\Exception;
 use Yiisoft\Db\Exception\InvalidConfigException;
 use Yiisoft\Db\Expression\ArrayExpression;
+use Yiisoft\Db\Expression\Expression;
 use Yiisoft\Db\Expression\JsonExpression;
 use Yiisoft\Db\Pgsql\ColumnSchema;
 use Yiisoft\Db\Pgsql\Tests\Support\TestTrait;
 use Yiisoft\Db\Query\Query;
 use Yiisoft\Db\Schema\SchemaInterface;
+
+use function stream_get_contents;
 
 /**
  * @group pgsql
@@ -46,8 +49,12 @@ final class ColumnSchemaTest extends TestCase
                 'float_col' => 1.234,
                 'blob_col' => "\x10\x11\x12",
                 'bool_col' => false,
+                'bit_col' => 0b0110_0100, // 100
+                'varbit_col' => 0b1_1100_1000, // 456
                 'bigint_col' => 9_223_372_036_854_775_806,
                 'intarray_col' => [1, -2, null, '42'],
+                'numericarray_col' => [null, 1.2, -2.2, null, null],
+                'varchararray_col' => ['', 'some text', '""', '\\\\', '[",","null",true,"false","f"]', null],
                 'textarray2_col' => new ArrayExpression(null),
                 'json_col' => [['a' => 1, 'b' => null, 'c' => [1, 3, 5]]],
                 'jsonb_col' => new JsonExpression(new ArrayExpression([1, 2, 3])),
@@ -62,9 +69,14 @@ final class ColumnSchemaTest extends TestCase
         $intColPhpTypeCast = $tableSchema->getColumn('int_col')?->phpTypecast($query['int_col']);
         $charColPhpTypeCast = $tableSchema->getColumn('char_col')?->phpTypecast($query['char_col']);
         $floatColPhpTypeCast = $tableSchema->getColumn('float_col')?->phpTypecast($query['float_col']);
+        $blobColPhpTypeCast = $tableSchema->getColumn('blob_col')?->phpTypecast($query['blob_col']);
         $boolColPhpTypeCast = $tableSchema->getColumn('bool_col')?->phpTypecast($query['bool_col']);
+        $bitColPhpTypeCast = $tableSchema->getColumn('bit_col')?->phpTypecast($query['bit_col']);
+        $varbitColPhpTypeCast = $tableSchema->getColumn('varbit_col')?->phpTypecast($query['varbit_col']);
         $numericColPhpTypeCast = $tableSchema->getColumn('numeric_col')?->phpTypecast($query['numeric_col']);
         $intArrayColPhpType = $tableSchema->getColumn('intarray_col')?->phpTypecast($query['intarray_col']);
+        $numericArrayColPhpTypeCast = $tableSchema->getColumn('numericarray_col')?->phpTypecast($query['numericarray_col']);
+        $varcharArrayColPhpTypeCast = $tableSchema->getColumn('varchararray_col')?->phpTypecast($query['varchararray_col']);
         $textArray2ColPhpType = $tableSchema->getColumn('textarray2_col')?->phpTypecast($query['textarray2_col']);
         $jsonColPhpType = $tableSchema->getColumn('json_col')?->phpTypecast($query['json_col']);
         $jsonBColPhpType = $tableSchema->getColumn('jsonb_col')?->phpTypecast($query['jsonb_col']);
@@ -73,9 +85,14 @@ final class ColumnSchemaTest extends TestCase
         $this->assertSame(1, $intColPhpTypeCast);
         $this->assertSame(str_repeat('x', 100), $charColPhpTypeCast);
         $this->assertSame(1.234, $floatColPhpTypeCast);
+        $this->assertSame("\x10\x11\x12", stream_get_contents($blobColPhpTypeCast));
         $this->assertFalse($boolColPhpTypeCast);
+        $this->assertSame(0b0110_0100, $bitColPhpTypeCast);
+        $this->assertSame(0b1_1100_1000, $varbitColPhpTypeCast);
         $this->assertSame(33.22, $numericColPhpTypeCast);
         $this->assertSame([1, -2, null, 42], $intArrayColPhpType);
+        $this->assertSame([null, 1.2, -2.2, null, null], $numericArrayColPhpTypeCast);
+        $this->assertSame(['', 'some text', '""', '\\\\', '[",","null",true,"false","f"]', null], $varcharArrayColPhpTypeCast);
         $this->assertNull($textArray2ColPhpType);
         $this->assertSame([['a' => 1, 'b' => null, 'c' => [1, 3, 5]]], $jsonColPhpType);
         $this->assertSame(['1', '2', '3'], $jsonBColPhpType);
@@ -93,7 +110,67 @@ final class ColumnSchemaTest extends TestCase
 
         $columnSchema->type('boolean');
 
-        $this->assertFalse($columnSchema->phpTypeCast('false'));
-        $this->assertTrue($columnSchema->phpTypeCast('true'));
+        $this->assertFalse($columnSchema->phpTypeCast('f'));
+        $this->assertTrue($columnSchema->phpTypeCast('t'));
+    }
+
+    public function testDbTypeCastJson(): void
+    {
+        $db = $this->getConnection(true);
+        $schema = $db->getSchema();
+        $tableSchema = $schema->getTableSchema('type');
+
+        $this->assertEquals(new JsonExpression('', 'json'), $tableSchema->getColumn('json_col')->dbTypecast(''));
+        $this->assertEquals(new JsonExpression('', 'jsonb'), $tableSchema->getColumn('jsonb_col')->dbTypecast(''));
+    }
+
+    public function testBoolDefault(): void
+    {
+        $db = $this->getConnection(true);
+
+        $command = $db->createCommand();
+        $schema = $db->getSchema();
+        $tableSchema = $schema->getTableSchema('bool_values');
+        $command->insert('bool_values', ['id' => new Expression('DEFAULT')]);
+        $command->execute();
+        $query = (new Query($db))->from('bool_values')->one();
+
+        $this->assertNull($query['bool_col']);
+        $this->assertTrue($query['default_true']);
+        $this->assertTrue($query['default_qtrueq']);
+        $this->assertTrue($query['default_t']);
+        $this->assertTrue($query['default_yes']);
+        $this->assertTrue($query['default_on']);
+        $this->assertTrue($query['default_1']);
+        $this->assertFalse($query['default_false']);
+        $this->assertFalse($query['default_qfalseq']);
+        $this->assertFalse($query['default_f']);
+        $this->assertFalse($query['default_no']);
+        $this->assertFalse($query['default_off']);
+        $this->assertFalse($query['default_0']);
+        $this->assertSame(
+            [null, true, true, true, true, true, true, false, false, false, false, false, false],
+            $tableSchema->getColumn('default_array')->phpTypecast($query['default_array'])
+        );
+
+        $this->assertNull($tableSchema->getColumn('bool_col')->getDefaultValue());
+        $this->assertTrue($tableSchema->getColumn('default_true')->getDefaultValue());
+        $this->assertTrue($tableSchema->getColumn('default_qtrueq')->getDefaultValue());
+        $this->assertTrue($tableSchema->getColumn('default_t')->getDefaultValue());
+        $this->assertTrue($tableSchema->getColumn('default_yes')->getDefaultValue());
+        $this->assertTrue($tableSchema->getColumn('default_on')->getDefaultValue());
+        $this->assertTrue($tableSchema->getColumn('default_1')->getDefaultValue());
+        $this->assertFalse($tableSchema->getColumn('default_false')->getDefaultValue());
+        $this->assertFalse($tableSchema->getColumn('default_qfalseq')->getDefaultValue());
+        $this->assertFalse($tableSchema->getColumn('default_f')->getDefaultValue());
+        $this->assertFalse($tableSchema->getColumn('default_no')->getDefaultValue());
+        $this->assertFalse($tableSchema->getColumn('default_off')->getDefaultValue());
+        $this->assertFalse($tableSchema->getColumn('default_0')->getDefaultValue());
+        $this->assertSame(
+            [null, true, true, true, true, true, true, false, false, false, false, false, false],
+            $tableSchema->getColumn('default_array')->getDefaultValue()
+        );
+
+        $db->close();
     }
 }

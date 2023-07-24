@@ -24,11 +24,13 @@ use Yiisoft\Db\Schema\TableSchemaInterface;
 use function array_merge;
 use function array_unique;
 use function array_values;
-use function bindec;
 use function explode;
+use function hex2bin;
+use function is_string;
 use function preg_match;
 use function preg_replace;
 use function str_replace;
+use function str_starts_with;
 use function substr;
 
 /**
@@ -45,7 +47,7 @@ use function substr;
  *   column_comment: string|null,
  *   modifier: int,
  *   is_nullable: bool,
- *   column_default: mixed,
+ *   column_default: string|null,
  *   is_autoinc: bool,
  *   sequence_name: string|null,
  *   enum_values: array<array-key, float|int|string>|string|null,
@@ -80,6 +82,11 @@ use function substr;
 final class Schema extends AbstractPdoSchema
 {
     /**
+     * Define the abstract column type as `bit`.
+     */
+    public const TYPE_BIT = 'bit';
+
+    /**
      * @var array The mapping from physical column types (keys) to abstract column types (values).
      *
      * @link https://www.postgresql.org/docs/current/static/datatype.html#DATATYPE-TABLE
@@ -87,9 +94,9 @@ final class Schema extends AbstractPdoSchema
      * @psalm-var string[]
      */
     private array $typeMap = [
-        'bit' => self::TYPE_INTEGER,
-        'bit varying' => self::TYPE_INTEGER,
-        'varbit' => self::TYPE_INTEGER,
+        'bit' => self::TYPE_BIT,
+        'bit varying' => self::TYPE_BIT,
+        'varbit' => self::TYPE_BIT,
         'bool' => self::TYPE_BOOLEAN,
         'boolean' => self::TYPE_BOOLEAN,
         'box' => self::TYPE_STRING,
@@ -525,30 +532,14 @@ final class Schema extends AbstractPdoSchema
         /** @psalm-var array{array{tableName: string, columns: array}} $constraints */
         $constraints = [];
 
-        /**
-         * @psalm-var array<
-         *   array{
-         *     constraint_name: string,
-         *     column_name: string,
-         *     foreign_table_name: string,
-         *     foreign_table_schema: string,
-         *     foreign_column_name: string,
-         *   }
-         * > $rows
-         */
+        /** @psalm-var array<FindConstraintArray> $rows */
         $rows = $this->db->createCommand($sql, [
             ':schemaName' => $table->getSchemaName(),
             ':tableName' => $table->getName(),
         ])->queryAll();
 
         foreach ($rows as $constraint) {
-            /** @psalm-var array{
-             *     constraint_name: string,
-             *     column_name: string,
-             *     foreign_table_name: string,
-             *     foreign_table_schema: string,
-             *     foreign_column_name: string,
-             *   } $constraint */
+            /** @psalm-var FindConstraintArray $constraint */
             $constraint = $this->normalizeRowKeyCase($constraint, false);
 
             if ($constraint['foreign_table_schema'] !== $this->defaultSchema) {
@@ -692,10 +683,10 @@ final class Schema extends AbstractPdoSchema
             (SELECT nspname FROM pg_namespace WHERE oid = COALESCE(td.typnamespace, tb.typnamespace, t.typnamespace)) AS type_scheme,
             a.attlen AS character_maximum_length,
             pg_catalog.col_description(c.oid, a.attnum) AS column_comment,
-            a.atttypmod AS modifier,
-            a.attnotnull = false AS is_nullable,
-            CAST(pg_get_expr(ad.adbin, ad.adrelid) AS varchar) AS column_default,
-            coalesce(pg_get_expr(ad.adbin, ad.adrelid) ~ 'nextval',false) $orIdentity AS is_autoinc,
+            information_schema._pg_truetypmod(a, t) AS modifier,
+            NOT (a.attnotnull OR t.typnotnull) AS is_nullable,
+            COALESCE(t.typdefault, pg_get_expr(ad.adbin, ad.adrelid)) AS column_default,
+            COALESCE(pg_get_expr(ad.adbin, ad.adrelid) ~ 'nextval', false) $orIdentity AS is_autoinc,
             pg_get_serial_sequence(quote_ident(d.nspname) || '.' || quote_ident(c.relname), a.attname)
             AS sequence_name,
             CASE WHEN COALESCE(td.typtype, tb.typtype, t.typtype) = 'e'::char
@@ -708,52 +699,36 @@ final class Schema extends AbstractPdoSchema
                 ',')
                 ELSE NULL
             END AS enum_values,
-            CASE atttypid
-                WHEN 21 /*int2*/ THEN 16
-                WHEN 23 /*int4*/ THEN 32
-                WHEN 20 /*int8*/ THEN 64
-                WHEN 1700 /*numeric*/ THEN
-                    CASE WHEN atttypmod = -1
-                        THEN null
-                        ELSE ((atttypmod - 4) >> 16) & 65535
-                        END
-                WHEN 700 /*float4*/ THEN 24 /*FLT_MANT_DIG*/
-                WHEN 701 /*float8*/ THEN 53 /*DBL_MANT_DIG*/
-                    ELSE null
-                    END   AS numeric_precision,
-            CASE
-                WHEN atttypid IN (21, 23, 20) THEN 0
-                WHEN atttypid IN (1700) THEN
-            CASE
-                WHEN atttypmod = -1 THEN null
-                    ELSE (atttypmod - 4) & 65535
-                    END
-                    ELSE null
-                    END AS numeric_scale,
-                    CAST(
-                        information_schema._pg_char_max_length(
-                        information_schema._pg_truetypid(a, t),
-                        information_schema._pg_truetypmod(a, t)
-                        ) AS numeric
-                    ) AS size,
-                    a.attnum = any (ct.conkey) as is_pkey,
-                    COALESCE(NULLIF(a.attndims, 0), NULLIF(t.typndims, 0), (t.typcategory='A')::int) AS dimension
-            FROM
-                pg_class c
-                LEFT JOIN pg_attribute a ON a.attrelid = c.oid
-                LEFT JOIN pg_attrdef ad ON a.attrelid = ad.adrelid AND a.attnum = ad.adnum
-                LEFT JOIN pg_type t ON a.atttypid = t.oid
-                LEFT JOIN pg_type tb ON (a.attndims > 0 OR t.typcategory='A') AND t.typelem > 0 AND t.typelem = tb.oid
-                                            OR t.typbasetype > 0 AND t.typbasetype = tb.oid
-                LEFT JOIN pg_type td ON t.typndims > 0 AND t.typbasetype > 0 AND tb.typelem = td.oid
-                LEFT JOIN pg_namespace d ON d.oid = c.relnamespace
-                LEFT JOIN pg_constraint ct ON ct.conrelid = c.oid AND ct.contype = 'p'
-            WHERE
-                a.attnum > 0 AND t.typname != '' AND NOT a.attisdropped
-                AND c.relname = :tableName
-                AND d.nspname = :schemaName
-            ORDER BY
-                a.attnum;
+            information_schema._pg_numeric_precision(
+                COALESCE(td.oid, tb.oid, a.atttypid),
+                information_schema._pg_truetypmod(a, t)
+            ) AS numeric_precision,
+            information_schema._pg_numeric_scale(
+                COALESCE(td.oid, tb.oid, a.atttypid),
+                information_schema._pg_truetypmod(a, t)
+            ) AS numeric_scale,
+            information_schema._pg_char_max_length(
+                COALESCE(td.oid, tb.oid, a.atttypid),
+                information_schema._pg_truetypmod(a, t)
+            ) AS size,
+            a.attnum = any (ct.conkey) as is_pkey,
+            COALESCE(NULLIF(a.attndims, 0), NULLIF(t.typndims, 0), (t.typcategory='A')::int) AS dimension
+        FROM
+            pg_class c
+            LEFT JOIN pg_attribute a ON a.attrelid = c.oid
+            LEFT JOIN pg_attrdef ad ON a.attrelid = ad.adrelid AND a.attnum = ad.adnum
+            LEFT JOIN pg_type t ON a.atttypid = t.oid
+            LEFT JOIN pg_type tb ON (a.attndims > 0 OR t.typcategory='A') AND t.typelem > 0 AND t.typelem = tb.oid
+                                        OR t.typbasetype > 0 AND t.typbasetype = tb.oid
+            LEFT JOIN pg_type td ON t.typndims > 0 AND t.typbasetype > 0 AND tb.typelem = td.oid
+            LEFT JOIN pg_namespace d ON d.oid = c.relnamespace
+            LEFT JOIN pg_constraint ct ON ct.conrelid = c.oid AND ct.contype = 'p'
+        WHERE
+            a.attnum > 0 AND t.typname != '' AND NOT a.attisdropped
+            AND c.relname = :tableName
+            AND d.nspname = :schemaName
+        ORDER BY
+            a.attnum;
         SQL;
 
         $columns = $this->db->createCommand($sql, [
@@ -765,61 +740,21 @@ final class Schema extends AbstractPdoSchema
             return false;
         }
 
-        /** @psalm-var array $column */
-        foreach ($columns as $column) {
-            /** @psalm-var ColumnArray $column */
-            $column = $this->normalizeRowKeyCase($column, false);
+        /** @psalm-var ColumnArray $info */
+        foreach ($columns as $info) {
+            /** @psalm-var ColumnArray $info */
+            $info = $this->normalizeRowKeyCase($info, false);
 
-            /** @psalm-var ColumnSchema $loadColumnSchema */
-            $loadColumnSchema = $this->loadColumnSchema($column);
+            /** @psalm-var ColumnSchema $column */
+            $column = $this->loadColumnSchema($info);
 
-            $table->column($loadColumnSchema->getName(), $loadColumnSchema);
+            $table->column($column->getName(), $column);
 
-            /** @psalm-var mixed $defaultValue */
-            $defaultValue = $loadColumnSchema->getDefaultValue();
-
-            if ($loadColumnSchema->isPrimaryKey()) {
-                $table->primaryKey($loadColumnSchema->getName());
+            if ($column->isPrimaryKey()) {
+                $table->primaryKey($column->getName());
 
                 if ($table->getSequenceName() === null) {
-                    $table->sequenceName($loadColumnSchema->getSequenceName());
-                }
-
-                $loadColumnSchema->defaultValue(null);
-            } elseif ($defaultValue) {
-                if (
-                    is_string($defaultValue) &&
-                    in_array(
-                        $loadColumnSchema->getType(),
-                        [self::TYPE_TIMESTAMP, self::TYPE_DATE, self::TYPE_TIME],
-                        true
-                    ) &&
-                    in_array(
-                        strtoupper($defaultValue),
-                        ['NOW()', 'CURRENT_TIMESTAMP', 'CURRENT_DATE', 'CURRENT_TIME'],
-                        true
-                    )
-                ) {
-                    $loadColumnSchema->defaultValue(new Expression($defaultValue));
-                } elseif ($loadColumnSchema->getType() === 'boolean') {
-                    $loadColumnSchema->defaultValue($defaultValue  === 'true');
-                } elseif (is_string($defaultValue) && preg_match("/^B'(.*?)'::/", $defaultValue, $matches)) {
-                    $loadColumnSchema->defaultValue(bindec($matches[1]));
-                } elseif (is_string($defaultValue) && preg_match("/^'(\d+)'::\"bit\"$/", $defaultValue, $matches)) {
-                    $loadColumnSchema->defaultValue(bindec($matches[1]));
-                } elseif (is_string($defaultValue) && preg_match("/^'(.*?)'::/", $defaultValue, $matches)) {
-                    $loadColumnSchema->defaultValue($loadColumnSchema->phpTypecast($matches[1]));
-                } elseif (
-                    is_string($defaultValue) &&
-                    preg_match('/^(\()?(.*?)(?(1)\))(?:::.+)?$/', $defaultValue, $matches)
-                ) {
-                    if ($matches[2] === 'NULL') {
-                        $loadColumnSchema->defaultValue(null);
-                    } else {
-                        $loadColumnSchema->defaultValue($loadColumnSchema->phpTypecast($matches[2]));
-                    }
-                } else {
-                    $loadColumnSchema->defaultValue($loadColumnSchema->phpTypecast($defaultValue));
+                    $table->sequenceName($column->getSequenceName());
                 }
             }
         }
@@ -830,27 +765,7 @@ final class Schema extends AbstractPdoSchema
     /**
      * Loads the column information into a {@see ColumnSchemaInterface} object.
      *
-     * @psalm-param array{
-     *   table_schema: string,
-     *   table_name: string,
-     *   column_name: string,
-     *   data_type: string,
-     *   type_type: string|null,
-     *   type_scheme: string|null,
-     *   character_maximum_length: int,
-     *   column_comment: string|null,
-     *   modifier: int,
-     *   is_nullable: bool,
-     *   column_default: mixed,
-     *   is_autoinc: bool,
-     *   sequence_name: string|null,
-     *   enum_values: array<array-key, float|int|string>|string|null,
-     *   numeric_precision: int|null,
-     *   numeric_scale: int|null,
-     *   size: string|null,
-     *   is_pkey: bool|null,
-     *   dimension: int
-     * } $info Column information.
+     * @psalm-param ColumnArray $info Column information.
      *
      * @return ColumnSchemaInterface The column schema object.
      */
@@ -861,16 +776,15 @@ final class Schema extends AbstractPdoSchema
         $column->autoIncrement($info['is_autoinc']);
         $column->comment($info['column_comment']);
 
-        if (!in_array($info['type_scheme'], [$this->defaultSchema, 'pg_catalog'], true)
-        ) {
+        if (!in_array($info['type_scheme'], [$this->defaultSchema, 'pg_catalog'], true)) {
             $column->dbType($info['type_scheme'] . '.' . $info['data_type']);
         } else {
             $column->dbType($info['data_type']);
         }
 
-        $column->defaultValue($info['column_default']);
-        $column->enumValues(($info['enum_values'] !== null)
-            ? explode(',', str_replace(["''"], ["'"], $info['enum_values'])) : null);
+        $column->enumValues($info['enum_values'] !== null
+            ? explode(',', str_replace(["''"], ["'"], $info['enum_values']))
+            : null);
         $column->unsigned(false); // has no meaning in PG
         $column->primaryKey((bool) $info['is_pkey']);
         $column->precision($info['numeric_precision']);
@@ -880,37 +794,83 @@ final class Schema extends AbstractPdoSchema
 
         /**
          * pg_get_serial_sequence() doesn't track DEFAULT value change.
-         *
          * GENERATED BY IDENTITY columns always have a null default value.
-         *
-         * @psalm-var mixed $defaultValue
          */
-        $defaultValue = $column->getDefaultValue();
-        $sequenceName = $info['sequence_name'] ?? null;
+        $defaultValue = $info['column_default'];
 
         if (
-            isset($defaultValue) &&
-            is_string($defaultValue) &&
-            preg_match("/nextval\\('\"?\\w+\"?\.?\"?\\w+\"?'(::regclass)?\\)/", $defaultValue) === 1
+            $defaultValue !== null
+            && preg_match("/nextval\\('\"?\\w+\"?\.?\"?\\w+\"?'(::regclass)?\\)/", $defaultValue) === 1
         ) {
             $column->sequenceName(preg_replace(
                 ['/nextval/', '/::/', '/regclass/', '/\'\)/', '/\(\'/'],
                 '',
                 $defaultValue
             ));
-        } elseif ($sequenceName !== null) {
-            $column->sequenceName($this->resolveTableName($sequenceName)->getFullName());
+        } elseif ($info['sequence_name'] !== null) {
+            $column->sequenceName($this->resolveTableName($info['sequence_name'])->getFullName());
         }
 
-        if (isset($this->typeMap[$column->getDbType() ?? ''])) {
-            $column->type($this->typeMap[$column->getDbType() ?? '']);
-        } else {
-            $column->type(self::TYPE_STRING);
-        }
-
+        $column->type($this->typeMap[(string) $column->getDbType()] ?? self::TYPE_STRING);
         $column->phpType($this->getColumnPhpType($column));
+        $column->defaultValue($this->normalizeDefaultValue($defaultValue, $column));
 
         return $column;
+    }
+
+    /**
+     * Extracts the PHP type from an abstract DB type.
+     *
+     * @param ColumnSchemaInterface $column The column schema information.
+     *
+     * @return string The PHP type name.
+     */
+    protected function getColumnPhpType(ColumnSchemaInterface $column): string
+    {
+        if ($column->getType() === self::TYPE_BIT) {
+            return self::PHP_TYPE_INTEGER;
+        }
+
+        return parent::getColumnPhpType($column);
+    }
+
+    /**
+     * Converts column's default value according to {@see ColumnSchema::phpType} after retrieval from the database.
+     *
+     * @param string|null $defaultValue The default value retrieved from the database.
+     * @param ColumnSchemaInterface $column The column schema object.
+     *
+     * @return mixed The normalized default value.
+     */
+    private function normalizeDefaultValue(string|null $defaultValue, ColumnSchemaInterface $column): mixed
+    {
+        if (
+            $defaultValue === null
+            || $column->isPrimaryKey()
+            || str_starts_with($defaultValue, 'NULL::')
+        ) {
+            return null;
+        }
+
+        if ($column->getType() === self::TYPE_BOOLEAN && in_array($defaultValue, ['true', 'false'], true)) {
+            return $defaultValue === 'true';
+        }
+
+        if (
+            in_array($column->getType(), [self::TYPE_TIMESTAMP, self::TYPE_DATE, self::TYPE_TIME], true)
+            && in_array(strtoupper($defaultValue), ['NOW()', 'CURRENT_TIMESTAMP', 'CURRENT_DATE', 'CURRENT_TIME'], true)
+        ) {
+            return new Expression($defaultValue);
+        }
+
+        $value = preg_replace("/^B?['(](.*?)[)'](?:::[^:]+)?$/s", '$1', $defaultValue);
+        $value = str_replace("''", "'", $value);
+
+        if ($column->getType() === self::TYPE_BINARY && str_starts_with($value, '\\x')) {
+            return hex2bin(substr($value, 2));
+        }
+
+        return $column->phpTypecast($value);
     }
 
     /**

@@ -142,19 +142,23 @@ CREATE TABLE "type" (
   tinyint_col smallint DEFAULT '1',
   smallint_col smallint DEFAULT '1',
   char_col char(100) NOT NULL,
-  char_col2 varchar(100) DEFAULT 'something',
+  char_col2 varchar(100) DEFAULT 'some''thing',
   char_col3 text,
+  char_col4 character varying DEFAULT E'first line\nsecond line',
   float_col double precision NOT NULL,
   float_col2 double precision DEFAULT '1.23',
-  blob_col bytea,
+  blob_col bytea DEFAULT 'a binary value',
   numeric_col decimal(5,2) DEFAULT '33.22',
   time timestamp NOT NULL DEFAULT '2002-01-01 00:00:00',
   bool_col boolean NOT NULL,
   bool_col2 boolean DEFAULT TRUE,
   ts_default TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  bit_col BIT(8) NOT NULL DEFAULT B'10000010',
+  bit_col BIT(8) NOT NULL DEFAULT B'10000010', -- 130
+  varbit_col VARBIT NOT NULL DEFAULT '100'::bit, -- 4
   bigint_col BIGINT,
   intarray_col integer[],
+  numericarray_col numeric(5,2)[],
+  varchararray_col varchar(100)[],
   textarray2_col text[][],
   json_col json DEFAULT '{"a":1}',
   jsonb_col jsonb,
@@ -164,8 +168,19 @@ CREATE TABLE "type" (
 CREATE TABLE "bool_values" (
   id serial not null primary key,
   bool_col bool,
-  default_true bool not null default true,
-  default_false boolean not null default false
+  default_true bool not null default TRUE,
+  default_qtrueq boolean not null default 'TRUE',
+  default_t boolean not null default 'T',
+  default_yes boolean not null default 'yes',
+  default_on boolean not null default 'on',
+  default_1 boolean not null default '1',
+  default_false boolean not null default FALSE,
+  default_qfalseq boolean not null default 'FALSE',
+  default_f boolean not null default 'F',
+  default_no boolean not null default 'no',
+  default_off boolean not null default 'off',
+  default_0 boolean not null default '0',
+  default_array boolean[] not null default '{null,TRUE,"TRUE",T,yes,on,1,FALSE,"FALSE",F,no,off,0}'
 );
 
 CREATE TABLE "negative_default_values" (

@@ -24,6 +24,7 @@
         "php": "^8.0",
         "ext-json": "*",
         "ext-pdo": "*",
+        "ext-pdo_pgsql": "*",
         "yiisoft/db": "^1.0",
         "yiisoft/json": "^1.0"
     },

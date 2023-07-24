@@ -155,12 +155,12 @@ final class ArrayExpressionBuilder implements ExpressionBuilderInterface
     }
 
     /**
-     * @return array|bool|ExpressionInterface|int|JsonExpression|string|null The cast value or expression.
+     * @return array|bool|ExpressionInterface|float|int|JsonExpression|string|null The cast value or expression.
      */
     protected function typecastValue(
         ArrayExpression $expression,
-        array|bool|int|string|ExpressionInterface|null $value
-    ): array|bool|int|string|JsonExpression|ExpressionInterface|null {
+        array|bool|float|int|string|ExpressionInterface|null $value
+    ): array|bool|float|int|string|JsonExpression|ExpressionInterface|null {
         if ($value instanceof ExpressionInterface) {
             return $value;
         }
