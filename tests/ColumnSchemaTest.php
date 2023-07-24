@@ -173,4 +173,19 @@ final class ColumnSchemaTest extends TestCase
 
         $db->close();
     }
+
+    public function testNegativeDefaultValues()
+    {
+        $db = $this->getConnection(true);
+
+        $schema = $db->getSchema();
+        $tableSchema = $schema->getTableSchema('negative_default_values');
+
+        $this->assertSame(-123, $tableSchema->getColumn('tinyint_col')->getDefaultValue());
+        $this->assertSame(-123, $tableSchema->getColumn('smallint_col')->getDefaultValue());
+        $this->assertSame(-123, $tableSchema->getColumn('int_col')->getDefaultValue());
+        $this->assertSame(-123, $tableSchema->getColumn('bigint_col')->getDefaultValue());
+        $this->assertSame(-12345.6789, $tableSchema->getColumn('float_col')->getDefaultValue());
+        $this->assertSame(-33.22, $tableSchema->getColumn('numeric_col')->getDefaultValue());
+    }
 }
