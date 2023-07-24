@@ -863,7 +863,8 @@ final class Schema extends AbstractPdoSchema
             return new Expression($defaultValue);
         }
 
-        $value = preg_replace("/^B?['(](.*?)[)']::[^:]+$/", '$1', $defaultValue);
+        $value = preg_replace("/^B?['(](.*?)[)'](?:::[^:]+)?$/s", '$1', $defaultValue);
+        $value = str_replace("''", "'", $value);
 
         if ($column->getType() === self::TYPE_BINARY && str_starts_with($value, '\\x')) {
             return hex2bin(substr($value, 2));
