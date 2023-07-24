@@ -9,6 +9,7 @@
 - Chg #288: Typecast refactoring (@Tigrov)
 - Chg #291: Update phpTypecast for bool type (@Tigrov)
 - Enh #294: Refactoring of `Schema::normalizeDefaultValue()` method (@Tigrov)
+- Bug #296: Prevent posible issues with array default values `('{one,two}'::text[])::varchar[]`, remove `ArrayParser::parseString()` (@Tigrov)
 
 ## 1.0.0 April 12, 2023
 
