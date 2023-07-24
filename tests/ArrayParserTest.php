@@ -30,5 +30,8 @@ final class ArrayParserTest extends TestCase
             [0 => '[",","null",true,"false","f"]'],
             $arrayParse->parse('{"[\",\",\"null\",true,\"false\",\"f\"]"}')
         );
+
+        // Similar cases can be in default values
+        $this->assertSame(null, $arrayParse->parse("'{one,two}'::text[]"));
     }
 }
