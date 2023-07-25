@@ -96,7 +96,7 @@ final class ArrayExpressionBuilder implements ExpressionBuilderInterface
             return $placeholders;
         }
 
-        /** @psalm-var array|bool|float|int|string|ExpressionInterface|null $item */
+        /** @psalm-var ExpressionInterface|int $item */
         foreach ($value as $item) {
             if ($item instanceof QueryInterface) {
                 [$sql, $params] = $this->queryBuilder->build($item, $params);
