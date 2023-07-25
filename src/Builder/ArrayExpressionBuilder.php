@@ -33,7 +33,7 @@ final class ArrayExpressionBuilder implements ExpressionBuilderInterface
     /**
      * The Method builds the raw SQL from the expression that won't be additionally escaped or quoted.
      *
-     * @param ArrayExpression $expression The expression build.
+     * @param ExpressionInterface $expression The expression build.
      * @param array $params The binding parameters.
      *
      * @throws Exception
@@ -42,8 +42,10 @@ final class ArrayExpressionBuilder implements ExpressionBuilderInterface
      * @throws NotSupportedException
      *
      * @return string The raw SQL that won't be additionally escaped or quoted.
+     *
+     * @psalm-param ArrayExpression $expression
      */
-    public function build(ArrayExpression $expression, array &$params = []): string
+    public function build(ExpressionInterface $expression, array &$params = []): string
     {
         /** @psalm-var array|mixed|QueryInterface $value */
         $value = $expression->getValue();
@@ -72,8 +74,10 @@ final class ArrayExpressionBuilder implements ExpressionBuilderInterface
      * @throws InvalidArgumentException
      * @throws InvalidConfigException
      * @throws NotSupportedException
+     *
+     * @psalm-param ArrayExpression $expression
      */
-    private function buildPlaceholders(ArrayExpression $expression, array &$params): array
+    private function buildPlaceholders(ExpressionInterface $expression, array &$params): array
     {
         $placeholders = [];
 
@@ -112,15 +116,20 @@ final class ArrayExpressionBuilder implements ExpressionBuilderInterface
         return $placeholders;
     }
 
-    private function unnestArrayExpression(ArrayExpression $expression, mixed $value): ArrayExpression
+    /**
+     * @psalm-param ArrayExpression $expression
+     */
+    private function unnestArrayExpression(ExpressionInterface $expression, mixed $value): ArrayExpression
     {
         return new ArrayExpression($value, $expression->getType(), $expression->getDimension() - 1);
     }
 
     /**
      * @return string The typecast expression based on {@see type}.
+     *
+     * @psalm-param ArrayExpression $expression
      */
-    private function getTypeHint(ArrayExpression $expression): string
+    private function getTypeHint(ExpressionInterface $expression): string
     {
         $type = $expression->getType();
 
@@ -140,8 +149,10 @@ final class ArrayExpressionBuilder implements ExpressionBuilderInterface
      * @param ArrayExpression $expression The array expression.
      *
      * @return string The sub-query array expression.
+     *
+     * @psalm-param ArrayExpression $expression
      */
-    private function buildSubqueryArray(string $sql, ArrayExpression $expression): string
+    private function buildSubqueryArray(string $sql, ExpressionInterface $expression): string
     {
         return 'ARRAY(' . $sql . ')' . $this->getTypeHint($expression);
     }
@@ -149,10 +160,10 @@ final class ArrayExpressionBuilder implements ExpressionBuilderInterface
     /**
      * @return array|bool|float|int|string|JsonExpression|ExpressionInterface|null The cast value or expression.
      *
-     * @throws InvalidArgumentException
+     * @psalm-param ArrayExpression $expression
      */
     private function typecastValue(
-        ArrayExpression $expression,
+        ExpressionInterface $expression,
         array|bool|float|int|string|ExpressionInterface|null $value
     ): array|bool|float|int|string|JsonExpression|ExpressionInterface|null {
         if ($value instanceof ExpressionInterface) {
