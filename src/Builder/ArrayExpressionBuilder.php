@@ -158,7 +158,7 @@ final class ArrayExpressionBuilder implements ExpressionBuilderInterface
     }
 
     /**
-     * @return array|bool|float|int|string|JsonExpression|ExpressionInterface|null The cast value or expression.
+     * @return array|bool|ExpressionInterface|float|int|JsonExpression|string|null The cast value or expression.
      *
      * @psalm-param ArrayExpression $expression
      */
