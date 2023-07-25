@@ -18,7 +18,6 @@ use Yiisoft\Db\Schema\SchemaInterface;
 
 use function implode;
 use function in_array;
-use function is_array;
 use function is_iterable;
 use function str_repeat;
 
@@ -148,27 +147,20 @@ final class ArrayExpressionBuilder implements ExpressionBuilderInterface
     }
 
     /**
-     * @return bool|float|int|string|JsonExpression|ExpressionInterface|null The cast value or expression.
+     * @return array|bool|float|int|string|JsonExpression|ExpressionInterface|null The cast value or expression.
      *
      * @throws InvalidArgumentException
      */
     private function typecastValue(
         ArrayExpression $expression,
         array|bool|float|int|string|ExpressionInterface|null $value
-    ): bool|float|int|string|JsonExpression|ExpressionInterface|null {
+    ): array|bool|float|int|string|JsonExpression|ExpressionInterface|null {
         if ($value instanceof ExpressionInterface) {
             return $value;
         }
 
         if (in_array($expression->getType(), [SchemaInterface::TYPE_JSON, SchemaInterface::TYPE_JSONB], true)) {
             return new JsonExpression($value);
-        }
-
-        if (is_array($value)) {
-            throw new InvalidArgumentException(
-                'Array elements of ArrayExpression `$expression` must be instances of `ExpressionInterface`'
-                . ' or the type `json` or `jsonb` must be specified for array elements.'
-            );
         }
 
         return $value;
