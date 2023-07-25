@@ -114,7 +114,7 @@ final class ColumnSchema extends AbstractColumnSchema
                 return null;
             }
 
-            array_walk_recursive($value, function (string|null &$val) {
+            array_walk_recursive($value, function (mixed &$val) {
                 /** @psalm-var mixed $val */
                 $val = $this->phpTypecastValue($val);
             });
