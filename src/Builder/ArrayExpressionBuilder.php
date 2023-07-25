@@ -86,7 +86,7 @@ final class ArrayExpressionBuilder implements ExpressionBuilderInterface
         }
 
         if ($expression->getDimension() > 1) {
-            /** @psalm-var array|bool|float|int|string|ExpressionInterface|null $item */
+            /** @psalm-var mixed $item */
             foreach ($value as $item) {
                 $placeholders[] = $this->build($this->unnestArrayExpression($expression, $item), $params);
             }
