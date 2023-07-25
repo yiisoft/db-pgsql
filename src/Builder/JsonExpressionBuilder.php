@@ -11,7 +11,6 @@ use Yiisoft\Db\Exception\InvalidConfigException;
 use Yiisoft\Db\Exception\NotSupportedException;
 use Yiisoft\Db\Expression\ArrayExpression;
 use Yiisoft\Db\Expression\ExpressionBuilderInterface;
-use Yiisoft\Db\Expression\ExpressionInterface;
 use Yiisoft\Db\Expression\JsonExpression;
 use Yiisoft\Db\QueryBuilder\QueryBuilderInterface;
 use Yiisoft\Db\Query\QueryInterface;
@@ -29,7 +28,7 @@ final class JsonExpressionBuilder implements ExpressionBuilderInterface
     /**
      * The Method builds the raw SQL from the $expression that won't be additionally escaped or quoted.
      *
-     * @param ExpressionInterface $expression The expression to build.
+     * @param JsonExpression $expression The expression to build.
      * @param array $params The binding parameters.
      *
      * @throws Exception
@@ -39,13 +38,11 @@ final class JsonExpressionBuilder implements ExpressionBuilderInterface
      * @throws NotSupportedException
      *
      * @return string The raw SQL that won't be additionally escaped or quoted.
-     *
-     * @psalm-param JsonExpression $expression
      */
-    public function build(ExpressionInterface $expression, array &$params = []): string
+    public function build(JsonExpression $expression, array &$params = []): string
     {
         /**
-         * @psalm-var array|mixed|QueryInterface $value
+         * @psalm-var array|mixed|QueryInterface|ArrayExpression $value
          */
         $value = $expression->getValue();
 
@@ -66,7 +63,7 @@ final class JsonExpressionBuilder implements ExpressionBuilderInterface
     /**
      * @return string The typecast expression based on {@see JsonExpression::getType()}.
      */
-    protected function getTypecast(JsonExpression $expression): string
+    private function getTypecast(JsonExpression $expression): string
     {
         $type = $expression->getType();
 
