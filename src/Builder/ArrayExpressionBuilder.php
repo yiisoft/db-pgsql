@@ -167,7 +167,7 @@ final class ArrayExpressionBuilder implements ExpressionBuilderInterface
         if (is_array($value)) {
             throw new InvalidArgumentException(
                 'Array elements of ArrayExpression `$expression` must be instances of `ExpressionInterface`'
-                . ' or `$expression` must have `json` or `jsonb` type of the array elements.'
+                . ' or the type `json` or `jsonb` must be specified for array elements.'
             );
         }
 
