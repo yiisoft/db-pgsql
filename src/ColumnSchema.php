@@ -110,16 +110,16 @@ final class ColumnSchema extends AbstractColumnSchema
                 $value = $this->getArrayParser()->parse($value);
             }
 
-            if (is_array($value)) {
-                array_walk_recursive($value, function (string|null &$val) {
-                    /** @psalm-var mixed $val */
-                    $val = $this->phpTypecastValue($val);
-                });
-
-                return $value;
+            if (!is_array($value)) {
+                return null;
             }
 
-            return null;
+            array_walk_recursive($value, function (string|null &$val) {
+                /** @psalm-var mixed $val */
+                $val = $this->phpTypecastValue($val);
+            });
+
+            return $value;
         }
 
         return $this->phpTypecastValue($value);
