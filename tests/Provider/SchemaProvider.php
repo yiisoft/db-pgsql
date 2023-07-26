@@ -478,7 +478,7 @@ final class SchemaProvider extends \Yiisoft\Db\Tests\Provider\SchemaProvider
                         'defaultValue' => [
                             null,
                             ['value' => 10.55, 'currency_code' => 'USD'],
-                            ['value' => -1.0, 'currency_code' => null]
+                            ['value' => -1.0, 'currency_code' => null],
                         ],
                         'dimension' => 1,
                     ],

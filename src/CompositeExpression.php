@@ -38,7 +38,8 @@ class CompositeExpression implements ExpressionInterface, ArrayAccess, Countable
         private mixed $value = [],
         private string|null $type = null,
         private array|null $columns = null,
-    ) {}
+    ) {
+    }
 
     /**
      * The composite type name.
@@ -99,9 +100,8 @@ class CompositeExpression implements ExpressionInterface, ArrayAccess, Countable
      *
      * @param int|string $offset An offset to check for.
      *
-     * @return bool Its `true` on success or `false` on failure.
-     *
      * @throws InvalidConfigException If value is not an array.
+     * @return bool Its `true` on success or `false` on failure.
      */
     public function offsetExists(mixed $offset): bool
     {
@@ -116,9 +116,8 @@ class CompositeExpression implements ExpressionInterface, ArrayAccess, Countable
      *
      * @param int|string $offset The offset to retrieve.
      *
-     * @return mixed Can return all value types.
-     *
      * @throws InvalidConfigException If value is not an array.
+     * @return mixed Can return all value types.
      */
     public function offsetGet(mixed $offset): mixed
     {

@@ -201,7 +201,7 @@ final class ColumnSchemaTest extends TestCase
             'price_array' => [
                 null,
                 ['value' => 11.11, 'currency_code' => 'USD'],
-                ['value' => null, 'currency_code' => null]
+                ['value' => null, 'currency_code' => null],
             ],
             'range_price_col' => [
                 'price_from' => ['value' => 1000.0, 'currency_code' => 'USD'],
@@ -222,7 +222,7 @@ final class ColumnSchemaTest extends TestCase
             [
                 null,
                 ['value' => 11.11, 'currency_code' => 'USD'],
-                ['value' => null, 'currency_code' => null]
+                ['value' => null, 'currency_code' => null],
             ],
             $priceArrayPhpType
         );
