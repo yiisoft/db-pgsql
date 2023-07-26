@@ -198,7 +198,11 @@ final class ColumnSchemaTest extends TestCase
 
         $command->insert('test_composite_type', [
             'price_col' => ['value' => 10.0, 'currency_code' => 'USD'],
-            'price_array' => [null, ['value' => 11.11, 'currency_code' => 'USD'], ['value' => null, 'currency_code' => null]],
+            'price_array' => [
+                null,
+                ['value' => 11.11, 'currency_code' => 'USD'],
+                ['value' => null, 'currency_code' => null]
+            ],
             'range_price_col' => [
                 'price_from' => ['value' => 1000.0, 'currency_code' => 'USD'],
                 'price_to' => ['value' => 2000.0, 'currency_code' => 'USD'],
@@ -215,7 +219,11 @@ final class ColumnSchemaTest extends TestCase
         $this->assertSame(['value' => 10.0, 'currency_code' => 'USD'], $priceColPhpType);
         $this->assertSame(['value' => 5.0, 'currency_code' => 'USD'], $priceDefaultPhpType);
         $this->assertSame(
-            [null, ['value' => 11.11, 'currency_code' => 'USD'], ['value' => null, 'currency_code' => null]],
+            [
+                null,
+                ['value' => 11.11, 'currency_code' => 'USD'],
+                ['value' => null, 'currency_code' => null]
+            ],
             $priceArrayPhpType
         );
         $this->assertSame(

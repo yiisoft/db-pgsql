@@ -20,10 +20,10 @@ use function count;
  * For example:
  *
  * ```php
- * new CompositeExpression(['price' => 10, 'currency_code' => 'USD]);
+ * new CompositeExpression(['price' => 10, 'currency_code' => 'USD']);
  * ```
  *
- * Will be encoded to `ROW[10, USD]`
+ * Will be encoded to `ROW(10, USD)`
  *
  * @template-implements ArrayAccess<string, mixed>
  * @template-implements IteratorAggregate<string>
