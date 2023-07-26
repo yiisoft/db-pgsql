@@ -454,3 +454,26 @@ CREATE TABLE "table_uuid" (
     "uuid" uuid NOT NULL PRIMARY KEY DEFAULT uuid_generate_v4(),
     "col" varchar(16)
 );
+
+DROP TYPE IF EXISTS "currency_money_composite" CASCADE;
+DROP TYPE IF EXISTS "range_price_composite" CASCADE;
+DROP TABLE IF EXISTS "test_composite_type" CASCADE;
+
+CREATE TYPE "currency_money_composite" AS (
+    "value" numeric(10,2),
+    "currency_code" char(3)
+);
+
+CREATE TYPE "range_price_composite" AS (
+    "price_from" "currency_money_composite",
+    "price_to" "currency_money_composite"
+);
+
+CREATE TABLE "test_composite_type"
+(
+    "id" SERIAL NOT NULL PRIMARY KEY,
+    "price_col" "currency_money_composite",
+    "price_default" "currency_money_composite" DEFAULT '(5,USD)',
+    "price_array" "currency_money_composite"[] DEFAULT '{null,"(10.55,USD)","(-1,)"}',
+    "range_price_col" "range_price_composite" DEFAULT '("(0,USD)","(100,USD)")'
+);

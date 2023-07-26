@@ -11,6 +11,7 @@ use Yiisoft\Db\Expression\ArrayExpression;
 use Yiisoft\Db\Expression\ExpressionInterface;
 use Yiisoft\Db\Expression\JsonExpression;
 use Yiisoft\Db\Schema\AbstractColumnSchema;
+use Yiisoft\Db\Schema\ColumnSchemaInterface;
 use Yiisoft\Db\Schema\SchemaInterface;
 
 use function array_walk_recursive;
@@ -59,6 +60,12 @@ final class ColumnSchema extends AbstractColumnSchema
     private string|null $sequenceName = null;
 
     /**
+     * @var ColumnSchemaInterface[]|null Columns metadata of the composite type.
+     * @psalm-var array<string, ColumnSchemaInterface>|null
+     */
+    private array|null $columns = null;
+
+    /**
      * Converts the input value according to {@see type} and {@see dbType} for use in a db query.
      *
      * If the value is null or an {@see Expression}, it won't be converted.
@@ -70,12 +77,48 @@ final class ColumnSchema extends AbstractColumnSchema
      */
     public function dbTypecast(mixed $value): mixed
     {
-        if ($value === null || $value instanceof ExpressionInterface) {
-            return $value;
+        if ($this->dimension > 0) {
+            if ($value === null || $value instanceof ExpressionInterface) {
+                return $value;
+            }
+
+            if ($this->getType() === Schema::TYPE_COMPOSITE) {
+                $value = $this->dbTypecastArray($value, $this->dimension);
+            }
+
+            return new ArrayExpression($value, $this->getDbType(), $this->dimension);
         }
 
-        if ($this->dimension > 0) {
-            return new ArrayExpression($value, $this->getDbType(), $this->dimension);
+        return $this->dbTypecastValue($value);
+    }
+
+    /**
+     * @param int $dimension Should be more than 0
+     */
+    private function dbTypecastArray(mixed $value, int $dimension): array|null
+    {
+        $items = [];
+
+        if (!is_iterable($value)) {
+            return $items;
+        }
+
+        /** @psalm-var mixed $val */
+        foreach ($value as $val) {
+            if ($dimension > 1) {
+                $items[] = $this->dbTypecastArray($val, $dimension - 1);
+            } else {
+                $items[] = $this->dbTypecastValue($val);
+            }
+        }
+
+        return $items;
+    }
+
+    private function dbTypecastValue(mixed $value): mixed
+    {
+        if ($value === null || $value instanceof ExpressionInterface) {
+            return $value;
         }
 
         return match ($this->getType()) {
@@ -88,6 +131,8 @@ final class ColumnSchema extends AbstractColumnSchema
             Schema::TYPE_BIT => is_int($value)
                 ? str_pad(decbin($value), (int) $this->getSize(), '0', STR_PAD_LEFT)
                 : $this->typecast($value),
+
+            Schema::TYPE_COMPOSITE => new CompositeExpression($value, $this->getDbType(), $this->columns),
 
             default => $this->typecast($value),
         };
@@ -145,8 +190,42 @@ final class ColumnSchema extends AbstractColumnSchema
             SchemaInterface::TYPE_JSON
                 => json_decode((string) $value, true, 512, JSON_THROW_ON_ERROR),
 
+            Schema::TYPE_COMPOSITE => $this->phpTypecastComposite($value),
+
             default => parent::phpTypecast($value),
         };
+    }
+
+    private function phpTypecastComposite(mixed $value): array|null
+    {
+        if ($this->columns === null) {
+            return null;
+        }
+
+        if (is_string($value)) {
+            $value = $this->getCompositeParser()->parse($value);
+        }
+
+        if (!is_iterable($value)) {
+            return null;
+        }
+
+        $fields = [];
+        $columnNames = array_keys($this->columns);
+
+        /**
+         * @psalm-var int|string $key
+         * @psalm-var mixed $val
+         */
+        foreach ($value as $key => $val) {
+            $columnName = $columnNames[$key] ?? $key;
+
+            if (isset($this->columns[$columnName])) {
+                $fields[$columnName] = $this->columns[$columnName]->phpTypecast($val);
+            }
+        }
+
+        return $fields;
     }
 
     /**
@@ -191,5 +270,30 @@ final class ColumnSchema extends AbstractColumnSchema
     public function sequenceName(string|null $sequenceName): void
     {
         $this->sequenceName = $sequenceName;
+    }
+
+    /**
+     * @param ColumnSchemaInterface[]|null $columns The columns metadata of the composite type.
+     * @psalm-param array<string, ColumnSchemaInterface>|null $columns
+     */
+    public function columns(array|null $columns): void
+    {
+        $this->columns = $columns;
+    }
+
+    /**
+     * @return ColumnSchemaInterface[]|null Columns metadata of the composite type.
+     */
+    public function getColumns(): array|null
+    {
+        return $this->columns;
+    }
+
+    /**
+     * Creates instance of CompositeParser.
+     */
+    private function getCompositeParser(): CompositeParser
+    {
+        return new CompositeParser();
     }
 }

@@ -188,4 +188,44 @@ final class ColumnSchemaTest extends TestCase
         $this->assertSame(-12345.6789, $tableSchema->getColumn('float_col')->getDefaultValue());
         $this->assertSame(-33.22, $tableSchema->getColumn('numeric_col')->getDefaultValue());
     }
+
+    public function testCompositeType(): void
+    {
+        $db = $this->getConnection(true);
+        $command = $db->createCommand();
+        $schema = $db->getSchema();
+        $tableSchema = $schema->getTableSchema('test_composite_type');
+
+        $command->insert('test_composite_type', [
+            'price_col' => ['value' => 10.0, 'currency_code' => 'USD'],
+            'price_array' => [null, ['value' => 11.11, 'currency_code' => 'USD'], ['value' => null, 'currency_code' => null]],
+            'range_price_col' => [
+                'price_from' => ['value' => 1000.0, 'currency_code' => 'USD'],
+                'price_to' => ['value' => 2000.0, 'currency_code' => 'USD'],
+            ],
+        ])->execute();
+
+        $query = (new Query($db))->from('test_composite_type')->one();
+
+        $priceColPhpType = $tableSchema->getColumn('price_col')->phpTypecast($query['price_col']);
+        $priceDefaultPhpType = $tableSchema->getColumn('price_default')->phpTypecast($query['price_default']);
+        $priceArrayPhpType = $tableSchema->getColumn('price_array')->phpTypecast($query['price_array']);
+        $rangePriceColPhpType = $tableSchema->getColumn('range_price_col')->phpTypecast($query['range_price_col']);
+
+        $this->assertSame(['value' => 10.0, 'currency_code' => 'USD'], $priceColPhpType);
+        $this->assertSame(['value' => 5.0, 'currency_code' => 'USD'], $priceDefaultPhpType);
+        $this->assertSame(
+            [null, ['value' => 11.11, 'currency_code' => 'USD'], ['value' => null, 'currency_code' => null]],
+            $priceArrayPhpType
+        );
+        $this->assertSame(
+            [
+                'price_from' => ['value' => 1000.0, 'currency_code' => 'USD'],
+                'price_to' => ['value' => 2000.0, 'currency_code' => 'USD'],
+            ],
+            $rangePriceColPhpType
+        );
+
+        $db->close();
+    }
 }

@@ -85,6 +85,10 @@ final class Schema extends AbstractPdoSchema
      * Define the abstract column type as `bit`.
      */
     public const TYPE_BIT = 'bit';
+    /**
+     * Define the abstract column type as `composite`.
+     */
+    public const TYPE_COMPOSITE = 'composite';
 
     /**
      * @var array The mapping from physical column types (keys) to abstract column types (values).
@@ -812,8 +816,28 @@ final class Schema extends AbstractPdoSchema
         }
 
         $column->type($this->typeMap[(string) $column->getDbType()] ?? self::TYPE_STRING);
+
+        if ($info['type_type'] === 'c') {
+            $column->type(self::TYPE_COMPOSITE);
+            $composite = $this->resolveTableName((string) $column->getDbType());
+
+            if ($this->findColumns($composite)) {
+                $column->columns($composite->getColumns());
+            }
+        }
+
         $column->phpType($this->getColumnPhpType($column));
         $column->defaultValue($this->normalizeDefaultValue($defaultValue, $column));
+
+        if ($column->getType() === self::TYPE_COMPOSITE && $column->getDimension() === 0) {
+            /** @psalm-var array|null $defaultValue */
+            $defaultValue = $column->getDefaultValue();
+            if (is_array($defaultValue)) {
+                foreach ((array) $column->getColumns() as $compositeName => $compositeColumn) {
+                    $compositeColumn->defaultValue($defaultValue[$compositeName] ?? null);
+                }
+            }
+        }
 
         return $column;
     }
@@ -827,11 +851,11 @@ final class Schema extends AbstractPdoSchema
      */
     protected function getColumnPhpType(ColumnSchemaInterface $column): string
     {
-        if ($column->getType() === self::TYPE_BIT) {
-            return self::PHP_TYPE_INTEGER;
-        }
-
-        return parent::getColumnPhpType($column);
+        return match ($column->getType()) {
+            self::TYPE_BIT => self::PHP_TYPE_INTEGER,
+            self::TYPE_COMPOSITE => self::PHP_TYPE_ARRAY,
+            default => parent::getColumnPhpType($column),
+        };
     }
 
     /**
