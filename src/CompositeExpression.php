@@ -84,8 +84,10 @@ class CompositeExpression implements ExpressionInterface, ArrayAccess, Countable
 
         foreach ($this->columns as $name => $column) {
             if (array_key_exists($name, $this->value)) {
+                /** @psalm-suppress MixedAssignment */
                 $value[$name] = $this->value[$name];
             } else {
+                /** @psalm-suppress MixedAssignment */
                 $value[$name] = $column->getDefaultValue();
             }
         }

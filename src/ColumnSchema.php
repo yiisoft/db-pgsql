@@ -95,7 +95,7 @@ final class ColumnSchema extends AbstractColumnSchema
     /**
      * @param int $dimension Should be more than 0
      */
-    private function dbTypecastArray(mixed $value, int $dimension): array|null
+    private function dbTypecastArray(mixed $value, int $dimension): array
     {
         $items = [];
 
@@ -108,6 +108,7 @@ final class ColumnSchema extends AbstractColumnSchema
             if ($dimension > 1) {
                 $items[] = $this->dbTypecastArray($val, $dimension - 1);
             } else {
+                /** @psalm-suppress MixedAssignment */
                 $items[] = $this->dbTypecastValue($val);
             }
         }
@@ -221,6 +222,7 @@ final class ColumnSchema extends AbstractColumnSchema
             $columnName = $columnNames[$key] ?? $key;
 
             if (isset($this->columns[$columnName])) {
+                /** @psalm-suppress MixedAssignment */
                 $fields[$columnName] = $this->columns[$columnName]->phpTypecast($val);
             }
         }
