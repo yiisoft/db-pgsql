@@ -62,7 +62,7 @@ final class ArrayExpressionBuilder implements ExpressionBuilderInterface
         /** @psalm-var string[] $placeholders */
         $placeholders = $this->buildPlaceholders($expression, $params);
 
-        return 'ARRAY[' . implode(', ', $placeholders) . ']' . $this->getTypehint($expression);
+        return 'ARRAY[' . implode(', ', $placeholders) . ']' . $this->getTypeHint($expression);
     }
 
     /**
