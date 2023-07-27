@@ -4,6 +4,7 @@
 
 - Enh #301: Refactor `JsonExpressionBuilder` (@Tigrov)
 - Enh #300: Refactor `ArrayExpressionBuilder` (@Tigrov)
+- Chg #302: Refactor ColumnSchema (@Tigrov)
 
 ## 1.1.0 July 24, 2023
 
