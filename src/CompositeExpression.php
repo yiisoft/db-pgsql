@@ -76,8 +76,20 @@ class CompositeExpression implements ExpressionInterface, ArrayAccess, Countable
      */
     public function getNormalizedValue(): mixed
     {
-        if ($this->columns === null || !is_array($this->value) || !is_string(array_key_first($this->value))) {
+        if ($this->columns === null || !is_array($this->value)) {
             return $this->value;
+        }
+
+        if (!is_string(array_key_first($this->value))) {
+            $value = $this->value;
+            $columns = array_values($this->columns);
+
+            for ($i = count($value); $i < count($columns); ++$i) {
+                /** @psalm-suppress MixedAssignment */
+                $value[$i] = $columns[$i]->getDefaultValue();
+            }
+
+            return $value;
         }
 
         $value = [];
