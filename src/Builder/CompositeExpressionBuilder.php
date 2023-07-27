@@ -10,7 +10,8 @@ use Yiisoft\Db\Exception\InvalidConfigException;
 use Yiisoft\Db\Exception\NotSupportedException;
 use Yiisoft\Db\Expression\ExpressionBuilderInterface;
 use Yiisoft\Db\Expression\ExpressionInterface;
-use Yiisoft\Db\Pgsql\CompositeExpression;
+use Yiisoft\Db\Pgsql\Expression\CompositeExpression;
+use Yiisoft\Db\Pgsql\Expression\CompositeExpressionInterface;
 use Yiisoft\Db\Query\QueryInterface;
 use Yiisoft\Db\QueryBuilder\QueryBuilderInterface;
 
@@ -38,7 +39,7 @@ final class CompositeExpressionBuilder implements ExpressionBuilderInterface
      *
      * @return string The raw SQL that won't be additionally escaped or quoted.
      *
-     * @psalm-param CompositeExpression $expression
+     * @psalm-param CompositeExpressionInterface $expression
      */
     public function build(ExpressionInterface $expression, array &$params = []): string
     {
@@ -73,10 +74,8 @@ final class CompositeExpressionBuilder implements ExpressionBuilderInterface
      * @throws InvalidArgumentException
      * @throws InvalidConfigException
      * @throws NotSupportedException
-     *
-     * @psalm-param CompositeExpression $expression
      */
-    private function buildPlaceholders(ExpressionInterface $expression, array &$params): array
+    private function buildPlaceholders(CompositeExpressionInterface $expression, array &$params): array
     {
         $placeholders = [];
 
@@ -118,10 +117,8 @@ final class CompositeExpressionBuilder implements ExpressionBuilderInterface
 
     /**
      * @return string The typecast expression based on {@see type}.
-     *
-     * @psalm-param CompositeExpression $expression
      */
-    private function getTypeHint(ExpressionInterface $expression): string
+    private function getTypeHint(CompositeExpressionInterface $expression): string
     {
         $type = $expression->getType();
 

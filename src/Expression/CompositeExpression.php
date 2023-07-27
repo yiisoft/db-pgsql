@@ -2,14 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Yiisoft\Db\Pgsql;
+namespace Yiisoft\Db\Pgsql\Expression;
 
 use ArrayAccess;
 use ArrayIterator;
 use Countable;
 use IteratorAggregate;
 use Yiisoft\Db\Exception\InvalidConfigException;
-use Yiisoft\Db\Expression\ExpressionInterface;
 use Yiisoft\Db\Schema\ColumnSchemaInterface;
 
 use function count;
@@ -28,7 +27,7 @@ use function count;
  * @template-implements ArrayAccess<string, mixed>
  * @template-implements IteratorAggregate<string>
  */
-class CompositeExpression implements ExpressionInterface, ArrayAccess, Countable, IteratorAggregate
+class CompositeExpression implements CompositeExpressionInterface, ArrayAccess, Countable, IteratorAggregate
 {
     /**
      * @param ColumnSchemaInterface[]|null $columns
@@ -72,7 +71,7 @@ class CompositeExpression implements ExpressionInterface, ArrayAccess, Countable
     }
 
     /**
-     * Sort values according to `$columns` order and fill skipped items with default values
+     * Sorted values according to order of the composite type columns and filled with default values skipped items.
      */
     public function getNormalizedValue(): mixed
     {
