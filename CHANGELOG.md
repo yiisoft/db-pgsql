@@ -6,6 +6,7 @@
 - Enh #300: Refactor `ArrayExpressionBuilder` (@Tigrov)
 - Enh #302: Refactor `ColumnSchema` (@Tigrov)
 - Bug #302: Fix incorrect convert string value for BIT type (@Tigrov)
+- Chg #302: Refactor ColumnSchema (@Tigrov)
 
 ## 1.1.0 July 24, 2023
 
