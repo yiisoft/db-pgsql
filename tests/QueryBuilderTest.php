@@ -16,7 +16,6 @@ use Yiisoft\Db\Expression\ExpressionInterface;
 use Yiisoft\Db\Pgsql\Builder\CompositeExpressionBuilder;
 use Yiisoft\Db\Pgsql\Column;
 use Yiisoft\Db\Pgsql\Expression\CompositeExpression;
-use Yiisoft\Db\Pgsql\Expression\CompositeExpressionInterface;
 use Yiisoft\Db\Pgsql\Tests\Support\TestTrait;
 use Yiisoft\Db\Query\QueryInterface;
 use Yiisoft\Db\Schema\SchemaInterface;
@@ -668,12 +667,12 @@ final class QueryBuilderTest extends CommonQueryBuilderTest
     {
         $db = $this->getConnection();
         $queryBuilder = $db->getQueryBuilder();
-        $expressionBuilder = $queryBuilder->getExpressionBuilder(new CompositeExpression());
+        $expressionBuilder = $queryBuilder->getExpressionBuilder(new CompositeExpression([]));
 
         $this->expectException(\InvalidArgumentException::class);
         $this->expectExceptionMessage(
             'TypeError: ' . CompositeExpressionBuilder::class. '::build(): Argument #1 ($expression) must be instance of '
-            . CompositeExpressionInterface::class . ', instance of ' . ArrayExpression::class . ' given.'
+            . CompositeExpression::class . ', instance of ' . ArrayExpression::class . ' given.'
         );
 
         $expressionBuilder->build(new ArrayExpression());

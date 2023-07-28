@@ -4,8 +4,7 @@ declare(strict_types=1);
 
 namespace Yiisoft\Db\Pgsql\Expression;
 
-use ArrayAccess;
-use IteratorAggregate;
+use Yiisoft\Db\Expression\ExpressionInterface;
 use Yiisoft\Db\Schema\ColumnSchemaInterface;
 
 /**
@@ -18,18 +17,15 @@ use Yiisoft\Db\Schema\ColumnSchemaInterface;
  * ```
  *
  * Will be encoded to `ROW(10, USD)`
- *
- * @template-implements ArrayAccess<string, mixed>
- * @template-implements IteratorAggregate<string>
  */
-class CompositeExpression implements CompositeExpressionInterface
+class CompositeExpression implements ExpressionInterface
 {
     /**
      * @param ColumnSchemaInterface[]|null $columns
      * @psalm-param array<string, ColumnSchemaInterface>|null $columns
      */
     public function __construct(
-        private mixed $value = [],
+        private mixed $value,
         private string|null $type = null,
         private array|null $columns = null,
     ) {

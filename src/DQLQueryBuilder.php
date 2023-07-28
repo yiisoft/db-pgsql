@@ -4,10 +4,8 @@ declare(strict_types=1);
 
 namespace Yiisoft\Db\Pgsql;
 
-use Yiisoft\Db\Exception\InvalidArgumentException;
 use Yiisoft\Db\Expression\ArrayExpression;
 use Yiisoft\Db\Expression\ExpressionBuilderInterface;
-use Yiisoft\Db\Expression\ExpressionInterface;
 use Yiisoft\Db\Expression\JsonExpression;
 use Yiisoft\Db\Pgsql\Builder\ArrayExpressionBuilder;
 use Yiisoft\Db\Pgsql\Builder\CompositeExpressionBuilder;
@@ -56,24 +54,5 @@ final class DQLQueryBuilder extends AbstractDQLQueryBuilder
             JsonExpression::class => JsonExpressionBuilder::class,
             CompositeExpression::class => CompositeExpressionBuilder::class,
         ]);
-    }
-
-    public function getExpressionBuilder(ExpressionInterface $expression): object
-    {
-        $className = $expression::class;
-
-        if (!isset($this->expressionBuilders[$className])) {
-            foreach ($this->expressionBuilders as $expressionClassName => $builderClassName) {
-                if ($className instanceof $expressionClassName) {
-                    return new $builderClassName($this->queryBuilder);
-                }
-            }
-
-            throw new InvalidArgumentException(
-                'Expression of class ' . $className . ' can not be built in ' . static::class
-            );
-        }
-
-        return new $this->expressionBuilders[$className]($this->queryBuilder);
     }
 }
