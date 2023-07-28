@@ -42,8 +42,6 @@ final class ArrayExpressionBuilder implements ExpressionBuilderInterface
      * @throws NotSupportedException
      *
      * @return string The raw SQL that won't be additionally escaped or quoted.
-     *
-     * @psalm-param ArrayExpression $expression
      */
     public function build(ExpressionInterface $expression, array &$params = []): string
     {
