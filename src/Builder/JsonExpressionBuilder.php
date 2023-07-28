@@ -49,7 +49,7 @@ final class JsonExpressionBuilder implements ExpressionBuilderInterface
 
         if ($value instanceof QueryInterface) {
             [$sql, $params] = $this->queryBuilder->build($value, $params);
-            return "($sql)" . $this->getTypecast($expression);
+            return "($sql)" . $this->getTypeHint($expression);
         }
 
         if ($value instanceof ArrayExpression) {
@@ -58,15 +58,13 @@ final class JsonExpressionBuilder implements ExpressionBuilderInterface
             $placeholder = $this->queryBuilder->bindParam(Json::encode($value), $params);
         }
 
-        return $placeholder . $this->getTypecast($expression);
+        return $placeholder . $this->getTypeHint($expression);
     }
 
     /**
      * @return string The typecast expression based on {@see JsonExpression::getType()}.
-     *
-     * @psalm-param JsonExpression $expression
      */
-    private function getTypecast(ExpressionInterface $expression): string
+    private function getTypeHint(JsonExpression $expression): string
     {
         $type = $expression->getType();
 
