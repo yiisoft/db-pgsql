@@ -91,12 +91,6 @@ final class CompositeExpressionBuilder implements ExpressionBuilderInterface
         }
 
         $columns = (array) $expression->getColumns();
-
-        // TODO retrieve columns from schema
-        // if (empty($columns) && $expression->getType() !== null) {
-        //     $columns = $schema->findColumns((string) $expression->getType());
-        // }
-
         $columnNames = array_keys($columns);
 
         /**
