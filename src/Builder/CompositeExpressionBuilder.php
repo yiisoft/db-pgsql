@@ -28,7 +28,7 @@ final class CompositeExpressionBuilder implements ExpressionBuilderInterface
     /**
      * The Method builds the raw SQL from the expression that won't be additionally escaped or quoted.
      *
-     * @param ExpressionInterface $expression The expression build.
+     * @param CompositeExpression $expression The expression build.
      * @param array $params The binding parameters.
      *
      * @throws Exception
@@ -40,13 +40,6 @@ final class CompositeExpressionBuilder implements ExpressionBuilderInterface
      */
     public function build(ExpressionInterface $expression, array &$params = []): string
     {
-        if (!$expression instanceof CompositeExpression) {
-            throw new \InvalidArgumentException(
-                'TypeError: ' . self::class . '::build(): Argument #1 ($expression) must be instance of '
-                . CompositeExpression::class . ', instance of ' . $expression::class . ' given.'
-            );
-        }
-
         /** @psalm-var mixed $value */
         $value = $expression->getValue();
 

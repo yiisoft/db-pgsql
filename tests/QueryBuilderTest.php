@@ -673,21 +673,4 @@ final class QueryBuilderTest extends CommonQueryBuilderTest
     ): void {
         parent::testUpsertExecute($table, $insertColumns, $updateColumns);
     }
-
-    public function testCompositeExpressionBuilder()
-    {
-        $db = $this->getConnection();
-        $queryBuilder = $db->getQueryBuilder();
-        $expressionBuilder = $queryBuilder->getExpressionBuilder(new CompositeExpression([]));
-
-        $this->expectException(\InvalidArgumentException::class);
-        $this->expectExceptionMessage(
-            'TypeError: ' . CompositeExpressionBuilder::class . '::build(): Argument #1 ($expression) must be instance of '
-            . CompositeExpression::class . ', instance of ' . ArrayExpression::class . ' given.'
-        );
-
-        $expressionBuilder->build(new ArrayExpression());
-
-        $db->close();
-    }
 }
