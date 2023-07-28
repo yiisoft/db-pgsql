@@ -2,7 +2,7 @@
 
 ## 1.1.1 under development
 
-- no changes in this release.
+- Enh #300: Refactor `ArrayExpressionBuilder` (@Tigrov)
 
 ## 1.1.0 July 24, 2023
 
