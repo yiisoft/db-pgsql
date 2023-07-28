@@ -475,5 +475,6 @@ CREATE TABLE "test_composite_type"
     "price_col" "currency_money_composite",
     "price_default" "currency_money_composite" DEFAULT '(5,USD)',
     "price_array" "currency_money_composite"[] DEFAULT '{null,"(10.55,USD)","(-1,)"}',
+    "price_array2" "currency_money_composite"[][],
     "range_price_col" "range_price_composite" DEFAULT '("(0,USD)","(100,USD)")'
 );

@@ -201,10 +201,6 @@ final class ColumnSchema extends AbstractColumnSchema
 
     private function phpTypecastComposite(mixed $value): array|null
     {
-        if ($this->columns === null) {
-            return null;
-        }
-
         if (is_string($value)) {
             $value = $this->getCompositeParser()->parse($value);
         }
@@ -214,19 +210,22 @@ final class ColumnSchema extends AbstractColumnSchema
         }
 
         $fields = [];
-        $columnNames = array_keys($this->columns);
+        $columnNames = array_keys((array) $this->columns);
 
         /**
-         * @psalm-var int|string $key
-         * @psalm-var mixed $val
+         * @psalm-var int|string $columnName
+         * @psalm-var mixed $item
          */
-        foreach ($value as $key => $val) {
-            $columnName = $columnNames[$key] ?? $key;
+        foreach ($value as $columnName => $item) {
+            $columnName = $columnNames[$columnName] ?? $columnName;
 
             if (isset($this->columns[$columnName])) {
-                /** @psalm-suppress MixedAssignment */
-                $fields[$columnName] = $this->columns[$columnName]->phpTypecast($val);
+                /** @psalm-var mixed $item */
+                $item = $this->columns[$columnName]->phpTypecast($item);
             }
+
+            /** @psalm-suppress MixedAssignment */
+            $fields[$columnName] = $item;
         }
 
         return $fields;

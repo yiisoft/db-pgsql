@@ -203,6 +203,9 @@ final class ColumnSchemaTest extends TestCase
                 ['value' => 11.11, 'currency_code' => 'USD'],
                 ['value' => null, 'currency_code' => null],
             ],
+            'price_array2' => [[
+                ['value' => 123.45, 'currency_code' => 'USD'],
+            ]],
             'range_price_col' => [
                 'price_from' => ['value' => 1000.0, 'currency_code' => 'USD'],
                 'price_to' => ['value' => 2000.0, 'currency_code' => 'USD'],
@@ -214,6 +217,7 @@ final class ColumnSchemaTest extends TestCase
         $priceColPhpType = $tableSchema->getColumn('price_col')->phpTypecast($query['price_col']);
         $priceDefaultPhpType = $tableSchema->getColumn('price_default')->phpTypecast($query['price_default']);
         $priceArrayPhpType = $tableSchema->getColumn('price_array')->phpTypecast($query['price_array']);
+        $priceArray2PhpType = $tableSchema->getColumn('price_array2')->phpTypecast($query['price_array2']);
         $rangePriceColPhpType = $tableSchema->getColumn('range_price_col')->phpTypecast($query['range_price_col']);
 
         $this->assertSame(['value' => 10.0, 'currency_code' => 'USD'], $priceColPhpType);
@@ -227,11 +231,30 @@ final class ColumnSchemaTest extends TestCase
             $priceArrayPhpType
         );
         $this->assertSame(
+            [[
+                ['value' => 123.45, 'currency_code' => 'USD'],
+            ]],
+            $priceArray2PhpType
+        );
+        $this->assertSame(
             [
                 'price_from' => ['value' => 1000.0, 'currency_code' => 'USD'],
                 'price_to' => ['value' => 2000.0, 'currency_code' => 'USD'],
             ],
             $rangePriceColPhpType
+        );
+
+        $priceCol = $tableSchema->getColumn('price_col');
+        $this->assertNull($priceCol->phpTypecast(1), 'For scalar value will return null');
+
+        $priceCol->columns(null);
+        $this->assertSame([5, 'USD'], $priceCol->phpTypecast([5, 'USD']), 'Will not typecast for empty columns');
+
+        $priceArray = $tableSchema->getColumn('price_array');
+        $this->assertEquals(
+            new ArrayExpression([], 'currency_money_composite', 1),
+            $priceArray->dbTypecast(1),
+            'For scalar value will return empty array'
         );
 
         $db->close();
