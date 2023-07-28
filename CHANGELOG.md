@@ -2,7 +2,7 @@
 
 ## 1.1.1 under development
 
-- Chg #301: Refactor JsonExpressionBuilder (@Tigrov)
+- Enh #301: Refactor `JsonExpressionBuilder` (@Tigrov)
 
 ## 1.1.0 July 24, 2023
 
