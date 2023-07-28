@@ -4,7 +4,6 @@
 
 - Enh #301: Refactor `JsonExpressionBuilder` (@Tigrov)
 - Enh #300: Refactor `ArrayExpressionBuilder` (@Tigrov)
-- Chg #302: Refactor ColumnSchema (@Tigrov)
 - Enh #302: Refactor `ColumnSchema` (@Tigrov)
 - Bug #302: Fix incorrect convert string value for BIT type (@Tigrov)
 

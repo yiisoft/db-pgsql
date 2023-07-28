@@ -86,7 +86,7 @@ final class ColumnSchema extends AbstractColumnSchema
 
             Schema::TYPE_BIT => is_int($value)
                 ? str_pad(decbin($value), (int) $this->getSize(), '0', STR_PAD_LEFT)
-                : $value,
+                : (string) $value,
 
             default => $this->typecast($value),
         };
