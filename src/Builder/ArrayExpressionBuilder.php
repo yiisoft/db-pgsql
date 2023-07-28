@@ -74,10 +74,8 @@ final class ArrayExpressionBuilder implements ExpressionBuilderInterface
      * @throws InvalidArgumentException
      * @throws InvalidConfigException
      * @throws NotSupportedException
-     *
-     * @psalm-param ArrayExpression $expression
      */
-    private function buildPlaceholders(ExpressionInterface $expression, array &$params): array
+    private function buildPlaceholders(ArrayExpression $expression, array &$params): array
     {
         $placeholders = [];
 
@@ -116,20 +114,15 @@ final class ArrayExpressionBuilder implements ExpressionBuilderInterface
         return $placeholders;
     }
 
-    /**
-     * @psalm-param ArrayExpression $expression
-     */
-    private function unnestArrayExpression(ExpressionInterface $expression, mixed $value): ArrayExpression
+    private function unnestArrayExpression(ArrayExpression $expression, mixed $value): ArrayExpression
     {
         return new ArrayExpression($value, $expression->getType(), $expression->getDimension() - 1);
     }
 
     /**
      * @return string The typecast expression based on {@see type}.
-     *
-     * @psalm-param ArrayExpression $expression
      */
-    private function getTypeHint(ExpressionInterface $expression): string
+    private function getTypeHint(ArrayExpression $expression): string
     {
         $type = $expression->getType();
 
@@ -149,21 +142,17 @@ final class ArrayExpressionBuilder implements ExpressionBuilderInterface
      * @param ArrayExpression $expression The array expression.
      *
      * @return string The sub-query array expression.
-     *
-     * @psalm-param ArrayExpression $expression
      */
-    private function buildSubqueryArray(string $sql, ExpressionInterface $expression): string
+    private function buildSubqueryArray(string $sql, ArrayExpression $expression): string
     {
         return 'ARRAY(' . $sql . ')' . $this->getTypeHint($expression);
     }
 
     /**
      * @return array|bool|ExpressionInterface|float|int|JsonExpression|string|null The cast value or expression.
-     *
-     * @psalm-param ArrayExpression $expression
      */
     private function typecastValue(
-        ExpressionInterface $expression,
+        ArrayExpression $expression,
         array|bool|float|int|string|ExpressionInterface|null $value
     ): array|bool|float|int|string|JsonExpression|ExpressionInterface|null {
         if ($value instanceof ExpressionInterface) {
