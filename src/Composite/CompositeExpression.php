@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Yiisoft\Db\Pgsql\Expression;
+namespace Yiisoft\Db\Pgsql\Composite;
 
 use Yiisoft\Db\Expression\ExpressionInterface;
 use Yiisoft\Db\Schema\ColumnSchemaInterface;

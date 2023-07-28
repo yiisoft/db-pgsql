@@ -8,7 +8,7 @@ use Yiisoft\Db\Expression\ArrayExpression;
 use Yiisoft\Db\Expression\Expression;
 use Yiisoft\Db\Expression\JsonExpression;
 use Yiisoft\Db\Pgsql\ColumnSchema;
-use Yiisoft\Db\Pgsql\Expression\CompositeExpression;
+use Yiisoft\Db\Pgsql\Composite\CompositeExpression;
 use Yiisoft\Db\Pgsql\Tests\Support\TestTrait;
 use Yiisoft\Db\Query\Query;
 use Yiisoft\Db\Schema\SchemaInterface;

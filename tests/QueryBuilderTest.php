@@ -15,7 +15,7 @@ use Yiisoft\Db\Expression\ArrayExpression;
 use Yiisoft\Db\Expression\ExpressionInterface;
 use Yiisoft\Db\Pgsql\Builder\CompositeExpressionBuilder;
 use Yiisoft\Db\Pgsql\Column;
-use Yiisoft\Db\Pgsql\Expression\CompositeExpression;
+use Yiisoft\Db\Pgsql\Composite\CompositeExpression;
 use Yiisoft\Db\Pgsql\Tests\Support\TestTrait;
 use Yiisoft\Db\Query\QueryInterface;
 use Yiisoft\Db\Schema\SchemaInterface;

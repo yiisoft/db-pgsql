@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Yiisoft\Db\Pgsql;
+namespace Yiisoft\Db\Pgsql\Composite;
 
 /**
  * Composite type representation to PHP array parser for PostgreSQL Server.
