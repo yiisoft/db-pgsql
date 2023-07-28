@@ -5,13 +5,8 @@ declare(strict_types=1);
 namespace Yiisoft\Db\Pgsql\Expression;
 
 use ArrayAccess;
-use ArrayIterator;
-use Countable;
 use IteratorAggregate;
-use Yiisoft\Db\Exception\InvalidConfigException;
 use Yiisoft\Db\Schema\ColumnSchemaInterface;
-
-use function count;
 
 /**
  * Represents a composite SQL expression.
@@ -27,7 +22,7 @@ use function count;
  * @template-implements ArrayAccess<string, mixed>
  * @template-implements IteratorAggregate<string>
  */
-class CompositeExpression implements CompositeExpressionInterface, ArrayAccess, Countable, IteratorAggregate
+class CompositeExpression implements CompositeExpressionInterface
 {
     /**
      * @param ColumnSchemaInterface[]|null $columns
@@ -79,21 +74,14 @@ class CompositeExpression implements CompositeExpressionInterface, ArrayAccess, 
             return $this->value;
         }
 
-        if (!is_string(array_key_first($this->value))) {
-            $value = $this->value;
+        $value = [];
+        $columns = $this->columns;
+
+        if (is_int(array_key_first($this->value))) {
             $columns = array_values($this->columns);
-
-            for ($i = count($value); $i < count($columns); ++$i) {
-                /** @psalm-suppress MixedAssignment */
-                $value[$i] = $columns[$i]->getDefaultValue();
-            }
-
-            return $value;
         }
 
-        $value = [];
-
-        foreach ($this->columns as $name => $column) {
+        foreach ($columns as $name => $column) {
             if (array_key_exists($name, $this->value)) {
                 /** @psalm-suppress MixedAssignment */
                 $value[$name] = $this->value[$name];
@@ -101,110 +89,6 @@ class CompositeExpression implements CompositeExpressionInterface, ArrayAccess, 
                 /** @psalm-suppress MixedAssignment */
                 $value[$name] = $column->getDefaultValue();
             }
-        }
-
-        return $value;
-    }
-
-    /**
-     * Whether an offset exists.
-     *
-     * @link https://php.net/manual/en/arrayaccess.offsetexists.php
-     *
-     * @param int|string $offset An offset to check for.
-     *
-     * @throws InvalidConfigException If value is not an array.
-     * @return bool Its `true` on success or `false` on failure.
-     */
-    public function offsetExists(mixed $offset): bool
-    {
-        $this->value = $this->validateValue($this->value);
-        return array_key_exists($offset, $this->value);
-    }
-
-    /**
-     * Offset to retrieve.
-     *
-     * @link https://php.net/manual/en/arrayaccess.offsetget.php
-     *
-     * @param int|string $offset The offset to retrieve.
-     *
-     * @throws InvalidConfigException If value is not an array.
-     * @return mixed Can return all value types.
-     */
-    public function offsetGet(mixed $offset): mixed
-    {
-        $this->value = $this->validateValue($this->value);
-        return $this->value[$offset];
-    }
-
-    /**
-     * Offset to set.
-     *
-     * @link https://php.net/manual/en/arrayaccess.offsetset.php
-     *
-     * @param int|string $offset The offset to assign the value to.
-     * @param mixed $value The value to set.
-     *
-     * @throws InvalidConfigException If content value is not an array.
-     */
-    public function offsetSet(mixed $offset, mixed $value): void
-    {
-        $this->value = $this->validateValue($this->value);
-        $this->value[$offset] = $value;
-    }
-
-    /**
-     * Offset to unset.
-     *
-     * @param int|string $offset The offset to unset.
-     *
-     * @throws InvalidConfigException If value is not an array.
-     *
-     * @link https://php.net/manual/en/arrayaccess.offsetunset.php
-     */
-    public function offsetUnset(mixed $offset): void
-    {
-        $this->value = $this->validateValue($this->value);
-        unset($this->value[$offset]);
-    }
-
-    /**
-     * Count elements of the composite type's content.
-     *
-     * @link https://php.net/manual/en/countable.count.php
-     *
-     * @return int The custom count as an integer.
-     */
-    public function count(): int
-    {
-        return count((array) $this->value);
-    }
-
-    /**
-     * Retrieve an external iterator.
-     *
-     * @link https://php.net/manual/en/iteratoraggregate.getiterator.php
-     *
-     * @throws InvalidConfigException If value is not an array.
-     *
-     * @return ArrayIterator An instance of an object implementing `Iterator` or `Traversable`.
-     */
-    public function getIterator(): ArrayIterator
-    {
-        $this->value = $this->validateValue($this->value);
-        return new ArrayIterator($this->value);
-    }
-
-    /**
-     * Validates the value of the composite expression is an array.
-     *
-     * @throws InvalidConfigException If value is not an array.
-     */
-    private function validateValue(mixed $value): array
-    {
-        if (!is_array($value)) {
-            throw new InvalidConfigException('The CompositeExpression value must be an array.');
         }
 
         return $value;

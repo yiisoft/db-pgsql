@@ -43,6 +43,13 @@ final class CompositeExpressionBuilder implements ExpressionBuilderInterface
      */
     public function build(ExpressionInterface $expression, array &$params = []): string
     {
+        if (!$expression instanceof CompositeExpressionInterface) {
+            throw new \InvalidArgumentException(
+                'TypeError: ' . self::class. '::build(): Argument #1 ($expression) must be instance of '
+                . CompositeExpressionInterface::class . ', instance of ' . $expression::class . ' given.'
+            );
+        }
+
         /** @psalm-var mixed $value */
         $value = $expression->getValue();
 
@@ -87,6 +94,12 @@ final class CompositeExpressionBuilder implements ExpressionBuilderInterface
         }
 
         $columns = (array) $expression->getColumns();
+
+        // TODO retrieve columns from schema
+        // if (empty($columns) && $expression->getType() !== null) {
+        //     $columns = $schema->findColumns((string) $expression->getType());
+        // }
+
         $columnNames = array_keys($columns);
 
         /**
@@ -98,12 +111,10 @@ final class CompositeExpressionBuilder implements ExpressionBuilderInterface
                 $columnName = $columnNames[$columnName] ?? null;
             }
 
-            if ($columnName === null || !isset($columns[$columnName])) {
-                continue;
+            if ($columnName !== null && isset($columns[$columnName])) {
+                /** @psalm-var mixed $item */
+                $item = $columns[$columnName]->dbTypecast($item);
             }
-
-            /** @psalm-var mixed $item */
-            $item = $columns[$columnName]->dbTypecast($item);
 
             if ($item instanceof ExpressionInterface) {
                 $placeholders[] = $this->queryBuilder->buildExpression($item, $params);

@@ -557,4 +557,34 @@ final class SchemaTest extends CommonSchemaTest
 
         $db->close();
     }
+
+    /**
+     * @dataProvider \Yiisoft\Db\Pgsql\Tests\Provider\CompositeTypeSchemaProvider::columns
+     *
+     * @throws Exception
+     */
+    public function testCompositeTypeColumnSchema(array $columns, string $tableName): void
+    {
+        $this->testCompositeTypeColumnSchemaRecursive($columns, $tableName);
+    }
+
+    private function testCompositeTypeColumnSchemaRecursive(array $columns, string $tableName): void
+    {
+        $this->columnSchema($columns, $tableName);
+
+        $db = $this->getConnection(true);
+        $table = $db->getTableSchema($tableName, true);
+
+        foreach ($table->getColumns() as $name => $column) {
+            if ($column->getType() === 'composite') {
+                $this->assertTrue(
+                    isset($columns[$name]['columns']),
+                    "Composite type's columns of column `$name` do not exist. type is `{$column->getType()}`, dbType is `{$column->getDbType()}`."
+                );
+                $this->testCompositeTypeColumnSchemaRecursive($columns[$name]['columns'], $column->getDbType());
+            }
+        }
+
+        $db->close();
+    }
 }
