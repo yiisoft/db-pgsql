@@ -42,7 +42,7 @@ final class CompositeExpressionBuilder implements ExpressionBuilderInterface
     {
         if (!$expression instanceof CompositeExpression) {
             throw new \InvalidArgumentException(
-                'TypeError: ' . self::class. '::build(): Argument #1 ($expression) must be instance of '
+                'TypeError: ' . self::class . '::build(): Argument #1 ($expression) must be instance of '
                 . CompositeExpression::class . ', instance of ' . $expression::class . ' given.'
             );
         }

@@ -671,7 +671,7 @@ final class QueryBuilderTest extends CommonQueryBuilderTest
 
         $this->expectException(\InvalidArgumentException::class);
         $this->expectExceptionMessage(
-            'TypeError: ' . CompositeExpressionBuilder::class. '::build(): Argument #1 ($expression) must be instance of '
+            'TypeError: ' . CompositeExpressionBuilder::class . '::build(): Argument #1 ($expression) must be instance of '
             . CompositeExpression::class . ', instance of ' . ArrayExpression::class . ' given.'
         );
 
