@@ -204,6 +204,17 @@ final class QueryBuilderTest extends CommonQueryBuilderTest
             ),
         );
 
+        $this->assertSame(
+            <<<SQL
+            ALTER TABLE "foo1" ALTER COLUMN "bar" TYPE varchar(30), ADD UNIQUE ("bar")
+            SQL,
+            $qb->alterColumn(
+                'foo1',
+                'bar',
+                (new Column(SchemaInterface::TYPE_STRING, 30))->unique()
+            ),
+        );
+
         $db->close();
     }
 
