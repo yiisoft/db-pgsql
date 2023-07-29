@@ -97,7 +97,7 @@ final class ColumnSchema extends AbstractColumnSchema
     /**
      * Recursively converts array values for use in a db query.
      *
-     * @param mixed $value The array values.
+     * @param mixed $value The array or iterable object.
      * @param int $dimension The array dimension. Should be more than 0.
      *
      * @return array Converted values.

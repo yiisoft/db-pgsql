@@ -9,7 +9,7 @@ use Yiisoft\Db\Expression\ExpressionInterface;
 use Yiisoft\Db\Schema\ColumnSchemaInterface;
 
 /**
- * Represents a composite SQL expression.
+ * Represents a composite type SQL expression.
  *
  * For example:
  *
@@ -35,10 +35,10 @@ class CompositeExpression implements ExpressionInterface
     /**
      * The composite type name.
      *
-     * Defaults to `null` which means the type isn't explicitly specified.
+     * Defaults to `null` which means the type is not explicitly specified.
      *
-     * Note that in the case where a type isn't specified explicitly and DBMS can't guess it from the context, SQL error
-     * will be raised.
+     * Note that in the case where a type is not specified explicitly and DBMS cannot guess it from the context,
+     * SQL error will be raised.
      */
     public function getType(): string|null
     {
@@ -46,6 +46,8 @@ class CompositeExpression implements ExpressionInterface
     }
 
     /**
+     * The composite type columns that are used for value normalization and type casting.
+     *
      * @return ColumnSchemaInterface[]|null
      */
     public function getColumns(): array|null
@@ -54,7 +56,7 @@ class CompositeExpression implements ExpressionInterface
     }
 
     /**
-     * The composite type's content. It can be represented as an associative array of the composite type's column names
+     * The content of the composite type. It can be represented as an associative array of composite type column names
      * and values.
      */
     public function getValue(): mixed
@@ -63,8 +65,10 @@ class CompositeExpression implements ExpressionInterface
     }
 
     /**
-     * Sorted values according to order of the composite type columns, indexed keys replaced with column names,
-     * skipped items filled with default values, extra items removed.
+     * Sorted values according to the order of composite type columns,
+     * indexed keys are replaced with column names,
+     * missing elements are filled in with default values,
+     * redundant elements are removed.
      */
     public function getNormalizedValue(): mixed
     {

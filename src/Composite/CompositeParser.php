@@ -10,7 +10,7 @@ namespace Yiisoft\Db\Pgsql\Composite;
 class CompositeParser
 {
     /**
-     * Convert composite type from PostgreSQL to PHP array
+     * Converts composite type value from PostgreSQL to PHP array
      *
      * @param string $value String to convert.
      */
@@ -24,7 +24,7 @@ class CompositeParser
     }
 
     /**
-     * Parse PostgreSQL composite type encoded in string.
+     * Parses PostgreSQL composite type value encoded in string.
      *
      * @param string $value String to parse.
      */
