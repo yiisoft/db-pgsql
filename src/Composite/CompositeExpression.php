@@ -63,8 +63,8 @@ class CompositeExpression implements ExpressionInterface
     }
 
     /**
-     * Sorted values according to order of the composite type columns, indexed keys replaced with column names
-     * and skipped items filled with default values.
+     * Sorted values according to order of the composite type columns, indexed keys replaced with column names,
+     * skipped items filled with default values, extra items removed.
      */
     public function getNormalizedValue(): mixed
     {

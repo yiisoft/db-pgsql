@@ -559,7 +559,7 @@ final class SchemaTest extends CommonSchemaTest
     }
 
     /**
-     * @dataProvider \Yiisoft\Db\Pgsql\Tests\Provider\CompositeTypeSchemaProvider::columns
+     * @dataProvider \Yiisoft\Db\Pgsql\Tests\Provider\CompositeTypeProvider::columns
      *
      * @throws Exception
      */
@@ -579,7 +579,7 @@ final class SchemaTest extends CommonSchemaTest
             if ($column->getType() === 'composite') {
                 $this->assertTrue(
                     isset($columns[$name]['columns']),
-                    "Composite type's columns of column `$name` do not exist. type is `{$column->getType()}`, dbType is `{$column->getDbType()}`."
+                    "Columns of composite type `$name` do not exist, dbType is `{$column->getDbType()}`."
                 );
                 $this->testCompositeTypeColumnSchemaRecursive($columns[$name]['columns'], $column->getDbType());
             }

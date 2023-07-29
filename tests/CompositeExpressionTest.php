@@ -16,7 +16,7 @@ final class CompositeExpressionTest extends TestCase
     use TestTrait;
 
     /**
-     * @dataProvider \Yiisoft\Db\Pgsql\Tests\Provider\CompositeTypeSchemaProvider::normolizedValues
+     * @dataProvider \Yiisoft\Db\Pgsql\Tests\Provider\CompositeTypeProvider::normolizedValues
      */
     public function testGetNormalizedValue(mixed $value, mixed $expected, array|null $columns): void
     {

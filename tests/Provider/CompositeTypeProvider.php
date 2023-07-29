@@ -8,7 +8,7 @@ use ArrayIterator;
 use Yiisoft\Db\Pgsql\Tests\Support\ColumnSchemaBuilder;
 use Yiisoft\Db\Tests\Support\TraversableObject;
 
-final class CompositeTypeSchemaProvider extends \Yiisoft\Db\Tests\Provider\SchemaProvider
+final class CompositeTypeProvider extends \Yiisoft\Db\Tests\Provider\SchemaProvider
 {
     public static function columns(): array
     {

@@ -95,7 +95,12 @@ final class ColumnSchema extends AbstractColumnSchema
     }
 
     /**
-     * @param int $dimension Should be more than 0
+     * Recursively converts array values for use in a db query.
+     *
+     * @param mixed $value The array values.
+     * @param int $dimension The array dimension. Should be more than 0.
+     *
+     * @return array Converted values.
      */
     private function dbTypecastArray(mixed $value, int $dimension): array
     {
@@ -118,6 +123,9 @@ final class ColumnSchema extends AbstractColumnSchema
         return $items;
     }
 
+    /**
+     * Converts the input value for use in a db query.
+     */
     private function dbTypecastValue(mixed $value): mixed
     {
         if ($value === null || $value instanceof ExpressionInterface) {
@@ -199,6 +207,9 @@ final class ColumnSchema extends AbstractColumnSchema
         };
     }
 
+    /**
+     * Converts the input value according to the composite type after retrieval from the database.
+     */
     private function phpTypecastComposite(mixed $value): array|null
     {
         if (is_string($value)) {
@@ -277,7 +288,9 @@ final class ColumnSchema extends AbstractColumnSchema
     }
 
     /**
-     * @param ColumnSchemaInterface[]|null $columns The columns metadata of the composite type.
+     * Set columns of the composite type.
+     *
+     * @param ColumnSchemaInterface[]|null $columns The metadata of the composite type columns.
      * @psalm-param array<string, ColumnSchemaInterface>|null $columns
      */
     public function columns(array|null $columns): void
@@ -286,7 +299,9 @@ final class ColumnSchema extends AbstractColumnSchema
     }
 
     /**
-     * @return ColumnSchemaInterface[]|null Columns metadata of the composite type.
+     * Get the metadata of the composite type columns.
+     *
+     * @return ColumnSchemaInterface[]|null
      */
     public function getColumns(): array|null
     {
@@ -294,7 +309,7 @@ final class ColumnSchema extends AbstractColumnSchema
     }
 
     /**
-     * Creates instance of CompositeParser.
+     * Creates instance of `CompositeParser`.
      */
     private function getCompositeParser(): CompositeParser
     {

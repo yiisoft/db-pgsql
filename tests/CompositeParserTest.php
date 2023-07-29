@@ -18,7 +18,7 @@ final class CompositeParserTest extends TestCase
 
         $this->assertSame([null], $compositeParse->parse('()'));
         $this->assertSame([0 => null, 1 => null], $compositeParse->parse('(,)'));
-        $this->assertSame([0 => '1', 1 => '2', 2 => '3'], $compositeParse->parse('(1,2,3)'));
+        $this->assertSame([0 => '10.0', 1 => 'USD'], $compositeParse->parse('(10.0,USD)'));
         $this->assertSame([0 => '1', 1 => '-2', 2 => null, 3 => '42'], $compositeParse->parse('(1,-2,,42)'));
         $this->assertSame([0 => ''], $compositeParse->parse('("")'));
         $this->assertSame(
@@ -27,6 +27,6 @@ final class CompositeParserTest extends TestCase
         );
 
         // Default values can have any expressions
-        $this->assertSame(null, $compositeParse->parse("'(1,2,3)::composite_type'"));
+        $this->assertSame(null, $compositeParse->parse("'(10.0,USD)::composite_type'"));
     }
 }
