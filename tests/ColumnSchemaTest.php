@@ -188,4 +188,13 @@ final class ColumnSchemaTest extends TestCase
         $this->assertSame(-12345.6789, $tableSchema->getColumn('float_col')->getDefaultValue());
         $this->assertSame(-33.22, $tableSchema->getColumn('numeric_col')->getDefaultValue());
     }
+
+    public function testDbTypeCastBit()
+    {
+        $db = $this->getConnection(true);
+        $schema = $db->getSchema();
+        $tableSchema = $schema->getTableSchema('type');
+
+        $this->assertSame('01100100', $tableSchema->getColumn('bit_col')->dbTypecast('01100100'));
+    }
 }
