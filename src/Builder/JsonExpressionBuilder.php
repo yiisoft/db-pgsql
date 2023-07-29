@@ -29,7 +29,7 @@ final class JsonExpressionBuilder implements ExpressionBuilderInterface
     /**
      * The Method builds the raw SQL from the $expression that won't be additionally escaped or quoted.
      *
-     * @param ExpressionInterface $expression The expression to build.
+     * @param JsonExpression $expression The expression to build.
      * @param array $params The binding parameters.
      *
      * @throws Exception
@@ -39,19 +39,15 @@ final class JsonExpressionBuilder implements ExpressionBuilderInterface
      * @throws NotSupportedException
      *
      * @return string The raw SQL that won't be additionally escaped or quoted.
-     *
-     * @psalm-param JsonExpression $expression
      */
     public function build(ExpressionInterface $expression, array &$params = []): string
     {
-        /**
-         * @psalm-var array|mixed|QueryInterface $value
-         */
+        /** @psalm-var mixed $value */
         $value = $expression->getValue();
 
         if ($value instanceof QueryInterface) {
             [$sql, $params] = $this->queryBuilder->build($value, $params);
-            return "($sql)" . $this->getTypecast($expression);
+            return "($sql)" . $this->getTypeHint($expression);
         }
 
         if ($value instanceof ArrayExpression) {
@@ -60,13 +56,13 @@ final class JsonExpressionBuilder implements ExpressionBuilderInterface
             $placeholder = $this->queryBuilder->bindParam(Json::encode($value), $params);
         }
 
-        return $placeholder . $this->getTypecast($expression);
+        return $placeholder . $this->getTypeHint($expression);
     }
 
     /**
      * @return string The typecast expression based on {@see JsonExpression::getType()}.
      */
-    protected function getTypecast(JsonExpression $expression): string
+    private function getTypeHint(JsonExpression $expression): string
     {
         $type = $expression->getType();
 

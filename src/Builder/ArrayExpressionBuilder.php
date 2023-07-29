@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Yiisoft\Db\Pgsql\Builder;
 
-use Traversable;
 use Yiisoft\Db\Exception\Exception;
 use Yiisoft\Db\Exception\InvalidArgumentException;
 use Yiisoft\Db\Exception\InvalidConfigException;
@@ -19,7 +18,7 @@ use Yiisoft\Db\Schema\SchemaInterface;
 
 use function implode;
 use function in_array;
-use function is_array;
+use function is_iterable;
 use function str_repeat;
 
 /**
@@ -34,7 +33,7 @@ final class ArrayExpressionBuilder implements ExpressionBuilderInterface
     /**
      * The Method builds the raw SQL from the expression that won't be additionally escaped or quoted.
      *
-     * @param ExpressionInterface $expression The expression build.
+     * @param ArrayExpression $expression The expression build.
      * @param array $params The binding parameters.
      *
      * @throws Exception
@@ -43,8 +42,6 @@ final class ArrayExpressionBuilder implements ExpressionBuilderInterface
      * @throws NotSupportedException
      *
      * @return string The raw SQL that won't be additionally escaped or quoted.
-     *
-     * @psalm-param ArrayExpression $expression
      */
     public function build(ExpressionInterface $expression, array &$params = []): string
     {
@@ -63,7 +60,7 @@ final class ArrayExpressionBuilder implements ExpressionBuilderInterface
         /** @psalm-var string[] $placeholders */
         $placeholders = $this->buildPlaceholders($expression, $params);
 
-        return 'ARRAY[' . implode(', ', $placeholders) . ']' . $this->getTypehint($expression);
+        return 'ARRAY[' . implode(', ', $placeholders) . ']' . $this->getTypeHint($expression);
     }
 
     /**
@@ -75,22 +72,20 @@ final class ArrayExpressionBuilder implements ExpressionBuilderInterface
      * @throws InvalidArgumentException
      * @throws InvalidConfigException
      * @throws NotSupportedException
-     *
-     * @psalm-param ArrayExpression $expression
      */
-    protected function buildPlaceholders(ExpressionInterface $expression, array &$params): array
+    private function buildPlaceholders(ArrayExpression $expression, array &$params): array
     {
         $placeholders = [];
 
         /** @psalm-var mixed $value */
         $value = $expression->getValue();
 
-        if (!is_array($value) && !$value instanceof Traversable) {
+        if (!is_iterable($value)) {
             return $placeholders;
         }
 
         if ($expression->getDimension() > 1) {
-            /** @psalm-var ExpressionInterface|int $item */
+            /** @psalm-var mixed $item */
             foreach ($value as $item) {
                 $placeholders[] = $this->build($this->unnestArrayExpression($expression, $item), $params);
             }
@@ -109,10 +104,9 @@ final class ArrayExpressionBuilder implements ExpressionBuilderInterface
 
             if ($item instanceof ExpressionInterface) {
                 $placeholders[] = $this->queryBuilder->buildExpression($item, $params);
-                continue;
+            } else {
+                $placeholders[] = $this->queryBuilder->bindParam($item, $params);
             }
-
-            $placeholders[] = $this->queryBuilder->bindParam($item, $params);
         }
 
         return $placeholders;
@@ -126,7 +120,7 @@ final class ArrayExpressionBuilder implements ExpressionBuilderInterface
     /**
      * @return string The typecast expression based on {@see type}.
      */
-    protected function getTypeHint(ArrayExpression $expression): string
+    private function getTypeHint(ArrayExpression $expression): string
     {
         $type = $expression->getType();
 
@@ -135,10 +129,8 @@ final class ArrayExpressionBuilder implements ExpressionBuilderInterface
         }
 
         $dimension = $expression->getDimension();
-        $result = '::' . $type;
-        $result .= str_repeat('[]', $dimension);
 
-        return $result;
+        return '::' . $type . str_repeat('[]', $dimension);
     }
 
     /**
@@ -149,7 +141,7 @@ final class ArrayExpressionBuilder implements ExpressionBuilderInterface
      *
      * @return string The sub-query array expression.
      */
-    protected function buildSubqueryArray(string $sql, ArrayExpression $expression): string
+    private function buildSubqueryArray(string $sql, ArrayExpression $expression): string
     {
         return 'ARRAY(' . $sql . ')' . $this->getTypeHint($expression);
     }
@@ -157,7 +149,7 @@ final class ArrayExpressionBuilder implements ExpressionBuilderInterface
     /**
      * @return array|bool|ExpressionInterface|float|int|JsonExpression|string|null The cast value or expression.
      */
-    protected function typecastValue(
+    private function typecastValue(
         ArrayExpression $expression,
         array|bool|float|int|string|ExpressionInterface|null $value
     ): array|bool|float|int|string|JsonExpression|ExpressionInterface|null {
