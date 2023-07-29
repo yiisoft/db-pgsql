@@ -210,7 +210,8 @@ final class ColumnSchema extends AbstractColumnSchema
         }
 
         $fields = [];
-        $columnNames = array_keys((array) $this->columns);
+        $columns = (array) $this->columns;
+        $columnNames = array_keys($columns);
 
         /**
          * @psalm-var int|string $columnName
@@ -219,9 +220,9 @@ final class ColumnSchema extends AbstractColumnSchema
         foreach ($value as $columnName => $item) {
             $columnName = $columnNames[$columnName] ?? $columnName;
 
-            if (isset($this->columns[$columnName])) {
+            if (isset($columns[$columnName])) {
                 /** @psalm-var mixed $item */
-                $item = $this->columns[$columnName]->phpTypecast($item);
+                $item = $columns[$columnName]->phpTypecast($item);
             }
 
             /** @psalm-suppress MixedAssignment */

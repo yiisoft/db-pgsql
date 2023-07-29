@@ -7,8 +7,8 @@ namespace Yiisoft\Db\Pgsql\Tests\Provider;
 use Yiisoft\Db\Expression\ArrayExpression;
 use Yiisoft\Db\Expression\Expression;
 use Yiisoft\Db\Expression\JsonExpression;
-use Yiisoft\Db\Pgsql\ColumnSchema;
 use Yiisoft\Db\Pgsql\Composite\CompositeExpression;
+use Yiisoft\Db\Pgsql\Tests\Support\ColumnSchemaBuilder;
 use Yiisoft\Db\Pgsql\Tests\Support\TestTrait;
 use Yiisoft\Db\Query\Query;
 use Yiisoft\Db\Schema\SchemaInterface;
@@ -26,22 +26,9 @@ final class QueryBuilderProvider extends \Yiisoft\Db\Tests\Provider\QueryBuilder
     {
         $buildCondition = parent::buildCondition();
 
-        $valueColumn = new ColumnSchema('value');
-        $valueColumn->type('decimal');
-        $valueColumn->dbType('numeric');
-        $valueColumn->phpType('double');
-        $valueColumn->precision(10);
-        $valueColumn->scale(2);
-
-        $currencyCodeColumn = new ColumnSchema('currency_code');
-        $currencyCodeColumn->type('char');
-        $currencyCodeColumn->dbType('bpchar');
-        $currencyCodeColumn->phpType('string');
-        $currencyCodeColumn->size(3);
-
         $priceColumns = [
-            'value' => $valueColumn,
-            'currency_code' => $currencyCodeColumn,
+            'value' => ColumnSchemaBuilder::numeric(name: 'value', precision: 10, scale: 2),
+            'currency_code' => ColumnSchemaBuilder::char(name: 'currency_code', size: 3),
         ];
 
         return array_merge(

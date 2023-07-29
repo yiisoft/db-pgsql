@@ -84,18 +84,13 @@ final class CompositeExpressionBuilder implements ExpressionBuilderInterface
         }
 
         $columns = (array) $expression->getColumns();
-        $columnNames = array_keys($columns);
 
         /**
          * @psalm-var int|string $columnName
          * @psalm-var mixed $item
          */
         foreach ($value as $columnName => $item) {
-            if (is_int($columnName)) {
-                $columnName = $columnNames[$columnName] ?? null;
-            }
-
-            if ($columnName !== null && isset($columns[$columnName])) {
+            if (isset($columns[$columnName])) {
                 /** @psalm-var mixed $item */
                 $item = $columns[$columnName]->dbTypecast($item);
             }

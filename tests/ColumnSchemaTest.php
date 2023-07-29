@@ -245,16 +245,16 @@ final class ColumnSchemaTest extends TestCase
         );
 
         $priceCol = $tableSchema->getColumn('price_col');
-        $this->assertNull($priceCol->phpTypecast(1), 'For scalar value will return null');
+        $this->assertNull($priceCol->phpTypecast(1), 'For scalar value returns `null`');
 
         $priceCol->columns(null);
-        $this->assertSame([5, 'USD'], $priceCol->phpTypecast([5, 'USD']), 'Will not typecast for empty columns');
+        $this->assertSame([5, 'USD'], $priceCol->phpTypecast([5, 'USD']), 'No type casting for empty columns');
 
         $priceArray = $tableSchema->getColumn('price_array');
         $this->assertEquals(
             new ArrayExpression([], 'currency_money_composite', 1),
             $priceArray->dbTypecast(1),
-            'For scalar value will return empty array'
+            'For scalar value returns empty array'
         );
 
         $db->close();

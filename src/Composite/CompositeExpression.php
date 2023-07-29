@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Yiisoft\Db\Pgsql\Composite;
 
+use Traversable;
 use Yiisoft\Db\Expression\ExpressionInterface;
 use Yiisoft\Db\Schema\ColumnSchemaInterface;
 
@@ -62,31 +63,36 @@ class CompositeExpression implements ExpressionInterface
     }
 
     /**
-     * Sorted values according to order of the composite type columns and filled with default values skipped items.
+     * Sorted values according to order of the composite type columns, indexed keys replaced with column names
+     * and skipped items filled with default values.
      */
     public function getNormalizedValue(): mixed
     {
-        if ($this->columns === null || !is_array($this->value)) {
+        if (empty($this->columns) || !is_iterable($this->value)) {
             return $this->value;
         }
 
-        $value = [];
-        $columns = $this->columns;
+        $normalized = [];
+        $value = $this->value;
+        $columnsNames = array_keys($this->columns);
 
-        if (is_int(array_key_first($this->value))) {
-            $columns = array_values($this->columns);
+        if ($value instanceof Traversable) {
+            $value = iterator_to_array($value);
         }
 
-        foreach ($columns as $name => $column) {
-            if (array_key_exists($name, $this->value)) {
+        foreach ($columnsNames as $i => $columnsName) {
+            if (array_key_exists($columnsName, $value)) {
                 /** @psalm-suppress MixedAssignment */
-                $value[$name] = $this->value[$name];
+                $normalized[$columnsName] = $value[$columnsName];
+            } elseif (array_key_exists($i, $value)) {
+                /** @psalm-suppress MixedAssignment */
+                $normalized[$columnsName] = $value[$i];
             } else {
                 /** @psalm-suppress MixedAssignment */
-                $value[$name] = $column->getDefaultValue();
+                $normalized[$columnsName] = $this->columns[$columnsName]->getDefaultValue();
             }
         }
 
-        return $value;
+        return $normalized;
     }
 }

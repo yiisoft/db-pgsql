@@ -4,6 +4,10 @@ declare(strict_types=1);
 
 namespace Yiisoft\Db\Pgsql\Tests\Provider;
 
+use ArrayIterator;
+use Yiisoft\Db\Pgsql\Tests\Support\ColumnSchemaBuilder;
+use Yiisoft\Db\Tests\Support\TraversableObject;
+
 final class CompositeTypeSchemaProvider extends \Yiisoft\Db\Tests\Provider\SchemaProvider
 {
     public static function columns(): array
@@ -297,6 +301,57 @@ final class CompositeTypeSchemaProvider extends \Yiisoft\Db\Tests\Provider\Schem
                     ],
                 ],
                 'test_composite_type',
+            ],
+        ];
+    }
+
+    public static function normolizedValues()
+    {
+        $price5UsdColumns = [
+            'value' => ColumnSchemaBuilder::numeric(name: 'value', precision: 10, scale: 2, defaultValue: 5.0),
+            'currency_code' => ColumnSchemaBuilder::char(name: 'currency_code', size: 3, defaultValue: 'USD'),
+        ];
+
+        return [
+            'Sort according to `$columns` order' => [
+                ['currency_code' => 'USD', 'value' => 10.0],
+                ['value' => 10.0, 'currency_code' => 'USD'],
+                $price5UsdColumns,
+            ],
+            'Fill default values for skipped fields' => [
+                ['currency_code' => 'CNY'],
+                ['value' => 5.0, 'currency_code' => 'CNY'],
+                $price5UsdColumns,
+            ],
+            'Fill default values and column names for skipped indexed fields' => [
+                [10.0],
+                ['value' => 10.0, 'currency_code' => 'USD'],
+                $price5UsdColumns,
+            ],
+            'Fill default values and column names for iterable object' => [
+                new TraversableObject([10.0]),
+                ['value' => 10.0, 'currency_code' => 'USD'],
+                $price5UsdColumns,
+            ],
+            'Fill default values for iterable object' => [
+                new ArrayIterator(['currency_code' => 'CNY']),
+                ['value' => 5.0, 'currency_code' => 'CNY'],
+                $price5UsdColumns,
+            ],
+            'Fill default values for empty array' => [
+                [],
+                ['value' => 5.0, 'currency_code' => 'USD'],
+                $price5UsdColumns,
+            ],
+            'Do not normalize scalar values' => [
+                1,
+                1,
+                $price5UsdColumns,
+            ],
+            'Do not normalize with empty columns' => [
+                [10.0],
+                [10.0],
+                null,
             ],
         ];
     }
