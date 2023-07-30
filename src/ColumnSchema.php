@@ -74,8 +74,7 @@ final class ColumnSchema extends AbstractColumnSchema
      *
      * @param mixed $value input value
      *
-     * @return mixed Converted value. This may also be an array containing the value as the first element and the PDO
-     * type as the second element.
+     * @return mixed Converted value.
      */
     public function dbTypecast(mixed $value): mixed
     {
@@ -141,7 +140,7 @@ final class ColumnSchema extends AbstractColumnSchema
 
             Schema::TYPE_BIT => is_int($value)
                 ? str_pad(decbin($value), (int) $this->getSize(), '0', STR_PAD_LEFT)
-                : $this->typecast($value),
+                : (string) $value,
 
             Schema::TYPE_COMPOSITE => new CompositeExpression($value, $this->getDbType(), $this->columns),
 
@@ -167,14 +166,14 @@ final class ColumnSchema extends AbstractColumnSchema
                 $value = $this->getArrayParser()->parse($value);
             }
 
-            if (is_array($value)) {
-                array_walk_recursive($value, function (string|null &$val) {
-                    /** @psalm-var mixed $val */
-                    $val = $this->phpTypecastValue($val);
-                });
-            } else {
+            if (!is_array($value)) {
                 return null;
             }
+
+            array_walk_recursive($value, function (mixed &$val) {
+                /** @psalm-var mixed $val */
+                $val = $this->phpTypecastValue($val);
+            });
 
             return $value;
         }
@@ -187,7 +186,7 @@ final class ColumnSchema extends AbstractColumnSchema
      *
      * @throws JsonException
      */
-    protected function phpTypecastValue(mixed $value): mixed
+    private function phpTypecastValue(mixed $value): mixed
     {
         if ($value === null) {
             return null;
@@ -246,7 +245,7 @@ final class ColumnSchema extends AbstractColumnSchema
     /**
      * Creates instance of ArrayParser.
      */
-    protected function getArrayParser(): ArrayParser
+    private function getArrayParser(): ArrayParser
     {
         return new ArrayParser();
     }
