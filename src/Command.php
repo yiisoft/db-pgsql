@@ -7,7 +7,6 @@ namespace Yiisoft\Db\Pgsql;
 use Exception;
 use Throwable;
 use Yiisoft\Db\Driver\Pdo\AbstractPdoCommand;
-use Yiisoft\Db\Driver\Pdo\PdoConnectionInterface;
 use Yiisoft\Db\Exception\ConvertException;
 use Yiisoft\Db\QueryBuilder\QueryBuilderInterface;
 
