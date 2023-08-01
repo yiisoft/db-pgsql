@@ -815,8 +815,6 @@ final class Schema extends AbstractPdoSchema
             $column->sequenceName($this->resolveTableName($info['sequence_name'])->getFullName());
         }
 
-        $column->type($this->typeMap[(string) $column->getDbType()] ?? self::TYPE_STRING);
-
         if ($info['type_type'] === 'c') {
             $column->type(self::TYPE_COMPOSITE);
             $composite = $this->resolveTableName((string) $column->getDbType());
@@ -824,6 +822,8 @@ final class Schema extends AbstractPdoSchema
             if ($this->findColumns($composite)) {
                 $column->columns($composite->getColumns());
             }
+        } else {
+            $column->type($this->typeMap[(string) $column->getDbType()] ?? self::TYPE_STRING);
         }
 
         $column->phpType($this->getColumnPhpType($column));
