@@ -7,7 +7,7 @@ namespace Yiisoft\Db\Pgsql\Composite;
 /**
  * Composite type representation to PHP array parser for PostgreSQL Server.
  */
-class CompositeParser
+final class CompositeParser
 {
     /**
      * Converts composite type value from PostgreSQL to PHP array
