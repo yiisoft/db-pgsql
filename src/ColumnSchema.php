@@ -12,7 +12,6 @@ use Yiisoft\Db\Expression\ExpressionInterface;
 use Yiisoft\Db\Expression\JsonExpression;
 use Yiisoft\Db\Schema\AbstractColumnSchema;
 use Yiisoft\Db\Schema\SchemaInterface;
-
 use function array_walk_recursive;
 use function bindec;
 use function decbin;
@@ -105,6 +104,14 @@ final class ColumnSchema extends AbstractColumnSchema
      */
     public function phpTypecast(mixed $value): mixed
     {
+        if (is_string($value) && $rangeParser = $this->getRangeParser()) {
+            return $rangeParser->parse($value);
+        }
+
+        if (is_string($value) && $multiRangeParser = $this->getMultiRangeParser()) {
+            return $multiRangeParser->parse($value);
+        }
+
         if ($this->dimension > 0) {
             if (is_string($value)) {
                 $value = $this->getArrayParser()->parse($value);
@@ -154,6 +161,30 @@ final class ColumnSchema extends AbstractColumnSchema
     private function getArrayParser(): ArrayParser
     {
         return new ArrayParser();
+    }
+
+    /**
+     * @psalm-suppress PossiblyNullArgument
+     */
+    private function getRangeParser(): ?RangeParser
+    {
+        if ($this->getDbType() !== null && RangeParser::isAllowedType($this->getDbType())) {
+            return new RangeParser($this->getDbType());
+        }
+
+        return null;
+    }
+
+    /**
+     * @psalm-suppress PossiblyNullArgument
+     */
+    private function getMultiRangeParser(): ?MultiRangeParser
+    {
+        if ($this->getDbType() !== null && MultiRangeParser::isAllowedType($this->getDbType())) {
+            return new MultiRangeParser($this->getDbType());
+        }
+
+        return null;
     }
 
     /**
