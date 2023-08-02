@@ -50,7 +50,7 @@ use function substr;
  *   column_default: string|null,
  *   is_autoinc: bool,
  *   sequence_name: string|null,
- *   enum_values: array<array-key, float|int|string>|string|null,
+ *   enum_values: string|null,
  *   numeric_precision: int|null,
  *   numeric_scale: int|null,
  *   size: string|null,
