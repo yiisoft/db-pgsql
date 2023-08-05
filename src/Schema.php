@@ -51,7 +51,7 @@ use function substr;
  *   is_autoinc: bool,
  *   sequence_name: string|null,
  *   enum_values: string|null,
- *   numeric_precision: int|null,
+ *   precision: int|null,
  *   numeric_scale: int|null,
  *   size: string|null,
  *   is_pkey: bool|null,
@@ -148,7 +148,7 @@ final class Schema extends AbstractPdoSchema
         'timestamp' => self::TYPE_TIMESTAMP,
         'timestamp with time zone' => self::TYPE_TIMESTAMP,
         'timestamptz' => self::TYPE_TIMESTAMP,
-        'abstime' => self::TYPE_TIMESTAMP,
+        'abstime' => self::TYPE_TIMESTAMP, // shouldn't be used. it's pg internal!
         'tsquery' => self::TYPE_STRING,
         'tsvector' => self::TYPE_STRING,
         'txid_snapshot' => self::TYPE_STRING,
@@ -699,10 +699,10 @@ final class Schema extends AbstractPdoSchema
                 ',')
                 ELSE NULL
             END AS enum_values,
-            information_schema._pg_numeric_precision(
-                COALESCE(td.oid, tb.oid, a.atttypid),
-                information_schema._pg_truetypmod(a, t)
-            ) AS numeric_precision,
+            COALESCE(
+                information_schema._pg_numeric_precision(COALESCE(td.oid, tb.oid, a.atttypid), information_schema._pg_truetypmod(a, t)),
+                information_schema._pg_datetime_precision(COALESCE(td.oid, tb.oid, a.atttypid), information_schema._pg_truetypmod(a, t))
+            ) AS precision,
             information_schema._pg_numeric_scale(
                 COALESCE(td.oid, tb.oid, a.atttypid),
                 information_schema._pg_truetypmod(a, t)
@@ -787,7 +787,7 @@ final class Schema extends AbstractPdoSchema
             : null);
         $column->unsigned(false); // has no meaning in PG
         $column->primaryKey((bool) $info['is_pkey']);
-        $column->precision($info['numeric_precision']);
+        $column->precision($info['precision']);
         $column->scale($info['numeric_scale']);
         $column->size($info['size'] === null ? null : (int) $info['size']);
         $column->dimension($info['dimension']);
@@ -813,6 +813,7 @@ final class Schema extends AbstractPdoSchema
 
         $column->type($this->typeMap[(string) $column->getDbType()] ?? self::TYPE_STRING);
         $column->phpType($this->getColumnPhpType($column));
+        $column->dateTimeFormat($this->getDateTimeFormat($column));
         $column->defaultValue($this->normalizeDefaultValue($defaultValue, $column));
 
         return $column;
@@ -856,15 +857,12 @@ final class Schema extends AbstractPdoSchema
             return $defaultValue === 'true';
         }
 
-        if (
-            in_array($column->getType(), [self::TYPE_TIMESTAMP, self::TYPE_DATE, self::TYPE_TIME], true)
-            && in_array(strtoupper($defaultValue), ['NOW()', 'CURRENT_TIMESTAMP', 'CURRENT_DATE', 'CURRENT_TIME'], true)
-        ) {
-            return new Expression($defaultValue);
-        }
-
-        $value = preg_replace("/^B?['(](.*?)[)'](?:::[^:]+)?$/s", '$1', $defaultValue);
+        $value = preg_replace("/^B?['(](.*?)[)'](?:::[^:]+)?$/s", '$1', $defaultValue, 1);
         $value = str_replace("''", "'", $value);
+
+        if ($column->getDateTimeFormat() !== null) {
+            return date_create_immutable($value) ?: new Expression($defaultValue);
+        }
 
         if ($column->getType() === self::TYPE_BINARY && str_starts_with($value, '\\x')) {
             return hex2bin(substr($value, 2));
