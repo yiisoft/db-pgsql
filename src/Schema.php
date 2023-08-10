@@ -800,13 +800,9 @@ final class Schema extends AbstractPdoSchema
 
         if (
             $defaultValue !== null
-            && preg_match("/nextval\\('\"?\\w+\"?\.?\"?\\w+\"?'(::regclass)?\\)/", $defaultValue) === 1
+            && preg_match("/^nextval\('([^']+)'(?:::regclass)?\)$/", $defaultValue, $matches) === 1
         ) {
-            $column->sequenceName(preg_replace(
-                ['/nextval/', '/::/', '/regclass/', '/\'\)/', '/\(\'/'],
-                '',
-                $defaultValue
-            ));
+            $column->sequenceName($matches[1]);
         } elseif ($info['sequence_name'] !== null) {
             $column->sequenceName($this->resolveTableName($info['sequence_name'])->getFullName());
         }
