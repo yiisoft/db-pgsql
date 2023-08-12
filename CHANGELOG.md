@@ -6,6 +6,7 @@
 - Enh #300: Refactor `ArrayExpressionBuilder` (@Tigrov)
 - Enh #302: Refactor `ColumnSchema` (@Tigrov)
 - Bug #302: Fix incorrect convert string value for BIT type (@Tigrov)
+- Bug #309: Fix retrieving sequence name from default value (@Tigrov)
 
 ## 1.1.0 July 24, 2023
 
