@@ -10,7 +10,6 @@ use Yiisoft\Db\Query\QueryInterface;
 use Yiisoft\Db\QueryBuilder\AbstractDMLQueryBuilder;
 
 use function implode;
-use function reset;
 
 /**
  * Implements a DML (Data Manipulation Language) SQL statements for PostgreSQL Server.
@@ -20,13 +19,7 @@ final class DMLQueryBuilder extends AbstractDMLQueryBuilder
     public function insertWithReturningPks(string $table, QueryInterface|array $columns, array &$params = []): string
     {
         $sql = $this->insert($table, $columns, $params);
-
-        $tableSchema = $this->schema->getTableSchema($table);
-
-        $returnColumns = [];
-        if ($tableSchema !== null) {
-            $returnColumns = $tableSchema->getPrimaryKey();
-        }
+        $returnColumns = $this->schema->getTableSchema($table)?->getPrimaryKey();
 
         if (!empty($returnColumns)) {
             $returning = [];
@@ -43,27 +36,27 @@ final class DMLQueryBuilder extends AbstractDMLQueryBuilder
     {
         $tableSchema = $this->schema->getTableSchema($table);
 
-        if ($tableSchema !== null && ($sequence = $tableSchema->getSequenceName()) !== null) {
-            /**
-             * @link https://www.postgresql.org/docs/8.1/static/functions-sequence.html
-             */
-            $sequence = $this->quoter->quoteTableName($sequence);
-            $table = $this->quoter->quoteTableName($table);
-
-            if ($value === null) {
-                $pk = $tableSchema->getPrimaryKey();
-                $key = $this->quoter->quoteColumnName(reset($pk));
-                $value = "(SELECT COALESCE(MAX($key),0) FROM $table)+1";
-            }
-
-            return "SELECT SETVAL('$sequence',$value,false)";
-        }
-
         if ($tableSchema === null) {
             throw new InvalidArgumentException("Table not found: '$table'.");
         }
 
-        throw new InvalidArgumentException("There is not sequence associated with table '$table'.");
+        $sequence = $tableSchema->getSequenceName();
+
+        if ($sequence === null) {
+            throw new InvalidArgumentException("There is not sequence associated with table '$table'.");
+        }
+
+        /** @link https://www.postgresql.org/docs/8.1/static/functions-sequence.html */
+        $sequence = $this->quoter->quoteTableName($sequence);
+
+        if ($value === null) {
+            $table = $this->quoter->quoteTableName($table);
+            $key = $tableSchema->getPrimaryKey()[0];
+            $key = $this->quoter->quoteColumnName($key);
+            $value = "(SELECT COALESCE(MAX($key),0) FROM $table)+1";
+        }
+
+        return "SELECT SETVAL('$sequence',$value,false)";
     }
 
     public function upsert(
@@ -74,30 +67,21 @@ final class DMLQueryBuilder extends AbstractDMLQueryBuilder
     ): string {
         $insertSql = $this->insert($table, $insertColumns, $params);
 
-        /** @psalm-var array $uniqueNames */
-        [$uniqueNames, , $updateNames] = $this->prepareUpsertColumns(
-            $table,
-            $insertColumns,
-            $updateColumns,
-        );
+        [$uniqueNames, , $updateNames] = $this->prepareUpsertColumns($table, $insertColumns, $updateColumns);
 
         if (empty($uniqueNames)) {
             return $insertSql;
         }
 
-        if ($updateNames === []) {
+        if ($updateColumns === false || $updateNames === []) {
             /** there are no columns to update */
-            $updateColumns = false;
-        }
-
-        if ($updateColumns === false) {
             return "$insertSql ON CONFLICT DO NOTHING";
         }
 
         if ($updateColumns === true) {
             $updateColumns = [];
 
-            /** @psalm-var string $name */
+            /** @psalm-var string[] $updateNames */
             foreach ($updateNames as $name) {
                 $updateColumns[$name] = new Expression(
                     'EXCLUDED.' . $this->quoter->quoteColumnName($name)
@@ -105,11 +89,6 @@ final class DMLQueryBuilder extends AbstractDMLQueryBuilder
             }
         }
 
-        /**
-         * @psalm-var array $updateColumns
-         * @psalm-var string[] $uniqueNames
-         * @psalm-var string[] $updates
-         */
         [$updates, $params] = $this->prepareUpdateSets($table, $updateColumns, $params);
 
         return $insertSql
