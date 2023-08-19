@@ -370,7 +370,7 @@ final class Schema extends AbstractPdoSchema
         INNER JOIN "pg_class" AS "ic"
             ON "ic"."oid" = "i"."indexrelid"
         INNER JOIN "pg_attribute" AS "ia"
-            ON "ia"."attrelid" = "i"."indexrelid"
+            ON "ia"."attrelid" = "i"."indexrelid" AND ia.attnum <= i.indnkeyatts
         WHERE "tcns"."nspname" = :schemaName AND "tc"."relname" = :tableName
         ORDER BY "ia"."attnum" ASC
         SQL;
