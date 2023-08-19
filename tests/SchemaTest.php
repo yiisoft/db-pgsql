@@ -8,6 +8,7 @@ use JsonException;
 use Throwable;
 use Yiisoft\Db\Command\CommandInterface;
 use Yiisoft\Db\Connection\ConnectionInterface;
+use Yiisoft\Db\Constraint\Constraint;
 use Yiisoft\Db\Driver\Pdo\PdoConnectionInterface;
 use Yiisoft\Db\Exception\Exception;
 use Yiisoft\Db\Exception\InvalidConfigException;
@@ -556,5 +557,19 @@ final class SchemaTest extends CommonSchemaTest
         $this->assertEquals('m', $sex);
 
         $db->close();
+    }
+
+    public function testTableUniques(): void
+    {
+        $db = $this->getConnection(true);
+        $schema = $db->getSchema();
+
+        /** @var Constraint[] $tableUniques */
+        $tableUniques = $schema->getTableUniques('table_unique_index');
+
+        $this->assertCount(3, $tableUniques);
+        $this->assertSame(['one_unique'], $tableUniques[0]->getColumnNames());
+        $this->assertSame(['two_unique_1', 'two_unique_2'], $tableUniques[1]->getColumnNames());
+        $this->assertSame(['unique_index'], $tableUniques[2]->getColumnNames());
     }
 }

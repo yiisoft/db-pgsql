@@ -35,6 +35,7 @@ DROP TABLE IF EXISTS "T_upsert";
 DROP TABLE IF EXISTS "T_upsert_1";
 DROP TABLE IF EXISTS "table_with_array_col";
 DROP TABLE IF EXISTS "table_uuid";
+DROP TABLE IF EXISTS "table_unique_index";
 
 DROP SCHEMA IF EXISTS "schema1" CASCADE;
 DROP SCHEMA IF EXISTS "schema2" CASCADE;
@@ -454,3 +455,15 @@ CREATE TABLE "table_uuid" (
     "uuid" uuid NOT NULL PRIMARY KEY DEFAULT uuid_generate_v4(),
     "col" varchar(16)
 );
+
+CREATE TABLE "table_unique_index" (
+    "id" serial PRIMARY KEY,
+    "one_unique" integer UNIQUE,
+    "two_unique_1" integer,
+    "two_unique_2" integer,
+    "unique_index" integer,
+    "non-unique" integer,
+    UNIQUE ("two_unique_1", "two_unique_2")
+);
+
+CREATE UNIQUE INDEX ON "table_unique_index" ("unique_index") INCLUDE ("non-unique");
