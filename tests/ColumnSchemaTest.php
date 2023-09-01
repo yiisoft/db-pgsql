@@ -5,10 +5,7 @@ declare(strict_types=1);
 namespace Yiisoft\Db\Pgsql\Tests;
 
 use JsonException;
-use PDO;
-use PHPUnit\Framework\TestCase;
 use Throwable;
-use Yiisoft\Db\Command\Param;
 use Yiisoft\Db\Exception\Exception;
 use Yiisoft\Db\Exception\InvalidConfigException;
 use Yiisoft\Db\Expression\ArrayExpression;
@@ -27,6 +24,7 @@ use Yiisoft\Db\Schema\Column\DoubleColumnSchema;
 use Yiisoft\Db\Schema\Column\JsonColumnSchema;
 use Yiisoft\Db\Schema\Column\StringColumnSchema;
 use Yiisoft\Db\Schema\SchemaInterface;
+use Yiisoft\Db\Tests\Common\CommonColumnSchemaTest;
 
 use function stream_get_contents;
 
@@ -35,7 +33,7 @@ use function stream_get_contents;
  *
  * @psalm-suppress PropertyNotSetInConstructor
  */
-final class ColumnSchemaTest extends TestCase
+final class ColumnSchemaTest extends CommonColumnSchemaTest
 {
     use TestTrait;
 
@@ -223,28 +221,48 @@ final class ColumnSchemaTest extends TestCase
         $this->assertInstanceOf(JsonColumnSchema::class, $tableSchema->getColumn('json_col'));
     }
 
-    /**
-     * @dataProvider \Yiisoft\Db\Pgsql\Tests\Provider\ColumnSchemaProvider::dbTypecastArrayColumns
-     */
-    public function testDbTypecastArrayColumnSchema($type, $phpType, $expected, $value)
+    /** @dataProvider \Yiisoft\Db\Pgsql\Tests\Provider\ColumnSchemaProvider::predefinedTypes */
+    public function testPredefinedType(string $className, string $type, string $phpType)
     {
-        $arrayCol = new ArrayColumnSchema('array_col');
-        $arrayCol->type($type);
-        $arrayCol->phpType($phpType);
-
-        $this->assertEquals($expected, $arrayCol->dbTypecast($value));
+        parent::testPredefinedType($className, $type, $phpType);
     }
 
-    /**
-     * @dataProvider \Yiisoft\Db\Pgsql\Tests\Provider\ColumnSchemaProvider::phpTypecastArrayColumns
-     */
-    public function testPhpTypecastArrayColumnSchema($type, $phpType, $expected, $value)
+    /** @dataProvider \Yiisoft\Db\Pgsql\Tests\Provider\ColumnSchemaProvider::dbTypecastColumns */
+    public function testDbTypecastColumns(string $className, array $values)
+    {
+        parent::testDbTypecastColumns($className, $values);
+    }
+
+    /** @dataProvider \Yiisoft\Db\Pgsql\Tests\Provider\ColumnSchemaProvider::phpTypecastColumns */
+    public function testPhpTypecastColumns(string $className, array $values)
+    {
+        parent::testPhpTypecastColumns($className, $values);
+    }
+
+    /** @dataProvider \Yiisoft\Db\Pgsql\Tests\Provider\ColumnSchemaProvider::dbTypecastArrayColumns */
+    public function testDbTypecastArrayColumnSchema(string $type, string $phpType, array $values): void
     {
         $arrayCol = new ArrayColumnSchema('array_col');
         $arrayCol->type($type);
         $arrayCol->phpType($phpType);
 
-        $this->assertEquals($expected, $arrayCol->phpTypecast($value));
+        foreach ($values as [$dimension, $expected, $value]) {
+            $arrayCol->dimension($dimension);
+            $this->assertEquals(new ArrayExpression($expected, null, $dimension), $arrayCol->dbTypecast($value));
+        }
+    }
+
+    /** @dataProvider \Yiisoft\Db\Pgsql\Tests\Provider\ColumnSchemaProvider::phpTypecastArrayColumns */
+    public function testPhpTypecastArrayColumnSchema(string $type, string $phpType, array $values): void
+    {
+        $arrayCol = new ArrayColumnSchema('array_col');
+        $arrayCol->type($type);
+        $arrayCol->phpType($phpType);
+
+        foreach ($values as [$dimension, $expected, $value]) {
+            $arrayCol->dimension($dimension);
+            $this->assertEquals($expected, $arrayCol->phpTypecast($value));
+        }
     }
 
     public function testIntegerColumnSchema()
@@ -265,36 +283,6 @@ final class ColumnSchemaTest extends TestCase
         $this->assertSame('bigint_seq', $bigintCol->getSequenceName());
     }
 
-    public function testBinaryColumnSchema()
-    {
-        $binaryCol = new BinaryColumnSchema('binary_col');
-
-        $this->assertSame('binary_col', $binaryCol->getName());
-        $this->assertSame("\x10\x11\x12", $binaryCol->phpTypecast('\x101112'));
-    }
-
-    public function testBitColumnSchema()
-    {
-        $bitCol = new BitColumnSchema('bit_col');
-
-        $this->assertSame('bit_col', $bitCol->getName());
-        $this->assertSame(Schema::TYPE_BIT, $bitCol->getType());
-        $this->assertSame(SchemaInterface::PHP_TYPE_INTEGER, $bitCol->getPhpType());
-
-        $this->assertNull($bitCol->dbTypecast(null));
-        $this->assertNull($bitCol->dbTypecast(''));
-        $this->assertSame('1001', $bitCol->dbTypecast(0b1001));
-        $this->assertSame('1001', $bitCol->dbTypecast('1001'));
-        $this->assertSame('1', $bitCol->dbTypecast(1.0));
-        $this->assertSame('1', $bitCol->dbTypecast(true));
-        $this->assertSame('0', $bitCol->dbTypecast(false));
-        $this->assertSame($expression = new Expression('1001'), $bitCol->dbTypecast($expression));
-
-        $this->assertNull($bitCol->phpTypecast(null));
-        $this->assertSame(0b1001, $bitCol->phpTypecast('1001'));
-        $this->assertSame(0b1001, $bitCol->phpTypecast(0b1001));
-    }
-
     public function testArrayColumnSchema()
     {
         $arrayCol = new ArrayColumnSchema('array_col');
@@ -302,12 +290,12 @@ final class ColumnSchemaTest extends TestCase
         $this->assertSame('array_col', $arrayCol->getName());
         $this->assertSame(1, $arrayCol->getDimension());
 
-        $arrayCol->dimension(2);
-        $this->assertSame(2, $arrayCol->getDimension());
-
-
         $this->assertNull($arrayCol->dbTypecast(null));
+        $this->assertEquals(new ArrayExpression([]), $arrayCol->dbTypecast(''));
         $this->assertSame($expression = new Expression('expression'), $arrayCol->dbTypecast($expression));
         $this->assertNull($arrayCol->phpTypecast(null));
+
+        $arrayCol->dimension(2);
+        $this->assertSame(2, $arrayCol->getDimension());
     }
 }
