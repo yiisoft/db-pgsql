@@ -17,7 +17,6 @@ use Yiisoft\Db\Pgsql\Column\BinaryColumnSchema;
 use Yiisoft\Db\Pgsql\Column\BitColumnSchema;
 use Yiisoft\Db\Pgsql\Column\BooleanColumnSchema;
 use Yiisoft\Db\Pgsql\Column\IntegerColumnSchema;
-use Yiisoft\Db\Pgsql\Schema;
 use Yiisoft\Db\Pgsql\Tests\Support\TestTrait;
 use Yiisoft\Db\Query\Query;
 use Yiisoft\Db\Schema\Column\DoubleColumnSchema;
