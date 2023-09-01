@@ -23,6 +23,7 @@ final class BitColumnSchema extends AbstractColumnSchema
         $this->phpType(SchemaInterface::PHP_TYPE_INTEGER);
     }
 
+    /** @psalm-suppress RedundantCast */
     public function dbTypecast(mixed $value): mixed
     {
         return match (true) {
