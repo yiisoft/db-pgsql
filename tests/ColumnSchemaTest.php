@@ -5,16 +5,27 @@ declare(strict_types=1);
 namespace Yiisoft\Db\Pgsql\Tests;
 
 use JsonException;
+use PDO;
 use PHPUnit\Framework\TestCase;
 use Throwable;
+use Yiisoft\Db\Command\Param;
 use Yiisoft\Db\Exception\Exception;
 use Yiisoft\Db\Exception\InvalidConfigException;
 use Yiisoft\Db\Expression\ArrayExpression;
 use Yiisoft\Db\Expression\Expression;
 use Yiisoft\Db\Expression\JsonExpression;
-use Yiisoft\Db\Pgsql\ColumnSchema;
+use Yiisoft\Db\Pgsql\Column\ArrayColumnSchema;
+use Yiisoft\Db\Pgsql\Column\BigIntColumnSchema;
+use Yiisoft\Db\Pgsql\Column\BinaryColumnSchema;
+use Yiisoft\Db\Pgsql\Column\BitColumnSchema;
+use Yiisoft\Db\Pgsql\Column\BooleanColumnSchema;
+use Yiisoft\Db\Pgsql\Column\IntegerColumnSchema;
+use Yiisoft\Db\Pgsql\Schema;
 use Yiisoft\Db\Pgsql\Tests\Support\TestTrait;
 use Yiisoft\Db\Query\Query;
+use Yiisoft\Db\Schema\Column\DoubleColumnSchema;
+use Yiisoft\Db\Schema\Column\JsonColumnSchema;
+use Yiisoft\Db\Schema\Column\StringColumnSchema;
 use Yiisoft\Db\Schema\SchemaInterface;
 
 use function stream_get_contents;
@@ -106,9 +117,7 @@ final class ColumnSchemaTest extends TestCase
      */
     public function testPhpTypeCastBool(): void
     {
-        $columnSchema = new ColumnSchema('boolean');
-
-        $columnSchema->type('boolean');
+        $columnSchema = new BooleanColumnSchema('boolean');
 
         $this->assertFalse($columnSchema->phpTypeCast('f'));
         $this->assertTrue($columnSchema->phpTypeCast('t'));
@@ -196,5 +205,240 @@ final class ColumnSchemaTest extends TestCase
         $tableSchema = $schema->getTableSchema('type');
 
         $this->assertSame('01100100', $tableSchema->getColumn('bit_col')->dbTypecast('01100100'));
+    }
+
+    public function testColumnSchemaInstance()
+    {
+        $db = $this->getConnection(true);
+        $schema = $db->getSchema();
+        $tableSchema = $schema->getTableSchema('type');
+
+        $this->assertInstanceOf(IntegerColumnSchema::class, $tableSchema->getColumn('int_col'));
+        $this->assertInstanceOf(StringColumnSchema::class, $tableSchema->getColumn('char_col'));
+        $this->assertInstanceOf(DoubleColumnSchema::class, $tableSchema->getColumn('float_col'));
+        $this->assertInstanceOf(BinaryColumnSchema::class, $tableSchema->getColumn('blob_col'));
+        $this->assertInstanceOf(BooleanColumnSchema::class, $tableSchema->getColumn('bool_col'));
+        $this->assertInstanceOf(BitColumnSchema::class, $tableSchema->getColumn('bit_col'));
+        $this->assertInstanceOf(ArrayColumnSchema::class, $tableSchema->getColumn('intarray_col'));
+        $this->assertInstanceOf(JsonColumnSchema::class, $tableSchema->getColumn('json_col'));
+    }
+
+    /**
+     * @dataProvider \Yiisoft\Db\Pgsql\Tests\Provider\ColumnSchemaProvider::dbTypecastColumns
+     */
+    public function testDbTypecastColumnSchema(array $columns)
+    {
+        foreach ($columns as $class => $values) {
+            $col = new $class('column_name');
+
+            foreach ($values as [$expected, $value]) {
+                if (is_object($expected) && !(is_object($value) && $expected::class === $value::class)) {
+                    $this->assertEquals($expected, $col->dbTypecast($value));
+                } else {
+                    $this->assertSame($expected, $col->dbTypecast($value));
+                }
+            }
+        }
+    }
+
+    /**
+     * @dataProvider \Yiisoft\Db\Pgsql\Tests\Provider\ColumnSchemaProvider::phpTypecastColumns
+     */
+    public function testPhpTypecastColumnSchema(array $columns)
+    {
+        foreach ($columns as $class => $values) {
+            $col = new $class('column_name');
+
+            foreach ($values as [$expected, $value]) {
+                $this->assertSame($expected, $col->phpTypecast($value));
+            }
+        }
+    }
+
+    /**
+     * @dataProvider \Yiisoft\Db\Pgsql\Tests\Provider\ColumnSchemaProvider::dbTypecastArrayColumns
+     */
+    public function testDbTypecastArrayColumnSchema($type, $phpType, $expected, $value)
+    {
+        $arrayCol = new ArrayColumnSchema('array_col');
+        $arrayCol->type($type);
+        $arrayCol->phpType($phpType);
+
+        $this->assertEquals($expected, $arrayCol->dbTypecast($value));
+    }
+
+    /**
+     * @dataProvider \Yiisoft\Db\Pgsql\Tests\Provider\ColumnSchemaProvider::phpTypecastArrayColumns
+     */
+    public function testPhpTypecastArrayColumnSchema($type, $phpType, $expected, $value)
+    {
+        $arrayCol = new ArrayColumnSchema('array_col');
+        $arrayCol->type($type);
+        $arrayCol->phpType($phpType);
+
+        $this->assertEquals($expected, $arrayCol->phpTypecast($value));
+    }
+
+    public function testIntegerColumnSchema()
+    {
+        $intCol = new IntegerColumnSchema('int_col');
+        $intCol->sequenceName('int_seq');
+
+        $this->assertSame('int_col', $intCol->getName());
+        $this->assertSame('int_seq', $intCol->getSequenceName());
+    }
+
+    public function testBigIntColumnSchema()
+    {
+        $bigintCol = new BigIntColumnSchema('bigint_col');
+        $bigintCol->sequenceName('bigint_seq');
+
+        $this->assertSame('bigint_col', $bigintCol->getName());
+        $this->assertSame('bigint_seq', $bigintCol->getSequenceName());
+    }
+
+    public function testBooleanColumnSchema()
+    {
+        $boolCol = new \Yiisoft\Db\Schema\Column\BooleanColumnSchema('bool_col');
+
+        $this->assertSame('bool_col', $boolCol->getName());
+        $this->assertSame(SchemaInterface::TYPE_BOOLEAN, $boolCol->getType());
+        $this->assertSame(SchemaInterface::PHP_TYPE_BOOLEAN, $boolCol->getPhpType());
+    }
+
+    public function testBinaryColumnSchema()
+    {
+        $binaryCol = new BinaryColumnSchema('binary_col');
+
+        $this->assertSame('binary_col', $binaryCol->getName());
+        $this->assertSame("\x10\x11\x12", $binaryCol->phpTypecast('\x101112'));
+    }
+
+    public function testBitColumnSchema()
+    {
+        $bitCol = new BitColumnSchema('bit_col');
+
+        $this->assertSame('bit_col', $bitCol->getName());
+        $this->assertSame(Schema::TYPE_BIT, $bitCol->getType());
+        $this->assertSame(SchemaInterface::PHP_TYPE_INTEGER, $bitCol->getPhpType());
+
+        $this->assertNull($bitCol->dbTypecast(null));
+        $this->assertNull($bitCol->dbTypecast(''));
+        $this->assertSame('1001', $bitCol->dbTypecast(0b1001));
+        $this->assertSame('1001', $bitCol->dbTypecast('1001'));
+        $this->assertSame('1', $bitCol->dbTypecast(1.0));
+        $this->assertSame('1', $bitCol->dbTypecast(true));
+        $this->assertSame('0', $bitCol->dbTypecast(false));
+        $this->assertSame($expression = new Expression('1001'), $bitCol->dbTypecast($expression));
+
+        $this->assertNull($bitCol->phpTypecast(null));
+        $this->assertSame(0b1001, $bitCol->phpTypecast('1001'));
+        $this->assertSame(0b1001, $bitCol->phpTypecast(0b1001));
+    }
+
+    public function testArrayColumnSchema()
+    {
+        $arrayCol = new ArrayColumnSchema('array_col');
+
+        $this->assertSame('array_col', $arrayCol->getName());
+        $this->assertSame(1, $arrayCol->getDimension());
+
+        $arrayCol->dimension(2);
+        $this->assertSame(2, $arrayCol->getDimension());
+
+
+        $this->assertNull($arrayCol->dbTypecast(null));
+        $this->assertSame($expression = new Expression('expression'), $arrayCol->dbTypecast($expression));
+        $this->assertNull($arrayCol->phpTypecast(null));
+    }
+
+    public function testIntArrayColumnSchema()
+    {
+        $arrayCol = new ArrayColumnSchema('array_col');
+        $arrayCol->type(SchemaInterface::TYPE_INTEGER);
+        $arrayCol->phpType(SchemaInterface::PHP_TYPE_INTEGER);
+
+        $this->assertEquals(new ArrayExpression([1, 2, 3, null]), $arrayCol->dbTypecast([1, 2.0, '3', null]));
+
+        $this->assertSame([1, 2, 3, null], $arrayCol->phpTypecast('{1,2,3,}'));
+    }
+
+    public function testFloatArrayColumnSchema()
+    {
+        $arrayCol = new ArrayColumnSchema('array_col');
+        $arrayCol->type(SchemaInterface::TYPE_DOUBLE);
+        $arrayCol->phpType(SchemaInterface::PHP_TYPE_DOUBLE);
+
+        $this->assertEquals(new ArrayExpression([1.0, 2.2, 3.3, null]), $arrayCol->dbTypecast([1, 2.2, '3.3', null]));
+
+        $this->assertSame([1.0, 2.2, null], $arrayCol->phpTypecast('{1,2.2,}'));
+    }
+
+    public function testBoolArrayColumnSchema()
+    {
+        $arrayCol = new ArrayColumnSchema('array_col');
+        $arrayCol->type(SchemaInterface::TYPE_BOOLEAN);
+        $arrayCol->phpType(SchemaInterface::PHP_TYPE_BOOLEAN);
+
+        $this->assertEquals(
+            new ArrayExpression([true, true, true, false, false, false, null]),
+            $arrayCol->dbTypecast([true, 1, '1', false, 0, '0', null])
+        );
+
+        $this->assertSame([true, false, null], $arrayCol->phpTypecast('{t,f,}'));
+    }
+
+    public function testStringArrayColumnSchema()
+    {
+        $arrayCol = new ArrayColumnSchema('array_col');
+        $arrayCol->type(SchemaInterface::TYPE_STRING);
+        $arrayCol->phpType(SchemaInterface::PHP_TYPE_STRING);
+
+        $this->assertEquals(
+            new ArrayExpression(['1', '2', '1', '0', '', null]),
+            $arrayCol->dbTypecast([1, '2', true, false, '', null]),
+        );
+
+        $this->assertSame(['1', '2', '', null], $arrayCol->phpTypecast('{1,2,"",}'));
+    }
+
+    public function testBinaryArrayColumnSchema()
+    {
+        $arrayCol = new ArrayColumnSchema('array_col');
+        $arrayCol->type(SchemaInterface::TYPE_BINARY);
+        $arrayCol->phpType(SchemaInterface::PHP_TYPE_RESOURCE);
+
+        $this->assertEquals(
+            new ArrayExpression(['1', new Param("\x10", PDO::PARAM_LOB), null]),
+            $arrayCol->dbTypecast([1, "\x10", null])
+        );
+
+        $this->assertSame(["\x10\x11", '', null], $arrayCol->phpTypecast('{\x1011,"",}'));
+    }
+
+    public function testJsonArrayColumnSchema()
+    {
+        $arrayCol = new ArrayColumnSchema('array_col');
+        $arrayCol->type(SchemaInterface::TYPE_JSON);
+        $arrayCol->phpType(SchemaInterface::PHP_TYPE_ARRAY);
+
+        $this->assertEquals(
+            new ArrayExpression([new JsonExpression([1, 2, 3], 'json'), null]),
+            $arrayCol->dbTypecast([[1, 2, 3], null])
+        );
+
+        $this->assertSame([[1, 2, 3], null], $arrayCol->phpTypecast('{"[1,2,3]",}'));
+        $this->assertSame([[1, 2, 3]], $arrayCol->phpTypecast('{{1,2,3}}'));
+    }
+
+    public function testBitArrayColumnSchema()
+    {
+        $arrayCol = new ArrayColumnSchema('array_col');
+        $arrayCol->type(Schema::TYPE_BIT);
+        $arrayCol->phpType(SchemaInterface::PHP_TYPE_INTEGER);
+
+        $this->assertEquals(new ArrayExpression(['1011', '1001', null]), $arrayCol->dbTypecast([0b1011, '1001', null]));
+
+        $this->assertSame([0b1011, 0b1001, null], $arrayCol->phpTypecast('{1011,1001,}'));
     }
 }

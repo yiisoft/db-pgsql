@@ -328,7 +328,6 @@ final class SchemaProvider extends \Yiisoft\Db\Tests\Provider\SchemaProvider
                         'precision' => null,
                         'scale' => null,
                         'defaultValue' => ['a' => 1],
-                        'dimension' => 0,
                     ],
                     'jsonb_col' => [
                         'type' => 'json',
@@ -342,7 +341,6 @@ final class SchemaProvider extends \Yiisoft\Db\Tests\Provider\SchemaProvider
                         'precision' => null,
                         'scale' => null,
                         'defaultValue' => null,
-                        'dimension' => 0,
                     ],
                     'jsonarray_col' => [
                         'type' => 'json',
