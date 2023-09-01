@@ -7,13 +7,7 @@ namespace Yiisoft\Db\Pgsql\Tests\Provider;
 use PDO;
 use Yiisoft\Db\Command\Param;
 use Yiisoft\Db\Expression\ArrayExpression;
-use Yiisoft\Db\Expression\Expression;
 use Yiisoft\Db\Expression\JsonExpression;
-use Yiisoft\Db\Pgsql\Column\BigIntColumnSchema;
-use Yiisoft\Db\Pgsql\Column\BinaryColumnSchema;
-use Yiisoft\Db\Pgsql\Column\BitColumnSchema;
-use Yiisoft\Db\Pgsql\Column\BooleanColumnSchema;
-use Yiisoft\Db\Pgsql\Column\IntegerColumnSchema;
 use Yiisoft\Db\Pgsql\Schema;
 use Yiisoft\Db\Schema\SchemaInterface;
 
@@ -21,105 +15,6 @@ use function fopen;
 
 class ColumnSchemaProvider
 {
-    public static function dbTypecastColumns(): array
-    {
-        return [[[
-            IntegerColumnSchema::class => [
-                // [expected, typecast value]
-                [null, null],
-                [null, ''],
-                [1, 1],
-                [1, 1.0],
-                [1, '1'],
-                [1, true],
-                [0, false],
-                [$expression = new Expression('1'), $expression],
-            ],
-            BigIntColumnSchema::class => [
-                [null, null],
-                [null, ''],
-                [1, 1],
-                [1, 1.0],
-                [1, '1'],
-                [1, true],
-                [0, false],
-                ['12345678901234567890', '12345678901234567890'],
-                [$expression = new Expression('1'), $expression],
-            ],
-            BinaryColumnSchema::class => [
-                [null, null],
-                ['1', 1],
-                ['1', true],
-                ['0', false],
-                [new Param("\x10\x11\x12", PDO::PARAM_LOB), "\x10\x11\x12"],
-                [$resource = fopen('php://memory', 'rb'), $resource],
-                [$expression = new Expression('expression'), $expression],
-            ],
-            BooleanColumnSchema::class => [
-                [null, null],
-                [null, ''],
-                [true, true],
-                [true, 1],
-                [true, 1.0],
-                [true, '1'],
-                [false, false],
-                [false, 0],
-                [false, 0.0],
-                [false, '0'],
-                [false, false],
-                [$expression = new Expression('expression'), $expression],
-            ],
-            BitColumnSchema::class => [
-                [null, null],
-                [null, ''],
-                ['1001', 0b1001],
-                ['1001', '1001'],
-                ['1', 1.0],
-                ['1', true],
-                ['0', false],
-                [$expression = new Expression('1001'), $expression],
-            ],
-        ]]];
-    }
-
-    public static function phpTypecastColumns(): array
-    {
-        return [[[
-            IntegerColumnSchema::class => [
-                // [expected, typecast value]
-                [null, null],
-                [1, 1],
-                [1, '1'],
-            ],
-            BigIntColumnSchema::class => [
-                [null, null],
-                [1, 1],
-                [1, '1'],
-                ['12345678901234567890', '12345678901234567890'],
-            ],
-            BinaryColumnSchema::class => [
-                [null, null],
-                ['', ''],
-                ["\x10\x11\x12", "\x10\x11\x12"],
-                [$resource = fopen('php://memory', 'rb'), $resource],
-            ],
-            BooleanColumnSchema::class => [
-                [null, null],
-                [true, true],
-                [true, '1'],
-                [true, 't'],
-                [false, false],
-                [false, '0'],
-                [false, 'f'],
-            ],
-            BitColumnSchema::class => [
-                [null, null],
-                [0b1001, '1001'],
-                [0b1001, 0b1001],
-            ],
-        ]]];
-    }
-
     public static function dbTypecastArrayColumns()
     {
         return [

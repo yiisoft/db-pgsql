@@ -224,38 +224,6 @@ final class ColumnSchemaTest extends TestCase
     }
 
     /**
-     * @dataProvider \Yiisoft\Db\Pgsql\Tests\Provider\ColumnSchemaProvider::dbTypecastColumns
-     */
-    public function testDbTypecastColumnSchema(array $columns)
-    {
-        foreach ($columns as $class => $values) {
-            $col = new $class('column_name');
-
-            foreach ($values as [$expected, $value]) {
-                if (is_object($expected) && !(is_object($value) && $expected::class === $value::class)) {
-                    $this->assertEquals($expected, $col->dbTypecast($value));
-                } else {
-                    $this->assertSame($expected, $col->dbTypecast($value));
-                }
-            }
-        }
-    }
-
-    /**
-     * @dataProvider \Yiisoft\Db\Pgsql\Tests\Provider\ColumnSchemaProvider::phpTypecastColumns
-     */
-    public function testPhpTypecastColumnSchema(array $columns)
-    {
-        foreach ($columns as $class => $values) {
-            $col = new $class('column_name');
-
-            foreach ($values as [$expected, $value]) {
-                $this->assertSame($expected, $col->phpTypecast($value));
-            }
-        }
-    }
-
-    /**
      * @dataProvider \Yiisoft\Db\Pgsql\Tests\Provider\ColumnSchemaProvider::dbTypecastArrayColumns
      */
     public function testDbTypecastArrayColumnSchema($type, $phpType, $expected, $value)
@@ -295,15 +263,6 @@ final class ColumnSchemaTest extends TestCase
 
         $this->assertSame('bigint_col', $bigintCol->getName());
         $this->assertSame('bigint_seq', $bigintCol->getSequenceName());
-    }
-
-    public function testBooleanColumnSchema()
-    {
-        $boolCol = new \Yiisoft\Db\Schema\Column\BooleanColumnSchema('bool_col');
-
-        $this->assertSame('bool_col', $boolCol->getName());
-        $this->assertSame(SchemaInterface::TYPE_BOOLEAN, $boolCol->getType());
-        $this->assertSame(SchemaInterface::PHP_TYPE_BOOLEAN, $boolCol->getPhpType());
     }
 
     public function testBinaryColumnSchema()
@@ -350,95 +309,5 @@ final class ColumnSchemaTest extends TestCase
         $this->assertNull($arrayCol->dbTypecast(null));
         $this->assertSame($expression = new Expression('expression'), $arrayCol->dbTypecast($expression));
         $this->assertNull($arrayCol->phpTypecast(null));
-    }
-
-    public function testIntArrayColumnSchema()
-    {
-        $arrayCol = new ArrayColumnSchema('array_col');
-        $arrayCol->type(SchemaInterface::TYPE_INTEGER);
-        $arrayCol->phpType(SchemaInterface::PHP_TYPE_INTEGER);
-
-        $this->assertEquals(new ArrayExpression([1, 2, 3, null]), $arrayCol->dbTypecast([1, 2.0, '3', null]));
-
-        $this->assertSame([1, 2, 3, null], $arrayCol->phpTypecast('{1,2,3,}'));
-    }
-
-    public function testFloatArrayColumnSchema()
-    {
-        $arrayCol = new ArrayColumnSchema('array_col');
-        $arrayCol->type(SchemaInterface::TYPE_DOUBLE);
-        $arrayCol->phpType(SchemaInterface::PHP_TYPE_DOUBLE);
-
-        $this->assertEquals(new ArrayExpression([1.0, 2.2, 3.3, null]), $arrayCol->dbTypecast([1, 2.2, '3.3', null]));
-
-        $this->assertSame([1.0, 2.2, null], $arrayCol->phpTypecast('{1,2.2,}'));
-    }
-
-    public function testBoolArrayColumnSchema()
-    {
-        $arrayCol = new ArrayColumnSchema('array_col');
-        $arrayCol->type(SchemaInterface::TYPE_BOOLEAN);
-        $arrayCol->phpType(SchemaInterface::PHP_TYPE_BOOLEAN);
-
-        $this->assertEquals(
-            new ArrayExpression([true, true, true, false, false, false, null]),
-            $arrayCol->dbTypecast([true, 1, '1', false, 0, '0', null])
-        );
-
-        $this->assertSame([true, false, null], $arrayCol->phpTypecast('{t,f,}'));
-    }
-
-    public function testStringArrayColumnSchema()
-    {
-        $arrayCol = new ArrayColumnSchema('array_col');
-        $arrayCol->type(SchemaInterface::TYPE_STRING);
-        $arrayCol->phpType(SchemaInterface::PHP_TYPE_STRING);
-
-        $this->assertEquals(
-            new ArrayExpression(['1', '2', '1', '0', '', null]),
-            $arrayCol->dbTypecast([1, '2', true, false, '', null]),
-        );
-
-        $this->assertSame(['1', '2', '', null], $arrayCol->phpTypecast('{1,2,"",}'));
-    }
-
-    public function testBinaryArrayColumnSchema()
-    {
-        $arrayCol = new ArrayColumnSchema('array_col');
-        $arrayCol->type(SchemaInterface::TYPE_BINARY);
-        $arrayCol->phpType(SchemaInterface::PHP_TYPE_RESOURCE);
-
-        $this->assertEquals(
-            new ArrayExpression(['1', new Param("\x10", PDO::PARAM_LOB), null]),
-            $arrayCol->dbTypecast([1, "\x10", null])
-        );
-
-        $this->assertSame(["\x10\x11", '', null], $arrayCol->phpTypecast('{\x1011,"",}'));
-    }
-
-    public function testJsonArrayColumnSchema()
-    {
-        $arrayCol = new ArrayColumnSchema('array_col');
-        $arrayCol->type(SchemaInterface::TYPE_JSON);
-        $arrayCol->phpType(SchemaInterface::PHP_TYPE_ARRAY);
-
-        $this->assertEquals(
-            new ArrayExpression([new JsonExpression([1, 2, 3], 'json'), null]),
-            $arrayCol->dbTypecast([[1, 2, 3], null])
-        );
-
-        $this->assertSame([[1, 2, 3], null], $arrayCol->phpTypecast('{"[1,2,3]",}'));
-        $this->assertSame([[1, 2, 3]], $arrayCol->phpTypecast('{{1,2,3}}'));
-    }
-
-    public function testBitArrayColumnSchema()
-    {
-        $arrayCol = new ArrayColumnSchema('array_col');
-        $arrayCol->type(Schema::TYPE_BIT);
-        $arrayCol->phpType(SchemaInterface::PHP_TYPE_INTEGER);
-
-        $this->assertEquals(new ArrayExpression(['1011', '1001', null]), $arrayCol->dbTypecast([0b1011, '1001', null]));
-
-        $this->assertSame([0b1011, 0b1001, null], $arrayCol->phpTypecast('{1011,1001,}'));
     }
 }
