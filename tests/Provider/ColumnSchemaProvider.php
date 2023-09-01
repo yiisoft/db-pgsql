@@ -98,6 +98,7 @@ class ColumnSchemaProvider extends \Yiisoft\Db\Tests\Provider\ColumnSchemaProvid
                     // dimension, expected, typecast value
                     [1, [1, 2, 3, null], [1, 2.0, '3', null]],
                     [2, [[1, 2, 3, null]], [[1, 2.0, '3', null]]],
+                    [2, [null, null], [null, null]],
                 ],
             ],
             [

@@ -88,10 +88,14 @@ final class ArrayColumnSchema extends AbstractColumnSchema
      * @param mixed $value The array or iterable object.
      * @param int $dimension The array dimension. Should be more than 0.
      *
-     * @return array Converted values.
+     * @return array|null Converted values.
      */
-    private function dbTypecastArray(mixed $value, int $dimension): array
+    private function dbTypecastArray(mixed $value, int $dimension): array|null
     {
+        if ($value === null) {
+            return null;
+        }
+
         if (!is_iterable($value)) {
             return [];
         }
