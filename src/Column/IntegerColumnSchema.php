@@ -4,25 +4,22 @@ declare(strict_types=1);
 
 namespace Yiisoft\Db\Pgsql\Column;
 
-use Yiisoft\Db\Expression\ExpressionInterface;
+use Yiisoft\Db\Schema\Column\IntegerColumnSchema as BaseIntegerColumnSchema;
 
-final class IntegerColumnSchema extends AbstractIntegerColumnSchema
+final class IntegerColumnSchema extends BaseIntegerColumnSchema implements IntegerColumnSchemaInterface
 {
-    public function dbTypecast(mixed $value): int|ExpressionInterface|null
+    /**
+     * @var string|null Name of an associated sequence if column is auto incremental.
+     */
+    private string|null $sequenceName = null;
+
+    public function getSequenceName(): string|null
     {
-        return match (true) {
-            is_int($value), $value === null, $value instanceof ExpressionInterface => $value,
-            $value === '' => null,
-            default => (int) $value,
-        };
+        return $this->sequenceName;
     }
 
-    public function phpTypecast(mixed $value): int|null
+    public function sequenceName(string|null $sequenceName): void
     {
-        if ($value === null) {
-            return null;
-        }
-
-        return (int) $value;
+        $this->sequenceName = $sequenceName;
     }
 }
