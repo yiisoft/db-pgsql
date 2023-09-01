@@ -18,7 +18,6 @@ use Yiisoft\Db\Exception\NotSupportedException;
 use Yiisoft\Db\Expression\Expression;
 use Yiisoft\Db\Helper\DbArrayHelper;
 use Yiisoft\Db\Pgsql\Column\ArrayColumnSchema;
-use Yiisoft\Db\Pgsql\Column\BigIntColumnSchema;
 use Yiisoft\Db\Pgsql\Column\BinaryColumnSchema;
 use Yiisoft\Db\Pgsql\Column\BitColumnSchema;
 use Yiisoft\Db\Pgsql\Column\BooleanColumnSchema;
@@ -830,7 +829,7 @@ final class Schema extends AbstractPdoSchema
 
     protected function createPhpTypeColumnSchema(string $phpType, string $name): ColumnSchemaInterface
     {
-        return match($phpType) {
+        return match ($phpType) {
             self::PHP_TYPE_INTEGER => new IntegerColumnSchema($name),
             self::PHP_TYPE_BOOLEAN => new BooleanColumnSchema($name),
             self::PHP_TYPE_RESOURCE => new BinaryColumnSchema($name),
@@ -1014,7 +1013,7 @@ final class Schema extends AbstractPdoSchema
         if ($dimension > 0) {
             $column = new ArrayColumnSchema($name);
             $column->dimension($dimension);
-        } elseif ($type === Schema::TYPE_BIT) {
+        } elseif ($type === self::TYPE_BIT) {
             $column = new BitColumnSchema($name);
         } else {
             return parent::createColumnSchema($type, $name);
