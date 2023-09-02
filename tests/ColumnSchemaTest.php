@@ -239,22 +239,24 @@ final class ColumnSchemaTest extends CommonColumnSchemaTest
     }
 
     /** @dataProvider \Yiisoft\Db\Pgsql\Tests\Provider\ColumnSchemaProvider::dbTypecastArrayColumns */
-    public function testDbTypecastArrayColumnSchema(string $type, string $phpType, array $values): void
+    public function testDbTypecastArrayColumnSchema(string $dbType, string $type, string $phpType, array $values): void
     {
         $arrayCol = new ArrayColumnSchema('array_col');
+        $arrayCol->dbType($dbType);
         $arrayCol->type($type);
         $arrayCol->phpType($phpType);
 
         foreach ($values as [$dimension, $expected, $value]) {
             $arrayCol->dimension($dimension);
-            $this->assertEquals(new ArrayExpression($expected, null, $dimension), $arrayCol->dbTypecast($value));
+            $this->assertEquals(new ArrayExpression($expected, $dbType, $dimension), $arrayCol->dbTypecast($value));
         }
     }
 
     /** @dataProvider \Yiisoft\Db\Pgsql\Tests\Provider\ColumnSchemaProvider::phpTypecastArrayColumns */
-    public function testPhpTypecastArrayColumnSchema(string $type, string $phpType, array $values): void
+    public function testPhpTypecastArrayColumnSchema(string $dbType, string $type, string $phpType, array $values): void
     {
         $arrayCol = new ArrayColumnSchema('array_col');
+        $arrayCol->dbType($dbType);
         $arrayCol->type($type);
         $arrayCol->phpType($phpType);
 

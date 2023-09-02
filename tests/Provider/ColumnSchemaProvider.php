@@ -90,26 +90,29 @@ class ColumnSchemaProvider extends \Yiisoft\Db\Tests\Provider\ColumnSchemaProvid
     public static function dbTypecastArrayColumns()
     {
         return [
-            // [type, phpType, values]
+            // [dbType, type, phpType, values]
             [
+                'int4',
                 SchemaInterface::TYPE_INTEGER,
                 SchemaInterface::PHP_TYPE_INTEGER,
                 [
-                    // dimension, expected, typecast value
+                    // [dimension, expected, typecast value]
                     [1, [1, 2, 3, null], [1, 2.0, '3', null]],
-                    [2, [[1, 2, 3, null]], [[1, 2.0, '3', null]]],
+                    [2, [[1, 2], [3], null], [[1, 2.0], ['3'], null]],
                     [2, [null, null], [null, null]],
                 ],
             ],
             [
+                'float8',
                 SchemaInterface::TYPE_DOUBLE,
                 SchemaInterface::PHP_TYPE_DOUBLE,
                 [
                     [1, [1.0, 2.2, 3.3, null], [1, 2.2, '3.3', null]],
-                    [2, [[1.0, 2.2, 3.3, null]], [[1, 2.2, '3.3', null]]],
+                    [2, [[1.0, 2.2], [3.3, null]], [[1, 2.2], ['3.3', null]]],
                 ],
             ],
             [
+                'bool',
                 SchemaInterface::TYPE_BOOLEAN,
                 SchemaInterface::PHP_TYPE_BOOLEAN,
                 [
@@ -118,14 +121,16 @@ class ColumnSchemaProvider extends \Yiisoft\Db\Tests\Provider\ColumnSchemaProvid
                 ],
             ],
             [
+                'varchar',
                 SchemaInterface::TYPE_STRING,
                 SchemaInterface::PHP_TYPE_STRING,
                 [
                     [1, ['1', '2', '1', '0', '', null], [1, '2', true, false, '', null]],
-                    [2, [['1', '2', '1', '0', '', null]], [[1, '2', true, false, '', null]]],
+                    [2, [['1', '2', '1', '0'], [''], [null]], [[1, '2', true, false], [''], [null]]],
                 ],
             ],
             [
+                'bytea',
                 SchemaInterface::TYPE_BINARY,
                 SchemaInterface::PHP_TYPE_RESOURCE,
                 [
@@ -144,24 +149,29 @@ class ColumnSchemaProvider extends \Yiisoft\Db\Tests\Provider\ColumnSchemaProvid
                 ],
             ],
             [
+                'jsonb',
                 SchemaInterface::TYPE_JSON,
                 SchemaInterface::PHP_TYPE_ARRAY,
                 [
                     [1, [
-                        new JsonExpression([1, 2, 3], 'json'),
-                        new JsonExpression(['key' => 'value'], 'json'),
+                        new JsonExpression([1, 2, 3], 'jsonb'),
+                        new JsonExpression(['key' => 'value'], 'jsonb'),
                         new JsonExpression(['key' => 'value']),
                         null,
                     ], [[1, 2, 3], ['key' => 'value'], new JsonExpression(['key' => 'value']), null]],
-                    [2, [[
-                        new JsonExpression([1, 2, 3], 'json'),
-                        new JsonExpression(['key' => 'value'], 'json'),
-                        new JsonExpression(['key' => 'value']),
+                    [2, [
+                        [
+                            new JsonExpression([1, 2, 3], 'jsonb'),
+                            new JsonExpression(['key' => 'value'], 'jsonb'),
+                            new JsonExpression(['key' => 'value']),
+                            null,
+                        ],
                         null,
-                    ]], [[[1, 2, 3], ['key' => 'value'], new JsonExpression(['key' => 'value']), null]]],
+                    ], [[[1, 2, 3], ['key' => 'value'], new JsonExpression(['key' => 'value']), null], null]],
                 ],
             ],
             [
+                'varbit',
                 Schema::TYPE_BIT,
                 SchemaInterface::PHP_TYPE_INTEGER,
                 [
@@ -175,25 +185,28 @@ class ColumnSchemaProvider extends \Yiisoft\Db\Tests\Provider\ColumnSchemaProvid
     public static function phpTypecastArrayColumns()
     {
         return [
-            // [type, phpType, values]
+            // [dbtype, type, phpType, values]
             [
+                'int4',
                 SchemaInterface::TYPE_INTEGER,
                 SchemaInterface::PHP_TYPE_INTEGER,
                 [
                     // [dimension, expected, typecast value]
                     [1, [1, 2, 3, null], '{1,2,3,}'],
-                    [2, [[1, 2, 3, null]], '{{1,2,3,}}'],
+                    [2, [[1, 2], [3], null], '{{1,2},{3},}}'],
                 ],
             ],
             [
+                'float8',
                 SchemaInterface::TYPE_DOUBLE,
                 SchemaInterface::PHP_TYPE_DOUBLE,
                 [
                     [1, [1.0, 2.2, null], '{1,2.2,}'],
-                    [2, [[1.0, 2.2, null]], '{{1,2.2,}}'],
+                    [2, [[1.0], [2.2, null]], '{{1},{2.2,}}'],
                 ],
             ],
             [
+                'bool',
                 SchemaInterface::TYPE_BOOLEAN,
                 SchemaInterface::PHP_TYPE_BOOLEAN,
                 [
@@ -202,31 +215,35 @@ class ColumnSchemaProvider extends \Yiisoft\Db\Tests\Provider\ColumnSchemaProvid
                 ],
             ],
             [
+                'varchar',
                 SchemaInterface::TYPE_STRING,
                 SchemaInterface::PHP_TYPE_STRING,
                 [
                     [1, ['1', '2', '', null], '{1,2,"",}'],
-                    [2, [['1', '2', '', null]], '{{1,2,"",}}'],
+                    [2, [['1', '2'], [''], [null]], '{{1,2},{""},{NULL}}'],
                 ],
             ],
             [
+                'bytea',
                 SchemaInterface::TYPE_BINARY,
                 SchemaInterface::PHP_TYPE_RESOURCE,
                 [
                     [1, ["\x10\x11", '', null], '{\x1011,"",}'],
-                    [2, [["\x10\x11", '', null]], '{{\x1011,"",}}'],
+                    [2, [["\x10\x11"], ['', null]], '{{\x1011},{"",}}'],
                 ],
             ],
             [
+                'jsonb',
                 SchemaInterface::TYPE_JSON,
                 SchemaInterface::PHP_TYPE_ARRAY,
                 [
                     [1, [[1, 2, 3], null], '{"[1,2,3]",}'],
                     [1, [[1, 2, 3]], '{{1,2,3}}'],
-                    [2, [[[1, 2, 3], null]], '{{"[1,2,3]",}}'],
+                    [2, [[[1, 2, 3, null], null]], '{{"[1,2,3,null]",}}'],
                 ],
             ],
             [
+                'varbit',
                 Schema::TYPE_BIT,
                 SchemaInterface::PHP_TYPE_INTEGER,
                 [

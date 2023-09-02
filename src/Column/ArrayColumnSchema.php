@@ -44,6 +44,8 @@ final class ArrayColumnSchema extends AbstractColumnSchema
             if ($this->getType() === Schema::TYPE_BIT) {
                 $this->column = new BitColumnSchema($this->getName());
                 $this->column->size($this->getSize());
+            } elseif (PHP_INT_SIZE !== 8 && $this->getType() === SchemaInterface::TYPE_BIGINT) {
+                $this->column = new BigIntColumnSchema($this->getName());
             } else {
                 $this->column = match ($this->getPhpType()) {
                     SchemaInterface::PHP_TYPE_INTEGER => new IntegerColumnSchema($this->getName()),
@@ -54,6 +56,10 @@ final class ArrayColumnSchema extends AbstractColumnSchema
                     default => new StringColumnSchema($this->getName()),
                 };
             }
+
+            $this->column->dbType($this->getDbType());
+            $this->column->type($this->getType());
+            $this->column->phpType($this->getPhpType());
         }
 
         return $this->column;
@@ -103,11 +109,14 @@ final class ArrayColumnSchema extends AbstractColumnSchema
         $items = [];
         $column = $this->getColumn();
 
-        /** @psalm-var mixed $val */
-        foreach ($value as $val) {
-            if ($dimension > 1) {
+        if ($dimension > 1) {
+            /** @psalm-var mixed $val */
+            foreach ($value as $val) {
                 $items[] = $this->dbTypecastArray($val, $dimension - 1);
-            } else {
+            }
+        } else {
+            /** @psalm-var mixed $val */
+            foreach ($value as $val) {
                 /** @psalm-var mixed */
                 $items[] = $column->dbTypecast($val);
             }
