@@ -89,6 +89,8 @@ class ColumnSchemaProvider extends \Yiisoft\Db\Tests\Provider\ColumnSchemaProvid
 
     public static function dbTypecastArrayColumns()
     {
+        $bigInt = PHP_INT_SIZE === 8 ? 9223372036854775807 : '9223372036854775807';
+
         return [
             // [dbType, type, phpType, values]
             [
@@ -100,6 +102,15 @@ class ColumnSchemaProvider extends \Yiisoft\Db\Tests\Provider\ColumnSchemaProvid
                     [1, [1, 2, 3, null], [1, 2.0, '3', null]],
                     [2, [[1, 2], [3], null], [[1, 2.0], ['3'], null]],
                     [2, [null, null], [null, null]],
+                ],
+            ],
+            [
+                'int8',
+                SchemaInterface::TYPE_BIGINT,
+                SchemaInterface::PHP_TYPE_INTEGER,
+                [
+                    [1, [1, 2, 3, $bigInt], [1, 2.0, '3', '9223372036854775807']],
+                    [2, [[1, 2], [3], [$bigInt]], [[1, 2.0], ['3'], ['9223372036854775807']]],
                 ],
             ],
             [
@@ -184,6 +195,8 @@ class ColumnSchemaProvider extends \Yiisoft\Db\Tests\Provider\ColumnSchemaProvid
 
     public static function phpTypecastArrayColumns()
     {
+        $bigInt = PHP_INT_SIZE === 8 ? 9223372036854775807 : '9223372036854775807';
+
         return [
             // [dbtype, type, phpType, values]
             [
@@ -193,7 +206,16 @@ class ColumnSchemaProvider extends \Yiisoft\Db\Tests\Provider\ColumnSchemaProvid
                 [
                     // [dimension, expected, typecast value]
                     [1, [1, 2, 3, null], '{1,2,3,}'],
-                    [2, [[1, 2], [3], null], '{{1,2},{3},}}'],
+                    [2, [[1, 2], [3], null], '{{1,2},{3},}'],
+                ],
+            ],
+            [
+                'int8',
+                SchemaInterface::TYPE_BIGINT,
+                SchemaInterface::PHP_TYPE_INTEGER,
+                [
+                    [1, [1, 2, $bigInt], '{1,2,9223372036854775807}'],
+                    [2, [[1, 2], [$bigInt]], '{{1,2},{9223372036854775807}}'],
                 ],
             ],
             [
