@@ -1005,14 +1005,17 @@ final class Schema extends AbstractPdoSchema
         return $result[$returnType];
     }
 
-    protected function createColumnSchema(string $type, string $name, bool|int ...$info): ColumnSchemaInterface
+    /**
+     * @psalm-param array{dimension: int} $info
+     * @psalm-suppress ImplementedParamTypeMismatch
+     */
+    protected function createColumnSchema(string $type, string $name, mixed ...$info): ColumnSchemaInterface
     {
-        $dimension = (int) $info['dimension'];
         $phpType = $this->getColumnPhpType($type);
 
-        if ($dimension > 0) {
+        if ($info['dimension'] > 0) {
             $column = new ArrayColumnSchema($name);
-            $column->dimension($dimension);
+            $column->dimension($info['dimension']);
         } elseif ($type === self::TYPE_BIT) {
             $column = new BitColumnSchema($name);
         } else {
