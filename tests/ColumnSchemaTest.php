@@ -5,17 +5,25 @@ declare(strict_types=1);
 namespace Yiisoft\Db\Pgsql\Tests;
 
 use JsonException;
-use PHPUnit\Framework\TestCase;
 use Throwable;
 use Yiisoft\Db\Exception\Exception;
 use Yiisoft\Db\Exception\InvalidConfigException;
 use Yiisoft\Db\Expression\ArrayExpression;
 use Yiisoft\Db\Expression\Expression;
 use Yiisoft\Db\Expression\JsonExpression;
-use Yiisoft\Db\Pgsql\ColumnSchema;
+use Yiisoft\Db\Pgsql\Column\ArrayColumnSchema;
+use Yiisoft\Db\Pgsql\Column\BigIntColumnSchema;
+use Yiisoft\Db\Pgsql\Column\BinaryColumnSchema;
+use Yiisoft\Db\Pgsql\Column\BitColumnSchema;
+use Yiisoft\Db\Pgsql\Column\BooleanColumnSchema;
+use Yiisoft\Db\Pgsql\Column\IntegerColumnSchema;
 use Yiisoft\Db\Pgsql\Tests\Support\TestTrait;
 use Yiisoft\Db\Query\Query;
+use Yiisoft\Db\Schema\Column\DoubleColumnSchema;
+use Yiisoft\Db\Schema\Column\JsonColumnSchema;
+use Yiisoft\Db\Schema\Column\StringColumnSchema;
 use Yiisoft\Db\Schema\SchemaInterface;
+use Yiisoft\Db\Tests\Common\CommonColumnSchemaTest;
 
 use function stream_get_contents;
 
@@ -24,7 +32,7 @@ use function stream_get_contents;
  *
  * @psalm-suppress PropertyNotSetInConstructor
  */
-final class ColumnSchemaTest extends TestCase
+final class ColumnSchemaTest extends CommonColumnSchemaTest
 {
     use TestTrait;
 
@@ -106,9 +114,7 @@ final class ColumnSchemaTest extends TestCase
      */
     public function testPhpTypeCastBool(): void
     {
-        $columnSchema = new ColumnSchema('boolean');
-
-        $columnSchema->type('boolean');
+        $columnSchema = new BooleanColumnSchema('boolean');
 
         $this->assertFalse($columnSchema->phpTypeCast('f'));
         $this->assertTrue($columnSchema->phpTypeCast('t'));
@@ -196,5 +202,101 @@ final class ColumnSchemaTest extends TestCase
         $tableSchema = $schema->getTableSchema('type');
 
         $this->assertSame('01100100', $tableSchema->getColumn('bit_col')->dbTypecast('01100100'));
+    }
+
+    public function testColumnSchemaInstance()
+    {
+        $db = $this->getConnection(true);
+        $schema = $db->getSchema();
+        $tableSchema = $schema->getTableSchema('type');
+
+        $this->assertInstanceOf(IntegerColumnSchema::class, $tableSchema->getColumn('int_col'));
+        $this->assertInstanceOf(StringColumnSchema::class, $tableSchema->getColumn('char_col'));
+        $this->assertInstanceOf(DoubleColumnSchema::class, $tableSchema->getColumn('float_col'));
+        $this->assertInstanceOf(BinaryColumnSchema::class, $tableSchema->getColumn('blob_col'));
+        $this->assertInstanceOf(BooleanColumnSchema::class, $tableSchema->getColumn('bool_col'));
+        $this->assertInstanceOf(BitColumnSchema::class, $tableSchema->getColumn('bit_col'));
+        $this->assertInstanceOf(ArrayColumnSchema::class, $tableSchema->getColumn('intarray_col'));
+        $this->assertInstanceOf(JsonColumnSchema::class, $tableSchema->getColumn('json_col'));
+    }
+
+    /** @dataProvider \Yiisoft\Db\Pgsql\Tests\Provider\ColumnSchemaProvider::predefinedTypes */
+    public function testPredefinedType(string $className, string $type, string $phpType)
+    {
+        parent::testPredefinedType($className, $type, $phpType);
+    }
+
+    /** @dataProvider \Yiisoft\Db\Pgsql\Tests\Provider\ColumnSchemaProvider::dbTypecastColumns */
+    public function testDbTypecastColumns(string $className, array $values)
+    {
+        parent::testDbTypecastColumns($className, $values);
+    }
+
+    /** @dataProvider \Yiisoft\Db\Pgsql\Tests\Provider\ColumnSchemaProvider::phpTypecastColumns */
+    public function testPhpTypecastColumns(string $className, array $values)
+    {
+        parent::testPhpTypecastColumns($className, $values);
+    }
+
+    /** @dataProvider \Yiisoft\Db\Pgsql\Tests\Provider\ColumnSchemaProvider::dbTypecastArrayColumns */
+    public function testDbTypecastArrayColumnSchema(string $dbType, string $type, string $phpType, array $values): void
+    {
+        $arrayCol = new ArrayColumnSchema('array_col');
+        $arrayCol->dbType($dbType);
+        $arrayCol->type($type);
+        $arrayCol->phpType($phpType);
+
+        foreach ($values as [$dimension, $expected, $value]) {
+            $arrayCol->dimension($dimension);
+            $this->assertEquals(new ArrayExpression($expected, $dbType, $dimension), $arrayCol->dbTypecast($value));
+        }
+    }
+
+    /** @dataProvider \Yiisoft\Db\Pgsql\Tests\Provider\ColumnSchemaProvider::phpTypecastArrayColumns */
+    public function testPhpTypecastArrayColumnSchema(string $dbType, string $type, string $phpType, array $values): void
+    {
+        $arrayCol = new ArrayColumnSchema('array_col');
+        $arrayCol->dbType($dbType);
+        $arrayCol->type($type);
+        $arrayCol->phpType($phpType);
+
+        foreach ($values as [$dimension, $expected, $value]) {
+            $arrayCol->dimension($dimension);
+            $this->assertEquals($expected, $arrayCol->phpTypecast($value));
+        }
+    }
+
+    public function testIntegerColumnSchema()
+    {
+        $intCol = new IntegerColumnSchema('int_col');
+        $intCol->sequenceName('int_seq');
+
+        $this->assertSame('int_col', $intCol->getName());
+        $this->assertSame('int_seq', $intCol->getSequenceName());
+    }
+
+    public function testBigIntColumnSchema()
+    {
+        $bigintCol = new BigIntColumnSchema('bigint_col');
+        $bigintCol->sequenceName('bigint_seq');
+
+        $this->assertSame('bigint_col', $bigintCol->getName());
+        $this->assertSame('bigint_seq', $bigintCol->getSequenceName());
+    }
+
+    public function testArrayColumnSchema()
+    {
+        $arrayCol = new ArrayColumnSchema('array_col');
+
+        $this->assertSame('array_col', $arrayCol->getName());
+        $this->assertSame(1, $arrayCol->getDimension());
+
+        $this->assertNull($arrayCol->dbTypecast(null));
+        $this->assertEquals(new ArrayExpression([]), $arrayCol->dbTypecast(''));
+        $this->assertSame($expression = new Expression('expression'), $arrayCol->dbTypecast($expression));
+        $this->assertNull($arrayCol->phpTypecast(null));
+
+        $arrayCol->dimension(2);
+        $this->assertSame(2, $arrayCol->getDimension());
     }
 }

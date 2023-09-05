@@ -23,6 +23,10 @@ use function json_decode;
 use function str_pad;
 
 /**
+ * @deprecated Use the following class for specific type:
+ * `StringColumnSchema`, `IntegerColumnSchema`, `BigIntColumnSchema`, `DoubleColumnSchema`, `BooleanColumnSchema`,
+ * `BitColumnSchema`, `BinaryColumnSchema`, `JsonColumnSchema`, `ArrayColumnSchema`
+ *
  * Represents the metadata of a column in a database table for PostgreSQL Server.
  *
  * It provides information about the column's name, type, size, precision, and other details.
@@ -45,6 +49,9 @@ use function str_pad;
  * $column->autoIncrement(true);
  * $column->primaryKey(true);
  * ```
+ *
+ * @psalm-suppress DeprecatedInterface
+ * @psalm-suppress DeprecatedClass
  */
 final class ColumnSchema extends AbstractColumnSchema
 {
@@ -144,6 +151,7 @@ final class ColumnSchema extends AbstractColumnSchema
             SchemaInterface::TYPE_JSON
                 => json_decode((string) $value, true, 512, JSON_THROW_ON_ERROR),
 
+            /** @psalm-suppress DeprecatedClass */
             default => parent::phpTypecast($value),
         };
     }
