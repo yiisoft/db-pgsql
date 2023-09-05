@@ -7,6 +7,8 @@
 - Enh #302: Refactor `ColumnSchema` (@Tigrov)
 - Bug #302: Fix incorrect convert string value for BIT type (@Tigrov)
 - Bug #309: Fix retrieving sequence name from default value (@Tigrov)
+- Enh #315: Implement `ColumnSchemaInterface` classes according to the data type of database table columns
+  for type casting performance. Related with yiisoft/db#752 (@Tigrov)
 
 ## 1.1.0 July 24, 2023
 
