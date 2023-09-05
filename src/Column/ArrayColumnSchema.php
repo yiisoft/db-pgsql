@@ -38,33 +38,6 @@ final class ArrayColumnSchema extends AbstractColumnSchema
         $this->dimension = $dimension;
     }
 
-    private function getColumn(): ColumnSchemaInterface
-    {
-        if ($this->column === null) {
-            if ($this->getType() === Schema::TYPE_BIT) {
-                $this->column = new BitColumnSchema($this->getName());
-                $this->column->size($this->getSize());
-            } elseif (PHP_INT_SIZE !== 8 && $this->getType() === SchemaInterface::TYPE_BIGINT) {
-                $this->column = new BigIntColumnSchema($this->getName());
-            } else {
-                $this->column = match ($this->getPhpType()) {
-                    SchemaInterface::PHP_TYPE_INTEGER => new IntegerColumnSchema($this->getName()),
-                    SchemaInterface::PHP_TYPE_DOUBLE => new DoubleColumnSchema($this->getName()),
-                    SchemaInterface::PHP_TYPE_BOOLEAN => new BooleanColumnSchema($this->getName()),
-                    SchemaInterface::PHP_TYPE_RESOURCE => new BinaryColumnSchema($this->getName()),
-                    SchemaInterface::PHP_TYPE_ARRAY => new JsonColumnSchema($this->getName()),
-                    default => new StringColumnSchema($this->getName()),
-                };
-            }
-
-            $this->column->dbType($this->getDbType());
-            $this->column->type($this->getType());
-            $this->column->phpType($this->getPhpType());
-        }
-
-        return $this->column;
-    }
-
     /**
      * @return int Get the dimension of the array.
      */
@@ -86,6 +59,34 @@ final class ArrayColumnSchema extends AbstractColumnSchema
         }
 
         return new ArrayExpression($value, $this->getDbType(), $this->dimension);
+    }
+
+    public function phpTypecast(mixed $value): array|null
+    {
+        if (is_string($value)) {
+            $value = (new ArrayParser())->parse($value);
+        }
+
+        if (!is_array($value)) {
+            return null;
+        }
+
+        if ($this->getType() === SchemaInterface::TYPE_STRING) {
+            return $value;
+        }
+
+        $column = $this->getColumn();
+
+        if ($this->dimension === 1 && $this->getType() !== SchemaInterface::TYPE_JSON) {
+            return array_map([$column, 'phpTypecast'], $value);
+        }
+
+        array_walk_recursive($value, function (string|null &$val) use ($column): void {
+            /** @psalm-var mixed $val */
+            $val = $column->phpTypecast($val);
+        });
+
+        return $value;
     }
 
     /**
@@ -125,31 +126,35 @@ final class ArrayColumnSchema extends AbstractColumnSchema
         return $items;
     }
 
-    public function phpTypecast(mixed $value): array|null
+    /**
+     * Get an instance of `ColumnSchemaInterface` according to the type of array values for casting type of the values
+     *
+     * @return ColumnSchemaInterface
+     */
+    private function getColumn(): ColumnSchemaInterface
     {
-        if (is_string($value)) {
-            $value = (new ArrayParser())->parse($value);
+        if ($this->column === null) {
+            if ($this->getType() === Schema::TYPE_BIT) {
+                $this->column = new BitColumnSchema($this->getName());
+                $this->column->size($this->getSize());
+            } elseif (PHP_INT_SIZE !== 8 && $this->getType() === SchemaInterface::TYPE_BIGINT) {
+                $this->column = new BigIntColumnSchema($this->getName());
+            } else {
+                $this->column = match ($this->getPhpType()) {
+                    SchemaInterface::PHP_TYPE_INTEGER => new IntegerColumnSchema($this->getName()),
+                    SchemaInterface::PHP_TYPE_DOUBLE => new DoubleColumnSchema($this->getName()),
+                    SchemaInterface::PHP_TYPE_BOOLEAN => new BooleanColumnSchema($this->getName()),
+                    SchemaInterface::PHP_TYPE_RESOURCE => new BinaryColumnSchema($this->getName()),
+                    SchemaInterface::PHP_TYPE_ARRAY => new JsonColumnSchema($this->getName()),
+                    default => new StringColumnSchema($this->getName()),
+                };
+            }
+
+            $this->column->dbType($this->getDbType());
+            $this->column->type($this->getType());
+            $this->column->phpType($this->getPhpType());
         }
 
-        if (!is_array($value)) {
-            return null;
-        }
-
-        if ($this->getType() === SchemaInterface::TYPE_STRING) {
-            return $value;
-        }
-
-        $column = $this->getColumn();
-
-        if ($this->dimension === 1 && $this->getType() !== SchemaInterface::TYPE_JSON) {
-            return array_map([$column, 'phpTypecast'], $value);
-        }
-
-        array_walk_recursive($value, function (string|null &$val) use ($column): void {
-            /** @psalm-var mixed $val */
-            $val = $column->phpTypecast($val);
-        });
-
-        return $value;
+        return $this->column;
     }
 }
