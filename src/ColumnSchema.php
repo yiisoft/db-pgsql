@@ -99,21 +99,24 @@ final class ColumnSchema extends AbstractColumnSchema
      * @param mixed $value The array or iterable object.
      * @param int $dimension The array dimension. Should be more than 0.
      *
-     * @return array Converted values.
+     * @return array|null Converted values.
      */
-    private function dbTypecastArray(mixed $value, int $dimension): array
+    private function dbTypecastArray(mixed $value, int $dimension): array|null
     {
-        $items = [];
-
         if (!is_iterable($value)) {
-            return $items;
+            return [];
         }
 
-        /** @psalm-var mixed $val */
-        foreach ($value as $val) {
-            if ($dimension > 1) {
+        $items = [];
+
+        if ($dimension > 1) {
+            /** @psalm-var mixed $val */
+            foreach ($value as $val) {
                 $items[] = $this->dbTypecastArray($val, $dimension - 1);
-            } else {
+            }
+        } else {
+            /** @psalm-var mixed $val */
+            foreach ($value as $val) {
                 /** @psalm-suppress MixedAssignment */
                 $items[] = $this->dbTypecastValue($val);
             }
