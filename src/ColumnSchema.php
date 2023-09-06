@@ -103,6 +103,10 @@ final class ColumnSchema extends AbstractColumnSchema
      */
     private function dbTypecastArray(mixed $value, int $dimension): array|null
     {
+        if ($value === null) {
+            return null;
+        }
+
         if (!is_iterable($value)) {
             return [];
         }

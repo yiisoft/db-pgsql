@@ -266,6 +266,13 @@ final class ColumnSchemaTest extends TestCase
             'For scalar value returns empty array'
         );
 
+        $priceArray2 = $tableSchema->getColumn('price_array2');
+        $this->assertEquals(
+            [null, null],
+            $priceArray2->phpTypecast([null, null]),
+            'Double array of null values'
+        );
+
         $db->close();
     }
 }
