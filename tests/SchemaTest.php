@@ -291,14 +291,14 @@ final class SchemaTest extends CommonSchemaTest
         $sequenceName = $tableSchema->getSequenceName();
         $command->setSql(
             <<<SQL
-            ALTER TABLE "item" ALTER COLUMN "id" SET DEFAULT nextval('item_id_seq_2')
+            ALTER TABLE "item" ALTER COLUMN "id" SET DEFAULT nextval('nextval_item_id_seq_2')
             SQL,
         )->execute();
         $schema->refreshTableSchema('item');
         $tableSchema = $schema->getTableSchema('item');
 
         $this->assertNotNull($tableSchema);
-        $this->assertEquals('item_id_seq_2', $tableSchema->getSequenceName());
+        $this->assertEquals('nextval_item_id_seq_2', $tableSchema->getSequenceName());
 
         $command->setSql(
             <<<SQL
