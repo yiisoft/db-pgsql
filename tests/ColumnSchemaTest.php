@@ -268,8 +268,8 @@ final class ColumnSchemaTest extends TestCase
 
         $priceArray2 = $tableSchema->getColumn('price_array2');
         $this->assertEquals(
-            [null, null],
-            $priceArray2->phpTypecast([null, null]),
+            new ArrayExpression([null, null], 'currency_money_composite', 2),
+            $priceArray2->dbTypecast([null, null]),
             'Double array of null values'
         );
 
