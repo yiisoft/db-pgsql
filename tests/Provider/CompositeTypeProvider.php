@@ -318,6 +318,11 @@ final class CompositeTypeProvider extends \Yiisoft\Db\Tests\Provider\SchemaProvi
                 ['value' => 10.0, 'currency_code' => 'USD'],
                 $price5UsdColumns,
             ],
+            'Remove excessive elements' => [
+                ['value' => 10.0, 'currency_code' => 'USD', 'excessive' => 'element'],
+                ['value' => 10.0, 'currency_code' => 'USD'],
+                $price5UsdColumns,
+            ],
             'Fill default values for skipped fields' => [
                 ['currency_code' => 'CNY'],
                 ['value' => 5.0, 'currency_code' => 'CNY'],
