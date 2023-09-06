@@ -212,7 +212,7 @@ final class ColumnSchema extends AbstractColumnSchema
     private function phpTypecastComposite(mixed $value): array|null
     {
         if (is_string($value)) {
-            $value = $this->getCompositeParser()->parse($value);
+            $value = (new CompositeParser())->parse($value);
         }
 
         if (!is_iterable($value)) {
@@ -305,13 +305,5 @@ final class ColumnSchema extends AbstractColumnSchema
     public function getColumns(): array|null
     {
         return $this->columns;
-    }
-
-    /**
-     * Creates instance of `CompositeParser`.
-     */
-    private function getCompositeParser(): CompositeParser
-    {
-        return new CompositeParser();
     }
 }
