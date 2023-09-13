@@ -197,4 +197,13 @@ final class ColumnSchemaTest extends TestCase
 
         $this->assertSame('01100100', $tableSchema->getColumn('bit_col')->dbTypecast('01100100'));
     }
+
+    public function testPrimaryKeyOfView()
+    {
+        $db = $this->getConnection(true);
+        $schema = $db->getSchema();
+        $tableSchema = $schema->getTableSchema('animal_view');
+
+        $this->assertTrue($tableSchema->getColumn('id')->isPrimaryKey());
+    }
 }

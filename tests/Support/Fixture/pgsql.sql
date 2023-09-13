@@ -25,6 +25,10 @@ DROP TABLE IF EXISTS "department";
 DROP TABLE IF EXISTS "alpha";
 DROP TABLE IF EXISTS "beta";
 DROP VIEW IF EXISTS "animal_view";
+DROP VIEW IF EXISTS "T_constraints_4_view";
+DROP VIEW IF EXISTS "T_constraints_3_view";
+DROP VIEW IF EXISTS "T_constraints_2_view";
+DROP VIEW IF EXISTS "T_constraints_1_view";
 DROP TABLE IF EXISTS "T_constraints_6";
 DROP TABLE IF EXISTS "T_constraints_5";
 DROP TABLE IF EXISTS "T_constraints_4";
@@ -412,6 +416,11 @@ CREATE TABLE "T_constraints_6"
     "C_fk_id_2" INT NOT NULL,
     CONSTRAINT "CN_constraints_6" FOREIGN KEY ("C_fk_id_1", "C_fk_id_2") REFERENCES "schema1"."T_constraints_5" ("C_id_1", "C_id_2") ON DELETE CASCADE ON UPDATE CASCADE
 );
+
+CREATE VIEW "T_constraints_1_view" AS SELECT * FROM "T_constraints_1";
+CREATE VIEW "T_constraints_2_view" AS SELECT * FROM "T_constraints_2";
+CREATE VIEW "T_constraints_3_view" AS SELECT * FROM "T_constraints_3";
+CREATE VIEW "T_constraints_4_view" AS SELECT * FROM "T_constraints_4";
 
 CREATE TABLE "T_upsert"
 (
