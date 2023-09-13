@@ -370,7 +370,10 @@ final class Schema extends AbstractPdoSchema
         INNER JOIN "pg_index" AS "i"
             ON "i"."indrelid" = "tc"."oid"
                 OR rw.ev_action IS NOT NULL
-                AND (SELECT regexp_matches(rw.ev_action, '{TARGETENTRY .*? :resorigtbl (\d+) :resorigcol ' || "i"."indkey"[0] || ' '))[1]::oid = "i"."indrelid"
+                AND (SELECT regexp_matches(
+                    rw.ev_action,
+                    '{TARGETENTRY .*? :resorigtbl ' || "i"."indrelid" || ' :resorigcol ' || "i"."indkey"[0] || ' '
+                )) IS NOT NULL
         INNER JOIN "pg_class" AS "ic"
             ON "ic"."oid" = "i"."indexrelid"
         INNER JOIN "pg_attribute" AS "ia"
@@ -729,8 +732,11 @@ final class Schema extends AbstractPdoSchema
             LEFT JOIN pg_rewrite rw ON c.relkind = 'v' AND rw.ev_class = c.oid AND rw.rulename = '_RETURN'
             LEFT JOIN pg_constraint ct ON ct.conrelid = c.oid AND ct.contype = 'p' AND a.attnum = ANY (ct.conkey)
                 OR rw.ev_action IS NOT NULL
-                AND (ARRAY(SELECT regexp_matches(rw.ev_action, '{TARGETENTRY .*? :resorigtbl (\d+) ', 'g')))[a.attnum][1]::oid = ct.conrelid
-                AND (ARRAY(SELECT regexp_matches(rw.ev_action, '{TARGETENTRY .*? :resorigcol (\d+) ', 'g')))[a.attnum][1]::smallint = ANY (ct.conkey)
+                AND (ARRAY(SELECT regexp_matches(
+                    rw.ev_action,
+                    '{TARGETENTRY .*? :resorigtbl ' || ct.conrelid || ' :resorigcol (\d+) ',
+                    'g'
+                )))[a.attnum][1]::smallint = ANY (ct.conkey)
         WHERE
             a.attnum > 0 AND t.typname != '' AND NOT a.attisdropped
             AND c.relname = :tableName
@@ -917,8 +923,11 @@ final class Schema extends AbstractPdoSchema
         INNER JOIN "pg_constraint" AS "c"
             ON "c"."conrelid" = "tc"."oid" AND "a"."attnum" = ANY ("c"."conkey")
                 OR rw.ev_action IS NOT NULL
-                AND (ARRAY(SELECT regexp_matches(rw.ev_action, '{TARGETENTRY .*? :resorigtbl (\d+) ', 'g')))[a.attnum][1]::oid = c.conrelid
-                AND (ARRAY(SELECT regexp_matches(rw.ev_action, '{TARGETENTRY .*? :resorigcol (\d+) ', 'g')))[a.attnum][1]::smallint = ANY (c.conkey)
+                AND (ARRAY(SELECT regexp_matches(
+                    rw.ev_action,
+                    '{TARGETENTRY .*? :resorigtbl ' || c.conrelid || ' :resorigcol (\d+) ',
+                    'g'
+                )))[a.attnum][1]::smallint = ANY (c.conkey)
         LEFT JOIN "pg_class" AS "ftc"
             ON "ftc"."oid" = "c"."confrelid"
         LEFT JOIN "pg_namespace" AS "ftcns"
