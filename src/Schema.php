@@ -734,7 +734,7 @@ final class Schema extends AbstractPdoSchema
                 OR rw.ev_action IS NOT NULL AND ct.contype = 'p'
                 AND (ARRAY(
                     SELECT regexp_matches(rw.ev_action, '{TARGETENTRY .*? :resorigtbl (\d+) :resorigcol (\d+) ', 'g')
-                ))[a.attnum:a.attnum] <@ (ct.conrelid || ct.conkey)::text[]
+                ))[a.attnum:a.attnum] <@ (ct.conrelid::text || ct.conkey::text[])
         WHERE
             a.attnum > 0 AND t.typname != '' AND NOT a.attisdropped
             AND c.relname = :tableName
@@ -924,7 +924,7 @@ final class Schema extends AbstractPdoSchema
                 OR "rw"."ev_action" IS NOT NULL AND "c"."conrelid" != 0
                 AND (ARRAY(
                     SELECT regexp_matches("rw"."ev_action", '{TARGETENTRY .*? :resorigtbl (\d+) :resorigcol (\d+) ', 'g')
-                ))["a"."attnum":"a"."attnum"] <@ ("c"."conrelid" || "c"."conkey")::text[]
+                ))["a"."attnum":"a"."attnum"] <@ ("c"."conrelid"::text || "c"."conkey"::text[])
         LEFT JOIN "pg_class" AS "ftc"
             ON "ftc"."oid" = "c"."confrelid"
         LEFT JOIN "pg_namespace" AS "ftcns"
