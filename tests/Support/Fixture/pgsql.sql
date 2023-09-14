@@ -417,10 +417,10 @@ CREATE TABLE "T_constraints_6"
     CONSTRAINT "CN_constraints_6" FOREIGN KEY ("C_fk_id_1", "C_fk_id_2") REFERENCES "schema1"."T_constraints_5" ("C_id_1", "C_id_2") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
-CREATE VIEW "T_constraints_1_view" AS SELECT * FROM "T_constraints_1";
-CREATE VIEW "T_constraints_2_view" AS SELECT * FROM "T_constraints_2";
-CREATE VIEW "T_constraints_3_view" AS SELECT * FROM "T_constraints_3";
-CREATE VIEW "T_constraints_4_view" AS SELECT * FROM "T_constraints_4";
+CREATE VIEW "T_constraints_1_view" AS SELECT 'first_value', * FROM "T_constraints_1";
+CREATE VIEW "T_constraints_2_view" AS SELECT 'first_value', * FROM "T_constraints_2";
+CREATE VIEW "T_constraints_3_view" AS SELECT 'first_value', * FROM "T_constraints_3";
+CREATE VIEW "T_constraints_4_view" AS SELECT 'first_value', * FROM "T_constraints_4";
 
 CREATE TABLE "T_upsert"
 (

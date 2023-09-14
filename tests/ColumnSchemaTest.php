@@ -202,8 +202,12 @@ final class ColumnSchemaTest extends TestCase
     {
         $db = $this->getConnection(true);
         $schema = $db->getSchema();
-        $tableSchema = $schema->getTableSchema('animal_view');
+        $tableSchema = $schema->getTableSchema('T_constraints_2_view');
 
-        $this->assertTrue($tableSchema->getColumn('id')->isPrimaryKey());
+        $this->assertTrue($tableSchema->getColumn('C_id_1')->isPrimaryKey());
+        $this->assertTrue($tableSchema->getColumn('C_id_2')->isPrimaryKey());
+        $this->assertFalse($tableSchema->getColumn('C_index_1')->isPrimaryKey());
+        $this->assertFalse($tableSchema->getColumn('C_index_2_1')->isPrimaryKey());
+        $this->assertFalse($tableSchema->getColumn('C_index_2_2')->isPrimaryKey());
     }
 }

@@ -731,12 +731,10 @@ final class Schema extends AbstractPdoSchema
             LEFT JOIN pg_namespace d ON d.oid = c.relnamespace
             LEFT JOIN pg_rewrite rw ON c.relkind = 'v' AND rw.ev_class = c.oid AND rw.rulename = '_RETURN'
             LEFT JOIN pg_constraint ct ON ct.conrelid = c.oid AND ct.contype = 'p' AND a.attnum = ANY (ct.conkey)
-                OR rw.ev_action IS NOT NULL
-                AND (ARRAY(SELECT regexp_matches(
-                    rw.ev_action,
-                    '{TARGETENTRY .*? :resorigtbl ' || ct.conrelid || ' :resorigcol (\d+) ',
-                    'g'
-                )))[a.attnum][1]::smallint = ANY (ct.conkey)
+                OR rw.ev_action IS NOT NULL AND ct.contype = 'p'
+                AND (ARRAY(
+                    SELECT regexp_matches(rw.ev_action, '{TARGETENTRY .*? :resorigtbl (\d+) :resorigcol (\d+) ', 'g')
+                ))[a.attnum:a.attnum] <@ (ct.conrelid || ct.conkey)::text[]
         WHERE
             a.attnum > 0 AND t.typname != '' AND NOT a.attisdropped
             AND c.relname = :tableName
@@ -919,15 +917,14 @@ final class Schema extends AbstractPdoSchema
             ON "tcns"."oid" = "tc"."relnamespace"
         INNER JOIN "pg_attribute" AS "a"
             ON "a"."attrelid" = "tc"."oid"
-        LEFT JOIN pg_rewrite AS rw ON tc.relkind = 'v' AND rw.ev_class = tc.oid AND rw.rulename = '_RETURN'
+        LEFT JOIN pg_rewrite AS rw
+            ON "tc"."relkind" = 'v' AND "rw"."ev_class" = "tc"."oid" AND "rw"."rulename" = '_RETURN'
         INNER JOIN "pg_constraint" AS "c"
             ON "c"."conrelid" = "tc"."oid" AND "a"."attnum" = ANY ("c"."conkey")
-                OR rw.ev_action IS NOT NULL
-                AND (ARRAY(SELECT regexp_matches(
-                    rw.ev_action,
-                    '{TARGETENTRY .*? :resorigtbl ' || c.conrelid || ' :resorigcol (\d+) ',
-                    'g'
-                )))[a.attnum][1]::smallint = ANY (c.conkey)
+                OR "rw"."ev_action" IS NOT NULL AND "c"."conrelid" != 0
+                AND (ARRAY(
+                    SELECT regexp_matches("rw"."ev_action", '{TARGETENTRY .*? :resorigtbl (\d+) :resorigcol (\d+) ', 'g')
+                ))["a"."attnum":"a"."attnum"] <@ ("c"."conrelid" || "c"."conkey")::text[]
         LEFT JOIN "pg_class" AS "ftc"
             ON "ftc"."oid" = "c"."confrelid"
         LEFT JOIN "pg_namespace" AS "ftcns"
