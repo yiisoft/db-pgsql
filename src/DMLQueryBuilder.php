@@ -9,6 +9,7 @@ use Yiisoft\Db\Expression\Expression;
 use Yiisoft\Db\Query\QueryInterface;
 use Yiisoft\Db\QueryBuilder\AbstractDMLQueryBuilder;
 
+use function array_map;
 use function implode;
 
 /**
@@ -22,11 +23,12 @@ final class DMLQueryBuilder extends AbstractDMLQueryBuilder
         $returnColumns = $this->schema->getTableSchema($table)?->getPrimaryKey();
 
         if (!empty($returnColumns)) {
-            $returning = [];
-            foreach ($returnColumns as $name) {
-                $returning[] = $this->quoter->quoteColumnName($name);
-            }
-            $sql .= ' RETURNING ' . implode(', ', $returning);
+            $returnColumns = array_map(
+                [$this->quoter, 'quoteColumnName'],
+                $returnColumns,
+            );
+
+            $sql .= ' RETURNING ' . implode(', ', $returnColumns);
         }
 
         return $sql;
