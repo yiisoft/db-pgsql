@@ -157,7 +157,7 @@ final class ArrayExpressionBuilder implements ExpressionBuilderInterface
             return $value;
         }
 
-        if (in_array($expression->getType(), [SchemaInterface::TYPE_JSON, SchemaInterface::TYPE_JSONB], true)) {
+        if (in_array($expression->getType(), ['json', 'jsonb'], true)) {
             return new JsonExpression($value);
         }
 
