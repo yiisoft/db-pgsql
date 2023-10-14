@@ -7,6 +7,7 @@
 - Enh #302: Refactor `ColumnSchema` (@Tigrov)
 - Bug #302: Fix incorrect convert string value for BIT type (@Tigrov)
 - Bug #309: Fix retrieving sequence name from default value (@Tigrov)
+- Chg #319: Remove use of abstract type `SchemaInterface::TYPE_JSONB` (@Tigrov)
 
 ## 1.1.0 July 24, 2023
 
