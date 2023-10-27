@@ -8,6 +8,7 @@
 - Bug #302: Fix incorrect convert string value for BIT type (@Tigrov)
 - Bug #309: Fix retrieving sequence name from default value (@Tigrov)
 - Bug #313: Refactor `DMLQueryBuilder`, related with yiisoft/db#746 (@Tigrov)
+- Chg #319: Remove use of abstract type `SchemaInterface::TYPE_JSONB` (@Tigrov)
 
 ## 1.1.0 July 24, 2023
 
