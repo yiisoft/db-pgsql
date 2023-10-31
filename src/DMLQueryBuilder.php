@@ -64,7 +64,7 @@ final class DMLQueryBuilder extends AbstractDMLQueryBuilder
     public function upsert(
         string $table,
         QueryInterface|array $insertColumns,
-        $updateColumns,
+        bool|array $updateColumns,
         array &$params = []
     ): string {
         $insertSql = $this->insert($table, $insertColumns, $params);
