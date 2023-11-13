@@ -16,8 +16,10 @@ use Yiisoft\Db\Pgsql\ColumnSchema;
 use Yiisoft\Db\Pgsql\Tests\Support\TestTrait;
 use Yiisoft\Db\Query\Query;
 use Yiisoft\Db\Schema\SchemaInterface;
-
+use function str_repeat;
 use function stream_get_contents;
+use function version_compare;
+use const PHP_INT_SIZE;
 
 /**
  * @group pgsql
@@ -59,6 +61,9 @@ final class ColumnSchemaTest extends TestCase
                 'json_col' => [['a' => 1, 'b' => null, 'c' => [1, 3, 5]]],
                 'jsonb_col' => new JsonExpression(new ArrayExpression([1, 2, 3])),
                 'jsonarray_col' => [new ArrayExpression([[',', 'null', true, 'false', 'f']], SchemaInterface::TYPE_JSON)],
+                'intrange_col' => new Expression("'[3,7)'::int4range"),
+                'bigintrange_col' => new Expression("'[2147483648,2147483649]'::int8range"),
+                'numrange_col' => new Expression("'(1.1,1.5)'::numrange"),
             ]
         );
         $command->execute();
@@ -81,6 +86,9 @@ final class ColumnSchemaTest extends TestCase
         $jsonColPhpType = $tableSchema->getColumn('json_col')?->phpTypecast($query['json_col']);
         $jsonBColPhpType = $tableSchema->getColumn('jsonb_col')?->phpTypecast($query['jsonb_col']);
         $jsonArrayColPhpType = $tableSchema->getColumn('jsonarray_col')?->phpTypecast($query['jsonarray_col']);
+        $intRangePhpType = $tableSchema->getColumn('intrange_col')->phpTypecast($query['intrange_col']);
+        $bigIntRangephpType = $tableSchema->getColumn('bigintrange_col')->phpTypecast($query['bigintrange_col']);
+        $numRangePhpType = $tableSchema->getColumn('numrange_col')->phpTypecast($query['numrange_col']);
 
         $this->assertSame(1, $intColPhpTypeCast);
         $this->assertSame(str_repeat('x', 100), $charColPhpTypeCast);
@@ -97,8 +105,44 @@ final class ColumnSchemaTest extends TestCase
         $this->assertSame([['a' => 1, 'b' => null, 'c' => [1, 3, 5]]], $jsonColPhpType);
         $this->assertSame(['1', '2', '3'], $jsonBColPhpType);
         $this->assertSame([[[',', 'null', true, 'false', 'f']]], $jsonArrayColPhpType);
+        $this->assertSame([3, 6], $intRangePhpType);
+        $this->assertSame(PHP_INT_SIZE === 8 ? [2147483648, 2147483649] : [2147483648.0, 2147483649.0], $bigIntRangephpType);
+        $this->assertSame([1.1, 1.5], $numRangePhpType);
 
         $db->close();
+    }
+
+    public function testPhpTypeCaseMultiRange(): void
+    {
+        if (version_compare($this->getConnection()->getServerVersion(), '14.0', '<')) {
+            $this->markTestSkipped('PostgreSQL < 14.0 does not support multi range columns.');
+        }
+
+        $this->setFixture('pgsql14.sql');
+        $db = $this->getConnection(true);
+
+        $command = $db->createCommand();
+        $schema = $db->getSchema();
+        $tableSchema = $schema->getTableSchema('table_with_multirange');
+        $command->insert(
+            'table_with_multirange',
+            [
+                'int4multirange_col' => new Expression("'{[3,7), [8,9)}'::int4multirange"),
+                'int8multirange_col' => new Expression("'{[2147483648,2147483649]}'::int8multirange"),
+                'nummultirange_col' => new Expression("'{[10.5,15.2],(20.7,21),(38.1,39.3]}'::nummultirange"),
+                'datemultirange_col' => new Expression("'{[2020-12-01,2021-01-01],[2020-12-02,2021-01-03)}'::datemultirange"),
+            ]
+        );
+        $command->execute();
+        $query = (new Query($db))->from('table_with_multirange')->one();
+
+        $this->assertNotNull($tableSchema);
+
+        $intColPhpTypeCast = $tableSchema->getColumn('int4multirange_col')?->phpTypecast($query['int4multirange_col']);
+        $floatColPhpTypeCast = $tableSchema->getColumn('nummultirange_col')?->phpTypecast($query['nummultirange_col']);
+
+        $this->assertSame([[3,6], [8,8]], $intColPhpTypeCast);
+        $this->assertSame([[10.5, 15.2], [20.7, 21.0], [38.1, 39.3]], $floatColPhpTypeCast);
     }
 
     /**

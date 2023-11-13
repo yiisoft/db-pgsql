@@ -20,7 +20,6 @@ use Yiisoft\Db\Helper\DbArrayHelper;
 use Yiisoft\Db\Schema\Builder\ColumnInterface;
 use Yiisoft\Db\Schema\ColumnSchemaInterface;
 use Yiisoft\Db\Schema\TableSchemaInterface;
-
 use function array_merge;
 use function array_unique;
 use function array_values;
@@ -85,6 +84,23 @@ final class Schema extends AbstractPdoSchema
      * Define the abstract column type as `bit`.
      */
     public const TYPE_BIT = 'bit';
+
+    /**
+     * Define the abstract range columns types
+     * @see https://www.postgresql.org/docs/current/rangetypes.html
+     */
+    public const TYPE_INT_RANGE = 'int4range';
+    public const TYPE_BIGINT_RANGE = 'int8range';
+    public const TYPE_NUM_RANGE = 'numrange';
+    public const TYPE_TS_RANGE = 'tsrange';
+    public const TYPE_TS_TZ_RANGE = 'tstzrange';
+    public const TYPE_DATE_RANGE = 'daterange';
+    public const TYPE_INT_MULTIRANGE = 'int4multirange';
+    public const TYPE_BIGINT_MULTIRANGE = 'int8multirange';
+    public const TYPE_NUM_MULTIRANGE = 'nummultirange';
+    public const TYPE_TS_MULTIRANGE = 'tsmultirange';
+    public const TYPE_TS_TZ_MULTIRANGE = 'tstzmultirange';
+    public const TYPE_DATE_MULTIRANGE = 'datemultirange';
 
     /**
      * @var array The mapping from physical column types (keys) to abstract column types (values).
