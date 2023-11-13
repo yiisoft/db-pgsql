@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Yiisoft\Db\Pgsql\Tests;
 
+use DateTimeImmutable;
 use JsonException;
 use PHPUnit\Framework\TestCase;
 use Throwable;
@@ -48,6 +49,11 @@ final class ColumnSchemaTest extends TestCase
                 'char_col3' => null,
                 'float_col' => 1.234,
                 'blob_col' => "\x10\x11\x12",
+                'timestamp_col' => '2023-07-11 14:50:23',
+                'timestamp_col2' => new DateTimeImmutable('2023-07-11 14:50:23.123456 +02:00'),
+                'timestamptz_col' => new DateTimeImmutable('2023-07-11 14:50:23.12 -2:30'),
+                'date_col' => new DateTimeImmutable('2023-07-11'),
+                'time_col' => new DateTimeImmutable('14:50:23'),
                 'bool_col' => false,
                 'bit_col' => 0b0110_0100, // 100
                 'varbit_col' => 0b1_1100_1000, // 456
@@ -70,6 +76,12 @@ final class ColumnSchemaTest extends TestCase
         $charColPhpTypeCast = $tableSchema->getColumn('char_col')?->phpTypecast($query['char_col']);
         $floatColPhpTypeCast = $tableSchema->getColumn('float_col')?->phpTypecast($query['float_col']);
         $blobColPhpTypeCast = $tableSchema->getColumn('blob_col')?->phpTypecast($query['blob_col']);
+        $timestampColPhpType = $tableSchema->getColumn('timestamp_col')?->phpTypecast($query['timestamp_col']);
+        $timestampCol2PhpType = $tableSchema->getColumn('timestamp_col2')?->phpTypecast($query['timestamp_col2']);
+        $timestamptzColPhpType = $tableSchema->getColumn('timestamptz_col')?->phpTypecast($query['timestamptz_col']);
+        $dateColPhpType = $tableSchema->getColumn('date_col')?->phpTypecast($query['date_col']);
+        $timeColPhpType = $tableSchema->getColumn('time_col')?->phpTypecast($query['time_col']);
+        $tsDefaultPhpType = $tableSchema->getColumn('ts_default')?->phpTypecast($query['ts_default']);
         $boolColPhpTypeCast = $tableSchema->getColumn('bool_col')?->phpTypecast($query['bool_col']);
         $bitColPhpTypeCast = $tableSchema->getColumn('bit_col')?->phpTypecast($query['bit_col']);
         $varbitColPhpTypeCast = $tableSchema->getColumn('varbit_col')?->phpTypecast($query['varbit_col']);
@@ -86,6 +98,12 @@ final class ColumnSchemaTest extends TestCase
         $this->assertSame(str_repeat('x', 100), $charColPhpTypeCast);
         $this->assertSame(1.234, $floatColPhpTypeCast);
         $this->assertSame("\x10\x11\x12", stream_get_contents($blobColPhpTypeCast));
+        $this->assertEquals(new DateTimeImmutable('2023-07-11 14:50:23'), $timestampColPhpType);
+        $this->assertEquals(new DateTimeImmutable('2023-07-11 14:50:23.123456 +02:00'), $timestampCol2PhpType);
+        $this->assertEquals(new DateTimeImmutable('2023-07-11 14:50:23.12 -2:30'), $timestamptzColPhpType);
+        $this->assertEquals(new DateTimeImmutable('2023-07-11'), $dateColPhpType);
+        $this->assertEquals(new DateTimeImmutable('14:50:23'), $timeColPhpType);
+        $this->assertInstanceOf(DateTimeImmutable::class, $tsDefaultPhpType);
         $this->assertFalse($boolColPhpTypeCast);
         $this->assertSame(0b0110_0100, $bitColPhpTypeCast);
         $this->assertSame(0b1_1100_1000, $varbitColPhpTypeCast);

@@ -88,7 +88,7 @@ final class ColumnSchema extends AbstractColumnSchema
                 ? str_pad(decbin($value), (int) $this->getSize(), '0', STR_PAD_LEFT)
                 : (string) $value,
 
-            default => $this->typecast($value),
+            default => parent::dbTypecast($value),
         };
     }
 
@@ -190,5 +190,13 @@ final class ColumnSchema extends AbstractColumnSchema
     public function sequenceName(string|null $sequenceName): void
     {
         $this->sequenceName = $sequenceName;
+    }
+
+    public function hasTimezone(): bool
+    {
+        $dbType = (string) $this->getDbType();
+
+        return str_ends_with($dbType, 'tz')
+            || str_ends_with($dbType, ' with time zone');
     }
 }
