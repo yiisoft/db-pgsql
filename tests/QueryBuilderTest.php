@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Yiisoft\Db\Pgsql\Tests;
 
-use Generator;
 use Throwable;
 use Yiisoft\Db\Driver\Pdo\PdoConnectionInterface;
 use Yiisoft\Db\Exception\Exception;
@@ -253,7 +252,7 @@ final class QueryBuilderTest extends CommonQueryBuilderTest
     /**
      * @dataProvider \Yiisoft\Db\Pgsql\Tests\Provider\QueryBuilderProvider::batchInsert
      */
-    public function testBatchInsert(string $table, array $columns, iterable|Generator $rows, string $expected): void
+    public function testBatchInsert(string $table, array $columns, iterable $rows, string $expected): void
     {
         parent::testBatchInsert($table, $columns, $rows, $expected);
     }

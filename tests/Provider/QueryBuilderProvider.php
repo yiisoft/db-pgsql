@@ -429,6 +429,11 @@ final class QueryBuilderProvider extends \Yiisoft\Db\Tests\Provider\QueryBuilder
                     'VALUES (:qp0, :qp1, :qp2, :qp3) ON CONFLICT ("email") ' .
                     'DO UPDATE SET "address"=EXCLUDED."address", "status"=EXCLUDED."status", "profile_id"=EXCLUDED."profile_id"',
             ],
+            'regular values with unique at not the first position' => [
+                3 => 'INSERT INTO "T_upsert" ("address", "email", "status", "profile_id") ' .
+                    'VALUES (:qp0, :qp1, :qp2, :qp3) ON CONFLICT ("email") ' .
+                    'DO UPDATE SET "address"=EXCLUDED."address", "status"=EXCLUDED."status", "profile_id"=EXCLUDED."profile_id"',
+            ],
             'regular values with update part' => [
                 2 => ['address' => 'foo {{city}}', 'status' => 2, 'orders' => new Expression('"T_upsert"."orders" + 1')],
                 3 => 'INSERT INTO "T_upsert" ("email", "address", "status", "profile_id") ' .
