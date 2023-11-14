@@ -10,7 +10,7 @@
 - Enh #300: Refactor `ArrayExpressionBuilder` (@Tigrov)
 - Enh #301: Refactor `JsonExpressionBuilder` (@Tigrov)
 - Enh #302: Refactor `ColumnSchema` (@Tigrov)
-- Enh #303: Support Composite types (@Tigrov)
+- Enh #303: Support composite types (@Tigrov)
 - Enh #321: Move methods from `Command` to `AbstractPdoCommand` class (@Tigrov)
 - Bug #302: Fix incorrect convert string value for BIT type (@Tigrov)
 - Bug #309: Fix retrieving sequence name from default value (@Tigrov)

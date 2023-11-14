@@ -26,7 +26,7 @@ final class CompositeExpressionBuilder implements ExpressionBuilderInterface
     }
 
     /**
-     * The Method builds the raw SQL from the expression that won't be additionally escaped or quoted.
+     * The method builds the raw SQL from the expression that won't be additionally escaped or quoted.
      *
      * @param CompositeExpression $expression The expression build.
      * @param array $params The binding parameters.
