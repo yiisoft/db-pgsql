@@ -204,6 +204,7 @@ final class ColumnSchemaTest extends TestCase
         $schema = $db->getSchema();
         $tableSchema = $schema->getTableSchema('T_constraints_2_view');
 
+        $this->assertSame(['C_id_1', 'C_id_2'], $tableSchema->getPrimaryKey());
         $this->assertTrue($tableSchema->getColumn('C_id_1')->isPrimaryKey());
         $this->assertTrue($tableSchema->getColumn('C_id_2')->isPrimaryKey());
         $this->assertFalse($tableSchema->getColumn('C_index_1')->isPrimaryKey());
