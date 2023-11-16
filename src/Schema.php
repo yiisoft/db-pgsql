@@ -89,7 +89,7 @@ final class Schema extends AbstractPdoSchema
     /**
      * The mapping from physical column types (keys) to abstract column types (values).
      *
-     * @link https://www.postgresql.org/docs/current/static/datatype.html#DATATYPE-TABLE
+     * @link https://www.postgresql.org/docs/current/datatype.html#DATATYPE-TABLE
      *
      * @var string[]
      */
