@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Yiisoft\Db\Pgsql\Tests;
 
-use Psr\Log\LoggerAwareInterface;
 use Yiisoft\Db\Driver\Pdo\AbstractPdoCommand;
 use Yiisoft\Db\Driver\Pdo\PdoCommandInterface;
+use Yiisoft\Db\Logger\DbLoggerAwareInterface;
 use Yiisoft\Db\Pgsql\Tests\Support\TestTrait;
 use Yiisoft\Db\Tests\Common\CommonPdoCommandTest;
 
@@ -64,7 +64,7 @@ final class PdoCommandTest extends CommonPdoCommandTest
         /** @var AbstractPdoCommand $command */
         $command = $db->createCommand();
         $this->assertInstanceOf(PdoCommandInterface::class, $command);
-        $this->assertInstanceOf(LoggerAwareInterface::class, $command);
+        $this->assertInstanceOf(DbLoggerAwareInterface::class, $command);
         $command->setSql($sql);
 
         $this->assertSame($sql, $command->getSql());
