@@ -85,16 +85,11 @@ class CompositeExpression implements ExpressionInterface
         }
 
         foreach ($columnsNames as $i => $columnsName) {
-            if (array_key_exists($columnsName, $value)) {
-                /** @psalm-suppress MixedAssignment */
-                $normalized[$columnsName] = $value[$columnsName];
-            } elseif (array_key_exists($i, $value)) {
-                /** @psalm-suppress MixedAssignment */
-                $normalized[$columnsName] = $value[$i];
-            } else {
-                /** @psalm-suppress MixedAssignment */
-                $normalized[$columnsName] = $this->columns[$columnsName]->getDefaultValue();
-            }
+            $normalized[$columnsName] = match (true) {
+                array_key_exists($columnsName, $value) => $value[$columnsName],
+                array_key_exists($i, $value) => $value[$i],
+                default => $this->columns[$columnsName]->getDefaultValue(),
+            };
         }
 
         return $normalized;

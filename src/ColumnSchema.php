@@ -114,14 +114,11 @@ final class ColumnSchema extends AbstractColumnSchema
         $items = [];
 
         if ($dimension > 1) {
-            /** @psalm-var mixed $val */
             foreach ($value as $val) {
                 $items[] = $this->dbTypecastArray($val, $dimension - 1);
             }
         } else {
-            /** @psalm-var mixed $val */
             foreach ($value as $val) {
-                /** @psalm-suppress MixedAssignment */
                 $items[] = $this->dbTypecastValue($val);
             }
         }
@@ -178,7 +175,6 @@ final class ColumnSchema extends AbstractColumnSchema
             }
 
             array_walk_recursive($value, function (mixed &$val) {
-                /** @psalm-var mixed $val */
                 $val = $this->phpTypecastValue($val);
             });
 
@@ -230,19 +226,14 @@ final class ColumnSchema extends AbstractColumnSchema
         $columns = (array) $this->columns;
         $columnNames = array_keys($columns);
 
-        /**
-         * @psalm-var int|string $columnName
-         * @psalm-var mixed $item
-         */
+        /** @psalm-var int|string $columnName */
         foreach ($value as $columnName => $item) {
             $columnName = $columnNames[$columnName] ?? $columnName;
 
             if (isset($columns[$columnName])) {
-                /** @psalm-var mixed $item */
                 $item = $columns[$columnName]->phpTypecast($item);
             }
 
-            /** @psalm-suppress MixedAssignment */
             $fields[$columnName] = $item;
         }
 
