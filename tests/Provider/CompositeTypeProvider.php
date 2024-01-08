@@ -356,7 +356,7 @@ final class CompositeTypeProvider extends \Yiisoft\Db\Tests\Provider\SchemaProvi
             'Do not normalize with empty columns' => [
                 [10.0],
                 [10.0],
-                null,
+                [],
             ],
         ];
     }

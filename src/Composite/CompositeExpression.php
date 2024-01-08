@@ -22,13 +22,13 @@ use Yiisoft\Db\Schema\ColumnSchemaInterface;
 class CompositeExpression implements ExpressionInterface
 {
     /**
-     * @param ColumnSchemaInterface[]|null $columns
-     * @psalm-param array<string, ColumnSchemaInterface>|null $columns
+     * @param ColumnSchemaInterface[] $columns
+     * @psalm-param array<string, ColumnSchemaInterface> $columns
      */
     public function __construct(
         private mixed $value,
         private string|null $type = null,
-        private array|null $columns = null,
+        private array $columns = [],
     ) {
     }
 
@@ -48,9 +48,9 @@ class CompositeExpression implements ExpressionInterface
     /**
      * The composite type columns that are used for value normalization and type casting.
      *
-     * @return ColumnSchemaInterface[]|null
+     * @return ColumnSchemaInterface[]
      */
-    public function getColumns(): array|null
+    public function getColumns(): array
     {
         return $this->columns;
     }

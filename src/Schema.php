@@ -829,7 +829,7 @@ final class Schema extends AbstractPdoSchema
             /** @psalm-var array|null $defaultValue */
             $defaultValue = $column->getDefaultValue();
             if (is_array($defaultValue)) {
-                foreach ((array) $column->getColumns() as $compositeColumnName => $compositeColumn) {
+                foreach ($column->getColumns() as $compositeColumnName => $compositeColumn) {
                     $compositeColumn->defaultValue($defaultValue[$compositeColumnName] ?? null);
                 }
             }

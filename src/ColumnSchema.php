@@ -62,10 +62,10 @@ final class ColumnSchema extends AbstractColumnSchema
     private string|null $sequenceName = null;
 
     /**
-     * @var ColumnSchemaInterface[]|null Columns metadata of the composite type.
-     * @psalm-var array<string, ColumnSchemaInterface>|null
+     * @var ColumnSchemaInterface[] Columns metadata of the composite type.
+     * @psalm-var array<string, ColumnSchemaInterface>
      */
-    private array|null $columns = null;
+    private array $columns = [];
 
     /**
      * Converts the input value according to {@see type} and {@see dbType} for use in a db query.
@@ -223,7 +223,7 @@ final class ColumnSchema extends AbstractColumnSchema
         }
 
         $fields = [];
-        $columns = (array) $this->columns;
+        $columns = $this->columns;
         $columnNames = array_keys($columns);
 
         /** @psalm-var int|string $columnName */
@@ -287,10 +287,10 @@ final class ColumnSchema extends AbstractColumnSchema
     /**
      * Set columns of the composite type.
      *
-     * @param ColumnSchemaInterface[]|null $columns The metadata of the composite type columns.
-     * @psalm-param array<string, ColumnSchemaInterface>|null $columns
+     * @param ColumnSchemaInterface[] $columns The metadata of the composite type columns.
+     * @psalm-param array<string, ColumnSchemaInterface> $columns
      */
-    public function columns(array|null $columns): void
+    public function columns(array $columns): void
     {
         $this->columns = $columns;
     }
@@ -298,9 +298,9 @@ final class ColumnSchema extends AbstractColumnSchema
     /**
      * Get the metadata of the composite type columns.
      *
-     * @return ColumnSchemaInterface[]|null
+     * @return ColumnSchemaInterface[]
      */
-    public function getColumns(): array|null
+    public function getColumns(): array
     {
         return $this->columns;
     }

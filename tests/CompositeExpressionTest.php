@@ -15,10 +15,8 @@ final class CompositeExpressionTest extends TestCase
 {
     use TestTrait;
 
-    /**
-     * @dataProvider \Yiisoft\Db\Pgsql\Tests\Provider\CompositeTypeProvider::normolizedValues
-     */
-    public function testGetNormalizedValue(mixed $value, mixed $expected, array|null $columns): void
+    /** @dataProvider \Yiisoft\Db\Pgsql\Tests\Provider\CompositeTypeProvider::normolizedValues */
+    public function testGetNormalizedValue(mixed $value, mixed $expected, array $columns): void
     {
         $compositeExpression = new CompositeExpression($value, 'currency_money_composite', $columns);
         $this->assertSame($expected, $compositeExpression->getNormalizedValue());

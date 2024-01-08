@@ -256,7 +256,7 @@ final class ColumnSchemaTest extends TestCase
         $priceCol = $tableSchema->getColumn('price_col');
         $this->assertNull($priceCol->phpTypecast(1), 'For scalar value returns `null`');
 
-        $priceCol->columns(null);
+        $priceCol->columns([]);
         $this->assertSame([5, 'USD'], $priceCol->phpTypecast([5, 'USD']), 'No type casting for empty columns');
 
         $priceArray = $tableSchema->getColumn('price_array');

@@ -83,7 +83,7 @@ final class CompositeExpressionBuilder implements ExpressionBuilderInterface
             return $placeholders;
         }
 
-        $columns = (array) $expression->getColumns();
+        $columns = $expression->getColumns();
 
         /**
          * @psalm-var int|string $columnName
