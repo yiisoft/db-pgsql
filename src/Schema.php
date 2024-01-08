@@ -87,13 +87,13 @@ final class Schema extends AbstractPdoSchema
     public const TYPE_BIT = 'bit';
 
     /**
-     * @var array The mapping from physical column types (keys) to abstract column types (values).
+     * The mapping from physical column types (keys) to abstract column types (values).
      *
-     * @link https://www.postgresql.org/docs/current/static/datatype.html#DATATYPE-TABLE
+     * @link https://www.postgresql.org/docs/current/datatype.html#DATATYPE-TABLE
      *
-     * @psalm-var string[]
+     * @var string[]
      */
-    private array $typeMap = [
+    private const TYPE_MAP = [
         'bit' => self::TYPE_BIT,
         'bit varying' => self::TYPE_BIT,
         'varbit' => self::TYPE_BIT,
@@ -819,7 +819,7 @@ final class Schema extends AbstractPdoSchema
             $column->sequenceName($this->resolveTableName($info['sequence_name'])->getFullName());
         }
 
-        $column->type($this->typeMap[(string) $column->getDbType()] ?? self::TYPE_STRING);
+        $column->type(self::TYPE_MAP[(string) $column->getDbType()] ?? self::TYPE_STRING);
         $column->phpType($this->getColumnPhpType($column));
         $column->defaultValue($this->normalizeDefaultValue($defaultValue, $column));
 

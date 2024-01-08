@@ -252,9 +252,14 @@ final class QueryBuilderTest extends CommonQueryBuilderTest
     /**
      * @dataProvider \Yiisoft\Db\Pgsql\Tests\Provider\QueryBuilderProvider::batchInsert
      */
-    public function testBatchInsert(string $table, array $columns, iterable $rows, string $expected): void
-    {
-        parent::testBatchInsert($table, $columns, $rows, $expected);
+    public function testBatchInsert(
+        string $table,
+        array $columns,
+        iterable $rows,
+        string $expected,
+        array $expectedParams = [],
+    ): void {
+        parent::testBatchInsert($table, $columns, $rows, $expected, $expectedParams);
     }
 
     /**
