@@ -223,15 +223,14 @@ final class ColumnSchema extends AbstractColumnSchema
         }
 
         $fields = [];
-        $columns = $this->columns;
-        $columnNames = array_keys($columns);
+        $columnNames = array_keys($this->columns);
 
         /** @psalm-var int|string $columnName */
         foreach ($value as $columnName => $item) {
             $columnName = $columnNames[$columnName] ?? $columnName;
 
-            if (isset($columns[$columnName])) {
-                $item = $columns[$columnName]->phpTypecast($item);
+            if (isset($this->columns[$columnName])) {
+                $item = $this->columns[$columnName]->phpTypecast($item);
             }
 
             $fields[$columnName] = $item;
