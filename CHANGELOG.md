@@ -4,6 +4,7 @@
 
 - Bug #316, #6: Support table view constraints (@Tigrov)
 - Enh #324: Change property `Schema::$typeMap` to constant `Schema::TYPE_MAP` (@Tigrov)
+- Enh #303: Support composite types (@Tigrov)
 
 ## 1.2.0 November 12, 2023
 
@@ -26,7 +27,7 @@
 - Enh #294: Refactoring of `Schema::normalizeDefaultValue()` method (@Tigrov)
 - Bug #287: Fix `bit` type (@Tigrov)
 - Bug #295: Fix multiline and single quote in default string value, add support for PostgreSQL 9.4 parentheses around negative numeric default values (@Tigrov)
-- Bug #296: Prevent posible issues with array default values `('{one,two}'::text[])::varchar[]`, remove `ArrayParser::parseString()` (@Tigrov)
+- Bug #296: Prevent possible issues with array default values `('{one,two}'::text[])::varchar[]`, remove `ArrayParser::parseString()` (@Tigrov)
 
 ## 1.0.0 April 12, 2023
 
