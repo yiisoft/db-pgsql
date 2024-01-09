@@ -85,15 +85,19 @@ final class Schema extends AbstractPdoSchema
      * Define the abstract column type as `bit`.
      */
     public const TYPE_BIT = 'bit';
+    /**
+     * Define the abstract column type as `composite`.
+     */
+    public const TYPE_COMPOSITE = 'composite';
 
     /**
-     * @var array The mapping from physical column types (keys) to abstract column types (values).
+     * The mapping from physical column types (keys) to abstract column types (values).
      *
-     * @link https://www.postgresql.org/docs/current/static/datatype.html#DATATYPE-TABLE
+     * @link https://www.postgresql.org/docs/current/datatype.html#DATATYPE-TABLE
      *
-     * @psalm-var string[]
+     * @var string[]
      */
-    private array $typeMap = [
+    private const TYPE_MAP = [
         'bit' => self::TYPE_BIT,
         'bit varying' => self::TYPE_BIT,
         'varbit' => self::TYPE_BIT,
@@ -365,8 +369,15 @@ final class Schema extends AbstractPdoSchema
         FROM "pg_class" AS "tc"
         INNER JOIN "pg_namespace" AS "tcns"
             ON "tcns"."oid" = "tc"."relnamespace"
+        LEFT JOIN pg_rewrite AS rw
+            ON tc.relkind = 'v' AND rw.ev_class = tc.oid AND rw.rulename = '_RETURN'
         INNER JOIN "pg_index" AS "i"
             ON "i"."indrelid" = "tc"."oid"
+                OR rw.ev_action IS NOT NULL
+                AND (SELECT regexp_matches(
+                    rw.ev_action,
+                    '{TARGETENTRY .*? :resorigtbl ' || "i"."indrelid" || ' :resorigcol ' || "i"."indkey"[0] || ' '
+                )) IS NOT NULL
         INNER JOIN "pg_class" AS "ic"
             ON "ic"."oid" = "i"."indexrelid"
         INNER JOIN "pg_attribute" AS "ia"
@@ -711,7 +722,7 @@ final class Schema extends AbstractPdoSchema
                 COALESCE(td.oid, tb.oid, a.atttypid),
                 information_schema._pg_truetypmod(a, t)
             ) AS size,
-            a.attnum = any (ct.conkey) as is_pkey,
+            ct.oid IS NOT NULL AS is_pkey,
             COALESCE(NULLIF(a.attndims, 0), NULLIF(t.typndims, 0), (t.typcategory='A')::int) AS dimension
         FROM
             pg_class c
@@ -722,7 +733,12 @@ final class Schema extends AbstractPdoSchema
                                         OR t.typbasetype > 0 AND t.typbasetype = tb.oid
             LEFT JOIN pg_type td ON t.typndims > 0 AND t.typbasetype > 0 AND tb.typelem = td.oid
             LEFT JOIN pg_namespace d ON d.oid = c.relnamespace
-            LEFT JOIN pg_constraint ct ON ct.conrelid = c.oid AND ct.contype = 'p'
+            LEFT JOIN pg_rewrite rw ON c.relkind = 'v' AND rw.ev_class = c.oid AND rw.rulename = '_RETURN'
+            LEFT JOIN pg_constraint ct ON ct.conrelid = c.oid AND ct.contype = 'p' AND a.attnum = ANY (ct.conkey)
+                OR rw.ev_action IS NOT NULL AND ct.contype = 'p'
+                AND (ARRAY(
+                    SELECT regexp_matches(rw.ev_action, '{TARGETENTRY .*? :resorigtbl (\d+) :resorigcol (\d+) ', 'g')
+                ))[a.attnum:a.attnum] <@ (ct.conrelid::text || ct.conkey::text[])
         WHERE
             a.attnum > 0 AND t.typname != '' AND NOT a.attisdropped
             AND c.relname = :tableName
@@ -807,9 +823,29 @@ final class Schema extends AbstractPdoSchema
             $column->sequenceName($this->resolveTableName($info['sequence_name'])->getFullName());
         }
 
-        $column->type($this->typeMap[(string) $column->getDbType()] ?? self::TYPE_STRING);
+        if ($info['type_type'] === 'c') {
+            $column->type(self::TYPE_COMPOSITE);
+            $composite = $this->resolveTableName((string) $column->getDbType());
+
+            if ($this->findColumns($composite)) {
+                $column->columns($composite->getColumns());
+            }
+        } else {
+            $column->type(self::TYPE_MAP[(string) $column->getDbType()] ?? self::TYPE_STRING);
+        }
+
         $column->phpType($this->getColumnPhpType($column));
         $column->defaultValue($this->normalizeDefaultValue($defaultValue, $column));
+
+        if ($column->getType() === self::TYPE_COMPOSITE && $column->getDimension() === 0) {
+            /** @psalm-var array|null $defaultValue */
+            $defaultValue = $column->getDefaultValue();
+            if (is_array($defaultValue)) {
+                foreach ($column->getColumns() as $compositeColumnName => $compositeColumn) {
+                    $compositeColumn->defaultValue($defaultValue[$compositeColumnName] ?? null);
+                }
+            }
+        }
 
         return $column;
     }
@@ -823,11 +859,11 @@ final class Schema extends AbstractPdoSchema
      */
     protected function getColumnPhpType(ColumnSchemaInterface $column): string
     {
-        if ($column->getType() === self::TYPE_BIT) {
-            return self::PHP_TYPE_INTEGER;
-        }
-
-        return parent::getColumnPhpType($column);
+        return match ($column->getType()) {
+            self::TYPE_BIT => self::PHP_TYPE_INTEGER,
+            self::TYPE_COMPOSITE => self::PHP_TYPE_ARRAY,
+            default => parent::getColumnPhpType($column),
+        };
     }
 
     /**
@@ -903,10 +939,16 @@ final class Schema extends AbstractPdoSchema
         FROM "pg_class" AS "tc"
         INNER JOIN "pg_namespace" AS "tcns"
             ON "tcns"."oid" = "tc"."relnamespace"
-        INNER JOIN "pg_constraint" AS "c"
-            ON "c"."conrelid" = "tc"."oid"
         INNER JOIN "pg_attribute" AS "a"
-            ON "a"."attrelid" = "c"."conrelid" AND "a"."attnum" = ANY ("c"."conkey")
+            ON "a"."attrelid" = "tc"."oid"
+        LEFT JOIN pg_rewrite AS rw
+            ON "tc"."relkind" = 'v' AND "rw"."ev_class" = "tc"."oid" AND "rw"."rulename" = '_RETURN'
+        INNER JOIN "pg_constraint" AS "c"
+            ON "c"."conrelid" = "tc"."oid" AND "a"."attnum" = ANY ("c"."conkey")
+                OR "rw"."ev_action" IS NOT NULL AND "c"."conrelid" != 0
+                AND (ARRAY(
+                    SELECT regexp_matches("rw"."ev_action", '{TARGETENTRY .*? :resorigtbl (\d+) :resorigcol (\d+) ', 'g')
+                ))["a"."attnum":"a"."attnum"] <@ ("c"."conrelid"::text || "c"."conkey"::text[])
         LEFT JOIN "pg_class" AS "ftc"
             ON "ftc"."oid" = "c"."confrelid"
         LEFT JOIN "pg_namespace" AS "ftcns"

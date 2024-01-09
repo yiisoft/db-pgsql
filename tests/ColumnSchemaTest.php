@@ -197,4 +197,96 @@ final class ColumnSchemaTest extends TestCase
 
         $this->assertSame('01100100', $tableSchema->getColumn('bit_col')->dbTypecast('01100100'));
     }
+
+    public function testPrimaryKeyOfView()
+    {
+        $db = $this->getConnection(true);
+        $schema = $db->getSchema();
+        $tableSchema = $schema->getTableSchema('T_constraints_2_view');
+
+        $this->assertSame(['C_id_1', 'C_id_2'], $tableSchema->getPrimaryKey());
+        $this->assertTrue($tableSchema->getColumn('C_id_1')->isPrimaryKey());
+        $this->assertTrue($tableSchema->getColumn('C_id_2')->isPrimaryKey());
+        $this->assertFalse($tableSchema->getColumn('C_index_1')->isPrimaryKey());
+        $this->assertFalse($tableSchema->getColumn('C_index_2_1')->isPrimaryKey());
+        $this->assertFalse($tableSchema->getColumn('C_index_2_2')->isPrimaryKey());
+    }
+
+    public function testCompositeType(): void
+    {
+        $db = $this->getConnection(true);
+        $command = $db->createCommand();
+        $schema = $db->getSchema();
+        $tableSchema = $schema->getTableSchema('test_composite_type');
+
+        $command->insert('test_composite_type', [
+            'price_col' => ['value' => 10.0, 'currency_code' => 'USD'],
+            'price_array' => [
+                null,
+                ['value' => 11.11, 'currency_code' => 'USD'],
+                ['value' => null, 'currency_code' => null],
+            ],
+            'price_array2' => [[
+                ['value' => 123.45, 'currency_code' => 'USD'],
+            ]],
+            'range_price_col' => [
+                'price_from' => ['value' => 1000.0, 'currency_code' => 'USD'],
+                'price_to' => ['value' => 2000.0, 'currency_code' => 'USD'],
+            ],
+        ])->execute();
+
+        $query = (new Query($db))->from('test_composite_type')->one();
+
+        $priceColPhpType = $tableSchema->getColumn('price_col')->phpTypecast($query['price_col']);
+        $priceDefaultPhpType = $tableSchema->getColumn('price_default')->phpTypecast($query['price_default']);
+        $priceArrayPhpType = $tableSchema->getColumn('price_array')->phpTypecast($query['price_array']);
+        $priceArray2PhpType = $tableSchema->getColumn('price_array2')->phpTypecast($query['price_array2']);
+        $rangePriceColPhpType = $tableSchema->getColumn('range_price_col')->phpTypecast($query['range_price_col']);
+
+        $this->assertSame(['value' => 10.0, 'currency_code' => 'USD'], $priceColPhpType);
+        $this->assertSame(['value' => 5.0, 'currency_code' => 'USD'], $priceDefaultPhpType);
+        $this->assertSame(
+            [
+                null,
+                ['value' => 11.11, 'currency_code' => 'USD'],
+                ['value' => null, 'currency_code' => null],
+            ],
+            $priceArrayPhpType
+        );
+        $this->assertSame(
+            [[
+                ['value' => 123.45, 'currency_code' => 'USD'],
+            ]],
+            $priceArray2PhpType
+        );
+        $this->assertSame(
+            [
+                'price_from' => ['value' => 1000.0, 'currency_code' => 'USD'],
+                'price_to' => ['value' => 2000.0, 'currency_code' => 'USD'],
+            ],
+            $rangePriceColPhpType
+        );
+
+        $priceCol = $tableSchema->getColumn('price_col');
+        $this->assertNull($priceCol->phpTypecast(1), 'For scalar value returns `null`');
+
+        $priceCol->columns([]);
+        $this->assertSame([5, 'USD'], $priceCol->phpTypecast([5, 'USD']), 'No type casting for empty columns');
+
+        $priceArray = $tableSchema->getColumn('price_array');
+        $this->assertEquals(
+            new ArrayExpression([], 'currency_money_composite', 1),
+            $priceArray->dbTypecast(1),
+            'For scalar value returns empty array'
+        );
+
+        $priceArray2 = $tableSchema->getColumn('price_array2');
+        $this->assertEquals(
+            new ArrayExpression([null, null], 'currency_money_composite', 2),
+            $priceArray2->dbTypecast([null, null]),
+            'Double array of null values'
+        );
+
+        $db->close();
+    }
 }
