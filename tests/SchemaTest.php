@@ -361,6 +361,7 @@ final class SchemaTest extends CommonSchemaTest
 
     /**
      * @dataProvider \Yiisoft\Db\Pgsql\Tests\Provider\SchemaProvider::constraints
+     * @dataProvider \Yiisoft\Db\Pgsql\Tests\Provider\SchemaProvider::constraintsOfView
      *
      * @throws Exception
      * @throws JsonException
@@ -558,11 +559,28 @@ final class SchemaTest extends CommonSchemaTest
         $db->close();
     }
 
-    /**
-     * @dataProvider \Yiisoft\Db\Pgsql\Tests\Provider\CompositeTypeProvider::columns
-     *
-     * @throws Exception
-     */
+    public function testGetViewNames(): void
+    {
+        $db = $this->getConnection(true);
+
+        $schema = $db->getSchema();
+        $views = $schema->getViewNames();
+
+        $this->assertSame(
+            [
+                'T_constraints_1_view',
+                'T_constraints_2_view',
+                'T_constraints_3_view',
+                'T_constraints_4_view',
+                'animal_view',
+            ],
+            $views,
+        );
+
+        $db->close();
+    }
+
+    /** @dataProvider \Yiisoft\Db\Pgsql\Tests\Provider\CompositeTypeProvider::columns */
     public function testCompositeTypeColumnSchema(array $columns, string $tableName): void
     {
         $this->testCompositeTypeColumnSchemaRecursive($columns, $tableName);

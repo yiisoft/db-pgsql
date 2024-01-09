@@ -511,6 +511,14 @@ final class QueryBuilderProvider extends \Yiisoft\Db\Tests\Provider\QueryBuilder
             $upsert[$testName] = array_replace($upsert[$testName], $data);
         }
 
+        $upsert['table view'] = [
+            'animal_view',
+            ['id' => 3, 'type' => 'yiiunit\data\ar\Mouse'],
+            true,
+            'INSERT INTO "animal_view" ("id", "type") VALUES (:qp0, :qp1) ON CONFLICT ("id") DO UPDATE SET "type"=EXCLUDED."type"',
+            [':qp0' => 3, ':qp1' => 'yiiunit\data\ar\Mouse'],
+        ];
+
         return $upsert;
     }
 }
