@@ -40,7 +40,6 @@ final class CompositeExpressionBuilder implements ExpressionBuilderInterface
      */
     public function build(ExpressionInterface $expression, array &$params = []): string
     {
-        /** @psalm-var mixed $value */
         $value = $expression->getValue();
 
         if (empty($value)) {
@@ -74,24 +73,18 @@ final class CompositeExpressionBuilder implements ExpressionBuilderInterface
      */
     private function buildPlaceholders(CompositeExpression $expression, array &$params): array
     {
-        $placeholders = [];
-
-        /** @psalm-var mixed $value */
         $value = $expression->getNormalizedValue();
 
         if (!is_iterable($value)) {
-            return $placeholders;
+            return [];
         }
 
+        $placeholders = [];
         $columns = $expression->getColumns();
 
-        /**
-         * @psalm-var int|string $columnName
-         * @psalm-var mixed $item
-         */
+        /** @psalm-var int|string $columnName */
         foreach ($value as $columnName => $item) {
             if (isset($columns[$columnName])) {
-                /** @psalm-var mixed $item */
                 $item = $columns[$columnName]->dbTypecast($item);
             }
 
