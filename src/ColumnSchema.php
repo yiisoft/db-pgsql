@@ -167,7 +167,7 @@ final class ColumnSchema extends AbstractColumnSchema
     {
         if ($this->dimension > 0) {
             if (is_string($value)) {
-                $value = $this->getArrayParser()->parse($value);
+                $value = (new ArrayParser())->parse($value);
             }
 
             if (!is_array($value)) {
@@ -237,14 +237,6 @@ final class ColumnSchema extends AbstractColumnSchema
         }
 
         return $fields;
-    }
-
-    /**
-     * Creates instance of ArrayParser.
-     */
-    private function getArrayParser(): ArrayParser
-    {
-        return new ArrayParser();
     }
 
     /**
