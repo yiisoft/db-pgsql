@@ -5,6 +5,7 @@
 - Bug #316, #6: Support table view constraints (@Tigrov)
 - Enh #324: Change property `Schema::$typeMap` to constant `Schema::TYPE_MAP` (@Tigrov)
 - Enh #303: Support composite types (@Tigrov)
+- Enh #330: Create instance of `ArrayParser` directly (@Tigrov)
 
 ## 1.2.0 November 12, 2023
 
