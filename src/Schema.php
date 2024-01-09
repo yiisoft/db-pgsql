@@ -365,8 +365,15 @@ final class Schema extends AbstractPdoSchema
         FROM "pg_class" AS "tc"
         INNER JOIN "pg_namespace" AS "tcns"
             ON "tcns"."oid" = "tc"."relnamespace"
+        LEFT JOIN pg_rewrite AS rw
+            ON tc.relkind = 'v' AND rw.ev_class = tc.oid AND rw.rulename = '_RETURN'
         INNER JOIN "pg_index" AS "i"
             ON "i"."indrelid" = "tc"."oid"
+                OR rw.ev_action IS NOT NULL
+                AND (SELECT regexp_matches(
+                    rw.ev_action,
+                    '{TARGETENTRY .*? :resorigtbl ' || "i"."indrelid" || ' :resorigcol ' || "i"."indkey"[0] || ' '
+                )) IS NOT NULL
         INNER JOIN "pg_class" AS "ic"
             ON "ic"."oid" = "i"."indexrelid"
         INNER JOIN "pg_attribute" AS "ia"
@@ -711,7 +718,7 @@ final class Schema extends AbstractPdoSchema
                 COALESCE(td.oid, tb.oid, a.atttypid),
                 information_schema._pg_truetypmod(a, t)
             ) AS size,
-            a.attnum = any (ct.conkey) as is_pkey,
+            ct.oid IS NOT NULL AS is_pkey,
             COALESCE(NULLIF(a.attndims, 0), NULLIF(t.typndims, 0), (t.typcategory='A')::int) AS dimension
         FROM
             pg_class c
@@ -722,7 +729,12 @@ final class Schema extends AbstractPdoSchema
                                         OR t.typbasetype > 0 AND t.typbasetype = tb.oid
             LEFT JOIN pg_type td ON t.typndims > 0 AND t.typbasetype > 0 AND tb.typelem = td.oid
             LEFT JOIN pg_namespace d ON d.oid = c.relnamespace
-            LEFT JOIN pg_constraint ct ON ct.conrelid = c.oid AND ct.contype = 'p'
+            LEFT JOIN pg_rewrite rw ON c.relkind = 'v' AND rw.ev_class = c.oid AND rw.rulename = '_RETURN'
+            LEFT JOIN pg_constraint ct ON ct.conrelid = c.oid AND ct.contype = 'p' AND a.attnum = ANY (ct.conkey)
+                OR rw.ev_action IS NOT NULL AND ct.contype = 'p'
+                AND (ARRAY(
+                    SELECT regexp_matches(rw.ev_action, '{TARGETENTRY .*? :resorigtbl (\d+) :resorigcol (\d+) ', 'g')
+                ))[a.attnum:a.attnum] <@ (ct.conrelid::text || ct.conkey::text[])
         WHERE
             a.attnum > 0 AND t.typname != '' AND NOT a.attisdropped
             AND c.relname = :tableName
@@ -903,10 +915,16 @@ final class Schema extends AbstractPdoSchema
         FROM "pg_class" AS "tc"
         INNER JOIN "pg_namespace" AS "tcns"
             ON "tcns"."oid" = "tc"."relnamespace"
-        INNER JOIN "pg_constraint" AS "c"
-            ON "c"."conrelid" = "tc"."oid"
         INNER JOIN "pg_attribute" AS "a"
-            ON "a"."attrelid" = "c"."conrelid" AND "a"."attnum" = ANY ("c"."conkey")
+            ON "a"."attrelid" = "tc"."oid"
+        LEFT JOIN pg_rewrite AS rw
+            ON "tc"."relkind" = 'v' AND "rw"."ev_class" = "tc"."oid" AND "rw"."rulename" = '_RETURN'
+        INNER JOIN "pg_constraint" AS "c"
+            ON "c"."conrelid" = "tc"."oid" AND "a"."attnum" = ANY ("c"."conkey")
+                OR "rw"."ev_action" IS NOT NULL AND "c"."conrelid" != 0
+                AND (ARRAY(
+                    SELECT regexp_matches("rw"."ev_action", '{TARGETENTRY .*? :resorigtbl (\d+) :resorigcol (\d+) ', 'g')
+                ))["a"."attnum":"a"."attnum"] <@ ("c"."conrelid"::text || "c"."conkey"::text[])
         LEFT JOIN "pg_class" AS "ftc"
             ON "ftc"."oid" = "c"."confrelid"
         LEFT JOIN "pg_namespace" AS "ftcns"

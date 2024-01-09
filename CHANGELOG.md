@@ -2,6 +2,7 @@
 
 ## 1.2.1 under development
 
+- Bug #316, #6: Support table view constraints (@Tigrov)
 - Enh #324: Change property `Schema::$typeMap` to constant `Schema::TYPE_MAP` (@Tigrov)
 
 ## 1.2.0 November 12, 2023

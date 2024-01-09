@@ -447,6 +447,17 @@ final class SchemaProvider extends \Yiisoft\Db\Tests\Provider\SchemaProvider
         return $constraints;
     }
 
+    public static function constraintsOfView(): array
+    {
+        $constraints = self::constraints();
+
+        foreach ($constraints as $key => $constraint) {
+            $constraints[$key][0] = $constraint[0] . '_view';
+        }
+
+        return $constraints;
+    }
+
     public static function tableSchemaCacheWithTablePrefixes(): array
     {
         $configs = [
