@@ -581,6 +581,32 @@ final class SchemaTest extends CommonSchemaTest
         $db->close();
     }
 
+    /** @dataProvider \Yiisoft\Db\Pgsql\Tests\Provider\CompositeTypeProvider::columns */
+    public function testCompositeTypeColumnSchema(array $columns, string $tableName): void
+    {
+        $this->testCompositeTypeColumnSchemaRecursive($columns, $tableName);
+    }
+
+    private function testCompositeTypeColumnSchemaRecursive(array $columns, string $tableName): void
+    {
+        $this->columnSchema($columns, $tableName);
+
+        $db = $this->getConnection(true);
+        $table = $db->getTableSchema($tableName, true);
+
+        foreach ($table->getColumns() as $name => $column) {
+            if ($column->getType() === 'composite') {
+                $this->assertTrue(
+                    isset($columns[$name]['columns']),
+                    "Columns of composite type `$name` do not exist, dbType is `{$column->getDbType()}`."
+                );
+                $this->testCompositeTypeColumnSchemaRecursive($columns[$name]['columns'], $column->getDbType());
+            }
+        }
+
+        $db->close();
+    }
+
     public function testTableIndexes(): void
     {
         $db = $this->getConnection(true);

@@ -85,6 +85,10 @@ final class Schema extends AbstractPdoSchema
      * Define the abstract column type as `bit`.
      */
     public const TYPE_BIT = 'bit';
+    /**
+     * Define the abstract column type as `composite`.
+     */
+    public const TYPE_COMPOSITE = 'composite';
 
     /**
      * The mapping from physical column types (keys) to abstract column types (values).
@@ -819,9 +823,29 @@ final class Schema extends AbstractPdoSchema
             $column->sequenceName($this->resolveTableName($info['sequence_name'])->getFullName());
         }
 
-        $column->type(self::TYPE_MAP[(string) $column->getDbType()] ?? self::TYPE_STRING);
+        if ($info['type_type'] === 'c') {
+            $column->type(self::TYPE_COMPOSITE);
+            $composite = $this->resolveTableName((string) $column->getDbType());
+
+            if ($this->findColumns($composite)) {
+                $column->columns($composite->getColumns());
+            }
+        } else {
+            $column->type(self::TYPE_MAP[(string) $column->getDbType()] ?? self::TYPE_STRING);
+        }
+
         $column->phpType($this->getColumnPhpType($column));
         $column->defaultValue($this->normalizeDefaultValue($defaultValue, $column));
+
+        if ($column->getType() === self::TYPE_COMPOSITE && $column->getDimension() === 0) {
+            /** @psalm-var array|null $defaultValue */
+            $defaultValue = $column->getDefaultValue();
+            if (is_array($defaultValue)) {
+                foreach ($column->getColumns() as $compositeColumnName => $compositeColumn) {
+                    $compositeColumn->defaultValue($defaultValue[$compositeColumnName] ?? null);
+                }
+            }
+        }
 
         return $column;
     }
@@ -835,11 +859,11 @@ final class Schema extends AbstractPdoSchema
      */
     protected function getColumnPhpType(ColumnSchemaInterface $column): string
     {
-        if ($column->getType() === self::TYPE_BIT) {
-            return self::PHP_TYPE_INTEGER;
-        }
-
-        return parent::getColumnPhpType($column);
+        return match ($column->getType()) {
+            self::TYPE_BIT => self::PHP_TYPE_INTEGER,
+            self::TYPE_COMPOSITE => self::PHP_TYPE_ARRAY,
+            default => parent::getColumnPhpType($column),
+        };
     }
 
     /**
