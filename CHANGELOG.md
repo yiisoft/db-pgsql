@@ -6,6 +6,7 @@
 - Enh #324: Change property `Schema::$typeMap` to constant `Schema::TYPE_MAP` (@Tigrov)
 - Enh #303: Support composite types (@Tigrov)
 - Enh #330: Create instance of `ArrayParser` directly (@Tigrov)
+- Bug #331: Exclude from index column names fields specified in `INCLUDE` clause (@Tigrov)
 
 ## 1.2.0 November 12, 2023
 
