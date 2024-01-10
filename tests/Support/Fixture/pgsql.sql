@@ -39,7 +39,6 @@ DROP TABLE IF EXISTS "T_upsert";
 DROP TABLE IF EXISTS "T_upsert_1";
 DROP TABLE IF EXISTS "table_with_array_col";
 DROP TABLE IF EXISTS "table_uuid";
-DROP TABLE IF EXISTS "table_index";
 
 DROP SCHEMA IF EXISTS "schema1" CASCADE;
 DROP SCHEMA IF EXISTS "schema2" CASCADE;
@@ -488,16 +487,3 @@ CREATE TABLE "test_composite_type"
     "price_array2" "currency_money_composite"[][],
     "range_price_col" "range_price_composite" DEFAULT '("(0,USD)","(100,USD)")'
 );
-
-CREATE TABLE "table_index" (
-    "id" serial PRIMARY KEY,
-    "one_unique" integer UNIQUE,
-    "two_unique_1" integer,
-    "two_unique_2" integer,
-    "unique_index" integer,
-    "non_unique_index" integer,
-    UNIQUE ("two_unique_1", "two_unique_2")
-);
-
-CREATE UNIQUE INDEX ON "table_index" ("unique_index") INCLUDE ("non_unique_index");
-CREATE INDEX ON "table_index" ("non_unique_index") INCLUDE ("unique_index");

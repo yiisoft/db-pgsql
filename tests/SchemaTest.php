@@ -609,6 +609,12 @@ final class SchemaTest extends CommonSchemaTest
 
     public function testTableIndexes(): void
     {
+        $this->fixture = 'pgsql11.sql';
+
+        if (version_compare($this->getConnection()->getServerVersion(), '11.0', '<')) {
+            $this->markTestSkipped('PostgresSQL < 11.0 does not support INCLUDE clause.');
+        }
+
         $db = $this->getConnection(true);
         $schema = $db->getSchema();
 
