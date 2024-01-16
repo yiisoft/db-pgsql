@@ -8,6 +8,7 @@ use JsonException;
 use Throwable;
 use Yiisoft\Db\Command\CommandInterface;
 use Yiisoft\Db\Connection\ConnectionInterface;
+use Yiisoft\Db\Constraint\IndexConstraint;
 use Yiisoft\Db\Driver\Pdo\PdoConnectionInterface;
 use Yiisoft\Db\Exception\Exception;
 use Yiisoft\Db\Exception\InvalidConfigException;
@@ -604,5 +605,42 @@ final class SchemaTest extends CommonSchemaTest
         }
 
         $db->close();
+    }
+
+    public function testTableIndexes(): void
+    {
+        $this->fixture = 'pgsql11.sql';
+
+        if (version_compare($this->getConnection()->getServerVersion(), '11.0', '<')) {
+            $this->markTestSkipped('PostgresSQL < 11.0 does not support INCLUDE clause.');
+        }
+
+        $db = $this->getConnection(true);
+        $schema = $db->getSchema();
+
+        /** @var IndexConstraint[] $tableIndexes */
+        $tableIndexes = $schema->getTableIndexes('table_index');
+
+        $this->assertCount(5, $tableIndexes);
+
+        $this->assertSame(['id'], $tableIndexes[0]->getColumnNames());
+        $this->assertTrue($tableIndexes[0]->isPrimary());
+        $this->assertTrue($tableIndexes[0]->isUnique());
+
+        $this->assertSame(['one_unique'], $tableIndexes[1]->getColumnNames());
+        $this->assertFalse($tableIndexes[1]->isPrimary());
+        $this->assertTrue($tableIndexes[1]->isUnique());
+
+        $this->assertSame(['two_unique_1', 'two_unique_2'], $tableIndexes[2]->getColumnNames());
+        $this->assertFalse($tableIndexes[2]->isPrimary());
+        $this->assertTrue($tableIndexes[2]->isUnique());
+
+        $this->assertSame(['unique_index'], $tableIndexes[3]->getColumnNames());
+        $this->assertFalse($tableIndexes[3]->isPrimary());
+        $this->assertTrue($tableIndexes[3]->isUnique());
+
+        $this->assertSame(['non_unique_index'], $tableIndexes[4]->getColumnNames());
+        $this->assertFalse($tableIndexes[4]->isPrimary());
+        $this->assertFalse($tableIndexes[4]->isUnique());
     }
 }
