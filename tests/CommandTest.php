@@ -4,14 +4,17 @@ declare(strict_types=1);
 
 namespace Yiisoft\Db\Pgsql\Tests;
 
+use InvalidArgumentException;
+use LogicException;
 use Throwable;
 use Yiisoft\Db\Exception\Exception;
 use Yiisoft\Db\Exception\InvalidConfigException;
 use Yiisoft\Db\Exception\NotSupportedException;
 use Yiisoft\Db\Expression\JsonExpression;
+use Yiisoft\Db\Pgsql\Command;
 use Yiisoft\Db\Pgsql\Connection;
-use Yiisoft\Db\Pgsql\Dsn;
 use Yiisoft\Db\Pgsql\Driver;
+use Yiisoft\Db\Pgsql\Dsn;
 use Yiisoft\Db\Pgsql\Tests\Support\TestTrait;
 use Yiisoft\Db\Tests\Common\CommonCommandTest;
 use Yiisoft\Db\Tests\Support\DbHelper;
@@ -329,5 +332,77 @@ final class CommandTest extends CommonCommandTest
 
         $this->assertSame('pgsql:host=127.0.0.1;dbname=postgres;port=5432', $db->getDriver()->getDsn());
         $this->assertSame(['yiitest'], $command->showDatabases());
+    }
+
+    public function testRefreshMaterializesView(): void
+    {
+        $db = $this->getConnection(true);
+        /** @var Command $command */
+        $command = $db->createCommand();
+
+        $this->assertTrue($command->refreshMaterializedView('mat_view_without_unique'));
+        $this->assertTrue($command->refreshMaterializedView('mat_view_without_unique', false, true));
+        $this->assertTrue($command->refreshMaterializedView('mat_view_without_unique', false, true));
+    }
+
+    public static function materializedViewExceptionsDataProvider(): array
+    {
+        return [
+            [
+                'mat_view_without_unique',
+                true,
+                null,
+                LogicException::class,
+                'CONCURRENTLY refresh is not allowed without unique index.'
+            ],
+
+            [
+                'mat_view_with_unique',
+                true,
+                false,
+                LogicException::class,
+                'CONCURRENTLY and WITH NO DATA may not be specified together.'
+            ],
+
+            [
+                'mat_view_with_unique',
+                null,
+                false,
+                LogicException::class,
+                'CONCURRENTLY and WITH NO DATA may not be specified together.'
+            ],
+
+            [
+                'not_exists_mat_view',
+                null,
+                null,
+                InvalidArgumentException::class,
+                '"not_exists_mat_view" not found in DB'
+            ]
+        ];
+    }
+
+    /**
+     * @dataProvider materializedViewExceptionsDataProvider
+     * @param string $viewName
+     * @param bool|null $concurrently
+     * @param bool|null $withData
+     * @param string $exception
+     * @param string $message
+     * @return void
+     * @throws Exception
+     * @throws InvalidConfigException
+     */
+    public function testRefreshMaterializesViewExceptions(string $viewName, ?bool $concurrently, ?bool $withData, string $exception, string $message): void
+    {
+        $db = $this->getConnection(true);
+
+        /** @var Command $command */
+        $command = $db->createCommand();
+
+        $this->expectException($exception);
+        $this->expectExceptionMessage($message);
+
+        $command->refreshMaterializedView($viewName, $concurrently, $withData);
     }
 }
