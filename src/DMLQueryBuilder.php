@@ -22,7 +22,6 @@ final class DMLQueryBuilder extends AbstractDMLQueryBuilder
         $sql = $this->insert($table, $columns, $params);
         $returnColumns = $this->schema->getTableSchema($table)?->getPrimaryKey();
 
-        /** @psalm-suppress RiskyTruthyFalsyComparison */
         if (!empty($returnColumns)) {
             $returnColumns = array_map(
                 [$this->quoter, 'quoteColumnName'],
