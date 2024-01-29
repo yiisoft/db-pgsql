@@ -55,12 +55,12 @@ final class DDLQueryBuilder extends AbstractDDLQueryBuilder
 
         $type = preg_replace('/\s+NOT\s+NULL/i', '', $type, -1, $count);
 
-        if ($count) {
+        if ($count > 0) {
             $multiAlterStatement[] = "ALTER COLUMN $columnName SET NOT NULL";
         } else {
             /** remove extra null if any */
             $type = preg_replace('/\s+NULL/i', '', $type, -1, $count);
-            if ($count) {
+            if ($count > 0) {
                 $multiAlterStatement[] = "ALTER COLUMN $columnName DROP NOT NULL";
             }
         }
@@ -72,7 +72,7 @@ final class DDLQueryBuilder extends AbstractDDLQueryBuilder
 
         $type = preg_replace('/\s+UNIQUE/i', '', $type, -1, $count);
 
-        if ($count) {
+        if ($count > 0) {
             $multiAlterStatement[] = "ADD UNIQUE ($columnName)";
         }
 
@@ -113,7 +113,7 @@ final class DDLQueryBuilder extends AbstractDDLQueryBuilder
 
     public function createIndex(string $table, string $name, array|string $columns, ?string $indexType = null, ?string $indexMethod = null): string
     {
-        return 'CREATE ' . ($indexType ? ($indexType . ' ') : '') . 'INDEX '
+        return 'CREATE ' . ($indexType !== null ? "$indexType " : '') . 'INDEX '
             . $this->quoter->quoteTableName($name) . ' ON '
             . $this->quoter->quoteTableName($table)
             . ($indexMethod !== null ? " USING $indexMethod" : '')

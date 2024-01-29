@@ -23,7 +23,7 @@ final class Dsn extends AbstractDsn
         string $port = '5432',
         array $options = []
     ) {
-        if (empty($databaseName)) {
+        if ($databaseName === null) {
             $databaseName = 'postgres';
         }
 
