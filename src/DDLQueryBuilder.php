@@ -113,7 +113,7 @@ final class DDLQueryBuilder extends AbstractDDLQueryBuilder
 
     public function createIndex(string $table, string $name, array|string $columns, ?string $indexType = null, ?string $indexMethod = null): string
     {
-        return 'CREATE ' . ($indexType !== null ? "$indexType " : '') . 'INDEX '
+        return 'CREATE ' . ($indexType !== null ? $indexType . ' ' : '') . 'INDEX '
             . $this->quoter->quoteTableName($name) . ' ON '
             . $this->quoter->quoteTableName($table)
             . ($indexMethod !== null ? " USING $indexMethod" : '')
