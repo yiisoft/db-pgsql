@@ -977,7 +977,7 @@ final class Schema extends AbstractPdoSchema
         ])->queryAll();
 
         /** @psalm-var array[][] $constraints */
-        $constraints = array_change_key_case($constraints);
+        $constraints = array_map('array_change_key_case', $constraints);
         $constraints = DbArrayHelper::index($constraints, null, ['type', 'name']);
 
         $result = [
