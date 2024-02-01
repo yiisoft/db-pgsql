@@ -520,12 +520,12 @@ final class SchemaTest extends CommonSchemaTest
     public function testNotConnectionPDO(): void
     {
         $db = $this->createMock(ConnectionInterface::class);
-        $schema = new Schema($db, DbHelper::getSchemaCache(), 'system');
+        $schema = new Schema($db, DbHelper::getSchemaCache());
 
         $this->expectException(NotSupportedException::class);
         $this->expectExceptionMessage('Only PDO connections are supported.');
 
-        $schema->refreshTableSchema('customer');
+        $schema->refresh();
     }
 
     public function testDomainType(): void
