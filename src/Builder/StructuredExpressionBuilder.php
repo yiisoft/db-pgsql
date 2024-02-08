@@ -10,16 +10,16 @@ use Yiisoft\Db\Exception\InvalidConfigException;
 use Yiisoft\Db\Exception\NotSupportedException;
 use Yiisoft\Db\Expression\ExpressionBuilderInterface;
 use Yiisoft\Db\Expression\ExpressionInterface;
-use Yiisoft\Db\Pgsql\Composite\CompositeExpression;
+use Yiisoft\Db\Pgsql\Structured\StructuredExpression;
 use Yiisoft\Db\Query\QueryInterface;
 use Yiisoft\Db\QueryBuilder\QueryBuilderInterface;
 
 use function implode;
 
 /**
- * Builds expressions for {@see CompositeExpression} for PostgreSQL Server.
+ * Builds expressions for {@see StructuredExpression} for PostgreSQL Server.
  */
-final class CompositeExpressionBuilder implements ExpressionBuilderInterface
+final class StructuredExpressionBuilder implements ExpressionBuilderInterface
 {
     public function __construct(private QueryBuilderInterface $queryBuilder)
     {
@@ -28,7 +28,7 @@ final class CompositeExpressionBuilder implements ExpressionBuilderInterface
     /**
      * The method builds the raw SQL from the expression that won't be additionally escaped or quoted.
      *
-     * @param CompositeExpression $expression The expression build.
+     * @param StructuredExpression $expression The expression build.
      * @param array $params The binding parameters.
      *
      * @throws Exception
@@ -71,7 +71,7 @@ final class CompositeExpressionBuilder implements ExpressionBuilderInterface
      * @throws InvalidConfigException
      * @throws NotSupportedException
      */
-    private function buildPlaceholders(CompositeExpression $expression, array &$params): array
+    private function buildPlaceholders(StructuredExpression $expression, array &$params): array
     {
         $value = $expression->getNormalizedValue();
 
@@ -101,7 +101,7 @@ final class CompositeExpressionBuilder implements ExpressionBuilderInterface
     /**
      * @return string The typecast expression based on {@see type}.
      */
-    private function getTypeHint(CompositeExpression $expression): string
+    private function getTypeHint(StructuredExpression $expression): string
     {
         $type = $expression->getType();
 

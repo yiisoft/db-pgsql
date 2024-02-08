@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace Yiisoft\Db\Pgsql\Composite;
+namespace Yiisoft\Db\Pgsql\Structured;
 
 /**
- * Composite type representation to PHP array parser for PostgreSQL Server.
+ * Structured type representation to PHP array parser for PostgreSQL Server.
  */
-final class CompositeParser
+final class StructuredParser
 {
     /**
-     * Converts composite type value from PostgreSQL to PHP array
+     * Converts structured (composite) type value from PostgreSQL to PHP array
      *
      * @param string $value String to convert.
      */

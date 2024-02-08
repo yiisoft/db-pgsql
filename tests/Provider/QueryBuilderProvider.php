@@ -7,7 +7,7 @@ namespace Yiisoft\Db\Pgsql\Tests\Provider;
 use Yiisoft\Db\Expression\ArrayExpression;
 use Yiisoft\Db\Expression\Expression;
 use Yiisoft\Db\Expression\JsonExpression;
-use Yiisoft\Db\Pgsql\Composite\CompositeExpression;
+use Yiisoft\Db\Pgsql\Structured\StructuredExpression;
 use Yiisoft\Db\Pgsql\Tests\Support\ColumnSchemaBuilder;
 use Yiisoft\Db\Pgsql\Tests\Support\TestTrait;
 use Yiisoft\Db\Query\Query;
@@ -253,59 +253,59 @@ final class QueryBuilderProvider extends \Yiisoft\Db\Tests\Provider\QueryBuilder
                 [['<=', 'id', new ArrayExpression([1])], '"id" <= ARRAY[:qp0]', [':qp0' => 1]],
                 [['&&', 'id', new ArrayExpression([1])], '"id" && ARRAY[:qp0]', [':qp0' => 1]],
 
-                /* composite conditions */
-                'composite without type' => [
-                    ['=', 'price_col', new CompositeExpression(['value' => 10, 'currency_code' => 'USD'])],
+                /* structured conditions */
+                'structured without type' => [
+                    ['=', 'price_col', new StructuredExpression(['value' => 10, 'currency_code' => 'USD'])],
                     '[[price_col]] = ROW(:qp0, :qp1)',
                     [':qp0' => 10, ':qp1' => 'USD'],
                 ],
-                'composite with type' => [
-                    ['=', 'price_col', new CompositeExpression(['value' => 10, 'currency_code' => 'USD'], 'currency_money_composite')],
-                    '[[price_col]] = ROW(:qp0, :qp1)::currency_money_composite',
+                'structured with type' => [
+                    ['=', 'price_col', new StructuredExpression(['value' => 10, 'currency_code' => 'USD'], 'currency_money_structured')],
+                    '[[price_col]] = ROW(:qp0, :qp1)::currency_money_structured',
                     [':qp0' => 10, ':qp1' => 'USD'],
                 ],
-                'composite with columns' => [
-                    ['=', 'price_col', new CompositeExpression(['value' => 10, 'currency_code' => 'USD'], 'currency_money_composite', $priceColumns)],
-                    '[[price_col]] = ROW(:qp0, :qp1)::currency_money_composite',
+                'structured with columns' => [
+                    ['=', 'price_col', new StructuredExpression(['value' => 10, 'currency_code' => 'USD'], 'currency_money_structured', $priceColumns)],
+                    '[[price_col]] = ROW(:qp0, :qp1)::currency_money_structured',
                     [':qp0' => 10.0, ':qp1' => 'USD'],
                 ],
-                'scalar can not be converted to composite' => [['=', 'price_col', new CompositeExpression(1)], '"price_col" = NULL', []],
-                'array of composite' => [
+                'scalar can not be converted to structured' => [['=', 'price_col', new StructuredExpression(1)], '"price_col" = NULL', []],
+                'array of structured' => [
                     ['=', 'price_array', new ArrayExpression(
                         [
                             null,
-                            new CompositeExpression(['value' => 11.11, 'currency_code' => 'USD']),
-                            new CompositeExpression(['value' => null, 'currency_code' => null]),
+                            new StructuredExpression(['value' => 11.11, 'currency_code' => 'USD']),
+                            new StructuredExpression(['value' => null, 'currency_code' => null]),
                         ]
                     )],
                     '"price_array" = ARRAY[:qp0, ROW(:qp1, :qp2), ROW(:qp3, :qp4)]',
                     [':qp0' => null, ':qp1' => 11.11, ':qp2' => 'USD', ':qp3' => null, ':qp4' => null],
                 ],
-                'composite null value' => [['=', 'price_col', new CompositeExpression(null)], '"price_col" = NULL', []],
-                'composite null values' => [
-                    ['=', 'price_col', new CompositeExpression([null, null])], '"price_col" = ROW(:qp0, :qp1)', [':qp0' => null, ':qp1' => null],
+                'structured null value' => [['=', 'price_col', new StructuredExpression(null)], '"price_col" = NULL', []],
+                'structured null values' => [
+                    ['=', 'price_col', new StructuredExpression([null, null])], '"price_col" = ROW(:qp0, :qp1)', [':qp0' => null, ':qp1' => null],
                 ],
-                'composite query' => [
-                    ['=', 'price_col', new CompositeExpression(
+                'structured query' => [
+                    ['=', 'price_col', new StructuredExpression(
                         (new Query(self::getDb()))->select('price')->from('product')->where(['id' => 1])
                     )],
                     '[[price_col]] = (SELECT [[price]] FROM [[product]] WHERE [[id]]=:qp0)',
                     [':qp0' => 1],
                 ],
-                'composite query with type' => [
+                'structured query with type' => [
                     [
                         '=',
                         'price_col',
-                        new CompositeExpression(
+                        new StructuredExpression(
                             (new Query(self::getDb()))->select('price')->from('product')->where(['id' => 1]),
-                            'currency_money_composite'
+                            'currency_money_structured'
                         ),
                     ],
-                    '[[price_col]] = (SELECT [[price]] FROM [[product]] WHERE [[id]]=:qp0)::currency_money_composite',
+                    '[[price_col]] = (SELECT [[price]] FROM [[product]] WHERE [[id]]=:qp0)::currency_money_structured',
                     [':qp0' => 1],
                 ],
-                'traversable objects are supported in composite' => [
-                    ['=', 'price_col', new CompositeExpression(new TraversableObject([10, 'USD']))],
+                'traversable objects are supported in structured' => [
+                    ['=', 'price_col', new StructuredExpression(new TraversableObject([10, 'USD']))],
                     '[[price_col]] = ROW(:qp0, :qp1)',
                     [':qp0' => 10, ':qp1' => 'USD'],
                 ],
