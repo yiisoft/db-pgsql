@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Yiisoft\Db\Pgsql\Structured;
 
+use function in_array;
+
 /**
  * Structured type representation to PHP array parser for PostgreSQL Server.
  */

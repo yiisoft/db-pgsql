@@ -8,6 +8,11 @@ use Traversable;
 use Yiisoft\Db\Expression\ExpressionInterface;
 use Yiisoft\Db\Schema\ColumnSchemaInterface;
 
+use function array_key_exists;
+use function array_keys;
+use function is_iterable;
+use function iterator_to_array;
+
 /**
  * Represents a structured type SQL expression.
  *
