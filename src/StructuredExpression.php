@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Yiisoft\Db\Pgsql\Structured;
+namespace Yiisoft\Db\Pgsql;
 
 use Traversable;
 use Yiisoft\Db\Expression\ExpressionInterface;

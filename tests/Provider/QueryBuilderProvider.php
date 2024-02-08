@@ -7,7 +7,7 @@ namespace Yiisoft\Db\Pgsql\Tests\Provider;
 use Yiisoft\Db\Expression\ArrayExpression;
 use Yiisoft\Db\Expression\Expression;
 use Yiisoft\Db\Expression\JsonExpression;
-use Yiisoft\Db\Pgsql\Structured\StructuredExpression;
+use Yiisoft\Db\Pgsql\StructuredExpression;
 use Yiisoft\Db\Pgsql\Tests\Support\ColumnSchemaBuilder;
 use Yiisoft\Db\Pgsql\Tests\Support\TestTrait;
 use Yiisoft\Db\Query\Query;

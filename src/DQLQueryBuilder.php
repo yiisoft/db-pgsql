@@ -10,7 +10,6 @@ use Yiisoft\Db\Expression\JsonExpression;
 use Yiisoft\Db\Pgsql\Builder\ArrayExpressionBuilder;
 use Yiisoft\Db\Pgsql\Builder\StructuredExpressionBuilder;
 use Yiisoft\Db\Pgsql\Builder\JsonExpressionBuilder;
-use Yiisoft\Db\Pgsql\Structured\StructuredExpression;
 use Yiisoft\Db\QueryBuilder\AbstractDQLQueryBuilder;
 use Yiisoft\Db\QueryBuilder\Condition\LikeCondition;
 

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Yiisoft\Db\Pgsql\Tests;
 
 use PHPUnit\Framework\TestCase;
-use Yiisoft\Db\Pgsql\Structured\StructuredExpression;
+use Yiisoft\Db\Pgsql\StructuredExpression;
 use Yiisoft\Db\Pgsql\Tests\Support\TestTrait;
 
 /**
