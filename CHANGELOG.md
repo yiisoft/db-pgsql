@@ -8,6 +8,8 @@
 - Enh #330: Create instance of `ArrayParser` directly (@Tigrov)
 - Bug #331: Exclude from index column names fields specified in `INCLUDE` clause (@Tigrov)
 - Enh #334: Minor `DDLQueryBuilder` refactoring (@Tigrov)
+- Enh #338: Add FQNs of functions (@Tigrov)
+- Chg #338: Rename composite type to structured type according to SQL standard (@Tigrov)
 
 ## 1.2.0 November 12, 2023
 
