@@ -487,3 +487,10 @@ CREATE TABLE "test_composite_type"
     "price_array2" "currency_money_composite"[][],
     "range_price_col" "range_price_composite" DEFAULT '("(0,USD)","(100,USD)")'
 );
+
+
+DROP MATERIALIZED VIEW IF EXISTS "mat_view_without_unique";
+DROP MATERIALIZED VIEW IF EXISTS "mat_view_with_unique";
+CREATE MATERIALIZED VIEW "mat_view_without_unique" AS SELECT * FROM "test_composite_type";
+CREATE MATERIALIZED VIEW "mat_view_with_unique" AS SELECT * FROM "test_composite_type";
+CREATE UNIQUE INDEX "mat_view_with_unique_idx" ON "mat_view_with_unique" ("id");
