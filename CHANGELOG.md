@@ -4,7 +4,7 @@
 
 - Bug #316, #6: Support table view constraints (@Tigrov)
 - Enh #324: Change property `Schema::$typeMap` to constant `Schema::TYPE_MAP` (@Tigrov)
-- Enh #303: Support composite types (@Tigrov)
+- Enh #303, #338: Support structured type (@Tigrov)
 - Enh #330: Create instance of `ArrayParser` directly (@Tigrov)
 - Bug #331: Exclude from index column names fields specified in `INCLUDE` clause (@Tigrov)
 - Enh #334: Minor `DDLQueryBuilder` refactoring (@Tigrov)

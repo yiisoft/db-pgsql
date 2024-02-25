@@ -88,9 +88,9 @@ final class Schema extends AbstractPdoSchema
      */
     public const TYPE_BIT = 'bit';
     /**
-     * Define the abstract column type as `composite`.
+     * Define the abstract column type as `structured`.
      */
-    public const TYPE_COMPOSITE = 'composite';
+    public const TYPE_STRUCTURED = 'structured';
 
     /**
      * The mapping from physical column types (keys) to abstract column types (values).
@@ -826,11 +826,11 @@ final class Schema extends AbstractPdoSchema
         }
 
         if ($info['type_type'] === 'c') {
-            $column->type(self::TYPE_COMPOSITE);
-            $composite = $this->resolveTableName((string) $column->getDbType());
+            $column->type(self::TYPE_STRUCTURED);
+            $structured = $this->resolveTableName((string) $column->getDbType());
 
-            if ($this->findColumns($composite)) {
-                $column->columns($composite->getColumns());
+            if ($this->findColumns($structured)) {
+                $column->columns($structured->getColumns());
             }
         } else {
             $column->type(self::TYPE_MAP[(string) $column->getDbType()] ?? self::TYPE_STRING);
@@ -839,12 +839,12 @@ final class Schema extends AbstractPdoSchema
         $column->phpType($this->getColumnPhpType($column));
         $column->defaultValue($this->normalizeDefaultValue($defaultValue, $column));
 
-        if ($column->getType() === self::TYPE_COMPOSITE && $column->getDimension() === 0) {
+        if ($column->getType() === self::TYPE_STRUCTURED && $column->getDimension() === 0) {
             /** @psalm-var array|null $defaultValue */
             $defaultValue = $column->getDefaultValue();
             if (is_array($defaultValue)) {
-                foreach ($column->getColumns() as $compositeColumnName => $compositeColumn) {
-                    $compositeColumn->defaultValue($defaultValue[$compositeColumnName] ?? null);
+                foreach ($column->getColumns() as $structuredColumnName => $structuredColumn) {
+                    $structuredColumn->defaultValue($defaultValue[$structuredColumnName] ?? null);
                 }
             }
         }
@@ -863,7 +863,7 @@ final class Schema extends AbstractPdoSchema
     {
         return match ($column->getType()) {
             self::TYPE_BIT => self::PHP_TYPE_INTEGER,
-            self::TYPE_COMPOSITE => self::PHP_TYPE_ARRAY,
+            self::TYPE_STRUCTURED => self::PHP_TYPE_ARRAY,
             default => parent::getColumnPhpType($column),
         };
     }

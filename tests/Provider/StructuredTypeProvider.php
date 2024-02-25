@@ -8,7 +8,7 @@ use ArrayIterator;
 use Yiisoft\Db\Pgsql\Tests\Support\ColumnSchemaBuilder;
 use Yiisoft\Db\Tests\Support\TraversableObject;
 
-final class CompositeTypeProvider extends \Yiisoft\Db\Tests\Provider\SchemaProvider
+final class StructuredTypeProvider extends \Yiisoft\Db\Tests\Provider\SchemaProvider
 {
     public static function columns(): array
     {
@@ -29,8 +29,8 @@ final class CompositeTypeProvider extends \Yiisoft\Db\Tests\Provider\SchemaProvi
                         'defaultValue' => null,
                     ],
                     'price_col' => [
-                        'type' => 'composite',
-                        'dbType' => 'currency_money_composite',
+                        'type' => 'structured',
+                        'dbType' => 'currency_money_structured',
                         'phpType' => 'array',
                         'primaryKey' => false,
                         'allowNull' => true,
@@ -70,8 +70,8 @@ final class CompositeTypeProvider extends \Yiisoft\Db\Tests\Provider\SchemaProvi
                         ],
                     ],
                     'price_default' => [
-                        'type' => 'composite',
-                        'dbType' => 'currency_money_composite',
+                        'type' => 'structured',
+                        'dbType' => 'currency_money_structured',
                         'phpType' => 'array',
                         'primaryKey' => false,
                         'allowNull' => true,
@@ -111,8 +111,8 @@ final class CompositeTypeProvider extends \Yiisoft\Db\Tests\Provider\SchemaProvi
                         ],
                     ],
                     'price_array' => [
-                        'type' => 'composite',
-                        'dbType' => 'currency_money_composite',
+                        'type' => 'structured',
+                        'dbType' => 'currency_money_structured',
                         'phpType' => 'array',
                         'primaryKey' => false,
                         'allowNull' => true,
@@ -157,8 +157,8 @@ final class CompositeTypeProvider extends \Yiisoft\Db\Tests\Provider\SchemaProvi
                         ],
                     ],
                     'price_array2' => [
-                        'type' => 'composite',
-                        'dbType' => 'currency_money_composite',
+                        'type' => 'structured',
+                        'dbType' => 'currency_money_structured',
                         'phpType' => 'array',
                         'primaryKey' => false,
                         'allowNull' => true,
@@ -199,8 +199,8 @@ final class CompositeTypeProvider extends \Yiisoft\Db\Tests\Provider\SchemaProvi
                         ],
                     ],
                     'range_price_col' => [
-                        'type' => 'composite',
-                        'dbType' => 'range_price_composite',
+                        'type' => 'structured',
+                        'dbType' => 'range_price_structured',
                         'phpType' => 'array',
                         'primaryKey' => false,
                         'allowNull' => true,
@@ -216,8 +216,8 @@ final class CompositeTypeProvider extends \Yiisoft\Db\Tests\Provider\SchemaProvi
                         'dimension' => 0,
                         'columns' => [
                             'price_from' => [
-                                'type' => 'composite',
-                                'dbType' => 'currency_money_composite',
+                                'type' => 'structured',
+                                'dbType' => 'currency_money_structured',
                                 'phpType' => 'array',
                                 'primaryKey' => false,
                                 'allowNull' => true,
@@ -257,8 +257,8 @@ final class CompositeTypeProvider extends \Yiisoft\Db\Tests\Provider\SchemaProvi
                                 ],
                             ],
                             'price_to' => [
-                                'type' => 'composite',
-                                'dbType' => 'currency_money_composite',
+                                'type' => 'structured',
+                                'dbType' => 'currency_money_structured',
                                 'phpType' => 'array',
                                 'primaryKey' => false,
                                 'allowNull' => true,
@@ -300,7 +300,7 @@ final class CompositeTypeProvider extends \Yiisoft\Db\Tests\Provider\SchemaProvi
                         ],
                     ],
                 ],
-                'test_composite_type',
+                'test_structured_type',
             ],
         ];
     }

@@ -2,24 +2,31 @@
 
 declare(strict_types=1);
 
-namespace Yiisoft\Db\Pgsql\Composite;
+namespace Yiisoft\Db\Pgsql;
 
 use Traversable;
 use Yiisoft\Db\Expression\ExpressionInterface;
 use Yiisoft\Db\Schema\ColumnSchemaInterface;
 
+use function array_key_exists;
+use function array_keys;
+use function is_iterable;
+use function iterator_to_array;
+
 /**
- * Represents a composite type SQL expression.
+ * Represents a structured type SQL expression.
+ *
+ * @see https://en.wikipedia.org/wiki/Structured_type
  *
  * For example:
  *
  * ```php
- * new CompositeExpression(['price' => 10, 'currency_code' => 'USD']);
+ * new StructuredExpression(['price' => 10, 'currency_code' => 'USD']);
  * ```
  *
  * Will be encoded to `ROW(10, USD)`
  */
-class CompositeExpression implements ExpressionInterface
+class StructuredExpression implements ExpressionInterface
 {
     /**
      * @param ColumnSchemaInterface[] $columns
@@ -33,7 +40,7 @@ class CompositeExpression implements ExpressionInterface
     }
 
     /**
-     * The composite type name.
+     * The structured type name.
      *
      * Defaults to `null` which means the type is not explicitly specified.
      *
@@ -46,7 +53,7 @@ class CompositeExpression implements ExpressionInterface
     }
 
     /**
-     * The composite type columns that are used for value normalization and type casting.
+     * The structured type columns that are used for value normalization and type casting.
      *
      * @return ColumnSchemaInterface[]
      */
@@ -56,7 +63,7 @@ class CompositeExpression implements ExpressionInterface
     }
 
     /**
-     * The content of the composite type. It can be represented as an associative array of composite type column names
+     * The content of the structured type. It can be represented as an associative array of structured type column names
      * and values.
      */
     public function getValue(): mixed
@@ -65,7 +72,7 @@ class CompositeExpression implements ExpressionInterface
     }
 
     /**
-     * Sorted values according to the order of composite type columns,
+     * Sorted values according to the order of structured type columns,
      * indexed keys are replaced with column names,
      * missing elements are filled in with default values,
      * excessive elements are removed.
