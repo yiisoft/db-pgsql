@@ -10,6 +10,7 @@
 - Enh #334: Minor `DDLQueryBuilder` refactoring (@Tigrov)
 - Enh #338: Add FQNs of functions (@Tigrov)
 - Chg #338: Rename composite type to structured type according to SQL standard (@Tigrov)
+- Enh #333: Resolve deprecated methods (@Tigrov)
 
 ## 1.2.0 November 12, 2023
 
