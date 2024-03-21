@@ -1,5 +1,9 @@
 # PostgreSQL driver for Yii Database Change Log
 
+## 1.3.1 under development
+
+- no changes in this release.
+
 ## 1.3.0 March 21, 2024
 
 - Enh #303, #338: Support structured type (@Tigrov)
