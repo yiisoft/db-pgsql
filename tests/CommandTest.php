@@ -283,7 +283,7 @@ final class CommandTest extends CommonCommandTest
         array|string $conditions,
         array $params,
         array $expectedValues,
-        int $expectedCount = null,
+        int $expectedCount,
     ): void {
         parent::testUpdate($table, $columns, $conditions, $params, $expectedValues, $expectedCount);
     }
