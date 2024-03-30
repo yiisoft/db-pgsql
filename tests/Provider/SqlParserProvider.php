@@ -38,7 +38,7 @@ class SqlParserProvider extends \Yiisoft\Db\Tests\Provider\SqlParserProvider
             [
                 'name = $name AND age = :age',
                 ':age',
-                24,
+                23,
             ],
             [
                 'name = name$1$ AND age = :age',
