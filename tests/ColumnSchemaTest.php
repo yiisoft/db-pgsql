@@ -212,14 +212,14 @@ final class ColumnSchemaTest extends TestCase
         $this->assertFalse($tableSchema->getColumn('C_index_2_2')->isPrimaryKey());
     }
 
-    public function testCompositeType(): void
+    public function testStructuredType(): void
     {
         $db = $this->getConnection(true);
         $command = $db->createCommand();
         $schema = $db->getSchema();
-        $tableSchema = $schema->getTableSchema('test_composite_type');
+        $tableSchema = $schema->getTableSchema('test_structured_type');
 
-        $command->insert('test_composite_type', [
+        $command->insert('test_structured_type', [
             'price_col' => ['value' => 10.0, 'currency_code' => 'USD'],
             'price_array' => [
                 null,
@@ -235,7 +235,7 @@ final class ColumnSchemaTest extends TestCase
             ],
         ])->execute();
 
-        $query = (new Query($db))->from('test_composite_type')->one();
+        $query = (new Query($db))->from('test_structured_type')->one();
 
         $priceColPhpType = $tableSchema->getColumn('price_col')->phpTypecast($query['price_col']);
         $priceDefaultPhpType = $tableSchema->getColumn('price_default')->phpTypecast($query['price_default']);
@@ -275,14 +275,14 @@ final class ColumnSchemaTest extends TestCase
 
         $priceArray = $tableSchema->getColumn('price_array');
         $this->assertEquals(
-            new ArrayExpression([], 'currency_money_composite', 1),
+            new ArrayExpression([], 'currency_money_structured', 1),
             $priceArray->dbTypecast(1),
             'For scalar value returns empty array'
         );
 
         $priceArray2 = $tableSchema->getColumn('price_array2');
         $this->assertEquals(
-            new ArrayExpression([null, null], 'currency_money_composite', 2),
+            new ArrayExpression([null, null], 'currency_money_structured', 2),
             $priceArray2->dbTypecast([null, null]),
             'Double array of null values'
         );

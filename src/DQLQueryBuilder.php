@@ -9,10 +9,9 @@ use Yiisoft\Db\Expression\Expression;
 use Yiisoft\Db\Expression\ExpressionBuilderInterface;
 use Yiisoft\Db\Expression\JsonExpression;
 use Yiisoft\Db\Pgsql\Builder\ArrayExpressionBuilder;
-use Yiisoft\Db\Pgsql\Builder\CompositeExpressionBuilder;
+use Yiisoft\Db\Pgsql\Builder\StructuredExpressionBuilder;
 use Yiisoft\Db\Pgsql\Builder\ExpressionBuilder;
 use Yiisoft\Db\Pgsql\Builder\JsonExpressionBuilder;
-use Yiisoft\Db\Pgsql\Composite\CompositeExpression;
 use Yiisoft\Db\QueryBuilder\AbstractDQLQueryBuilder;
 use Yiisoft\Db\QueryBuilder\Condition\LikeCondition;
 
@@ -54,7 +53,7 @@ final class DQLQueryBuilder extends AbstractDQLQueryBuilder
         return array_merge(parent::defaultExpressionBuilders(), [
             ArrayExpression::class => ArrayExpressionBuilder::class,
             JsonExpression::class => JsonExpressionBuilder::class,
-            CompositeExpression::class => CompositeExpressionBuilder::class,
+            StructuredExpression::class => StructuredExpressionBuilder::class,
             Expression::class => ExpressionBuilder::class,
         ]);
     }

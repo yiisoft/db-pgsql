@@ -1,13 +1,18 @@
 # PostgreSQL driver for Yii Database Change Log
 
-## 1.2.1 under development
+## 1.3.1 under development
 
-- Bug #316, #6: Support table view constraints (@Tigrov)
+- no changes in this release.
+
+## 1.3.0 March 21, 2024
+
+- Enh #303, #338: Support structured type (@Tigrov)
 - Enh #324: Change property `Schema::$typeMap` to constant `Schema::TYPE_MAP` (@Tigrov)
-- Enh #303: Support composite types (@Tigrov)
 - Enh #330: Create instance of `ArrayParser` directly (@Tigrov)
-- Bug #331: Exclude from index column names fields specified in `INCLUDE` clause (@Tigrov)
+- Enh #333: Resolve deprecated methods (@Tigrov)
 - Enh #334: Minor `DDLQueryBuilder` refactoring (@Tigrov)
+- Bug #316, #6: Support table view constraints (@Tigrov)
+- Bug #331: Exclude from index column names fields specified in `INCLUDE` clause (@Tigrov)
 
 ## 1.2.0 November 12, 2023
 

@@ -520,12 +520,12 @@ final class SchemaTest extends CommonSchemaTest
     public function testNotConnectionPDO(): void
     {
         $db = $this->createMock(ConnectionInterface::class);
-        $schema = new Schema($db, DbHelper::getSchemaCache(), 'system');
+        $schema = new Schema($db, DbHelper::getSchemaCache());
 
         $this->expectException(NotSupportedException::class);
         $this->expectExceptionMessage('Only PDO connections are supported.');
 
-        $schema->refreshTableSchema('customer');
+        $schema->refresh();
     }
 
     public function testDomainType(): void
@@ -581,13 +581,13 @@ final class SchemaTest extends CommonSchemaTest
         $db->close();
     }
 
-    /** @dataProvider \Yiisoft\Db\Pgsql\Tests\Provider\CompositeTypeProvider::columns */
-    public function testCompositeTypeColumnSchema(array $columns, string $tableName): void
+    /** @dataProvider \Yiisoft\Db\Pgsql\Tests\Provider\StructuredTypeProvider::columns */
+    public function testStructuredTypeColumnSchema(array $columns, string $tableName): void
     {
-        $this->testCompositeTypeColumnSchemaRecursive($columns, $tableName);
+        $this->testStructuredTypeColumnSchemaRecursive($columns, $tableName);
     }
 
-    private function testCompositeTypeColumnSchemaRecursive(array $columns, string $tableName): void
+    private function testStructuredTypeColumnSchemaRecursive(array $columns, string $tableName): void
     {
         $this->columnSchema($columns, $tableName);
 
@@ -595,12 +595,12 @@ final class SchemaTest extends CommonSchemaTest
         $table = $db->getTableSchema($tableName, true);
 
         foreach ($table->getColumns() as $name => $column) {
-            if ($column->getType() === 'composite') {
+            if ($column->getType() === Schema::TYPE_STRUCTURED) {
                 $this->assertTrue(
                     isset($columns[$name]['columns']),
-                    "Columns of composite type `$name` do not exist, dbType is `{$column->getDbType()}`."
+                    "Columns of structured type `$name` do not exist, dbType is `{$column->getDbType()}`."
                 );
-                $this->testCompositeTypeColumnSchemaRecursive($columns[$name]['columns'], $column->getDbType());
+                $this->testStructuredTypeColumnSchemaRecursive($columns[$name]['columns'], $column->getDbType());
             }
         }
 

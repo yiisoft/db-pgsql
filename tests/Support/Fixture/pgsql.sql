@@ -464,26 +464,26 @@ CREATE TABLE "table_uuid" (
     "col" varchar(16)
 );
 
-DROP TYPE IF EXISTS "currency_money_composite" CASCADE;
-DROP TYPE IF EXISTS "range_price_composite" CASCADE;
-DROP TABLE IF EXISTS "test_composite_type" CASCADE;
+DROP TYPE IF EXISTS "currency_money_structured" CASCADE;
+DROP TYPE IF EXISTS "range_price_structured" CASCADE;
+DROP TABLE IF EXISTS "test_structured_type" CASCADE;
 
-CREATE TYPE "currency_money_composite" AS (
+CREATE TYPE "currency_money_structured" AS (
     "value" numeric(10,2),
     "currency_code" char(3)
 );
 
-CREATE TYPE "range_price_composite" AS (
-    "price_from" "currency_money_composite",
-    "price_to" "currency_money_composite"
+CREATE TYPE "range_price_structured" AS (
+    "price_from" "currency_money_structured",
+    "price_to" "currency_money_structured"
 );
 
-CREATE TABLE "test_composite_type"
+CREATE TABLE "test_structured_type"
 (
     "id" SERIAL NOT NULL PRIMARY KEY,
-    "price_col" "currency_money_composite",
-    "price_default" "currency_money_composite" DEFAULT '(5,USD)',
-    "price_array" "currency_money_composite"[] DEFAULT '{null,"(10.55,USD)","(-1,)"}',
-    "price_array2" "currency_money_composite"[][],
-    "range_price_col" "range_price_composite" DEFAULT '("(0,USD)","(100,USD)")'
+    "price_col" "currency_money_structured",
+    "price_default" "currency_money_structured" DEFAULT '(5,USD)',
+    "price_array" "currency_money_structured"[] DEFAULT '{null,"(10.55,USD)","(-1,)"}',
+    "price_array2" "currency_money_structured"[][],
+    "range_price_col" "range_price_structured" DEFAULT '("(0,USD)","(100,USD)")'
 );

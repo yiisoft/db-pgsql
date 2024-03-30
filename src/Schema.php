@@ -21,6 +21,8 @@ use Yiisoft\Db\Schema\Builder\ColumnInterface;
 use Yiisoft\Db\Schema\ColumnSchemaInterface;
 use Yiisoft\Db\Schema\TableSchemaInterface;
 
+use function array_change_key_case;
+use function array_map;
 use function array_merge;
 use function array_unique;
 use function array_values;
@@ -86,9 +88,9 @@ final class Schema extends AbstractPdoSchema
      */
     public const TYPE_BIT = 'bit';
     /**
-     * Define the abstract column type as `composite`.
+     * Define the abstract column type as `structured`.
      */
-    public const TYPE_COMPOSITE = 'composite';
+    public const TYPE_STRUCTURED = 'structured';
 
     /**
      * The mapping from physical column types (keys) to abstract column types (values).
@@ -393,7 +395,7 @@ final class Schema extends AbstractPdoSchema
         ])->queryAll();
 
         /** @psalm-var array[] $indexes */
-        $indexes = $this->normalizeRowKeyCase($indexes, true);
+        $indexes = array_map('array_change_key_case', $indexes);
         $indexes = DbArrayHelper::index($indexes, null, ['name']);
         $result = [];
 
@@ -551,7 +553,7 @@ final class Schema extends AbstractPdoSchema
 
         foreach ($rows as $constraint) {
             /** @psalm-var FindConstraintArray $constraint */
-            $constraint = $this->normalizeRowKeyCase($constraint, false);
+            $constraint = array_change_key_case($constraint);
 
             if ($constraint['foreign_table_schema'] !== $this->defaultSchema) {
                 $foreignTable = $constraint['foreign_table_schema'] . '.' . $constraint['foreign_table_name'];
@@ -645,7 +647,7 @@ final class Schema extends AbstractPdoSchema
         /** @psalm-var array{indexname: string, columnname: string} $row */
         foreach ($this->getUniqueIndexInformation($table) as $row) {
             /** @psalm-var array{indexname: string, columnname: string} $row */
-            $row = $this->normalizeRowKeyCase($row, false);
+            $row = array_change_key_case($row);
 
             $column = $row['columnname'];
 
@@ -759,7 +761,7 @@ final class Schema extends AbstractPdoSchema
         /** @psalm-var ColumnArray $info */
         foreach ($columns as $info) {
             /** @psalm-var ColumnArray $info */
-            $info = $this->normalizeRowKeyCase($info, false);
+            $info = array_change_key_case($info);
 
             /** @psalm-var ColumnSchema $column */
             $column = $this->loadColumnSchema($info);
@@ -824,11 +826,11 @@ final class Schema extends AbstractPdoSchema
         }
 
         if ($info['type_type'] === 'c') {
-            $column->type(self::TYPE_COMPOSITE);
-            $composite = $this->resolveTableName((string) $column->getDbType());
+            $column->type(self::TYPE_STRUCTURED);
+            $structured = $this->resolveTableName((string) $column->getDbType());
 
-            if ($this->findColumns($composite)) {
-                $column->columns($composite->getColumns());
+            if ($this->findColumns($structured)) {
+                $column->columns($structured->getColumns());
             }
         } else {
             $column->type(self::TYPE_MAP[(string) $column->getDbType()] ?? self::TYPE_STRING);
@@ -837,12 +839,12 @@ final class Schema extends AbstractPdoSchema
         $column->phpType($this->getColumnPhpType($column));
         $column->defaultValue($this->normalizeDefaultValue($defaultValue, $column));
 
-        if ($column->getType() === self::TYPE_COMPOSITE && $column->getDimension() === 0) {
+        if ($column->getType() === self::TYPE_STRUCTURED && $column->getDimension() === 0) {
             /** @psalm-var array|null $defaultValue */
             $defaultValue = $column->getDefaultValue();
             if (is_array($defaultValue)) {
-                foreach ($column->getColumns() as $compositeColumnName => $compositeColumn) {
-                    $compositeColumn->defaultValue($defaultValue[$compositeColumnName] ?? null);
+                foreach ($column->getColumns() as $structuredColumnName => $structuredColumn) {
+                    $structuredColumn->defaultValue($defaultValue[$structuredColumnName] ?? null);
                 }
             }
         }
@@ -861,7 +863,7 @@ final class Schema extends AbstractPdoSchema
     {
         return match ($column->getType()) {
             self::TYPE_BIT => self::PHP_TYPE_INTEGER,
-            self::TYPE_COMPOSITE => self::PHP_TYPE_ARRAY,
+            self::TYPE_STRUCTURED => self::PHP_TYPE_ARRAY,
             default => parent::getColumnPhpType($column),
         };
     }
@@ -975,7 +977,7 @@ final class Schema extends AbstractPdoSchema
         ])->queryAll();
 
         /** @psalm-var array[][] $constraints */
-        $constraints = $this->normalizeRowKeyCase($constraints, true);
+        $constraints = array_map('array_change_key_case', $constraints);
         $constraints = DbArrayHelper::index($constraints, null, ['type', 'name']);
 
         $result = [
@@ -1060,6 +1062,8 @@ final class Schema extends AbstractPdoSchema
      * @param string $name The table name.
      *
      * @return array The cache key.
+     *
+     * @psalm-suppress DeprecatedMethod
      */
     protected function getCacheKey(string $name): array
     {

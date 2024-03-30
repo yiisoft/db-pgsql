@@ -10,8 +10,6 @@ use Yiisoft\Db\Command\Param;
 use Yiisoft\Db\Expression\ArrayExpression;
 use Yiisoft\Db\Expression\ExpressionInterface;
 use Yiisoft\Db\Expression\JsonExpression;
-use Yiisoft\Db\Pgsql\Composite\CompositeExpression;
-use Yiisoft\Db\Pgsql\Composite\CompositeParser;
 use Yiisoft\Db\Schema\AbstractColumnSchema;
 use Yiisoft\Db\Schema\ColumnSchemaInterface;
 use Yiisoft\Db\Schema\SchemaInterface;
@@ -62,7 +60,7 @@ final class ColumnSchema extends AbstractColumnSchema
     private string|null $sequenceName = null;
 
     /**
-     * @var ColumnSchemaInterface[] Columns metadata of the composite type.
+     * @var ColumnSchemaInterface[] Columns metadata of the structured type.
      * @psalm-var array<string, ColumnSchemaInterface>
      */
     private array $columns = [];
@@ -83,7 +81,7 @@ final class ColumnSchema extends AbstractColumnSchema
                 return $value;
             }
 
-            if ($this->getType() === Schema::TYPE_COMPOSITE) {
+            if ($this->getType() === Schema::TYPE_STRUCTURED) {
                 $value = $this->dbTypecastArray($value, $this->dimension);
             }
 
@@ -146,7 +144,7 @@ final class ColumnSchema extends AbstractColumnSchema
                 ? str_pad(decbin($value), (int) $this->getSize(), '0', STR_PAD_LEFT)
                 : (string) $value,
 
-            Schema::TYPE_COMPOSITE => new CompositeExpression($value, $this->getDbType(), $this->columns),
+            Schema::TYPE_STRUCTURED => new StructuredExpression($value, $this->getDbType(), $this->columns),
 
             default => $this->typecast($value),
         };
@@ -203,19 +201,19 @@ final class ColumnSchema extends AbstractColumnSchema
             SchemaInterface::TYPE_JSON
                 => json_decode((string) $value, true, 512, JSON_THROW_ON_ERROR),
 
-            Schema::TYPE_COMPOSITE => $this->phpTypecastComposite($value),
+            Schema::TYPE_STRUCTURED => $this->phpTypecastStructured($value),
 
             default => parent::phpTypecast($value),
         };
     }
 
     /**
-     * Converts the input value according to the composite type after retrieval from the database.
+     * Converts the input value according to the structured type after retrieval from the database.
      */
-    private function phpTypecastComposite(mixed $value): array|null
+    private function phpTypecastStructured(mixed $value): array|null
     {
         if (is_string($value)) {
-            $value = (new CompositeParser())->parse($value);
+            $value = (new StructuredParser())->parse($value);
         }
 
         if (!is_iterable($value)) {
@@ -276,9 +274,9 @@ final class ColumnSchema extends AbstractColumnSchema
     }
 
     /**
-     * Set columns of the composite type.
+     * Set columns of the structured type.
      *
-     * @param ColumnSchemaInterface[] $columns The metadata of the composite type columns.
+     * @param ColumnSchemaInterface[] $columns The metadata of the structured type columns.
      * @psalm-param array<string, ColumnSchemaInterface> $columns
      */
     public function columns(array $columns): void
@@ -287,7 +285,7 @@ final class ColumnSchema extends AbstractColumnSchema
     }
 
     /**
-     * Get the metadata of the composite type columns.
+     * Get the metadata of the structured type columns.
      *
      * @return ColumnSchemaInterface[]
      */
