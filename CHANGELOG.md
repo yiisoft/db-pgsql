@@ -1,8 +1,8 @@
 # PostgreSQL driver for Yii Database Change Log
 
-## 1.3.1 under development
+## 2.0.0 under development
 
-- no changes in this release.
+- Enh #336: Implement `SqlParser` and `ExpressionBuilder` driver classes (@Tigrov)
 
 ## 1.3.0 March 21, 2024
 
