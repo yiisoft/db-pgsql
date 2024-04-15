@@ -9,7 +9,7 @@
     <br>
 </p>
 
-PostgreSQL driver for [Yii Database](https://github.com/yiisoft/db) is a [PostgreSQL] database adapter. 
+PostgreSQL driver for [Yii Database](https://github.com/yiisoft/db) is a [PostgreSQL] database adapter.
 The package provides a database connection interface and a set of classes for interacting with a [PostgreSQL] database.
 It allows you to perform common database operations such as executing queries, building and executing `INSERT`, `UPDATE`,
 and `DELETE` statements, and working with transactions. It also provides support for PostgreSQL-specific features such
@@ -33,11 +33,11 @@ as stored procedures and server-side cursors.
 
 The package could be installed via composer:
 
-```php
+```shell
 composer require yiisoft/db-pgsql
 ```
 
-## Usage 
+## Usage
 
 For config connection to PostgreSQL database check [Connecting PostgreSQL](https://github.com/yiisoft/db/blob/master/docs/en/connection/pgsql.md).
 
