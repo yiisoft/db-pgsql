@@ -37,15 +37,28 @@ The package could be installed via composer:
 composer require yiisoft/db-pgsql
 ```
 
-## Usage
+## Documentation
 
-For config connection to PostgreSQL database check [Connecting PostgreSQL](https://github.com/yiisoft/db/blob/master/docs/en/connection/pgsql.md).
+English:
 
-[Check the documentation docs](https://github.com/yiisoft/db/blob/master/docs/en/README.md) to learn about usage.
+- For config connection to PostgreSQL database check [Connecting PostgreSQL](https://github.com/yiisoft/db/blob/master/docs/en/connection/pgsql.md).
+- [Check the documentation](https://github.com/yiisoft/db/blob/master/docs/en/README.md) to learn about usage
 
-## Testing
+Portuguese - Brazil:
 
-[Check the documentation](/docs/en/testing.md) to learn about testing.
+- For config connection to PostgreSQL database check [Connecting PostgreSQL](https://github.com/yiisoft/db/blob/master/docs/pt-BR/connection/pgsql.md).
+- [Check the documentation](https://github.com/yiisoft/db/blob/master/docs/pt-BR/README.md) to learn about usage
+
+Testing:
+
+- [English](docs/guide/en/testing.md)
+- [Portuguese - Brazil](docs/guide/pt-BR/testing.md)
+- More information can be found in the [Internals.](docs/internals.md)
+
+## Support
+
+If you need help or have a question, the [Yii Forum](https://forum.yiiframework.com/c/yii-3-0/63) is a good place for that.
+You may also check out other [Yii Community Resources](https://www.yiiframework.com/community).
 
 ## Support the project
 
@@ -61,7 +74,7 @@ For config connection to PostgreSQL database check [Connecting PostgreSQL](https
 
 ## License
 
-The Yii DataBase PostgreSQL Extension is free software. It is released under the terms of the BSD License.
+The Yii Access is free software. It is released under the terms of the BSD License.
 Please see [`LICENSE`](./LICENSE.md) for more information.
 
 Maintained by [Yii Software](https://www.yiiframework.com/).
