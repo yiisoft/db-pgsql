@@ -44,14 +44,14 @@ English:
 - For config connection to PostgreSQL database check [Connecting PostgreSQL](https://github.com/yiisoft/db/blob/master/docs/en/connection/pgsql.md).
 - [Check the documentation](https://github.com/yiisoft/db/blob/master/docs/en/README.md) to learn about usage.
 
-Portuguese - Brazil:
+Português - Brasil:
 
 - Para configurar a conexão com o PostgreSQL leia [Connecting PostgreSQL](https://github.com/yiisoft/db/blob/master/docs/pt-BR/connection/pgsql.md).s
 - [Confira a documentação](https://github.com/yiisoft/db/blob/master/docs/pt-BR/README.md) para aprender como usar.
 
 Testing:
 
-- More information can be found in the [Internals.](docs/internals.md)
+- [Internals](docs/internals.md)
 
 ## Support
 
