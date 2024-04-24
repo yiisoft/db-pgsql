@@ -9,7 +9,7 @@
     <br>
 </p>
 
-PostgreSQL driver for [Yii Database](https://github.com/yiisoft/db) is a [PostgreSQL] database adapter. 
+PostgreSQL driver for [Yii Database](https://github.com/yiisoft/db) is a [PostgreSQL] database adapter.
 The package provides a database connection interface and a set of classes for interacting with a [PostgreSQL] database.
 It allows you to perform common database operations such as executing queries, building and executing `INSERT`, `UPDATE`,
 and `DELETE` statements, and working with transactions. It also provides support for PostgreSQL-specific features such
@@ -33,19 +33,30 @@ as stored procedures and server-side cursors.
 
 The package could be installed via composer:
 
-```php
+```shell
 composer require yiisoft/db-pgsql
 ```
 
-## Usage 
+## Documentation
 
-For config connection to PostgreSQL database check [Connecting PostgreSQL](https://github.com/yiisoft/db/blob/master/docs/en/connection/pgsql.md).
+English:
 
-[Check the documentation docs](https://github.com/yiisoft/db/blob/master/docs/en/README.md) to learn about usage.
+- For config connection to PostgreSQL database check [Connecting PostgreSQL](https://github.com/yiisoft/db/blob/master/docs/en/connection/pgsql.md).
+- [Check the documentation](https://github.com/yiisoft/db/blob/master/docs/en/README.md) to learn about usage.
 
-## Testing
+Português - Brasil:
 
-[Check the documentation](/docs/en/testing.md) to learn about testing.
+- Para configurar a conexão com o PostgreSQL leia [Connecting PostgreSQL](https://github.com/yiisoft/db/blob/master/docs/pt-BR/connection/pgsql.md).s
+- [Confira a documentação](https://github.com/yiisoft/db/blob/master/docs/pt-BR/README.md) para aprender como usar.
+
+Testing:
+
+- [Internals](docs/internals.md)
+
+## Support
+
+If you need help or have a question, the [Yii Forum](https://forum.yiiframework.com/c/yii-3-0/63) is a good place for that.
+You may also check out other [Yii Community Resources](https://www.yiiframework.com/community).
 
 ## Support the project
 
