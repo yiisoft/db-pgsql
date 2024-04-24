@@ -19,7 +19,7 @@ docker-compose up -d
 
 Or run container directly via command:
 
-```dockerfile
+```shell
 docker run --rm --name yiisoft-db-pgsql-db -e POSTGRES_PASSWORD=root -e POSTGRES_USER=root -e POSTGRES_DB=yiitest -d -p 5432:5432 postgres:15
 ```
 
