@@ -25,6 +25,10 @@ DROP TABLE IF EXISTS "department";
 DROP TABLE IF EXISTS "alpha";
 DROP TABLE IF EXISTS "beta";
 DROP VIEW IF EXISTS "animal_view";
+DROP VIEW IF EXISTS "T_constraints_4_view";
+DROP VIEW IF EXISTS "T_constraints_3_view";
+DROP VIEW IF EXISTS "T_constraints_2_view";
+DROP VIEW IF EXISTS "T_constraints_1_view";
 DROP TABLE IF EXISTS "T_constraints_6";
 DROP TABLE IF EXISTS "T_constraints_5";
 DROP TABLE IF EXISTS "T_constraints_4";
@@ -413,6 +417,11 @@ CREATE TABLE "T_constraints_6"
     CONSTRAINT "CN_constraints_6" FOREIGN KEY ("C_fk_id_1", "C_fk_id_2") REFERENCES "schema1"."T_constraints_5" ("C_id_1", "C_id_2") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
+CREATE VIEW "T_constraints_1_view" AS SELECT 'first_value', * FROM "T_constraints_1";
+CREATE VIEW "T_constraints_2_view" AS SELECT 'first_value', * FROM "T_constraints_2";
+CREATE VIEW "T_constraints_3_view" AS SELECT 'first_value', * FROM "T_constraints_3";
+CREATE VIEW "T_constraints_4_view" AS SELECT 'first_value', * FROM "T_constraints_4";
+
 CREATE TABLE "T_upsert"
 (
     "id" SERIAL NOT NULL PRIMARY KEY,
@@ -453,4 +462,28 @@ CREATE TABLE "table_with_array_col" (
 CREATE TABLE "table_uuid" (
     "uuid" uuid NOT NULL PRIMARY KEY DEFAULT uuid_generate_v4(),
     "col" varchar(16)
+);
+
+DROP TYPE IF EXISTS "currency_money_structured" CASCADE;
+DROP TYPE IF EXISTS "range_price_structured" CASCADE;
+DROP TABLE IF EXISTS "test_structured_type" CASCADE;
+
+CREATE TYPE "currency_money_structured" AS (
+    "value" numeric(10,2),
+    "currency_code" char(3)
+);
+
+CREATE TYPE "range_price_structured" AS (
+    "price_from" "currency_money_structured",
+    "price_to" "currency_money_structured"
+);
+
+CREATE TABLE "test_structured_type"
+(
+    "id" SERIAL NOT NULL PRIMARY KEY,
+    "price_col" "currency_money_structured",
+    "price_default" "currency_money_structured" DEFAULT '(5,USD)',
+    "price_array" "currency_money_structured"[] DEFAULT '{null,"(10.55,USD)","(-1,)"}',
+    "price_array2" "currency_money_structured"[][],
+    "range_price_col" "range_price_structured" DEFAULT '("(0,USD)","(100,USD)")'
 );

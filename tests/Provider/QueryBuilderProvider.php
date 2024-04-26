@@ -7,6 +7,8 @@ namespace Yiisoft\Db\Pgsql\Tests\Provider;
 use Yiisoft\Db\Expression\ArrayExpression;
 use Yiisoft\Db\Expression\Expression;
 use Yiisoft\Db\Expression\JsonExpression;
+use Yiisoft\Db\Pgsql\StructuredExpression;
+use Yiisoft\Db\Pgsql\Tests\Support\ColumnSchemaBuilder;
 use Yiisoft\Db\Pgsql\Tests\Support\TestTrait;
 use Yiisoft\Db\Query\Query;
 use Yiisoft\Db\Schema\SchemaInterface;
@@ -23,6 +25,11 @@ final class QueryBuilderProvider extends \Yiisoft\Db\Tests\Provider\QueryBuilder
     public static function buildCondition(): array
     {
         $buildCondition = parent::buildCondition();
+
+        $priceColumns = [
+            'value' => ColumnSchemaBuilder::numeric(name: 'value', precision: 10, scale: 2),
+            'currency_code' => ColumnSchemaBuilder::char(name: 'currency_code', size: 3),
+        ];
 
         return array_merge(
             $buildCondition,
@@ -245,6 +252,63 @@ final class QueryBuilderProvider extends \Yiisoft\Db\Tests\Provider\QueryBuilder
                 [['>=', 'id', new ArrayExpression([1])], '"id" >= ARRAY[:qp0]', [':qp0' => 1]],
                 [['<=', 'id', new ArrayExpression([1])], '"id" <= ARRAY[:qp0]', [':qp0' => 1]],
                 [['&&', 'id', new ArrayExpression([1])], '"id" && ARRAY[:qp0]', [':qp0' => 1]],
+
+                /* structured conditions */
+                'structured without type' => [
+                    ['=', 'price_col', new StructuredExpression(['value' => 10, 'currency_code' => 'USD'])],
+                    '[[price_col]] = ROW(:qp0, :qp1)',
+                    [':qp0' => 10, ':qp1' => 'USD'],
+                ],
+                'structured with type' => [
+                    ['=', 'price_col', new StructuredExpression(['value' => 10, 'currency_code' => 'USD'], 'currency_money_structured')],
+                    '[[price_col]] = ROW(:qp0, :qp1)::currency_money_structured',
+                    [':qp0' => 10, ':qp1' => 'USD'],
+                ],
+                'structured with columns' => [
+                    ['=', 'price_col', new StructuredExpression(['value' => 10, 'currency_code' => 'USD'], 'currency_money_structured', $priceColumns)],
+                    '[[price_col]] = ROW(:qp0, :qp1)::currency_money_structured',
+                    [':qp0' => 10.0, ':qp1' => 'USD'],
+                ],
+                'scalar can not be converted to structured' => [['=', 'price_col', new StructuredExpression(1)], '"price_col" = NULL', []],
+                'array of structured' => [
+                    ['=', 'price_array', new ArrayExpression(
+                        [
+                            null,
+                            new StructuredExpression(['value' => 11.11, 'currency_code' => 'USD']),
+                            new StructuredExpression(['value' => null, 'currency_code' => null]),
+                        ]
+                    )],
+                    '"price_array" = ARRAY[:qp0, ROW(:qp1, :qp2), ROW(:qp3, :qp4)]',
+                    [':qp0' => null, ':qp1' => 11.11, ':qp2' => 'USD', ':qp3' => null, ':qp4' => null],
+                ],
+                'structured null value' => [['=', 'price_col', new StructuredExpression(null)], '"price_col" = NULL', []],
+                'structured null values' => [
+                    ['=', 'price_col', new StructuredExpression([null, null])], '"price_col" = ROW(:qp0, :qp1)', [':qp0' => null, ':qp1' => null],
+                ],
+                'structured query' => [
+                    ['=', 'price_col', new StructuredExpression(
+                        (new Query(self::getDb()))->select('price')->from('product')->where(['id' => 1])
+                    )],
+                    '[[price_col]] = (SELECT [[price]] FROM [[product]] WHERE [[id]]=:qp0)',
+                    [':qp0' => 1],
+                ],
+                'structured query with type' => [
+                    [
+                        '=',
+                        'price_col',
+                        new StructuredExpression(
+                            (new Query(self::getDb()))->select('price')->from('product')->where(['id' => 1]),
+                            'currency_money_structured'
+                        ),
+                    ],
+                    '[[price_col]] = (SELECT [[price]] FROM [[product]] WHERE [[id]]=:qp0)::currency_money_structured',
+                    [':qp0' => 1],
+                ],
+                'traversable objects are supported in structured' => [
+                    ['=', 'price_col', new StructuredExpression(new TraversableObject([10, 'USD']))],
+                    '[[price_col]] = ROW(:qp0, :qp1)',
+                    [':qp0' => 10, ':qp1' => 'USD'],
+                ],
             ]
         );
     }
@@ -365,6 +429,11 @@ final class QueryBuilderProvider extends \Yiisoft\Db\Tests\Provider\QueryBuilder
                     'VALUES (:qp0, :qp1, :qp2, :qp3) ON CONFLICT ("email") ' .
                     'DO UPDATE SET "address"=EXCLUDED."address", "status"=EXCLUDED."status", "profile_id"=EXCLUDED."profile_id"',
             ],
+            'regular values with unique at not the first position' => [
+                3 => 'INSERT INTO "T_upsert" ("address", "email", "status", "profile_id") ' .
+                    'VALUES (:qp0, :qp1, :qp2, :qp3) ON CONFLICT ("email") ' .
+                    'DO UPDATE SET "address"=EXCLUDED."address", "status"=EXCLUDED."status", "profile_id"=EXCLUDED."profile_id"',
+            ],
             'regular values with update part' => [
                 2 => ['address' => 'foo {{city}}', 'status' => 2, 'orders' => new Expression('"T_upsert"."orders" + 1')],
                 3 => 'INSERT INTO "T_upsert" ("email", "address", "status", "profile_id") ' .
@@ -441,6 +510,14 @@ final class QueryBuilderProvider extends \Yiisoft\Db\Tests\Provider\QueryBuilder
         foreach ($concreteData as $testName => $data) {
             $upsert[$testName] = array_replace($upsert[$testName], $data);
         }
+
+        $upsert['table view'] = [
+            'animal_view',
+            ['id' => 3, 'type' => 'yiiunit\data\ar\Mouse'],
+            true,
+            'INSERT INTO "animal_view" ("id", "type") VALUES (:qp0, :qp1) ON CONFLICT ("id") DO UPDATE SET "type"=EXCLUDED."type"',
+            [':qp0' => 3, ':qp1' => 'yiiunit\data\ar\Mouse'],
+        ];
 
         return $upsert;
     }

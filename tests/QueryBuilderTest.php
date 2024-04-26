@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Yiisoft\Db\Pgsql\Tests;
 
-use Generator;
 use Throwable;
 use Yiisoft\Db\Driver\Pdo\PdoConnectionInterface;
 use Yiisoft\Db\Exception\Exception;
@@ -253,9 +252,14 @@ final class QueryBuilderTest extends CommonQueryBuilderTest
     /**
      * @dataProvider \Yiisoft\Db\Pgsql\Tests\Provider\QueryBuilderProvider::batchInsert
      */
-    public function testBatchInsert(string $table, array $columns, iterable|Generator $rows, string $expected): void
-    {
-        parent::testBatchInsert($table, $columns, $rows, $expected);
+    public function testBatchInsert(
+        string $table,
+        array $columns,
+        iterable $rows,
+        string $expected,
+        array $expectedParams = [],
+    ): void {
+        parent::testBatchInsert($table, $columns, $rows, $expected, $expectedParams);
     }
 
     /**
@@ -641,10 +645,11 @@ final class QueryBuilderTest extends CommonQueryBuilderTest
         string $table,
         array $columns,
         array|string $condition,
-        string $expectedSQL,
-        array $expectedParams
+        array $params,
+        string $expectedSql,
+        array $expectedParams,
     ): void {
-        parent::testUpdate($table, $columns, $condition, $expectedSQL, $expectedParams);
+        parent::testUpdate($table, $columns, $condition, $params, $expectedSql, $expectedParams);
     }
 
     /**
@@ -669,5 +674,11 @@ final class QueryBuilderTest extends CommonQueryBuilderTest
         array|bool $updateColumns
     ): void {
         parent::testUpsertExecute($table, $insertColumns, $updateColumns);
+    }
+
+    /** @dataProvider \Yiisoft\Db\Pgsql\Tests\Provider\QueryBuilderProvider::selectScalar */
+    public function testSelectScalar(array|bool|float|int|string $columns, string $expected): void
+    {
+        parent::testSelectScalar($columns, $expected);
     }
 }

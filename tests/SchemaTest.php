@@ -8,6 +8,7 @@ use JsonException;
 use Throwable;
 use Yiisoft\Db\Command\CommandInterface;
 use Yiisoft\Db\Connection\ConnectionInterface;
+use Yiisoft\Db\Constraint\IndexConstraint;
 use Yiisoft\Db\Driver\Pdo\PdoConnectionInterface;
 use Yiisoft\Db\Exception\Exception;
 use Yiisoft\Db\Exception\InvalidConfigException;
@@ -361,6 +362,7 @@ final class SchemaTest extends CommonSchemaTest
 
     /**
      * @dataProvider \Yiisoft\Db\Pgsql\Tests\Provider\SchemaProvider::constraints
+     * @dataProvider \Yiisoft\Db\Pgsql\Tests\Provider\SchemaProvider::constraintsOfView
      *
      * @throws Exception
      * @throws JsonException
@@ -518,12 +520,12 @@ final class SchemaTest extends CommonSchemaTest
     public function testNotConnectionPDO(): void
     {
         $db = $this->createMock(ConnectionInterface::class);
-        $schema = new Schema($db, DbHelper::getSchemaCache(), 'system');
+        $schema = new Schema($db, DbHelper::getSchemaCache());
 
         $this->expectException(NotSupportedException::class);
         $this->expectExceptionMessage('Only PDO connections are supported.');
 
-        $schema->refreshTableSchema('customer');
+        $schema->refresh();
     }
 
     public function testDomainType(): void
@@ -556,5 +558,89 @@ final class SchemaTest extends CommonSchemaTest
         $this->assertEquals('m', $sex);
 
         $db->close();
+    }
+
+    public function testGetViewNames(): void
+    {
+        $db = $this->getConnection(true);
+
+        $schema = $db->getSchema();
+        $views = $schema->getViewNames();
+
+        $this->assertSame(
+            [
+                'T_constraints_1_view',
+                'T_constraints_2_view',
+                'T_constraints_3_view',
+                'T_constraints_4_view',
+                'animal_view',
+            ],
+            $views,
+        );
+
+        $db->close();
+    }
+
+    /** @dataProvider \Yiisoft\Db\Pgsql\Tests\Provider\StructuredTypeProvider::columns */
+    public function testStructuredTypeColumnSchema(array $columns, string $tableName): void
+    {
+        $this->testStructuredTypeColumnSchemaRecursive($columns, $tableName);
+    }
+
+    private function testStructuredTypeColumnSchemaRecursive(array $columns, string $tableName): void
+    {
+        $this->columnSchema($columns, $tableName);
+
+        $db = $this->getConnection(true);
+        $table = $db->getTableSchema($tableName, true);
+
+        foreach ($table->getColumns() as $name => $column) {
+            if ($column->getType() === Schema::TYPE_STRUCTURED) {
+                $this->assertTrue(
+                    isset($columns[$name]['columns']),
+                    "Columns of structured type `$name` do not exist, dbType is `{$column->getDbType()}`."
+                );
+                $this->testStructuredTypeColumnSchemaRecursive($columns[$name]['columns'], $column->getDbType());
+            }
+        }
+
+        $db->close();
+    }
+
+    public function testTableIndexes(): void
+    {
+        $this->fixture = 'pgsql11.sql';
+
+        if (version_compare($this->getConnection()->getServerVersion(), '11.0', '<')) {
+            $this->markTestSkipped('PostgresSQL < 11.0 does not support INCLUDE clause.');
+        }
+
+        $db = $this->getConnection(true);
+        $schema = $db->getSchema();
+
+        /** @var IndexConstraint[] $tableIndexes */
+        $tableIndexes = $schema->getTableIndexes('table_index');
+
+        $this->assertCount(5, $tableIndexes);
+
+        $this->assertSame(['id'], $tableIndexes[0]->getColumnNames());
+        $this->assertTrue($tableIndexes[0]->isPrimary());
+        $this->assertTrue($tableIndexes[0]->isUnique());
+
+        $this->assertSame(['one_unique'], $tableIndexes[1]->getColumnNames());
+        $this->assertFalse($tableIndexes[1]->isPrimary());
+        $this->assertTrue($tableIndexes[1]->isUnique());
+
+        $this->assertSame(['two_unique_1', 'two_unique_2'], $tableIndexes[2]->getColumnNames());
+        $this->assertFalse($tableIndexes[2]->isPrimary());
+        $this->assertTrue($tableIndexes[2]->isUnique());
+
+        $this->assertSame(['unique_index'], $tableIndexes[3]->getColumnNames());
+        $this->assertFalse($tableIndexes[3]->isPrimary());
+        $this->assertTrue($tableIndexes[3]->isUnique());
+
+        $this->assertSame(['non_unique_index'], $tableIndexes[4]->getColumnNames());
+        $this->assertFalse($tableIndexes[4]->isPrimary());
+        $this->assertFalse($tableIndexes[4]->isUnique());
     }
 }

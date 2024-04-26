@@ -27,6 +27,8 @@ use Yiisoft\Db\Schema\Builder\ColumnInterface;
 use Yiisoft\Db\Schema\Column\ColumnSchemaInterface;
 use Yiisoft\Db\Schema\TableSchemaInterface;
 
+use function array_change_key_case;
+use function array_map;
 use function array_merge;
 use function array_unique;
 use function array_values;
@@ -90,15 +92,19 @@ final class Schema extends AbstractPdoSchema
      * Define the abstract column type as `bit`.
      */
     public const TYPE_BIT = 'bit';
+    /**
+     * Define the abstract column type as `structured`.
+     */
+    public const TYPE_STRUCTURED = 'structured';
 
     /**
-     * @var array The mapping from physical column types (keys) to abstract column types (values).
+     * The mapping from physical column types (keys) to abstract column types (values).
      *
-     * @link https://www.postgresql.org/docs/current/static/datatype.html#DATATYPE-TABLE
+     * @link https://www.postgresql.org/docs/current/datatype.html#DATATYPE-TABLE
      *
-     * @psalm-var string[]
+     * @var string[]
      */
-    private array $typeMap = [
+    private const TYPE_MAP = [
         'bit' => self::TYPE_BIT,
         'bit varying' => self::TYPE_BIT,
         'varbit' => self::TYPE_BIT,
@@ -370,12 +376,19 @@ final class Schema extends AbstractPdoSchema
         FROM "pg_class" AS "tc"
         INNER JOIN "pg_namespace" AS "tcns"
             ON "tcns"."oid" = "tc"."relnamespace"
+        LEFT JOIN pg_rewrite AS rw
+            ON tc.relkind = 'v' AND rw.ev_class = tc.oid AND rw.rulename = '_RETURN'
         INNER JOIN "pg_index" AS "i"
             ON "i"."indrelid" = "tc"."oid"
+                OR rw.ev_action IS NOT NULL
+                AND (SELECT regexp_matches(
+                    rw.ev_action,
+                    '{TARGETENTRY .*? :resorigtbl ' || "i"."indrelid" || ' :resorigcol ' || "i"."indkey"[0] || ' '
+                )) IS NOT NULL
         INNER JOIN "pg_class" AS "ic"
             ON "ic"."oid" = "i"."indexrelid"
         INNER JOIN "pg_attribute" AS "ia"
-            ON "ia"."attrelid" = "i"."indexrelid"
+            ON "ia"."attrelid" = "i"."indexrelid" AND "ia"."attnum" <= cardinality("i"."indoption")
         WHERE "tcns"."nspname" = :schemaName AND "tc"."relname" = :tableName
         ORDER BY "ia"."attnum" ASC
         SQL;
@@ -387,7 +400,7 @@ final class Schema extends AbstractPdoSchema
         ])->queryAll();
 
         /** @psalm-var array[] $indexes */
-        $indexes = $this->normalizeRowKeyCase($indexes, true);
+        $indexes = array_map('array_change_key_case', $indexes);
         $indexes = DbArrayHelper::index($indexes, null, ['name']);
         $result = [];
 
@@ -545,7 +558,7 @@ final class Schema extends AbstractPdoSchema
 
         foreach ($rows as $constraint) {
             /** @psalm-var FindConstraintArray $constraint */
-            $constraint = $this->normalizeRowKeyCase($constraint, false);
+            $constraint = array_change_key_case($constraint);
 
             if ($constraint['foreign_table_schema'] !== $this->defaultSchema) {
                 $foreignTable = $constraint['foreign_table_schema'] . '.' . $constraint['foreign_table_name'];
@@ -639,7 +652,7 @@ final class Schema extends AbstractPdoSchema
         /** @psalm-var array{indexname: string, columnname: string} $row */
         foreach ($this->getUniqueIndexInformation($table) as $row) {
             /** @psalm-var array{indexname: string, columnname: string} $row */
-            $row = $this->normalizeRowKeyCase($row, false);
+            $row = array_change_key_case($row);
 
             $column = $row['columnname'];
 
@@ -716,7 +729,7 @@ final class Schema extends AbstractPdoSchema
                 COALESCE(td.oid, tb.oid, a.atttypid),
                 information_schema._pg_truetypmod(a, t)
             ) AS size,
-            a.attnum = any (ct.conkey) as is_pkey,
+            ct.oid IS NOT NULL AS is_pkey,
             COALESCE(NULLIF(a.attndims, 0), NULLIF(t.typndims, 0), (t.typcategory='A')::int) AS dimension
         FROM
             pg_class c
@@ -727,7 +740,12 @@ final class Schema extends AbstractPdoSchema
                                         OR t.typbasetype > 0 AND t.typbasetype = tb.oid
             LEFT JOIN pg_type td ON t.typndims > 0 AND t.typbasetype > 0 AND tb.typelem = td.oid
             LEFT JOIN pg_namespace d ON d.oid = c.relnamespace
-            LEFT JOIN pg_constraint ct ON ct.conrelid = c.oid AND ct.contype = 'p'
+            LEFT JOIN pg_rewrite rw ON c.relkind = 'v' AND rw.ev_class = c.oid AND rw.rulename = '_RETURN'
+            LEFT JOIN pg_constraint ct ON ct.conrelid = c.oid AND ct.contype = 'p' AND a.attnum = ANY (ct.conkey)
+                OR rw.ev_action IS NOT NULL AND ct.contype = 'p'
+                AND (ARRAY(
+                    SELECT regexp_matches(rw.ev_action, '{TARGETENTRY .*? :resorigtbl (\d+) :resorigcol (\d+) ', 'g')
+                ))[a.attnum:a.attnum] <@ (ct.conrelid::text || ct.conkey::text[])
         WHERE
             a.attnum > 0 AND t.typname != '' AND NOT a.attisdropped
             AND c.relname = :tableName
@@ -748,7 +766,7 @@ final class Schema extends AbstractPdoSchema
         /** @psalm-var ColumnArray $info */
         foreach ($columns as $info) {
             /** @psalm-var ColumnArray $info */
-            $info = $this->normalizeRowKeyCase($info, false);
+            $info = array_change_key_case($info);
 
             $column = $this->loadColumnSchema($info);
 
@@ -813,18 +831,40 @@ final class Schema extends AbstractPdoSchema
             }
         }
 
+        if ($info['type_type'] === 'c') {
+            $column->type(self::TYPE_STRUCTURED);
+            $structured = $this->resolveTableName((string) $column->getDbType());
+
+            if ($this->findColumns($structured)) {
+                $column->columns($structured->getColumns());
+            }
+        } else {
+            $column->type(self::TYPE_MAP[(string) $column->getDbType()] ?? self::TYPE_STRING);
+        }
+
+        $column->phpType($this->getColumnPhpType($column));
         $column->defaultValue($this->normalizeDefaultValue($defaultValue, $column));
+
+        if ($column->getType() === self::TYPE_STRUCTURED && $column->getDimension() === 0) {
+            /** @psalm-var array|null $defaultValue */
+            $defaultValue = $column->getDefaultValue();
+            if (is_array($defaultValue)) {
+                foreach ($column->getColumns() as $structuredColumnName => $structuredColumn) {
+                    $structuredColumn->defaultValue($defaultValue[$structuredColumnName] ?? null);
+                }
+            }
+        }
 
         return $column;
     }
 
     protected function getColumnPhpType(string $type): string
     {
-        if ($type === self::TYPE_BIT) {
-            return self::PHP_TYPE_INTEGER;
-        }
-
-        return parent::getColumnPhpType($type);
+        return match ($type) {
+            self::TYPE_BIT => self::PHP_TYPE_INTEGER,
+            self::TYPE_STRUCTURED => self::PHP_TYPE_ARRAY,
+            default => parent::getColumnPhpType($type),
+        };
     }
 
     protected function createPhpTypeColumnSchema(string $phpType, string $name): ColumnSchemaInterface
@@ -910,10 +950,16 @@ final class Schema extends AbstractPdoSchema
         FROM "pg_class" AS "tc"
         INNER JOIN "pg_namespace" AS "tcns"
             ON "tcns"."oid" = "tc"."relnamespace"
-        INNER JOIN "pg_constraint" AS "c"
-            ON "c"."conrelid" = "tc"."oid"
         INNER JOIN "pg_attribute" AS "a"
-            ON "a"."attrelid" = "c"."conrelid" AND "a"."attnum" = ANY ("c"."conkey")
+            ON "a"."attrelid" = "tc"."oid"
+        LEFT JOIN pg_rewrite AS rw
+            ON "tc"."relkind" = 'v' AND "rw"."ev_class" = "tc"."oid" AND "rw"."rulename" = '_RETURN'
+        INNER JOIN "pg_constraint" AS "c"
+            ON "c"."conrelid" = "tc"."oid" AND "a"."attnum" = ANY ("c"."conkey")
+                OR "rw"."ev_action" IS NOT NULL AND "c"."conrelid" != 0
+                AND (ARRAY(
+                    SELECT regexp_matches("rw"."ev_action", '{TARGETENTRY .*? :resorigtbl (\d+) :resorigcol (\d+) ', 'g')
+                ))["a"."attnum":"a"."attnum"] <@ ("c"."conrelid"::text || "c"."conkey"::text[])
         LEFT JOIN "pg_class" AS "ftc"
             ON "ftc"."oid" = "c"."confrelid"
         LEFT JOIN "pg_namespace" AS "ftcns"
@@ -940,7 +986,7 @@ final class Schema extends AbstractPdoSchema
         ])->queryAll();
 
         /** @psalm-var array[][] $constraints */
-        $constraints = $this->normalizeRowKeyCase($constraints, true);
+        $constraints = array_map('array_change_key_case', $constraints);
         $constraints = DbArrayHelper::index($constraints, null, ['type', 'name']);
 
         $result = [
@@ -1034,6 +1080,8 @@ final class Schema extends AbstractPdoSchema
      * @param string $name The table name.
      *
      * @return array The cache key.
+     *
+     * @psalm-suppress DeprecatedMethod
      */
     protected function getCacheKey(string $name): array
     {
