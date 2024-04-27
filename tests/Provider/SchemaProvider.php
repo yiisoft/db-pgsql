@@ -451,11 +451,14 @@ final class SchemaProvider extends \Yiisoft\Db\Tests\Provider\SchemaProvider
     {
         $constraints = self::constraints();
 
+        $result = [];
+
         foreach ($constraints as $key => $constraint) {
-            $constraints[$key][0] = $constraint[0] . '_view';
+            $result['view ' . $key] = $constraint;
+            $result['view ' . $key][0] = $constraint[0] . '_view';
         }
 
-        return $constraints;
+        return $result;
     }
 
     public static function tableSchemaCacheWithTablePrefixes(): array

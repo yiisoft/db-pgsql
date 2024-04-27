@@ -74,11 +74,13 @@ final class QueryBuilderProvider extends \Yiisoft\Db\Tests\Provider\QueryBuilder
 
                 /* array condition corner cases */
                 [['@>', 'id', new ArrayExpression([1])], '"id" @> ARRAY[:qp0]', [':qp0' => 1]],
-                'scalar can not be converted to array #1' => [['@>', 'id', new ArrayExpression(1)], '"id" @> ARRAY[]', []],
-                [
-                    'scalar can not be converted to array #2' => [
-                        '@>', 'id', new ArrayExpression(false),
-                    ],
+                'scalar can not be converted to array #1' => [
+                    ['@>', 'id', new ArrayExpression(1)],
+                    '"id" @> ARRAY[]',
+                    []
+                ],
+                'scalar can not be converted to array #2' => [
+                    ['@>', 'id', new ArrayExpression(false)],
                     '"id" @> ARRAY[]',
                     [],
                 ],
