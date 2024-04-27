@@ -77,7 +77,7 @@ final class QueryBuilderProvider extends \Yiisoft\Db\Tests\Provider\QueryBuilder
                 'scalar can not be converted to array #1' => [
                     ['@>', 'id', new ArrayExpression(1)],
                     '"id" @> ARRAY[]',
-                    []
+                    [],
                 ],
                 'scalar can not be converted to array #2' => [
                     ['@>', 'id', new ArrayExpression(false)],
