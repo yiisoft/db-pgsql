@@ -57,7 +57,7 @@ final class CommandTest extends CommonCommandTest
     public function testBatchInsert(
         string $table,
         array $columns,
-        array $values,
+        iterable $values,
         string $expected,
         array $expectedParams = [],
         int $insertedRow = 1
