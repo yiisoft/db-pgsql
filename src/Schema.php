@@ -22,7 +22,9 @@ use Yiisoft\Db\Pgsql\Column\BinaryColumnSchema;
 use Yiisoft\Db\Pgsql\Column\BitColumnSchema;
 use Yiisoft\Db\Pgsql\Column\BooleanColumnSchema;
 use Yiisoft\Db\Pgsql\Column\IntegerColumnSchema;
-use Yiisoft\Db\Pgsql\Column\IntegerColumnSchemaInterface;
+use Yiisoft\Db\Pgsql\Column\SequenceColumnSchemaInterface;
+use Yiisoft\Db\Pgsql\Column\StructuredColumnSchema;
+use Yiisoft\Db\Pgsql\Column\StructuredColumnSchemaInterface;
 use Yiisoft\Db\Schema\Builder\ColumnInterface;
 use Yiisoft\Db\Schema\Column\ColumnSchemaInterface;
 use Yiisoft\Db\Schema\TableSchemaInterface;
@@ -92,6 +94,10 @@ final class Schema extends AbstractPdoSchema
      * Define the abstract column type as `bit`.
      */
     public const TYPE_BIT = 'bit';
+    /**
+     * Define the abstract column type as `array`.
+     */
+    public const TYPE_ARRAY = 'array';
     /**
      * Define the abstract column type as `structured`.
      */
@@ -770,12 +776,12 @@ final class Schema extends AbstractPdoSchema
 
             $column = $this->loadColumnSchema($info);
 
-            $table->column($column->getName(), $column);
+            $table->column($info['column_name'], $column);
 
             if ($column->isPrimaryKey()) {
-                $table->primaryKey($column->getName());
+                $table->primaryKey($info['column_name']);
 
-                if ($table->getSequenceName() === null && ($column instanceof IntegerColumnSchemaInterface)) {
+                if ($column instanceof SequenceColumnSchemaInterface && $table->getSequenceName() === null) {
                     $table->sequenceName($column->getSequenceName());
                 }
             }
@@ -799,9 +805,21 @@ final class Schema extends AbstractPdoSchema
             $dbType = $info['type_scheme'] . '.' . $dbType;
         }
 
-        $type = $this->typeMap[$dbType] ?? self::TYPE_STRING;
+        $columns = [];
 
-        $column = $this->createColumnSchema($type, $info['column_name'], dimension: $info['dimension']);
+        if ($info['type_type'] === 'c') {
+            $type = self::TYPE_STRUCTURED;
+            $structured = $this->resolveTableName($dbType);
+
+            if ($this->findColumns($structured)) {
+                $columns = $structured->getColumns();
+            }
+        } else {
+            $type = self::TYPE_MAP[$dbType] ?? self::TYPE_STRING;
+        }
+
+        $column = $this->createColumnSchema($type, dimension: $info['dimension'], columns: $columns);
+        $column->name($info['column_name']);
         $column->dbType($dbType);
         $column->allowNull($info['is_nullable']);
         $column->autoIncrement($info['is_autoinc']);
@@ -820,7 +838,7 @@ final class Schema extends AbstractPdoSchema
          */
         $defaultValue = $info['column_default'];
 
-        if ($column instanceof IntegerColumnSchemaInterface) {
+        if ($column instanceof SequenceColumnSchemaInterface) {
             if (
                 $defaultValue !== null
                 && preg_match("/^nextval\('([^']+)/", $defaultValue, $matches) === 1
@@ -829,25 +847,22 @@ final class Schema extends AbstractPdoSchema
             } elseif ($info['sequence_name'] !== null) {
                 $column->sequenceName($this->resolveTableName($info['sequence_name'])->getFullName());
             }
+        } elseif ($column instanceof ArrayColumnSchema) {
+            /** @var ColumnSchemaInterface $arrayColumn */
+            $arrayColumn = $column->getColumn();
+            $arrayColumn->dbType($dbType);
+            $arrayColumn->enumValues($column->getEnumValues());
+            $arrayColumn->precision($info['numeric_precision']);
+            $arrayColumn->scale($info['numeric_scale']);
+            $arrayColumn->size($info['size'] === null ? null : (int) $info['size']);
         }
 
-        if ($info['type_type'] === 'c') {
-            $column->type(self::TYPE_STRUCTURED);
-            $structured = $this->resolveTableName((string) $column->getDbType());
-
-            if ($this->findColumns($structured)) {
-                $column->columns($structured->getColumns());
-            }
-        } else {
-            $column->type(self::TYPE_MAP[(string) $column->getDbType()] ?? self::TYPE_STRING);
-        }
-
-        $column->phpType($this->getColumnPhpType($column));
         $column->defaultValue($this->normalizeDefaultValue($defaultValue, $column));
 
-        if ($column->getType() === self::TYPE_STRUCTURED && $column->getDimension() === 0) {
+        if ($column instanceof StructuredColumnSchemaInterface) {
             /** @psalm-var array|null $defaultValue */
             $defaultValue = $column->getDefaultValue();
+
             if (is_array($defaultValue)) {
                 foreach ($column->getColumns() as $structuredColumnName => $structuredColumn) {
                     $structuredColumn->defaultValue($defaultValue[$structuredColumnName] ?? null);
@@ -867,13 +882,13 @@ final class Schema extends AbstractPdoSchema
         };
     }
 
-    protected function createPhpTypeColumnSchema(string $phpType, string $name): ColumnSchemaInterface
+    protected function createPhpTypeColumnSchema(string $phpType, string $type): ColumnSchemaInterface
     {
         return match ($phpType) {
-            self::PHP_TYPE_INTEGER => new IntegerColumnSchema($name),
-            self::PHP_TYPE_BOOLEAN => new BooleanColumnSchema($name),
-            self::PHP_TYPE_RESOURCE => new BinaryColumnSchema($name),
-            default => parent::createPhpTypeColumnSchema($phpType, $name),
+            self::PHP_TYPE_INTEGER => new IntegerColumnSchema($type, $phpType),
+            self::PHP_TYPE_BOOLEAN => new BooleanColumnSchema($type, $phpType),
+            self::PHP_TYPE_RESOURCE => new BinaryColumnSchema($type, $phpType),
+            default => parent::createPhpTypeColumnSchema($phpType, $type),
         };
     }
 
@@ -1052,26 +1067,31 @@ final class Schema extends AbstractPdoSchema
     }
 
     /**
-     * @psalm-param array{dimension: int} $info
+     * @psalm-param array{dimension: int, columns: array<string, ColumnSchemaInterface>} $info
      * @psalm-suppress ImplementedParamTypeMismatch
      */
-    protected function createColumnSchema(string $type, string $name, mixed ...$info): ColumnSchemaInterface
+    protected function createColumnSchema(string $type, mixed ...$info): ColumnSchemaInterface
     {
-        $phpType = $this->getColumnPhpType($type);
+        $dimension = isset($info['dimension']) ? (int) $info['dimension'] : 0;
 
-        if ($info['dimension'] > 0) {
-            $column = new ArrayColumnSchema($name);
-            $column->dimension($info['dimension']);
-        } elseif ($type === self::TYPE_BIT) {
-            $column = new BitColumnSchema($name);
-        } else {
-            return parent::createColumnSchema($type, $name);
+        if ($dimension > 0) {
+            $column = new ArrayColumnSchema();
+            $column->dimension($dimension);
+
+            unset($info['dimension']);
+
+            $column->column($this->createColumnSchema($type, ...$info));
+
+            return $column;
         }
 
-        $column->type($type);
-        $column->phpType($phpType);
+        $phpType = $this->getColumnPhpType($type);
 
-        return $column;
+        return match ($type) {
+            self::TYPE_BIT => new BitColumnSchema($type, $phpType),
+            self::TYPE_STRUCTURED => (new StructuredColumnSchema($type, $phpType))->columns($info['columns'] ?? []),
+            default => parent::createColumnSchema($type),
+        };
     }
 
     /**

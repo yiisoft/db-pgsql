@@ -6,7 +6,7 @@ namespace Yiisoft\Db\Pgsql;
 
 use Traversable;
 use Yiisoft\Db\Expression\ExpressionInterface;
-use Yiisoft\Db\Schema\ColumnSchemaInterface;
+use Yiisoft\Db\Schema\Column\ColumnSchemaInterface;
 
 use function array_key_exists;
 use function array_keys;

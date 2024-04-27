@@ -111,7 +111,7 @@ final class StructuredTypeProvider extends \Yiisoft\Db\Tests\Provider\SchemaProv
                         ],
                     ],
                     'price_array' => [
-                        'type' => 'structured',
+                        'type' => 'array',
                         'dbType' => 'currency_money_structured',
                         'phpType' => 'array',
                         'primaryKey' => false,
@@ -157,7 +157,7 @@ final class StructuredTypeProvider extends \Yiisoft\Db\Tests\Provider\SchemaProv
                         ],
                     ],
                     'price_array2' => [
-                        'type' => 'structured',
+                        'type' => 'array',
                         'dbType' => 'currency_money_structured',
                         'phpType' => 'array',
                         'primaryKey' => false,
@@ -213,7 +213,6 @@ final class StructuredTypeProvider extends \Yiisoft\Db\Tests\Provider\SchemaProv
                             'price_from' => ['value' => 0.0, 'currency_code' => 'USD'],
                             'price_to' => ['value' => 100.0, 'currency_code' => 'USD'],
                         ],
-                        'dimension' => 0,
                         'columns' => [
                             'price_from' => [
                                 'type' => 'structured',

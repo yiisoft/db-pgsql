@@ -114,7 +114,7 @@ final class ColumnSchemaTest extends CommonColumnSchemaTest
      */
     public function testPhpTypeCastBool(): void
     {
-        $columnSchema = new BooleanColumnSchema('boolean');
+        $columnSchema = new BooleanColumnSchema();
 
         $this->assertFalse($columnSchema->phpTypeCast('f'));
         $this->assertTrue($columnSchema->phpTypeCast('t'));
@@ -333,54 +333,61 @@ final class ColumnSchemaTest extends CommonColumnSchemaTest
     /** @dataProvider \Yiisoft\Db\Pgsql\Tests\Provider\ColumnSchemaProvider::dbTypecastArrayColumns */
     public function testDbTypecastArrayColumnSchema(string $dbType, string $type, string $phpType, array $values): void
     {
-        $arrayCol = new ArrayColumnSchema('array_col');
+        $arrayCol = new ArrayColumnSchema($type, $phpType);
         $arrayCol->dbType($dbType);
-        $arrayCol->type($type);
-        $arrayCol->phpType($phpType);
 
         foreach ($values as [$dimension, $expected, $value]) {
             $arrayCol->dimension($dimension);
-            $this->assertEquals(new ArrayExpression($expected, $dbType, $dimension), $arrayCol->dbTypecast($value));
+            $dbValue = $arrayCol->dbTypecast($value);
+
+            $this->assertInstanceOf(ArrayExpression::class, $dbValue);
+            $this->assertSame($dbType, $dbValue->getType());
+            $this->assertSame($dimension, $dbValue->getDimension());
+
+            if (is_object($expected)) {
+                $this->assertEquals($expected, $dbValue->getValue());
+            }
         }
     }
 
     /** @dataProvider \Yiisoft\Db\Pgsql\Tests\Provider\ColumnSchemaProvider::phpTypecastArrayColumns */
     public function testPhpTypecastArrayColumnSchema(string $dbType, string $type, string $phpType, array $values): void
     {
-        $arrayCol = new ArrayColumnSchema('array_col');
+        $arrayCol = new ArrayColumnSchema($type, $phpType);
         $arrayCol->dbType($dbType);
-        $arrayCol->type($type);
-        $arrayCol->phpType($phpType);
 
         foreach ($values as [$dimension, $expected, $value]) {
             $arrayCol->dimension($dimension);
-            $this->assertEquals($expected, $arrayCol->phpTypecast($value));
+            $this->assertSame($expected, $arrayCol->phpTypecast($value));
         }
     }
 
     public function testIntegerColumnSchema()
     {
-        $intCol = new IntegerColumnSchema('int_col');
+        $intCol = new IntegerColumnSchema();
+
+        $this->assertNull($intCol->getSequenceName());
+
         $intCol->sequenceName('int_seq');
 
-        $this->assertSame('int_col', $intCol->getName());
         $this->assertSame('int_seq', $intCol->getSequenceName());
     }
 
     public function testBigIntColumnSchema()
     {
-        $bigintCol = new BigIntColumnSchema('bigint_col');
+        $bigintCol = new BigIntColumnSchema();
+
+        $this->assertNull($bigintCol->getSequenceName());
+
         $bigintCol->sequenceName('bigint_seq');
 
-        $this->assertSame('bigint_col', $bigintCol->getName());
         $this->assertSame('bigint_seq', $bigintCol->getSequenceName());
     }
 
     public function testArrayColumnSchema()
     {
-        $arrayCol = new ArrayColumnSchema('array_col');
+        $arrayCol = new ArrayColumnSchema();
 
-        $this->assertSame('array_col', $arrayCol->getName());
         $this->assertSame(1, $arrayCol->getDimension());
 
         $this->assertNull($arrayCol->dbTypecast(null));

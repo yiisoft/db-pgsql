@@ -6,7 +6,7 @@ namespace Yiisoft\Db\Pgsql\Column;
 
 use Yiisoft\Db\Schema\Column\ColumnSchemaInterface;
 
-interface IntegerColumnSchemaInterface extends ColumnSchemaInterface
+interface SequenceColumnSchemaInterface extends ColumnSchemaInterface
 {
     /**
      * @return string|null name of an associated sequence if column is auto incremental.

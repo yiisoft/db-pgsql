@@ -4,16 +4,18 @@ declare(strict_types=1);
 
 namespace Yiisoft\Db\Pgsql\Tests\Support;
 
-use Yiisoft\Db\Pgsql\ColumnSchema;
+use Yiisoft\Db\Schema\Column\ColumnSchemaInterface;
+use Yiisoft\Db\Schema\Column\DoubleColumnSchema;
+use Yiisoft\Db\Schema\Column\StringColumnSchema;
+use Yiisoft\Db\Schema\SchemaInterface;
 
 class ColumnSchemaBuilder
 {
-    public static function numeric(string $name, int|null $precision, int|null $scale, mixed $defaultValue = null): ColumnSchema
+    public static function numeric(string $name, int|null $precision, int|null $scale, mixed $defaultValue = null): ColumnSchemaInterface
     {
-        $column = new ColumnSchema($name);
-        $column->type('decimal');
+        $column = new DoubleColumnSchema(SchemaInterface::TYPE_DECIMAL);
+        $column->name($name);
         $column->dbType('numeric');
-        $column->phpType('double');
         $column->precision($precision);
         $column->scale($scale);
         $column->defaultValue($defaultValue);
@@ -21,12 +23,11 @@ class ColumnSchemaBuilder
         return $column;
     }
 
-    public static function char(string $name, int|null $size, mixed $defaultValue = null): ColumnSchema
+    public static function char(string $name, int|null $size, mixed $defaultValue = null): ColumnSchemaInterface
     {
-        $column = new ColumnSchema($name);
-        $column->type('char');
+        $column = new StringColumnSchema(SchemaInterface::TYPE_CHAR);
+        $column->name($name);
         $column->dbType('bpchar');
-        $column->phpType('string');
         $column->size($size);
         $column->defaultValue($defaultValue);
 

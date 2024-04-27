@@ -14,6 +14,7 @@ use Yiisoft\Db\Pgsql\Column\BitColumnSchema;
 use Yiisoft\Db\Pgsql\Column\BooleanColumnSchema;
 use Yiisoft\Db\Pgsql\Column\IntegerColumnSchema;
 use Yiisoft\Db\Pgsql\Schema;
+use Yiisoft\Db\Pgsql\StructuredExpression;
 use Yiisoft\Db\Schema\SchemaInterface;
 
 use function fopen;
@@ -190,6 +191,35 @@ class ColumnSchemaProvider extends \Yiisoft\Db\Tests\Provider\ColumnSchemaProvid
                     [2, [['1011', '1001', null]], [[0b1011, '1001', null]]],
                 ],
             ],
+            [
+                'price_composite',
+                Schema::TYPE_STRUCTURED,
+                SchemaInterface::PHP_TYPE_ARRAY,
+                [
+                    [
+                        1,
+                        [
+                            new StructuredExpression(['value' => 10, 'currency' => 'USD'], 'price_composite'),
+                            null,
+                        ],
+                        [
+                            ['value' => 10, 'currency' => 'USD'],
+                            null,
+                        ],
+                    ],
+                    [
+                        2,
+                        [[
+                            new StructuredExpression(['value' => 10, 'currency' => 'USD'], 'price_composite'),
+                            null,
+                        ]],
+                        [[
+                            ['value' => 10, 'currency' => 'USD'],
+                            null,
+                        ]],
+                    ],
+                ],
+            ],
         ];
     }
 
@@ -271,6 +301,15 @@ class ColumnSchemaProvider extends \Yiisoft\Db\Tests\Provider\ColumnSchemaProvid
                 [
                     [1, [0b1011, 0b1001, null], '{1011,1001,}'],
                     [2, [[0b1011, 0b1001, null]], '{{1011,1001,}}'],
+                ],
+            ],
+            [
+                'price_composite',
+                Schema::TYPE_STRUCTURED,
+                SchemaInterface::PHP_TYPE_ARRAY,
+                [
+                    [1, [['10', 'USD'], null], '{"(10,USD)",}'],
+                    [2, [[['10', 'USD'], null]], '{{"(10,USD)",}}'],
                 ],
             ],
         ];
