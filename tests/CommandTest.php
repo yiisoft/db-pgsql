@@ -56,13 +56,13 @@ final class CommandTest extends CommonCommandTest
      */
     public function testBatchInsert(
         string $table,
-        array $columns,
         iterable $values,
+        array $columns,
         string $expected,
         array $expectedParams = [],
         int $insertedRow = 1
     ): void {
-        parent::testBatchInsert($table, $columns, $values, $expected, $expectedParams, $insertedRow);
+        parent::testBatchInsert($table, $values, $columns, $expected, $expectedParams, $insertedRow);
     }
 
     /**
@@ -113,7 +113,7 @@ final class CommandTest extends CommonCommandTest
         $db = $this->getConnection(true);
 
         $command = $db->createCommand();
-        $command->batchInsert('{{bool_values}}', ['bool_col'], [[true], [false]]);
+        $command->insertBatch('{{bool_values}}', [[true], [false]], ['bool_col']);
 
         $this->assertSame(2, $command->execute());
 
