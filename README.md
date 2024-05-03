@@ -25,8 +25,8 @@ as stored procedures and server-side cursors.
 
 ## Support version
 
-|  PHP | Pgsql Version            |  CI-Actions
-|:----:|:------------------------:|:---:|
+| PHP | Pgsql Version | CI-Actions
+|----|------------------------|---|
 |**8.0 - 8.2**| **9.0 - 15.0**|[![build](https://github.com/yiisoft/db-pgsql/actions/workflows/build.yml/badge.svg?branch=dev)](https://github.com/yiisoft/db-pgsql/actions/workflows/build.yml) [![Mutation testing badge](https://img.shields.io/endpoint?style=flat&url=https%3A%2F%2Fbadge-api.stryker-mutator.io%2Fgithub.com%2Fyiisoft%2Fdb-pgsql%2Fmaster)](https://dashboard.stryker-mutator.io/reports/github.com/yiisoft/db-pgsql/master) [![static analysis](https://github.com/yiisoft/db-pgsql/actions/workflows/static.yml/badge.svg?branch=dev)](https://github.com/yiisoft/db-pgsql/actions/workflows/static.yml) [![type-coverage](https://shepherd.dev/github/yiisoft/db-pgsql/coverage.svg)](https://shepherd.dev/github/yiisoft/db-pgsql)
 
 ## Installation
@@ -39,24 +39,19 @@ composer require yiisoft/db-pgsql
 
 ## Documentation
 
-English:
-
 - For config connection to PostgreSQL database check [Connecting PostgreSQL](https://github.com/yiisoft/db/blob/master/docs/en/connection/pgsql.md).
 - [Check the documentation](https://github.com/yiisoft/db/blob/master/docs/en/README.md) to learn about usage.
-
-Português - Brasil:
-
-- Para configurar a conexão com o PostgreSQL leia [Connecting PostgreSQL](https://github.com/yiisoft/db/blob/master/docs/pt-BR/connection/pgsql.md).s
-- [Confira a documentação](https://github.com/yiisoft/db/blob/master/docs/pt-BR/README.md) para aprender como usar.
-
-Testing:
-
 - [Internals](docs/internals.md)
-
-## Support
 
 If you need help or have a question, the [Yii Forum](https://forum.yiiframework.com/c/yii-3-0/63) is a good place for that.
 You may also check out other [Yii Community Resources](https://www.yiiframework.com/community).
+
+## License
+
+The Yii DataBase PostgreSQL Extension is free software. It is released under the terms of the BSD License.
+Please see [`LICENSE`](./LICENSE.md) for more information.
+
+Maintained by [Yii Software](https://www.yiiframework.com/).
 
 ## Support the project
 
@@ -69,10 +64,3 @@ You may also check out other [Yii Community Resources](https://www.yiiframework.
 [![Telegram](https://img.shields.io/badge/telegram-join-1DA1F2?style=flat&logo=telegram)](https://t.me/yii3en)
 [![Facebook](https://img.shields.io/badge/facebook-join-1DA1F2?style=flat&logo=facebook&logoColor=ffffff)](https://www.facebook.com/groups/yiitalk)
 [![Slack](https://img.shields.io/badge/slack-join-1DA1F2?style=flat&logo=slack)](https://yiiframework.com/go/slack)
-
-## License
-
-The Yii DataBase PostgreSQL Extension is free software. It is released under the terms of the BSD License.
-Please see [`LICENSE`](./LICENSE.md) for more information.
-
-Maintained by [Yii Software](https://www.yiiframework.com/).
