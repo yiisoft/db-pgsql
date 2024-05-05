@@ -90,6 +90,10 @@ use function substr;
  *   foreign_table_schema: string,
  *   foreign_column_name: string,
  * }
+ * @psalm-type CreateInfo = array{
+ *   dimension?: int|string,
+ *   columns?: array<string, ColumnSchemaInterface>
+ * }
  */
 final class Schema extends AbstractPdoSchema
 {
@@ -1073,11 +1077,12 @@ final class Schema extends AbstractPdoSchema
     }
 
     /**
-     * @psalm-param array{dimension: int, columns: array<string, ColumnSchemaInterface>} $info
+     * @psalm-param CreateInfo $info
      * @psalm-suppress ImplementedParamTypeMismatch
      */
     protected function createColumnSchema(string $type, mixed ...$info): ColumnSchemaInterface
     {
+        /** @var CreateInfo $info */
         $dimension = isset($info['dimension']) ? (int) $info['dimension'] : 0;
 
         if ($dimension > 0) {

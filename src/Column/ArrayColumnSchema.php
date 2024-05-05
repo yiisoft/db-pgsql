@@ -116,9 +116,6 @@ final class ArrayColumnSchema extends AbstractColumnSchema
         return new ArrayExpression($value, $this->getDbType(), $this->dimension);
     }
 
-    /**
-     * @param string|null $value
-     */
     public function phpTypecast(mixed $value): array|null
     {
         if (is_string($value)) {

@@ -35,13 +35,11 @@ final class BitColumnSchema extends AbstractColumnSchema
         };
     }
 
-    /**
-     * @param int|string|null $value
-     */
     public function phpTypecast(mixed $value): int|null
     {
+        /** @var int|string|null $value */
         if (is_string($value)) {
-            /** @psalm-var int */
+            /** @var int */
             return bindec($value);
         }
 

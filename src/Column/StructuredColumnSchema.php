@@ -27,7 +27,7 @@ final class StructuredColumnSchema extends AbstractColumnSchema implements Struc
     private array $columns = [];
 
     public function __construct(
-        string|null $type = Schema::TYPE_STRUCTURED,
+        string $type = Schema::TYPE_STRUCTURED,
         string|null $phpType = SchemaInterface::PHP_TYPE_ARRAY,
     ) {
         parent::__construct($type, $phpType);
