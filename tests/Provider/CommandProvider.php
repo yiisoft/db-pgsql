@@ -18,9 +18,8 @@ final class CommandProvider extends \Yiisoft\Db\Tests\Provider\CommandProvider
     {
         $batchInsert = parent::batchInsert();
 
-        $batchInsert['batchInsert binds params from jsonExpression'] = [
+        $batchInsert['binds params from jsonExpression'] = [
             '{{%type}}',
-            ['json_col', 'int_col', 'float_col', 'char_col', 'bool_col'],
             [
                 [
                     new JsonExpression(
@@ -32,6 +31,7 @@ final class CommandProvider extends \Yiisoft\Db\Tests\Provider\CommandProvider
                     false,
                 ],
             ],
+            ['json_col', 'int_col', 'float_col', 'char_col', 'bool_col'],
             'expected' => <<<SQL
             INSERT INTO "type" ("json_col", "int_col", "float_col", "char_col", "bool_col") VALUES (:qp0, :qp1, :qp2, :qp3, :qp4)
             SQL,
@@ -44,30 +44,30 @@ final class CommandProvider extends \Yiisoft\Db\Tests\Provider\CommandProvider
             ],
         ];
 
-        $batchInsert['batchInsert binds params from arrayExpression'] = [
+        $batchInsert['binds params from arrayExpression'] = [
             '{{%type}}',
-            ['intarray_col', 'int_col', 'float_col', 'char_col', 'bool_col'],
             [[new ArrayExpression([1,null,3], 'int'), 1, 1, '', false]],
+            ['intarray_col', 'int_col', 'float_col', 'char_col', 'bool_col'],
             'expected' => <<<SQL
             INSERT INTO "type" ("intarray_col", "int_col", "float_col", "char_col", "bool_col") VALUES (ARRAY[:qp0, :qp1, :qp2]::int[], :qp3, :qp4, :qp5, :qp6)
             SQL,
             'expectedParams' => [':qp0' => 1, ':qp1' => null, ':qp2' => 3, ':qp3' => 1, ':qp4' => 1.0, ':qp5' => '', ':qp6' => false],
         ];
 
-        $batchInsert['batchInsert casts string to int according to the table schema'] = [
+        $batchInsert['casts string to int according to the table schema'] = [
             '{{%type}}',
-            ['int_col', 'float_col', 'char_col', 'bool_col'],
             [['3', '1.1', '', false]],
+            ['int_col', 'float_col', 'char_col', 'bool_col'],
             'expected' => <<<SQL
             INSERT INTO "type" ("int_col", "float_col", "char_col", "bool_col") VALUES (:qp0, :qp1, :qp2, :qp3)
             SQL,
             'expectedParams' => [':qp0' => 3, ':qp1' => 1.1, ':qp2' => '', ':qp3' => false],
         ];
 
-        $batchInsert['batchInsert binds params from jsonbExpression'] = [
+        $batchInsert['binds params from jsonbExpression'] = [
             '{{%type}}',
-            ['jsonb_col', 'int_col', 'float_col', 'char_col', 'bool_col'],
             [[new JsonExpression(['a' => true]), 1, 1.1, '', false]],
+            ['jsonb_col', 'int_col', 'float_col', 'char_col', 'bool_col'],
             'expected' => <<<SQL
             INSERT INTO "type" ("jsonb_col", "int_col", "float_col", "char_col", "bool_col") VALUES (:qp0, :qp1, :qp2, :qp3, :qp4)
             SQL,
