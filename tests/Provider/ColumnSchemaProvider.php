@@ -304,7 +304,7 @@ class ColumnSchemaProvider extends \Yiisoft\Db\Tests\Provider\ColumnSchemaProvid
                 ],
             ],
             [
-                'price_composite',
+                'price_structured',
                 Schema::TYPE_STRUCTURED,
                 SchemaInterface::PHP_TYPE_ARRAY,
                 [

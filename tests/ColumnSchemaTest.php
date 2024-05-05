@@ -109,17 +109,6 @@ final class ColumnSchemaTest extends CommonColumnSchemaTest
         $db->close();
     }
 
-    /**
-     * @throws JsonException
-     */
-    public function testPhpTypeCastBool(): void
-    {
-        $columnSchema = new BooleanColumnSchema();
-
-        $this->assertFalse($columnSchema->phpTypeCast('f'));
-        $this->assertTrue($columnSchema->phpTypeCast('t'));
-    }
-
     public function testDbTypeCastJson(): void
     {
         $db = $this->getConnection(true);
@@ -193,15 +182,6 @@ final class ColumnSchemaTest extends CommonColumnSchemaTest
         $this->assertSame(-123, $tableSchema->getColumn('bigint_col')->getDefaultValue());
         $this->assertSame(-12345.6789, $tableSchema->getColumn('float_col')->getDefaultValue());
         $this->assertSame(-33.22, $tableSchema->getColumn('numeric_col')->getDefaultValue());
-    }
-
-    public function testDbTypeCastBit()
-    {
-        $db = $this->getConnection(true);
-        $schema = $db->getSchema();
-        $tableSchema = $schema->getTableSchema('type');
-
-        $this->assertSame('01100100', $tableSchema->getColumn('bit_col')->dbTypecast('01100100'));
     }
 
     public function testPrimaryKeyOfView()
@@ -309,6 +289,7 @@ final class ColumnSchemaTest extends CommonColumnSchemaTest
         $this->assertInstanceOf(BooleanColumnSchema::class, $tableSchema->getColumn('bool_col'));
         $this->assertInstanceOf(BitColumnSchema::class, $tableSchema->getColumn('bit_col'));
         $this->assertInstanceOf(ArrayColumnSchema::class, $tableSchema->getColumn('intarray_col'));
+        $this->assertInstanceOf(IntegerColumnSchema::class, $tableSchema->getColumn('intarray_col')->getColumn());
         $this->assertInstanceOf(JsonColumnSchema::class, $tableSchema->getColumn('json_col'));
     }
 

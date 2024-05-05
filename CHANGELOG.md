@@ -3,6 +3,8 @@
 ## 2.0.0 under development
 
 - Enh #336: Implement `SqlParser` and `ExpressionBuilder` driver classes (@Tigrov)
+- Enh #315: Implement `ColumnSchemaInterface` classes according to the data type of database table columns
+  for type casting performance. Related with yiisoft/db#752 (@Tigrov)
 
 ## 1.3.0 March 21, 2024
 
@@ -23,8 +25,6 @@
 - Enh #321: Move methods from `Command` to `AbstractPdoCommand` class (@Tigrov)
 - Bug #302: Fix incorrect convert string value for BIT type (@Tigrov)
 - Bug #309: Fix retrieving sequence name from default value (@Tigrov)
-- Enh #315: Implement `ColumnSchemaInterface` classes according to the data type of database table columns
-  for type casting performance. Related with yiisoft/db#752 (@Tigrov)
 - Bug #313: Refactor `DMLQueryBuilder`, related with yiisoft/db#746 (@Tigrov)
 
 ## 1.1.0 July 24, 2023

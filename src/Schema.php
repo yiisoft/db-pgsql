@@ -18,6 +18,7 @@ use Yiisoft\Db\Exception\NotSupportedException;
 use Yiisoft\Db\Expression\Expression;
 use Yiisoft\Db\Helper\DbArrayHelper;
 use Yiisoft\Db\Pgsql\Column\ArrayColumnSchema;
+use Yiisoft\Db\Pgsql\Column\BigIntColumnSchema;
 use Yiisoft\Db\Pgsql\Column\BinaryColumnSchema;
 use Yiisoft\Db\Pgsql\Column\BitColumnSchema;
 use Yiisoft\Db\Pgsql\Column\BooleanColumnSchema;
@@ -27,6 +28,8 @@ use Yiisoft\Db\Pgsql\Column\StructuredColumnSchema;
 use Yiisoft\Db\Pgsql\Column\StructuredColumnSchemaInterface;
 use Yiisoft\Db\Schema\Builder\ColumnInterface;
 use Yiisoft\Db\Schema\Column\ColumnSchemaInterface;
+use Yiisoft\Db\Schema\Column\StringColumnSchema;
+use Yiisoft\Db\Schema\SchemaInterface;
 use Yiisoft\Db\Schema\TableSchemaInterface;
 
 use function array_change_key_case;
@@ -873,22 +876,25 @@ final class Schema extends AbstractPdoSchema
         return $column;
     }
 
-    protected function getColumnPhpType(string $type): string
+    protected function getColumnPhpType(string $type, bool $isUnsigned = false): string
     {
         return match ($type) {
             self::TYPE_BIT => self::PHP_TYPE_INTEGER,
             self::TYPE_STRUCTURED => self::PHP_TYPE_ARRAY,
-            default => parent::getColumnPhpType($type),
+            default => parent::getColumnPhpType($type, $isUnsigned),
         };
     }
 
-    protected function createPhpTypeColumnSchema(string $phpType, string $type): ColumnSchemaInterface
+    protected function createColumnSchemaFromPhpType(string $phpType, string $type): ColumnSchemaInterface
     {
         return match ($phpType) {
+            self::PHP_TYPE_STRING => $type === SchemaInterface::TYPE_BIGINT
+                ? new BigIntColumnSchema($type, $phpType)
+                : new StringColumnSchema($type, $phpType),
             self::PHP_TYPE_INTEGER => new IntegerColumnSchema($type, $phpType),
             self::PHP_TYPE_BOOLEAN => new BooleanColumnSchema($type, $phpType),
             self::PHP_TYPE_RESOURCE => new BinaryColumnSchema($type, $phpType),
-            default => parent::createPhpTypeColumnSchema($phpType, $type),
+            default => parent::createColumnSchemaFromPhpType($phpType, $type),
         };
     }
 
@@ -1090,6 +1096,9 @@ final class Schema extends AbstractPdoSchema
         return match ($type) {
             self::TYPE_BIT => new BitColumnSchema($type, $phpType),
             self::TYPE_STRUCTURED => (new StructuredColumnSchema($type, $phpType))->columns($info['columns'] ?? []),
+            self::TYPE_BIGINT => PHP_INT_SIZE !== 8
+                ? new BigIntColumnSchema($type, $phpType)
+                : new IntegerColumnSchema($type, $phpType),
             default => parent::createColumnSchema($type),
         };
     }
