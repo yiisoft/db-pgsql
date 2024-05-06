@@ -31,7 +31,7 @@ as stored procedures and server-side cursors.
 
 ## Installation
 
-The package could be installed via composer:
+The package could be installed with [Composer](https://getcomposer.org):
 
 ```shell
 composer require yiisoft/db-pgsql
