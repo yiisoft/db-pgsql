@@ -3,7 +3,7 @@
         <img src="https://yiisoft.github.io/docs/images/yii_logo.svg" height="100px">
     </a>
     <a href="https://www.postgresql.org/" target="_blank">
-        <img src="https://www.postgresql.org/media/img/about/press/elephant.png" height="80px">
+        <img src="https://www.postgresql.org/media/img/about/press/elephant.png" height="80px" alt="PostgreSQL">
     </a>
     <h1 align="center">PostgreSQL driver for Yii Database</h1>
     <br>
