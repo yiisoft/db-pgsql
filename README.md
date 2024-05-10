@@ -5,7 +5,7 @@
     <a href="https://www.postgresql.org/" target="_blank">
         <img src="https://www.postgresql.org/media/img/about/press/elephant.png" height="80px" alt="PostgreSQL">
     </a>
-    <h1 align="center">PostgreSQL driver for Yii Database</h1>
+    <h1 align="center">Yii Database PostgreSQL driver</h1>
     <br>
 </p>
 
@@ -48,7 +48,7 @@ You may also check out other [Yii Community Resources](https://www.yiiframework.
 
 ## License
 
-The Yii DataBase PostgreSQL Extension is free software. It is released under the terms of the BSD License.
+The Yii Database PostgreSQL driver is free software. It is released under the terms of the BSD License.
 Please see [`LICENSE`](./LICENSE.md) for more information.
 
 Maintained by [Yii Software](https://www.yiiframework.com/).
