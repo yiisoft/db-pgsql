@@ -10,7 +10,7 @@ All our packages have github actions by default, so you can test your [contribut
 
 For greater ease it is recommended to use docker containers.
 
-You can use the [docker-compose.yml](https://docs.docker.com/compose/compose-file/) file with PostgreSQL 15
+You can use the [docker-compose.yml](../docker-compose.yml) file with PostgreSQL 15
 that is in the root of the package:
 
 ```shell
@@ -67,7 +67,7 @@ The code is statically analyzed with [Psalm](https://psalm.dev/). To run static 
 ./vendor/bin/psalm
 ```
 
-## Rector
+## Code style
 
 Use [Rector](https://github.com/rectorphp/rector) to make codebase follow some specific rules or
 use either newest or any specific version of PHP:
@@ -76,7 +76,7 @@ use either newest or any specific version of PHP:
 ./vendor/bin/rector
 ```
 
-## Composer require checker
+## Dependencies
 
 This package uses [composer-require-checker](https://github.com/maglnet/ComposerRequireChecker) to check if all dependencies are correctly defined in `composer.json`.
 
