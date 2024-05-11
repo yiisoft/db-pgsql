@@ -161,7 +161,7 @@ final class ArrayColumnSchema extends AbstractColumnSchema
             return [];
         }
 
-        if ($dimension === 1) {
+        if ($dimension <= 1) {
             return array_map(
                 [$this->getColumn(), 'dbTypecast'],
                 $value instanceof Traversable
