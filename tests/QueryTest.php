@@ -53,7 +53,7 @@ final class QueryTest extends CommonQueryTest
         $db = $this->getConnection(true);
 
         $command = $db->createCommand();
-        $command->batchInsert('bool_values', ['bool_col'], [[true], [false]])->execute();
+        $command->insertBatch('bool_values', [[true], [false]], ['bool_col'])->execute();
 
         $this->assertSame(1, (new Query($db))->from('bool_values')->where('bool_col = TRUE')->count());
         $this->assertSame(1, (new Query($db))->from('bool_values')->where('bool_col = FALSE')->count());

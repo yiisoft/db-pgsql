@@ -3,6 +3,7 @@
 ## 2.0.0 under development
 
 - Enh #336: Implement `SqlParser` and `ExpressionBuilder` driver classes (@Tigrov)
+- Chg #348: Replace call of `SchemaInterface::getRawTableName()` to `QuoterInterface::getRawTableName()` (@Tigrov)
 
 ## 1.3.0 March 21, 2024
 
