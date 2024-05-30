@@ -1,0 +1,23 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Yiisoft\Db\Pgsql\Column;
+
+trait SequenceColumnSchemaTrait
+{
+    /**
+     * @var string|null Name of an associated sequence if column is auto incremental.
+     */
+    private string|null $sequenceName = null;
+
+    public function getSequenceName(): string|null
+    {
+        return $this->sequenceName;
+    }
+
+    public function sequenceName(string|null $sequenceName = null): void
+    {
+        $this->sequenceName = $sequenceName;
+    }
+}
