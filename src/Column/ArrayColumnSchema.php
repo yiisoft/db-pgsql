@@ -45,9 +45,10 @@ final class ArrayColumnSchema extends AbstractColumnSchema
     /**
      * Set column of an array item.
      */
-    public function column(ColumnSchemaInterface|null $column): void
+    public function column(ColumnSchemaInterface|null $column): static
     {
         $this->column = $column;
+        return $this;
     }
 
     /**
@@ -88,9 +89,10 @@ final class ArrayColumnSchema extends AbstractColumnSchema
     /**
      * Set dimension of an array, must be greater than 0.
      */
-    public function dimension(int $dimension): void
+    public function dimension(int $dimension): static
     {
         $this->dimension = $dimension;
+        return $this;
     }
 
     /**

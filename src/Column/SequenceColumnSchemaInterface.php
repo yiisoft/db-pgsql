@@ -16,5 +16,5 @@ interface SequenceColumnSchemaInterface extends ColumnSchemaInterface
     /**
      * Set the name of an associated sequence if a column is auto incremental.
      */
-    public function sequenceName(string|null $sequenceName): void;
+    public function sequenceName(string|null $sequenceName): static;
 }

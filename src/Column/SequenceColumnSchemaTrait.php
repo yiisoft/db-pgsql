@@ -16,8 +16,9 @@ trait SequenceColumnSchemaTrait
         return $this->sequenceName;
     }
 
-    public function sequenceName(string|null $sequenceName = null): void
+    public function sequenceName(string|null $sequenceName): static
     {
         $this->sequenceName = $sequenceName;
+        return $this;
     }
 }
