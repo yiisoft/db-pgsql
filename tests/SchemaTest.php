@@ -574,6 +574,8 @@ final class SchemaTest extends CommonSchemaTest
                 'T_constraints_3_view',
                 'T_constraints_4_view',
                 'animal_view',
+                'mat_view_with_unique',
+                'mat_view_without_unique',
             ],
             $views,
         );
