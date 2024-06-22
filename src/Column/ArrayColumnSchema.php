@@ -148,7 +148,9 @@ final class ArrayColumnSchema extends AbstractColumnSchema
     /**
      * Recursively converts array values for use in a db query.
      *
+     * @param mixed $value The array or iterable object.
      * @param int $dimension The array dimension. Should be more than 0.
+     *
      * @return array|null Converted values.
      */
     private function dbTypecastArray(mixed $value, int $dimension): array|null
