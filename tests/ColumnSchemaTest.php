@@ -347,10 +347,12 @@ final class ColumnSchemaTest extends CommonColumnSchemaTest
         $intCol = new IntegerColumnSchema();
 
         $this->assertNull($intCol->getSequenceName());
-
-        $intCol->sequenceName('int_seq');
-
+        $this->assertSame($intCol, $intCol->sequenceName('int_seq'));
         $this->assertSame('int_seq', $intCol->getSequenceName());
+
+        $intCol->sequenceName(null);
+
+        $this->assertNull($intCol->getSequenceName());
     }
 
     public function testBigIntColumnSchema()
@@ -358,10 +360,12 @@ final class ColumnSchemaTest extends CommonColumnSchemaTest
         $bigintCol = new BigIntColumnSchema();
 
         $this->assertNull($bigintCol->getSequenceName());
-
-        $bigintCol->sequenceName('bigint_seq');
-
+        $this->assertSame($bigintCol, $bigintCol->sequenceName('bigint_seq'));
         $this->assertSame('bigint_seq', $bigintCol->getSequenceName());
+
+        $bigintCol->sequenceName(null);
+
+        $this->assertNull($bigintCol->getSequenceName());
     }
 
     public function testArrayColumnSchema()
@@ -377,5 +381,19 @@ final class ColumnSchemaTest extends CommonColumnSchemaTest
 
         $arrayCol->dimension(2);
         $this->assertSame(2, $arrayCol->getDimension());
+    }
+
+    public function testArrayColumnSchemaColumn(): void
+    {
+        $arrayCol = new ArrayColumnSchema(SchemaInterface::TYPE_STRING, SchemaInterface::PHP_TYPE_STRING);
+        $intCol = new IntegerColumnSchema();
+
+        $this->assertInstanceOf(StringColumnSchema::class, $arrayCol->getColumn());
+        $this->assertSame($arrayCol, $arrayCol->column($intCol));
+        $this->assertSame($intCol, $arrayCol->getColumn());
+
+        $arrayCol->column(null);
+
+        $this->assertInstanceOf(StringColumnSchema::class, $arrayCol->getColumn());
     }
 }
