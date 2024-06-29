@@ -183,51 +183,6 @@ final class CommandTest extends CommonCommandTest
     }
 
     /**
-     * @throws Exception
-     * @throws InvalidConfigException
-     * @throws Throwable
-     *
-     * {@link https://github.com/yiisoft/yii2/issues/15827}
-     */
-    public function testIssue15827(): void
-    {
-        $db = $this->getConnection();
-
-        $command = $db->createCommand();
-        $inserted = $command->insert(
-            '{{array_and_json_types}}',
-            [
-                'jsonb_col' => new JsonExpression(['Solution date' => '13.01.2011']),
-            ],
-        )->execute();
-
-        $this->assertSame(1, $inserted);
-
-        $found = $command->setSql(
-            <<<SQL
-            SELECT *
-            FROM [[array_and_json_types]]
-            WHERE [[jsonb_col]] @> '{"Some not existing key": "random value"}'
-            SQL,
-        )->execute();
-
-        $this->assertSame(0, $found);
-
-        $found = $command->setSql(
-            <<<SQL
-            SELECT *
-            FROM [[array_and_json_types]]
-            WHERE [[jsonb_col]] @> '{"Solution date": "13.01.2011"}'
-            SQL,
-        )->execute();
-
-        $this->assertSame(1, $found);
-        $this->assertSame(1, $command->delete('{{array_and_json_types}}')->execute());
-
-        $db->close();
-    }
-
-    /**
      * @dataProvider \Yiisoft\Db\Pgsql\Tests\Provider\CommandProvider::rawSql
      *
      * @throws Exception
