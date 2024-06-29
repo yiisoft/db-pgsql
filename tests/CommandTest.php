@@ -8,7 +8,6 @@ use Throwable;
 use Yiisoft\Db\Exception\Exception;
 use Yiisoft\Db\Exception\InvalidConfigException;
 use Yiisoft\Db\Exception\NotSupportedException;
-use Yiisoft\Db\Expression\JsonExpression;
 use Yiisoft\Db\Pgsql\Connection;
 use Yiisoft\Db\Pgsql\Dsn;
 use Yiisoft\Db\Pgsql\Driver;
