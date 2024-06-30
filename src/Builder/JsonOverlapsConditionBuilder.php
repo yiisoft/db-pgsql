@@ -42,6 +42,6 @@ final class JsonOverlapsConditionBuilder extends AbstractOverlapsConditionBuilde
 
         $values = $this->queryBuilder->buildExpression($values, $params);
 
-        return "ARRAY(SELECT jsonb_array_elements($column::jsonb))::text[] && $values::text[]";
+        return "ARRAY(SELECT jsonb_array_elements_text($column::jsonb)) && $values::text[]";
     }
 }
