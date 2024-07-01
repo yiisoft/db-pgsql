@@ -10,10 +10,14 @@ use Yiisoft\Db\Exception\Exception;
 use Yiisoft\Db\Exception\IntegrityException;
 use Yiisoft\Db\Exception\InvalidConfigException;
 use Yiisoft\Db\Exception\NotSupportedException;
+use Yiisoft\Db\Expression\Expression;
 use Yiisoft\Db\Expression\ExpressionInterface;
 use Yiisoft\Db\Pgsql\Column;
 use Yiisoft\Db\Pgsql\Tests\Support\TestTrait;
+use Yiisoft\Db\Query\Query;
 use Yiisoft\Db\Query\QueryInterface;
+use Yiisoft\Db\QueryBuilder\Condition\ArrayOverlapsCondition;
+use Yiisoft\Db\QueryBuilder\Condition\JsonOverlapsCondition;
 use Yiisoft\Db\Schema\SchemaInterface;
 use Yiisoft\Db\Tests\Common\CommonQueryBuilderTest;
 
@@ -680,5 +684,103 @@ final class QueryBuilderTest extends CommonQueryBuilderTest
     public function testSelectScalar(array|bool|float|int|string $columns, string $expected): void
     {
         parent::testSelectScalar($columns, $expected);
+    }
+
+    public function testArrayOverlapsConditionBuilder(): void
+    {
+        $db = $this->getConnection();
+        $qb = $db->getQueryBuilder();
+
+        $params = [];
+        $sql = $qb->buildExpression(new ArrayOverlapsCondition('column', [1, 2, 3]), $params);
+
+        $this->assertSame('"column"::text[] && ARRAY[:qp0, :qp1, :qp2]::text[]', $sql);
+        $this->assertSame([':qp0' => 1, ':qp1' => 2, ':qp2' => 3], $params);
+
+        // Test column as Expression
+        $params = [];
+        $sql = $qb->buildExpression(new ArrayOverlapsCondition(new Expression('column'), [1, 2, 3]), $params);
+
+        $this->assertSame('column::text[] && ARRAY[:qp0, :qp1, :qp2]::text[]', $sql);
+        $this->assertSame([':qp0' => 1, ':qp1' => 2, ':qp2' => 3], $params);
+
+        $db->close();
+    }
+
+    public function testJsonOverlapsConditionBuilder(): void
+    {
+        $db = $this->getConnection();
+        $qb = $db->getQueryBuilder();
+
+        $params = [];
+        $sql = $qb->buildExpression(new JsonOverlapsCondition('column', [1, 2, 3]), $params);
+
+        $this->assertSame(
+            'ARRAY(SELECT jsonb_array_elements_text("column"::jsonb)) && ARRAY[:qp0, :qp1, :qp2]::text[]',
+            $sql
+        );
+        $this->assertSame([':qp0' => 1, ':qp1' => 2, ':qp2' => 3], $params);
+
+        $db->close();
+    }
+
+    /** @dataProvider \Yiisoft\Db\Pgsql\Tests\Provider\QueryBuilderProvider::overlapsCondition */
+    public function testOverlapsCondition(iterable|ExpressionInterface $values, int $expectedCount): void
+    {
+        $db = $this->getConnection();
+        $query = new Query($db);
+
+        $count = $query
+            ->from('array_and_json_types')
+            ->where(new ArrayOverlapsCondition('intarray_col', $values))
+            ->count();
+
+        $this->assertSame($expectedCount, $count);
+
+        $count = $query
+            ->from('array_and_json_types')
+            ->where(new JsonOverlapsCondition('json_col', $values))
+            ->count();
+
+        $this->assertSame($expectedCount, $count);
+
+        $count = $query
+            ->from('array_and_json_types')
+            ->where(new JsonOverlapsCondition('jsonb_col', $values))
+            ->count();
+
+        $this->assertSame($expectedCount, $count);
+
+        $db->close();
+    }
+
+    /** @dataProvider \Yiisoft\Db\Pgsql\Tests\Provider\QueryBuilderProvider::overlapsCondition */
+    public function testOverlapsConditionOperator(iterable|ExpressionInterface $values, int $expectedCount): void
+    {
+        $db = $this->getConnection();
+        $query = new Query($db);
+
+        $count = $query
+            ->from('array_and_json_types')
+            ->where(['array overlaps', 'intarray_col', $values])
+            ->count();
+
+        $this->assertSame($expectedCount, $count);
+
+        $count = $query
+            ->from('array_and_json_types')
+            ->where(['json overlaps', 'json_col', $values])
+            ->count();
+
+        $this->assertSame($expectedCount, $count);
+
+        $count = $query
+            ->from('array_and_json_types')
+            ->where(['json overlaps', 'jsonb_col', $values])
+            ->count();
+
+        $this->assertSame($expectedCount, $count);
+
+        $db->close();
     }
 }

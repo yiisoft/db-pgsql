@@ -357,6 +357,10 @@ CREATE TABLE "array_and_json_types" (
   jsonarray_col JSON[]
 );
 
+INSERT INTO "array_and_json_types" (intarray_col, json_col, jsonb_col) VALUES (null, null, null);
+INSERT INTO "array_and_json_types" (intarray_col, json_col, jsonb_col) VALUES ('{1,2,3,null}', '[1,2,3,null]', '[1,2,3,null]');
+INSERT INTO "array_and_json_types" (intarray_col, json_col, jsonb_col) VALUES ('{3,4,5}', '[3,4,5]', '[3,4,5]');
+
 CREATE TABLE "T_constraints_1"
 (
     "C_id" INT NOT NULL PRIMARY KEY,

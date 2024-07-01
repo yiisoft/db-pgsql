@@ -64,4 +64,13 @@ trait TestTrait
     {
         $this->fixture = $fixture;
     }
+
+    public static function setUpBeforeClass(): void
+    {
+        $db = self::getDb();
+
+        DbHelper::loadFixture($db, __DIR__ . '/Fixture/pgsql.sql');
+
+        $db->close();
+    }
 }
