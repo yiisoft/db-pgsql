@@ -7,7 +7,7 @@
   for type casting performance. Related with yiisoft/db#752 (@Tigrov)
 - Chg #348: Replace call of `SchemaInterface::getRawTableName()` to `QuoterInterface::getRawTableName()` (@Tigrov)
 - Enh #349: Add method chaining for column classes (@Tigrov)
-- Enh #350: Add array and json overlaps condition builders (@Tigrov)
+- Enh #350: Add array overlaps and JSON overlaps condition builders (@Tigrov)
 
 ## 1.3.0 March 21, 2024
 
