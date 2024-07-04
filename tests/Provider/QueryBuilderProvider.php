@@ -523,4 +523,17 @@ final class QueryBuilderProvider extends \Yiisoft\Db\Tests\Provider\QueryBuilder
 
         return $upsert;
     }
+
+    public static function overlapsCondition(): array
+    {
+        $data = parent::overlapsCondition();
+
+        $data['null'][1] = 0;
+        $data['expression'][0] = new Expression("'{0,1,2,7}'");
+        $data['query expression'][0] = (new Query(self::getDb()))->select(new ArrayExpression([0,1,2,7]));
+        $data[] = [new Expression('ARRAY[0,1,2,7]'), 1];
+        $data[] = [new ArrayExpression([0,1,2,7]), 1];
+
+        return $data;
+    }
 }
