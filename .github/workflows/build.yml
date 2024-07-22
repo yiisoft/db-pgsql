@@ -10,6 +10,7 @@ on:
       - 'psalm.xml'
 
   push:
+    branches: ['master']
     paths-ignore:
       - 'docs/**'
       - 'README.md'
@@ -49,6 +50,7 @@ jobs:
           - 13
           - 14
           - 15
+          - 16
 
     services:
       postgres:
