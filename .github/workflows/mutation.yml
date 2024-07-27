@@ -1,21 +1,16 @@
 on:
   pull_request:
-    paths-ignore:
-      - 'docs/**'
-      - 'README.md'
-      - 'CHANGELOG.md'
-      - '.gitignore'
-      - '.gitattributes'
-      - 'psalm.xml'
+    paths:
+      - 'src/**'
+      - '.github/workflows/mutation.yml'
+      - 'composer.json'
 
   push:
-    paths-ignore:
-      - 'docs/**'
-      - 'README.md'
-      - 'CHANGELOG.md'
-      - '.gitignore'
-      - '.gitattributes'
-      - 'psalm.xml'
+    branches: ['master']
+    paths:
+      - 'src/**'
+      - '.github/workflows/mutation.yml'
+      - 'composer.json'
 
 name: mutation test
 
@@ -35,11 +30,11 @@ jobs:
           - ubuntu-latest
 
         php:
-          - 8.1
+          - 8.3
 
     services:
       postgres:
-        image: postgres:15
+        image: postgres:16
         env:
           POSTGRES_USER: root
           POSTGRES_PASSWORD: root
