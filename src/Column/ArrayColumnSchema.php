@@ -61,7 +61,7 @@ final class ArrayColumnSchema extends AbstractColumnSchema
             $phpType = $this->getPhpType();
 
             $this->column = match ($type) {
-                Schema::TYPE_BIT => new BitColumnSchema($type, $phpType),
+                SchemaInterface::TYPE_BIT => new BitColumnSchema($type, $phpType),
                 Schema::TYPE_STRUCTURED => new StructuredColumnSchema($type, $phpType),
                 SchemaInterface::TYPE_BIGINT => PHP_INT_SIZE !== 8
                     ? new BigIntColumnSchema($type, $phpType)

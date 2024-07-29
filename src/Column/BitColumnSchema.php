@@ -5,24 +5,15 @@ declare(strict_types=1);
 namespace Yiisoft\Db\Pgsql\Column;
 
 use Yiisoft\Db\Expression\ExpressionInterface;
-use Yiisoft\Db\Pgsql\Schema;
-use Yiisoft\Db\Schema\Column\AbstractColumnSchema;
-use Yiisoft\Db\Schema\SchemaInterface;
+use Yiisoft\Db\Schema\Column\BitColumnSchema as BaseBitColumnSchema;
 
 use function bindec;
 use function decbin;
 use function gettype;
 use function str_pad;
 
-final class BitColumnSchema extends AbstractColumnSchema
+final class BitColumnSchema extends BaseBitColumnSchema
 {
-    public function __construct(
-        string $type = Schema::TYPE_BIT,
-        string|null $phpType = SchemaInterface::PHP_TYPE_INTEGER,
-    ) {
-        parent::__construct($type, $phpType);
-    }
-
     /** @psalm-suppress RedundantCast */
     public function dbTypecast(mixed $value): string|ExpressionInterface|null
     {
