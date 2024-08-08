@@ -887,7 +887,7 @@ final class Schema extends AbstractPdoSchema
                 ? new BigIntColumnSchema($type)
                 : new IntegerColumnSchema($type),
             SchemaInterface::TYPE_BINARY => new BinaryColumnSchema($type),
-            Schema::TYPE_STRUCTURED => new StructuredColumnSchema($type),
+            self::TYPE_STRUCTURED => new StructuredColumnSchema($type),
             default => parent::createColumnSchemaFromType($type),
         };
     }
