@@ -98,10 +98,6 @@ use function substr;
 final class Schema extends AbstractPdoSchema
 {
     /**
-     * Define the abstract column type as `bit`.
-     */
-    public const TYPE_BIT = 'bit';
-    /**
      * Define the abstract column type as `array`.
      */
     public const TYPE_ARRAY = 'array';
