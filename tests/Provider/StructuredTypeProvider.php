@@ -18,7 +18,7 @@ final class StructuredTypeProvider extends \Yiisoft\Db\Tests\Provider\SchemaProv
                     'id' => [
                         'type' => 'integer',
                         'dbType' => 'int4',
-                        'phpType' => 'integer',
+                        'phpType' => 'int',
                         'primaryKey' => true,
                         'allowNull' => false,
                         'autoIncrement' => true,
@@ -44,7 +44,7 @@ final class StructuredTypeProvider extends \Yiisoft\Db\Tests\Provider\SchemaProv
                             'value' => [
                                 'type' => 'decimal',
                                 'dbType' => 'numeric',
-                                'phpType' => 'double',
+                                'phpType' => 'float',
                                 'primaryKey' => false,
                                 'allowNull' => true,
                                 'autoIncrement' => false,
@@ -85,7 +85,7 @@ final class StructuredTypeProvider extends \Yiisoft\Db\Tests\Provider\SchemaProv
                             'value' => [
                                 'type' => 'decimal',
                                 'dbType' => 'numeric',
-                                'phpType' => 'double',
+                                'phpType' => 'float',
                                 'primaryKey' => false,
                                 'allowNull' => true,
                                 'autoIncrement' => false,
@@ -131,7 +131,7 @@ final class StructuredTypeProvider extends \Yiisoft\Db\Tests\Provider\SchemaProv
                             'value' => [
                                 'type' => 'decimal',
                                 'dbType' => 'numeric',
-                                'phpType' => 'double',
+                                'phpType' => 'float',
                                 'primaryKey' => false,
                                 'allowNull' => true,
                                 'autoIncrement' => false,
@@ -173,7 +173,7 @@ final class StructuredTypeProvider extends \Yiisoft\Db\Tests\Provider\SchemaProv
                             'value' => [
                                 'type' => 'decimal',
                                 'dbType' => 'numeric',
-                                'phpType' => 'double',
+                                'phpType' => 'float',
                                 'primaryKey' => false,
                                 'allowNull' => true,
                                 'autoIncrement' => false,
@@ -230,7 +230,7 @@ final class StructuredTypeProvider extends \Yiisoft\Db\Tests\Provider\SchemaProv
                                     'value' => [
                                         'type' => 'decimal',
                                         'dbType' => 'numeric',
-                                        'phpType' => 'double',
+                                        'phpType' => 'float',
                                         'primaryKey' => false,
                                         'allowNull' => true,
                                         'autoIncrement' => false,
@@ -271,7 +271,7 @@ final class StructuredTypeProvider extends \Yiisoft\Db\Tests\Provider\SchemaProv
                                     'value' => [
                                         'type' => 'decimal',
                                         'dbType' => 'numeric',
-                                        'phpType' => 'double',
+                                        'phpType' => 'float',
                                         'primaryKey' => false,
                                         'allowNull' => true,
                                         'autoIncrement' => false,

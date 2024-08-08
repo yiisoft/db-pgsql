@@ -28,7 +28,6 @@ use Yiisoft\Db\Pgsql\Column\StructuredColumnSchema;
 use Yiisoft\Db\Pgsql\Column\StructuredColumnSchemaInterface;
 use Yiisoft\Db\Schema\Builder\ColumnInterface;
 use Yiisoft\Db\Schema\Column\ColumnSchemaInterface;
-use Yiisoft\Db\Schema\Column\StringColumnSchema;
 use Yiisoft\Db\Schema\SchemaInterface;
 use Yiisoft\Db\Schema\TableSchemaInterface;
 
@@ -876,25 +875,20 @@ final class Schema extends AbstractPdoSchema
         return $column;
     }
 
-    protected function getColumnPhpType(string $type, bool $isUnsigned = false): string
+    protected function createColumnSchemaFromType(string $type, bool $isUnsigned = false): ColumnSchemaInterface
     {
         return match ($type) {
-            self::TYPE_BIT => self::PHP_TYPE_INTEGER,
-            self::TYPE_STRUCTURED => self::PHP_TYPE_ARRAY,
-            default => parent::getColumnPhpType($type, $isUnsigned),
-        };
-    }
-
-    protected function createColumnSchemaFromPhpType(string $phpType, string $type): ColumnSchemaInterface
-    {
-        return match ($phpType) {
-            self::PHP_TYPE_STRING => $type === SchemaInterface::TYPE_BIGINT
-                ? new BigIntColumnSchema($type, $phpType)
-                : new StringColumnSchema($type, $phpType),
-            self::PHP_TYPE_INTEGER => new IntegerColumnSchema($type, $phpType),
-            self::PHP_TYPE_BOOLEAN => new BooleanColumnSchema($type, $phpType),
-            self::PHP_TYPE_RESOURCE => new BinaryColumnSchema($type, $phpType),
-            default => parent::createColumnSchemaFromPhpType($phpType, $type),
+            SchemaInterface::TYPE_BOOLEAN => new BooleanColumnSchema($type),
+            SchemaInterface::TYPE_BIT => new BitColumnSchema($type),
+            SchemaInterface::TYPE_TINYINT => new IntegerColumnSchema($type),
+            SchemaInterface::TYPE_SMALLINT => new IntegerColumnSchema($type),
+            SchemaInterface::TYPE_INTEGER => new IntegerColumnSchema($type),
+            SchemaInterface::TYPE_BIGINT => PHP_INT_SIZE !== 8
+                ? new BigIntColumnSchema($type)
+                : new IntegerColumnSchema($type),
+            SchemaInterface::TYPE_BINARY => new BinaryColumnSchema($type),
+            Schema::TYPE_STRUCTURED => new StructuredColumnSchema($type),
+            default => parent::createColumnSchemaFromType($type),
         };
     }
 
@@ -1092,16 +1086,13 @@ final class Schema extends AbstractPdoSchema
             return $column;
         }
 
-        $phpType = $this->getColumnPhpType($type);
+        $column = $this->createColumnSchemaFromType($type);
 
-        return match ($type) {
-            self::TYPE_BIT => new BitColumnSchema($type, $phpType),
-            self::TYPE_STRUCTURED => (new StructuredColumnSchema($type, $phpType))->columns($info['columns'] ?? []),
-            self::TYPE_BIGINT => PHP_INT_SIZE !== 8
-                ? new BigIntColumnSchema($type, $phpType)
-                : new IntegerColumnSchema($type, $phpType),
-            default => parent::createColumnSchema($type),
-        };
+        if ($column instanceof StructuredColumnSchemaInterface) {
+            $column->columns($info['columns'] ?? []);
+        }
+
+        return $column;
     }
 
     /**
