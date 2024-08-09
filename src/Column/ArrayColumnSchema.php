@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Yiisoft\Db\Pgsql\Column;
 
 use Traversable;
+use Yiisoft\Db\Constant\PhpType;
 use Yiisoft\Db\Expression\ArrayExpression;
 use Yiisoft\Db\Expression\ExpressionInterface;
 use Yiisoft\Db\Pgsql\ArrayParser;
@@ -37,9 +38,8 @@ final class ArrayColumnSchema extends AbstractColumnSchema
 
     public function __construct(
         string $type = Schema::TYPE_ARRAY,
-        string|null $phpType = SchemaInterface::PHP_TYPE_ARRAY,
     ) {
-        parent::__construct($type, $phpType);
+        parent::__construct($type);
     }
 
     /**
@@ -58,22 +58,23 @@ final class ArrayColumnSchema extends AbstractColumnSchema
     {
         if ($this->column === null) {
             $type = $this->getType();
-            $phpType = $this->getPhpType();
 
             $this->column = match ($type) {
-                SchemaInterface::TYPE_BIT => new BitColumnSchema($type, $phpType),
-                Schema::TYPE_STRUCTURED => new StructuredColumnSchema($type, $phpType),
+                SchemaInterface::TYPE_BOOLEAN => new BooleanColumnSchema($type),
+                SchemaInterface::TYPE_BIT => new BitColumnSchema($type),
+                SchemaInterface::TYPE_TINYINT => new IntegerColumnSchema($type),
+                SchemaInterface::TYPE_SMALLINT => new IntegerColumnSchema($type),
+                SchemaInterface::TYPE_INTEGER => new IntegerColumnSchema($type),
                 SchemaInterface::TYPE_BIGINT => PHP_INT_SIZE !== 8
-                    ? new BigIntColumnSchema($type, $phpType)
-                    : new IntegerColumnSchema($type, $phpType),
-                default => match ($phpType) {
-                    SchemaInterface::PHP_TYPE_INTEGER => new IntegerColumnSchema($type, $phpType),
-                    SchemaInterface::PHP_TYPE_DOUBLE => new DoubleColumnSchema($type, $phpType),
-                    SchemaInterface::PHP_TYPE_BOOLEAN => new BooleanColumnSchema($type, $phpType),
-                    SchemaInterface::PHP_TYPE_RESOURCE => new BinaryColumnSchema($type, $phpType),
-                    SchemaInterface::PHP_TYPE_ARRAY => new JsonColumnSchema($type, $phpType),
-                    default => new StringColumnSchema($type, $phpType),
-                },
+                    ? new BigIntColumnSchema($type)
+                    : new IntegerColumnSchema($type),
+                SchemaInterface::TYPE_DECIMAL => new DoubleColumnSchema($type),
+                SchemaInterface::TYPE_FLOAT => new DoubleColumnSchema($type),
+                SchemaInterface::TYPE_DOUBLE => new DoubleColumnSchema($type),
+                SchemaInterface::TYPE_BINARY => new BinaryColumnSchema($type),
+                SchemaInterface::TYPE_JSON => new JsonColumnSchema($type),
+                Schema::TYPE_STRUCTURED => new StructuredColumnSchema($type),
+                default => new StringColumnSchema($type),
             };
 
             $this->column->dbType($this->getDbType());
@@ -101,6 +102,11 @@ final class ArrayColumnSchema extends AbstractColumnSchema
     public function getDimension(): int
     {
         return $this->dimension;
+    }
+
+    public function getPhpType(): string
+    {
+        return PhpType::ARRAY;
     }
 
     public function dbTypecast(mixed $value): ExpressionInterface|null

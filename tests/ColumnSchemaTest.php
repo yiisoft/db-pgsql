@@ -385,7 +385,7 @@ final class ColumnSchemaTest extends CommonColumnSchemaTest
 
     public function testArrayColumnSchemaColumn(): void
     {
-        $arrayCol = new ArrayColumnSchema(SchemaInterface::TYPE_STRING, SchemaInterface::PHP_TYPE_STRING);
+        $arrayCol = new ArrayColumnSchema(SchemaInterface::TYPE_STRING);
         $intCol = new IntegerColumnSchema();
 
         $this->assertInstanceOf(StringColumnSchema::class, $arrayCol->getColumn());

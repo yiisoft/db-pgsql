@@ -5,13 +5,13 @@ declare(strict_types=1);
 namespace Yiisoft\Db\Pgsql\Column;
 
 use Traversable;
+use Yiisoft\Db\Constant\PhpType;
 use Yiisoft\Db\Expression\ExpressionInterface;
 use Yiisoft\Db\Pgsql\Schema;
 use Yiisoft\Db\Pgsql\StructuredExpression;
 use Yiisoft\Db\Pgsql\StructuredParser;
 use Yiisoft\Db\Schema\Column\AbstractColumnSchema;
 use Yiisoft\Db\Schema\Column\ColumnSchemaInterface;
-use Yiisoft\Db\Schema\SchemaInterface;
 
 use function array_keys;
 use function is_iterable;
@@ -28,9 +28,8 @@ final class StructuredColumnSchema extends AbstractColumnSchema implements Struc
 
     public function __construct(
         string $type = Schema::TYPE_STRUCTURED,
-        string|null $phpType = SchemaInterface::PHP_TYPE_ARRAY,
     ) {
-        parent::__construct($type, $phpType);
+        parent::__construct($type);
     }
 
     public function columns(array $columns): static
@@ -42,6 +41,11 @@ final class StructuredColumnSchema extends AbstractColumnSchema implements Struc
     public function getColumns(): array
     {
         return $this->columns;
+    }
+
+    public function getPhpType(): string
+    {
+        return PhpType::ARRAY;
     }
 
     public function dbTypecast(mixed $value): mixed
