@@ -18,17 +18,12 @@ use Yiisoft\Db\Exception\NotSupportedException;
 use Yiisoft\Db\Expression\Expression;
 use Yiisoft\Db\Helper\DbArrayHelper;
 use Yiisoft\Db\Pgsql\Column\ArrayColumnSchema;
-use Yiisoft\Db\Pgsql\Column\BigIntColumnSchema;
-use Yiisoft\Db\Pgsql\Column\BinaryColumnSchema;
-use Yiisoft\Db\Pgsql\Column\BitColumnSchema;
-use Yiisoft\Db\Pgsql\Column\BooleanColumnSchema;
-use Yiisoft\Db\Pgsql\Column\IntegerColumnSchema;
+use Yiisoft\Db\Pgsql\Column\ColumnFactory;
 use Yiisoft\Db\Pgsql\Column\SequenceColumnSchemaInterface;
-use Yiisoft\Db\Pgsql\Column\StructuredColumnSchema;
 use Yiisoft\Db\Pgsql\Column\StructuredColumnSchemaInterface;
 use Yiisoft\Db\Schema\Builder\ColumnInterface;
+use Yiisoft\Db\Schema\Column\ColumnFactoryInterface;
 use Yiisoft\Db\Schema\Column\ColumnSchemaInterface;
-use Yiisoft\Db\Schema\SchemaInterface;
 use Yiisoft\Db\Schema\TableSchemaInterface;
 
 use function array_change_key_case;
@@ -106,79 +101,6 @@ final class Schema extends AbstractPdoSchema
     public const TYPE_STRUCTURED = 'structured';
 
     /**
-     * The mapping from physical column types (keys) to abstract column types (values).
-     *
-     * @link https://www.postgresql.org/docs/current/datatype.html#DATATYPE-TABLE
-     *
-     * @var string[]
-     */
-    private const TYPE_MAP = [
-        'bit' => self::TYPE_BIT,
-        'bit varying' => self::TYPE_BIT,
-        'varbit' => self::TYPE_BIT,
-        'bool' => self::TYPE_BOOLEAN,
-        'boolean' => self::TYPE_BOOLEAN,
-        'box' => self::TYPE_STRING,
-        'circle' => self::TYPE_STRING,
-        'point' => self::TYPE_STRING,
-        'line' => self::TYPE_STRING,
-        'lseg' => self::TYPE_STRING,
-        'polygon' => self::TYPE_STRING,
-        'path' => self::TYPE_STRING,
-        'character' => self::TYPE_CHAR,
-        'char' => self::TYPE_CHAR,
-        'bpchar' => self::TYPE_CHAR,
-        'character varying' => self::TYPE_STRING,
-        'varchar' => self::TYPE_STRING,
-        'text' => self::TYPE_TEXT,
-        'bytea' => self::TYPE_BINARY,
-        'cidr' => self::TYPE_STRING,
-        'inet' => self::TYPE_STRING,
-        'macaddr' => self::TYPE_STRING,
-        'real' => self::TYPE_FLOAT,
-        'float4' => self::TYPE_FLOAT,
-        'double precision' => self::TYPE_DOUBLE,
-        'float8' => self::TYPE_DOUBLE,
-        'decimal' => self::TYPE_DECIMAL,
-        'numeric' => self::TYPE_DECIMAL,
-        'money' => self::TYPE_MONEY,
-        'smallint' => self::TYPE_SMALLINT,
-        'int2' => self::TYPE_SMALLINT,
-        'int4' => self::TYPE_INTEGER,
-        'int' => self::TYPE_INTEGER,
-        'integer' => self::TYPE_INTEGER,
-        'bigint' => self::TYPE_BIGINT,
-        'int8' => self::TYPE_BIGINT,
-        'oid' => self::TYPE_BIGINT, // shouldn't be used. it's pg internal!
-        'smallserial' => self::TYPE_SMALLINT,
-        'serial2' => self::TYPE_SMALLINT,
-        'serial4' => self::TYPE_INTEGER,
-        'serial' => self::TYPE_INTEGER,
-        'bigserial' => self::TYPE_BIGINT,
-        'serial8' => self::TYPE_BIGINT,
-        'pg_lsn' => self::TYPE_BIGINT,
-        'date' => self::TYPE_DATE,
-        'interval' => self::TYPE_STRING,
-        'time without time zone' => self::TYPE_TIME,
-        'time' => self::TYPE_TIME,
-        'time with time zone' => self::TYPE_TIME,
-        'timetz' => self::TYPE_TIME,
-        'timestamp without time zone' => self::TYPE_TIMESTAMP,
-        'timestamp' => self::TYPE_TIMESTAMP,
-        'timestamp with time zone' => self::TYPE_TIMESTAMP,
-        'timestamptz' => self::TYPE_TIMESTAMP,
-        'abstime' => self::TYPE_TIMESTAMP,
-        'tsquery' => self::TYPE_STRING,
-        'tsvector' => self::TYPE_STRING,
-        'txid_snapshot' => self::TYPE_STRING,
-        'unknown' => self::TYPE_STRING,
-        'uuid' => self::TYPE_STRING,
-        'json' => self::TYPE_JSON,
-        'jsonb' => self::TYPE_JSON,
-        'xml' => self::TYPE_STRING,
-    ];
-
-    /**
      * @var string|null The default schema used for the current session.
      */
     protected string|null $defaultSchema = 'public';
@@ -193,6 +115,11 @@ final class Schema extends AbstractPdoSchema
     public function createColumn(string $type, array|int|string $length = null): ColumnInterface
     {
         return new Column($type, $length);
+    }
+
+    public function getColumnFactory(): ColumnFactoryInterface
+    {
+        return new ColumnFactory();
     }
 
     /**
@@ -810,17 +737,19 @@ final class Schema extends AbstractPdoSchema
         $columns = [];
 
         if ($info['type_type'] === 'c') {
-            $type = self::TYPE_STRUCTURED;
             $structured = $this->resolveTableName($dbType);
 
             if ($this->findColumns($structured)) {
                 $columns = $structured->getColumns();
             }
+
+            $column = $this->getColumnFactory()
+                ->fromType(self::TYPE_STRUCTURED, ['dimension' => $info['dimension'], 'columns' => $columns]);
         } else {
-            $type = self::TYPE_MAP[$dbType] ?? self::TYPE_STRING;
+            $column = $this->getColumnFactory()
+                ->fromDbType($dbType, ['dimension' => $info['dimension']]);
         }
 
-        $column = $this->createColumnSchema($type, dimension: $info['dimension'], columns: $columns);
         $column->name($info['column_name']);
         $column->dbType($dbType);
         $column->allowNull($info['is_nullable']);
@@ -873,23 +802,6 @@ final class Schema extends AbstractPdoSchema
         }
 
         return $column;
-    }
-
-    protected function createColumnSchemaFromType(string $type, bool $isUnsigned = false): ColumnSchemaInterface
-    {
-        return match ($type) {
-            SchemaInterface::TYPE_BOOLEAN => new BooleanColumnSchema($type),
-            SchemaInterface::TYPE_BIT => new BitColumnSchema($type),
-            SchemaInterface::TYPE_TINYINT => new IntegerColumnSchema($type),
-            SchemaInterface::TYPE_SMALLINT => new IntegerColumnSchema($type),
-            SchemaInterface::TYPE_INTEGER => new IntegerColumnSchema($type),
-            SchemaInterface::TYPE_BIGINT => PHP_INT_SIZE !== 8
-                ? new BigIntColumnSchema($type)
-                : new IntegerColumnSchema($type),
-            SchemaInterface::TYPE_BINARY => new BinaryColumnSchema($type),
-            self::TYPE_STRUCTURED => new StructuredColumnSchema($type),
-            default => parent::createColumnSchemaFromType($type),
-        };
     }
 
     /**
