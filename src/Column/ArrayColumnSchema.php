@@ -12,9 +12,6 @@ use Yiisoft\Db\Pgsql\ArrayParser;
 use Yiisoft\Db\Pgsql\Schema;
 use Yiisoft\Db\Schema\Column\AbstractColumnSchema;
 use Yiisoft\Db\Schema\Column\ColumnSchemaInterface;
-use Yiisoft\Db\Schema\Column\DoubleColumnSchema;
-use Yiisoft\Db\Schema\Column\JsonColumnSchema;
-use Yiisoft\Db\Schema\Column\StringColumnSchema;
 use Yiisoft\Db\Schema\SchemaInterface;
 
 use function array_map;
