@@ -15,12 +15,12 @@ use const PHP_INT_SIZE;
  * @psalm-type ColumnInfo = array{
  *     allow_null?: bool|string|null,
  *     auto_increment?: bool|string,
- *     columns?: array,
+ *     columns?: array<string, ColumnSchemaInterface>,
  *     comment?: string|null,
  *     computed?: bool|string,
  *     db_type?: string|null,
  *     default_value?: mixed,
- *     dimension?: int,
+ *     dimension?: int|string,
  *     enum_values?: array|null,
  *     extra?: string|null,
  *     primary_key?: bool|string,
@@ -42,6 +42,8 @@ final class ColumnFactory extends BaseColumnFactory
      * @link https://www.postgresql.org/docs/current/datatype.html#DATATYPE-TABLE
      *
      * @var string[]
+     *
+     * @psalm-suppress MissingClassConstType
      */
     private const TYPE_MAP = [
         'bool' => SchemaInterface::TYPE_BOOLEAN,

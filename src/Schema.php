@@ -88,6 +88,8 @@ use function substr;
  *   dimension?: int|string,
  *   columns?: array<string, ColumnSchemaInterface>
  * }
+ *
+ * @psalm-suppress MissingClassConstType
  */
 final class Schema extends AbstractPdoSchema
 {
@@ -976,35 +978,6 @@ final class Schema extends AbstractPdoSchema
         }
 
         return $result[$returnType];
-    }
-
-    /**
-     * @psalm-param CreateInfo $info
-     * @psalm-suppress ImplementedParamTypeMismatch
-     */
-    protected function createColumnSchema(string $type, mixed ...$info): ColumnSchemaInterface
-    {
-        /** @var CreateInfo $info */
-        $dimension = isset($info['dimension']) ? (int) $info['dimension'] : 0;
-
-        if ($dimension > 0) {
-            $column = new ArrayColumnSchema();
-            $column->dimension($dimension);
-
-            unset($info['dimension']);
-
-            $column->column($this->createColumnSchema($type, ...$info));
-
-            return $column;
-        }
-
-        $column = $this->createColumnSchemaFromType($type);
-
-        if ($column instanceof StructuredColumnSchemaInterface) {
-            $column->columns($info['columns'] ?? []);
-        }
-
-        return $column;
     }
 
     /**
