@@ -28,7 +28,6 @@ use Yiisoft\Db\Schema\TableSchemaInterface;
 
 use function array_change_key_case;
 use function array_map;
-use function array_merge;
 use function array_unique;
 use function array_values;
 use function explode;
@@ -337,7 +336,7 @@ final class Schema extends AbstractPdoSchema
         ])->queryAll();
 
         /** @psalm-var array[] $indexes */
-        $indexes = array_map('array_change_key_case', $indexes);
+        $indexes = array_map(array_change_key_case(...), $indexes);
         $indexes = DbArrayHelper::index($indexes, null, ['name']);
         $result = [];
 
@@ -522,7 +521,7 @@ final class Schema extends AbstractPdoSchema
         foreach ($constraints as $foreingKeyName => $constraint) {
             $table->foreignKey(
                 (string) $foreingKeyName,
-                array_merge([$constraint['tableName']], $constraint['columns'])
+                [$constraint['tableName'], ...$constraint['columns']]
             );
         }
     }
@@ -915,7 +914,7 @@ final class Schema extends AbstractPdoSchema
         ])->queryAll();
 
         /** @psalm-var array[][] $constraints */
-        $constraints = array_map('array_change_key_case', $constraints);
+        $constraints = array_map(array_change_key_case(...), $constraints);
         $constraints = DbArrayHelper::index($constraints, null, ['type', 'name']);
 
         $result = [
@@ -986,12 +985,10 @@ final class Schema extends AbstractPdoSchema
      * @param string $name The table name.
      *
      * @return array The cache key.
-     *
-     * @psalm-suppress DeprecatedMethod
      */
     protected function getCacheKey(string $name): array
     {
-        return array_merge([self::class], $this->generateCacheKey(), [$this->db->getQuoter()->getRawTableName($name)]);
+        return [self::class, ...$this->generateCacheKey(), $this->db->getQuoter()->getRawTableName($name)];
     }
 
     /**
@@ -1003,6 +1000,6 @@ final class Schema extends AbstractPdoSchema
      */
     protected function getCacheTag(): string
     {
-        return md5(serialize(array_merge([self::class], $this->generateCacheKey())));
+        return md5(serialize([self::class, ...$this->generateCacheKey()]));
     }
 }
