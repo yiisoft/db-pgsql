@@ -19,8 +19,6 @@ use Yiisoft\Db\QueryBuilder\Condition\ArrayOverlapsCondition;
 use Yiisoft\Db\QueryBuilder\Condition\JsonOverlapsCondition;
 use Yiisoft\Db\QueryBuilder\Condition\LikeCondition;
 
-use function array_merge;
-
 /**
  * Implements a DQL (Data Query Language) SQL statements for PostgreSQL Server.
  */
@@ -35,12 +33,13 @@ final class DQLQueryBuilder extends AbstractDQLQueryBuilder
      */
     protected function defaultConditionClasses(): array
     {
-        return array_merge(parent::defaultConditionClasses(), [
+        return [
+            ...parent::defaultConditionClasses(),
             'ILIKE' => LikeCondition::class,
             'NOT ILIKE' => LikeCondition::class,
             'OR ILIKE' => LikeCondition::class,
             'OR NOT ILIKE' => LikeCondition::class,
-        ]);
+        ];
     }
 
     /**
@@ -54,13 +53,14 @@ final class DQLQueryBuilder extends AbstractDQLQueryBuilder
      */
     protected function defaultExpressionBuilders(): array
     {
-        return array_merge(parent::defaultExpressionBuilders(), [
+        return [
+            ...parent::defaultExpressionBuilders(),
             ArrayExpression::class => ArrayExpressionBuilder::class,
             ArrayOverlapsCondition::class => ArrayOverlapsConditionBuilder::class,
             JsonExpression::class => JsonExpressionBuilder::class,
             JsonOverlapsCondition::class => JsonOverlapsConditionBuilder::class,
             StructuredExpression::class => StructuredExpressionBuilder::class,
             Expression::class => ExpressionBuilder::class,
-        ]);
+        ];
     }
 }

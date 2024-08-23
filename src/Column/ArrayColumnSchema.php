@@ -116,7 +116,7 @@ final class ArrayColumnSchema extends AbstractColumnSchema
         }
 
         if ($this->dimension === 1 && is_array($value)) {
-            $value = array_map([$this->getColumn(), 'dbTypecast'], $value);
+            $value = array_map($this->getColumn()->dbTypecast(...), $value);
         } else {
             $value = $this->dbTypecastArray($value, $this->dimension);
         }
@@ -141,7 +141,7 @@ final class ArrayColumnSchema extends AbstractColumnSchema
         $column = $this->getColumn();
 
         if ($this->dimension === 1 && $column->getType() !== SchemaInterface::TYPE_JSON) {
-            return array_map([$column, 'phpTypecast'], $value);
+            return array_map($column->phpTypecast(...), $value);
         }
 
         array_walk_recursive($value, function (string|null &$val) use ($column): void {
@@ -171,7 +171,7 @@ final class ArrayColumnSchema extends AbstractColumnSchema
 
         if ($dimension <= 1) {
             return array_map(
-                [$this->getColumn(), 'dbTypecast'],
+                $this->getColumn()->dbTypecast(...),
                 $value instanceof Traversable
                     ? iterator_to_array($value, false)
                     : $value
