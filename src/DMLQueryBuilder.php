@@ -23,10 +23,7 @@ final class DMLQueryBuilder extends AbstractDMLQueryBuilder
         $returnColumns = $this->schema->getTableSchema($table)?->getPrimaryKey();
 
         if (!empty($returnColumns)) {
-            $returnColumns = array_map(
-                [$this->quoter, 'quoteColumnName'],
-                $returnColumns,
-            );
+            $returnColumns = array_map($this->quoter->quoteColumnName(...), $returnColumns);
 
             $sql .= ' RETURNING ' . implode(', ', $returnColumns);
         }
