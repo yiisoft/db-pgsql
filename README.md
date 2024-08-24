@@ -9,8 +9,8 @@
     <br>
 </p>
 
-[![Latest Stable Version](https://poser.pugx.org/yiisoft/db-pgsql/v/stable.png)](https://packagist.org/packages/yiisoft/db-pgsql)
-[![Total Downloads](https://poser.pugx.org/yiisoft/db-pgsql/downloads.png)](https://packagist.org/packages/yiisoft/db-pgsql)
+[![Latest Stable Version](https://poser.pugx.org/yiisoft/db-pgsql/v)](https://packagist.org/packages/yiisoft/db-pgsql)
+[![Total Downloads](https://poser.pugx.org/yiisoft/db-pgsql/downloads)](https://packagist.org/packages/yiisoft/db-pgsql)
 [![rector](https://github.com/yiisoft/db-pgsql/actions/workflows/rector.yml/badge.svg)](https://github.com/yiisoft/db-pgsql/actions/workflows/rector.yml)
 [![codecov](https://codecov.io/gh/yiisoft/db-pgsql/branch/master/graph/badge.svg?token=3FGN91IVZA)](https://codecov.io/gh/yiisoft/db-pgsql)
 [![StyleCI](https://github.styleci.io/repos/145220173/shield?branch=master)](https://github.styleci.io/repos/145220173?branch=master)
