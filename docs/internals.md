@@ -35,7 +35,7 @@ DB must be accessible by address `127.0.0.1`. If you use PHP via docker containe
 container. Use `docker run` command argument for it:
 
 ```shell
- --network container:yiisoft-db-pgsql-db
+--network container:yiisoft-db-pgsql-db
 ```
 
 ## Unit testing
