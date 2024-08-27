@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Yiisoft\Db\Pgsql\Column;
 
 use Yiisoft\Db\Pgsql\Schema;
+use Yiisoft\Db\Schema\Column\AbstractColumnFactory;
 use Yiisoft\Db\Schema\Column\ColumnSchemaInterface;
 use Yiisoft\Db\Schema\SchemaInterface;
-use Yiisoft\Db\Schema\Column\ColumnFactory as BaseColumnFactory;
 
 use const PHP_INT_SIZE;
 
@@ -34,7 +34,7 @@ use const PHP_INT_SIZE;
  *     type?: string,
  * }
  */
-final class ColumnFactory extends BaseColumnFactory
+final class ColumnFactory extends AbstractColumnFactory
 {
     /**
      * The mapping from physical column types (keys) to abstract column types (values).
