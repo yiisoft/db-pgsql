@@ -12,9 +12,6 @@ use Yiisoft\Db\Pgsql\ArrayParser;
 use Yiisoft\Db\Pgsql\Schema;
 use Yiisoft\Db\Schema\Column\AbstractColumnSchema;
 use Yiisoft\Db\Schema\Column\ColumnSchemaInterface;
-use Yiisoft\Db\Schema\Column\DoubleColumnSchema;
-use Yiisoft\Db\Schema\Column\JsonColumnSchema;
-use Yiisoft\Db\Schema\Column\StringColumnSchema;
 use Yiisoft\Db\Schema\SchemaInterface;
 
 use function array_map;
@@ -57,26 +54,7 @@ final class ArrayColumnSchema extends AbstractColumnSchema
     public function getColumn(): ColumnSchemaInterface
     {
         if ($this->column === null) {
-            $type = $this->getType();
-
-            $this->column = match ($type) {
-                SchemaInterface::TYPE_BOOLEAN => new BooleanColumnSchema($type),
-                SchemaInterface::TYPE_BIT => new BitColumnSchema($type),
-                SchemaInterface::TYPE_TINYINT => new IntegerColumnSchema($type),
-                SchemaInterface::TYPE_SMALLINT => new IntegerColumnSchema($type),
-                SchemaInterface::TYPE_INTEGER => new IntegerColumnSchema($type),
-                SchemaInterface::TYPE_BIGINT => PHP_INT_SIZE !== 8
-                    ? new BigIntColumnSchema($type)
-                    : new IntegerColumnSchema($type),
-                SchemaInterface::TYPE_DECIMAL => new DoubleColumnSchema($type),
-                SchemaInterface::TYPE_FLOAT => new DoubleColumnSchema($type),
-                SchemaInterface::TYPE_DOUBLE => new DoubleColumnSchema($type),
-                SchemaInterface::TYPE_BINARY => new BinaryColumnSchema($type),
-                SchemaInterface::TYPE_JSON => new JsonColumnSchema($type),
-                Schema::TYPE_STRUCTURED => new StructuredColumnSchema($type),
-                default => new StringColumnSchema($type),
-            };
-
+            $this->column = (new ColumnFactory())->fromType($this->getType());
             $this->column->dbType($this->getDbType());
             $this->column->enumValues($this->getEnumValues());
             $this->column->precision($this->getPrecision());

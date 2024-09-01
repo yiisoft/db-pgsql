@@ -14,6 +14,7 @@ use Yiisoft\Db\Exception\Exception;
 use Yiisoft\Db\Exception\InvalidConfigException;
 use Yiisoft\Db\Exception\NotSupportedException;
 use Yiisoft\Db\Expression\Expression;
+use Yiisoft\Db\Pgsql\Column\ColumnFactory;
 use Yiisoft\Db\Pgsql\Schema;
 use Yiisoft\Db\Pgsql\Tests\Support\TestTrait;
 use Yiisoft\Db\Schema\SchemaInterface;
@@ -642,5 +643,13 @@ final class SchemaTest extends CommonSchemaTest
         $this->assertSame(['non_unique_index'], $tableIndexes[4]->getColumnNames());
         $this->assertFalse($tableIndexes[4]->isPrimary());
         $this->assertFalse($tableIndexes[4]->isUnique());
+    }
+
+    public function testGetColumnFactory(): void
+    {
+        $db = $this->getConnection();
+        $factory = $db->getSchema()->getColumnFactory();
+
+        $this->assertInstanceOf(ColumnFactory::class, $factory);
     }
 }
