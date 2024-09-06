@@ -6,6 +6,7 @@ namespace Yiisoft\Db\Pgsql\Tests\Provider;
 
 use PDO;
 use Yiisoft\Db\Command\Param;
+use Yiisoft\Db\Constant\ColumnType;
 use Yiisoft\Db\Constant\PhpType;
 use Yiisoft\Db\Expression\Expression;
 use Yiisoft\Db\Expression\JsonExpression;
@@ -14,9 +15,7 @@ use Yiisoft\Db\Pgsql\Column\BinaryColumnSchema;
 use Yiisoft\Db\Pgsql\Column\BitColumnSchema;
 use Yiisoft\Db\Pgsql\Column\BooleanColumnSchema;
 use Yiisoft\Db\Pgsql\Column\IntegerColumnSchema;
-use Yiisoft\Db\Pgsql\Schema;
 use Yiisoft\Db\Pgsql\StructuredExpression;
-use Yiisoft\Db\Schema\SchemaInterface;
 
 use function fopen;
 
@@ -97,7 +96,7 @@ class ColumnSchemaProvider extends \Yiisoft\Db\Tests\Provider\ColumnSchemaProvid
             // [dbType, type, phpType, values]
             [
                 'int4',
-                SchemaInterface::TYPE_INTEGER,
+                ColumnType::INTEGER,
                 PhpType::INT,
                 [
                     // [dimension, expected, typecast value]
@@ -108,7 +107,7 @@ class ColumnSchemaProvider extends \Yiisoft\Db\Tests\Provider\ColumnSchemaProvid
             ],
             [
                 'int8',
-                SchemaInterface::TYPE_BIGINT,
+                ColumnType::BIGINT,
                 PhpType::INT,
                 [
                     [1, [1, 2, 3, $bigInt], [1, 2.0, '3', '9223372036854775807']],
@@ -117,7 +116,7 @@ class ColumnSchemaProvider extends \Yiisoft\Db\Tests\Provider\ColumnSchemaProvid
             ],
             [
                 'float8',
-                SchemaInterface::TYPE_DOUBLE,
+                ColumnType::DOUBLE,
                 PhpType::FLOAT,
                 [
                     [1, [1.0, 2.2, 3.3, null], [1, 2.2, '3.3', null]],
@@ -126,7 +125,7 @@ class ColumnSchemaProvider extends \Yiisoft\Db\Tests\Provider\ColumnSchemaProvid
             ],
             [
                 'bool',
-                SchemaInterface::TYPE_BOOLEAN,
+                ColumnType::BOOLEAN,
                 PhpType::BOOL,
                 [
                     [1, [true, true, true, false, false, false, null], [true, 1, '1', false, 0, '0', null]],
@@ -135,7 +134,7 @@ class ColumnSchemaProvider extends \Yiisoft\Db\Tests\Provider\ColumnSchemaProvid
             ],
             [
                 'varchar',
-                SchemaInterface::TYPE_STRING,
+                ColumnType::STRING,
                 PhpType::STRING,
                 [
                     [1, ['1', '2', '1', '0', '', null], [1, '2', true, false, '', null]],
@@ -144,7 +143,7 @@ class ColumnSchemaProvider extends \Yiisoft\Db\Tests\Provider\ColumnSchemaProvid
             ],
             [
                 'bytea',
-                SchemaInterface::TYPE_BINARY,
+                ColumnType::BINARY,
                 PhpType::MIXED,
                 [
                     [1, [
@@ -163,7 +162,7 @@ class ColumnSchemaProvider extends \Yiisoft\Db\Tests\Provider\ColumnSchemaProvid
             ],
             [
                 'jsonb',
-                SchemaInterface::TYPE_JSON,
+                ColumnType::JSON,
                 PhpType::MIXED,
                 [
                     [1, [
@@ -185,7 +184,7 @@ class ColumnSchemaProvider extends \Yiisoft\Db\Tests\Provider\ColumnSchemaProvid
             ],
             [
                 'varbit',
-                Schema::TYPE_BIT,
+                ColumnType::BIT,
                 PhpType::INT,
                 [
                     [1, ['1011', '1001', null], [0b1011, '1001', null]],
@@ -194,7 +193,7 @@ class ColumnSchemaProvider extends \Yiisoft\Db\Tests\Provider\ColumnSchemaProvid
             ],
             [
                 'price_composite',
-                Schema::TYPE_STRUCTURED,
+                ColumnType::STRUCTURED,
                 PhpType::ARRAY,
                 [
                     [
@@ -232,7 +231,7 @@ class ColumnSchemaProvider extends \Yiisoft\Db\Tests\Provider\ColumnSchemaProvid
             // [dbtype, type, phpType, values]
             [
                 'int4',
-                SchemaInterface::TYPE_INTEGER,
+                ColumnType::INTEGER,
                 PhpType::INT,
                 [
                     // [dimension, expected, typecast value]
@@ -242,7 +241,7 @@ class ColumnSchemaProvider extends \Yiisoft\Db\Tests\Provider\ColumnSchemaProvid
             ],
             [
                 'int8',
-                SchemaInterface::TYPE_BIGINT,
+                ColumnType::BIGINT,
                 PhpType::INT,
                 [
                     [1, [1, 2, $bigInt], '{1,2,9223372036854775807}'],
@@ -251,7 +250,7 @@ class ColumnSchemaProvider extends \Yiisoft\Db\Tests\Provider\ColumnSchemaProvid
             ],
             [
                 'float8',
-                SchemaInterface::TYPE_DOUBLE,
+                ColumnType::DOUBLE,
                 PhpType::FLOAT,
                 [
                     [1, [1.0, 2.2, null], '{1,2.2,}'],
@@ -260,7 +259,7 @@ class ColumnSchemaProvider extends \Yiisoft\Db\Tests\Provider\ColumnSchemaProvid
             ],
             [
                 'bool',
-                SchemaInterface::TYPE_BOOLEAN,
+                ColumnType::BOOLEAN,
                 PhpType::BOOL,
                 [
                     [1, [true, false, null], '{t,f,}'],
@@ -269,7 +268,7 @@ class ColumnSchemaProvider extends \Yiisoft\Db\Tests\Provider\ColumnSchemaProvid
             ],
             [
                 'varchar',
-                SchemaInterface::TYPE_STRING,
+                ColumnType::STRING,
                 PhpType::STRING,
                 [
                     [1, ['1', '2', '', null], '{1,2,"",}'],
@@ -278,7 +277,7 @@ class ColumnSchemaProvider extends \Yiisoft\Db\Tests\Provider\ColumnSchemaProvid
             ],
             [
                 'bytea',
-                SchemaInterface::TYPE_BINARY,
+                ColumnType::BINARY,
                 PhpType::MIXED,
                 [
                     [1, ["\x10\x11", '', null], '{\x1011,"",}'],
@@ -287,7 +286,7 @@ class ColumnSchemaProvider extends \Yiisoft\Db\Tests\Provider\ColumnSchemaProvid
             ],
             [
                 'jsonb',
-                SchemaInterface::TYPE_JSON,
+                ColumnType::JSON,
                 PhpType::MIXED,
                 [
                     [1, [[1, 2, 3], null], '{"[1,2,3]",}'],
@@ -297,7 +296,7 @@ class ColumnSchemaProvider extends \Yiisoft\Db\Tests\Provider\ColumnSchemaProvid
             ],
             [
                 'varbit',
-                Schema::TYPE_BIT,
+                ColumnType::BIT,
                 PhpType::INT,
                 [
                     [1, [0b1011, 0b1001, null], '{1011,1001,}'],
@@ -306,7 +305,7 @@ class ColumnSchemaProvider extends \Yiisoft\Db\Tests\Provider\ColumnSchemaProvid
             ],
             [
                 'price_structured',
-                Schema::TYPE_STRUCTURED,
+                ColumnType::STRUCTURED,
                 PhpType::ARRAY,
                 [
                     [1, [['10', 'USD'], null], '{"(10,USD)",}'],

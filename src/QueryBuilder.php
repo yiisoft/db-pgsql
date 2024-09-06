@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Yiisoft\Db\Pgsql;
 
+use Yiisoft\Db\Constant\ColumnType;
+use Yiisoft\Db\Constant\PseudoType;
 use Yiisoft\Db\QueryBuilder\AbstractQueryBuilder;
 use Yiisoft\Db\Schema\QuoterInterface;
 use Yiisoft\Db\Schema\SchemaInterface;
@@ -19,30 +21,30 @@ final class QueryBuilder extends AbstractQueryBuilder
      * @psalm-var string[]
      */
     protected array $typeMap = [
-        SchemaInterface::TYPE_PK => 'serial NOT NULL PRIMARY KEY',
-        SchemaInterface::TYPE_UPK => 'serial NOT NULL PRIMARY KEY',
-        SchemaInterface::TYPE_BIGPK => 'bigserial NOT NULL PRIMARY KEY',
-        SchemaInterface::TYPE_UBIGPK => 'bigserial NOT NULL PRIMARY KEY',
-        SchemaInterface::TYPE_CHAR => 'char(1)',
-        SchemaInterface::TYPE_STRING => 'varchar(255)',
-        SchemaInterface::TYPE_TEXT => 'text',
-        SchemaInterface::TYPE_TINYINT => 'smallint',
-        SchemaInterface::TYPE_SMALLINT => 'smallint',
-        SchemaInterface::TYPE_INTEGER => 'integer',
-        SchemaInterface::TYPE_BIGINT => 'bigint',
-        SchemaInterface::TYPE_FLOAT => 'double precision',
-        SchemaInterface::TYPE_DOUBLE => 'double precision',
-        SchemaInterface::TYPE_DECIMAL => 'numeric(10,0)',
-        SchemaInterface::TYPE_DATETIME => 'timestamp(0)',
-        SchemaInterface::TYPE_TIMESTAMP => 'timestamp(0)',
-        SchemaInterface::TYPE_TIME => 'time(0)',
-        SchemaInterface::TYPE_DATE => 'date',
-        SchemaInterface::TYPE_BINARY => 'bytea',
-        SchemaInterface::TYPE_BOOLEAN => 'boolean',
-        SchemaInterface::TYPE_MONEY => 'numeric(19,4)',
-        SchemaInterface::TYPE_JSON => 'jsonb',
-        SchemaInterface::TYPE_UUID => 'uuid',
-        SchemaInterface::TYPE_UUID_PK => 'uuid PRIMARY KEY',
+        PseudoType::PK => 'serial NOT NULL PRIMARY KEY',
+        PseudoType::UPK => 'serial NOT NULL PRIMARY KEY',
+        PseudoType::BIGPK => 'bigserial NOT NULL PRIMARY KEY',
+        PseudoType::UBIGPK => 'bigserial NOT NULL PRIMARY KEY',
+        ColumnType::CHAR => 'char(1)',
+        ColumnType::STRING => 'varchar(255)',
+        ColumnType::TEXT => 'text',
+        ColumnType::TINYINT => 'smallint',
+        ColumnType::SMALLINT => 'smallint',
+        ColumnType::INTEGER => 'integer',
+        ColumnType::BIGINT => 'bigint',
+        ColumnType::FLOAT => 'double precision',
+        ColumnType::DOUBLE => 'double precision',
+        ColumnType::DECIMAL => 'numeric(10,0)',
+        ColumnType::DATETIME => 'timestamp(0)',
+        ColumnType::TIMESTAMP => 'timestamp(0)',
+        ColumnType::TIME => 'time(0)',
+        ColumnType::DATE => 'date',
+        ColumnType::BINARY => 'bytea',
+        ColumnType::BOOLEAN => 'boolean',
+        ColumnType::MONEY => 'numeric(19,4)',
+        ColumnType::JSON => 'jsonb',
+        ColumnType::UUID => 'uuid',
+        PseudoType::UUID_PK => 'uuid PRIMARY KEY',
     ];
 
     public function __construct(QuoterInterface $quoter, SchemaInterface $schema)

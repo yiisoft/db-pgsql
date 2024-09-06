@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Yiisoft\Db\Pgsql\Tests\Provider;
 
+use Yiisoft\Db\Constant\ColumnType;
 use Yiisoft\Db\Expression\ArrayExpression;
 use Yiisoft\Db\Expression\Expression;
 use Yiisoft\Db\Expression\JsonExpression;
@@ -11,7 +12,6 @@ use Yiisoft\Db\Pgsql\StructuredExpression;
 use Yiisoft\Db\Pgsql\Tests\Support\ColumnSchemaBuilder;
 use Yiisoft\Db\Pgsql\Tests\Support\TestTrait;
 use Yiisoft\Db\Query\Query;
-use Yiisoft\Db\Schema\SchemaInterface;
 use Yiisoft\Db\Tests\Support\TraversableObject;
 
 use function array_replace;
@@ -205,7 +205,7 @@ final class QueryBuilderProvider extends \Yiisoft\Db\Tests\Provider\QueryBuilder
                     [':qp0' => '{"a":null,"b":123,"c":[4,5]}', ':qp1' => '[true]'],
                 ],
                 'Items in ArrayExpression of type json should be casted to Json' => [
-                    ['=', 'colname', new ArrayExpression([['a' => null, 'b' => 123, 'c' => [4, 5]], [true]], SchemaInterface::TYPE_JSON)],
+                    ['=', 'colname', new ArrayExpression([['a' => null, 'b' => 123, 'c' => [4, 5]], [true]], ColumnType::JSON)],
                     '"colname" = ARRAY[:qp0, :qp1]::json[]',
                     [':qp0' => '{"a":null,"b":123,"c":[4,5]}', ':qp1' => '[true]'],
                 ],

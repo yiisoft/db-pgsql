@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Yiisoft\Db\Pgsql\Tests;
 
 use Throwable;
+use Yiisoft\Db\Constant\ColumnType;
 use Yiisoft\Db\Exception\Exception;
 use Yiisoft\Db\Exception\InvalidConfigException;
 use Yiisoft\Db\Expression\ArrayExpression;
@@ -65,7 +66,7 @@ final class ColumnSchemaTest extends CommonColumnSchemaTest
                 'textarray2_col' => new ArrayExpression(null),
                 'json_col' => [['a' => 1, 'b' => null, 'c' => [1, 3, 5]]],
                 'jsonb_col' => new JsonExpression(new ArrayExpression([1, 2, 3])),
-                'jsonarray_col' => [new ArrayExpression([[',', 'null', true, 'false', 'f']], SchemaInterface::TYPE_JSON)],
+                'jsonarray_col' => [new ArrayExpression([[',', 'null', true, 'false', 'f']], ColumnType::JSON)],
             ]
         );
         $command->execute();
@@ -385,7 +386,7 @@ final class ColumnSchemaTest extends CommonColumnSchemaTest
 
     public function testArrayColumnSchemaColumn(): void
     {
-        $arrayCol = new ArrayColumnSchema(SchemaInterface::TYPE_STRING);
+        $arrayCol = new ArrayColumnSchema();
         $intCol = new IntegerColumnSchema();
 
         $this->assertInstanceOf(StringColumnSchema::class, $arrayCol->getColumn());
