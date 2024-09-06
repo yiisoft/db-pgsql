@@ -5,14 +5,13 @@ declare(strict_types=1);
 namespace Yiisoft\Db\Pgsql\Column;
 
 use Traversable;
+use Yiisoft\Db\Constant\ColumnType;
 use Yiisoft\Db\Constant\PhpType;
 use Yiisoft\Db\Expression\ArrayExpression;
 use Yiisoft\Db\Expression\ExpressionInterface;
 use Yiisoft\Db\Pgsql\ArrayParser;
-use Yiisoft\Db\Pgsql\Schema;
 use Yiisoft\Db\Schema\Column\AbstractColumnSchema;
 use Yiisoft\Db\Schema\Column\ColumnSchemaInterface;
-use Yiisoft\Db\Schema\SchemaInterface;
 
 use function array_map;
 use function array_walk_recursive;
@@ -33,8 +32,11 @@ final class ArrayColumnSchema extends AbstractColumnSchema
      */
     private int $dimension = 1;
 
+    /**
+     * @psalm-param ColumnType::* $type
+     */
     public function __construct(
-        string $type = Schema::TYPE_ARRAY,
+        string $type = ColumnType::ARRAY,
     ) {
         parent::__construct($type);
     }
@@ -112,13 +114,13 @@ final class ArrayColumnSchema extends AbstractColumnSchema
             return null;
         }
 
-        if ($this->getType() === SchemaInterface::TYPE_STRING) {
+        if ($this->getType() === ColumnType::STRING) {
             return $value;
         }
 
         $column = $this->getColumn();
 
-        if ($this->dimension === 1 && $column->getType() !== SchemaInterface::TYPE_JSON) {
+        if ($this->dimension === 1 && $column->getType() !== ColumnType::JSON) {
             return array_map($column->phpTypecast(...), $value);
         }
 
