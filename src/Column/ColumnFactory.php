@@ -125,6 +125,7 @@ final class ColumnFactory extends AbstractColumnFactory
                 ->dimension($dimension)
                 ->column($this->fromType($type, $info));
         } else {
+            /** @psalm-suppress ArgumentTypeCoercion */
             $column = match ($type) {
                 ColumnType::BOOLEAN => new BooleanColumnSchema($type),
                 ColumnType::BIT => new BitColumnSchema($type),
