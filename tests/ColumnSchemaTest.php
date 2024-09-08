@@ -22,7 +22,6 @@ use Yiisoft\Db\Query\Query;
 use Yiisoft\Db\Schema\Column\DoubleColumnSchema;
 use Yiisoft\Db\Schema\Column\JsonColumnSchema;
 use Yiisoft\Db\Schema\Column\StringColumnSchema;
-use Yiisoft\Db\Schema\SchemaInterface;
 use Yiisoft\Db\Tests\Common\CommonColumnSchemaTest;
 
 use function stream_get_contents;
@@ -312,10 +311,12 @@ final class ColumnSchemaTest extends CommonColumnSchemaTest
     }
 
     /** @dataProvider \Yiisoft\Db\Pgsql\Tests\Provider\ColumnSchemaProvider::dbTypecastArrayColumns */
-    public function testDbTypecastArrayColumnSchema(string $dbType, string $type, string $phpType, array $values): void
+    public function testDbTypecastArrayColumnSchema(string $dbType, string $type, array $values): void
     {
-        $arrayCol = new ArrayColumnSchema($type, $phpType);
-        $arrayCol->dbType($dbType);
+        $db = $this->getConnection();
+        $columnFactory = $db->getColumnBuilderClass()::columnFactory();
+
+        $arrayCol = (new ArrayColumnSchema())->column($columnFactory->fromType($type)->dbType($dbType));
 
         foreach ($values as [$dimension, $expected, $value]) {
             $arrayCol->dimension($dimension);
@@ -332,10 +333,12 @@ final class ColumnSchemaTest extends CommonColumnSchemaTest
     }
 
     /** @dataProvider \Yiisoft\Db\Pgsql\Tests\Provider\ColumnSchemaProvider::phpTypecastArrayColumns */
-    public function testPhpTypecastArrayColumnSchema(string $dbType, string $type, string $phpType, array $values): void
+    public function testPhpTypecastArrayColumnSchema(string $dbType, string $type, array $values): void
     {
-        $arrayCol = new ArrayColumnSchema($type, $phpType);
-        $arrayCol->dbType($dbType);
+        $db = $this->getConnection();
+        $columnFactory = $db->getColumnBuilderClass()::columnFactory();
+
+        $arrayCol = (new ArrayColumnSchema())->column($columnFactory->fromType($type)->dbType($dbType));
 
         foreach ($values as [$dimension, $expected, $value]) {
             $arrayCol->dimension($dimension);

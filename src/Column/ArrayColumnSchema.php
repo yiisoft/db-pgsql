@@ -56,8 +56,7 @@ final class ArrayColumnSchema extends AbstractColumnSchema
     public function getColumn(): ColumnSchemaInterface
     {
         if ($this->column === null) {
-            $this->column = (new ColumnFactory())->fromType($this->getType());
-            $this->column->dbType($this->getDbType());
+            $this->column = (new ColumnFactory())->fromDbType($this->getDbType() ?? '');
             $this->column->enumValues($this->getEnumValues());
             $this->column->precision($this->getPrecision());
             $this->column->scale($this->getScale());
@@ -101,7 +100,7 @@ final class ArrayColumnSchema extends AbstractColumnSchema
             $value = $this->dbTypecastArray($value, $this->dimension);
         }
 
-        return new ArrayExpression($value, $this->getDbType(), $this->dimension);
+        return new ArrayExpression($value, $this->getDbType() ?? $this->getColumn()->getDbType(), $this->dimension);
     }
 
     public function phpTypecast(mixed $value): array|null

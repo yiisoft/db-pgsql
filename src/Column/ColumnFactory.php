@@ -113,6 +113,7 @@ final class ColumnFactory extends AbstractColumnFactory
     /**
      * @psalm-param ColumnInfo $info
      * @psalm-suppress MoreSpecificImplementedParamType
+     * @psalm-suppress ArgumentTypeCoercion
      */
     public function fromType(string $type, array $info = []): ColumnSchemaInterface
     {
@@ -139,11 +140,16 @@ final class ColumnFactory extends AbstractColumnFactory
             };
         }
 
-        return $column;
+        return $column->load($info);
     }
 
     protected function getType(string $dbType, array $info = []): string
     {
         return self::TYPE_MAP[$dbType] ?? ColumnType::STRING;
+    }
+
+    protected function isDbType(string $dbType): bool
+    {
+        return isset(self::TYPE_MAP[$dbType]);
     }
 }
