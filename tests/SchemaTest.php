@@ -8,6 +8,7 @@ use JsonException;
 use Throwable;
 use Yiisoft\Db\Command\CommandInterface;
 use Yiisoft\Db\Connection\ConnectionInterface;
+use Yiisoft\Db\Constant\ColumnType;
 use Yiisoft\Db\Constraint\IndexConstraint;
 use Yiisoft\Db\Driver\Pdo\PdoConnectionInterface;
 use Yiisoft\Db\Exception\Exception;
@@ -596,7 +597,7 @@ final class SchemaTest extends CommonSchemaTest
         $table = $db->getTableSchema($tableName, true);
 
         foreach ($table->getColumns() as $name => $column) {
-            if ($column->getType() === Schema::TYPE_STRUCTURED) {
+            if ($column->getType() === ColumnType::STRUCTURED) {
                 $this->assertTrue(
                     isset($columns[$name]['columns']),
                     "Columns of structured type `$name` do not exist, dbType is `{$column->getDbType()}`."

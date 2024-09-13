@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Yiisoft\Db\Pgsql\Column;
 
 use Traversable;
+use Yiisoft\Db\Constant\ColumnType;
 use Yiisoft\Db\Constant\PhpType;
 use Yiisoft\Db\Expression\ExpressionInterface;
-use Yiisoft\Db\Pgsql\Schema;
 use Yiisoft\Db\Pgsql\StructuredExpression;
 use Yiisoft\Db\Pgsql\StructuredParser;
 use Yiisoft\Db\Schema\Column\AbstractColumnSchema;
@@ -26,8 +26,11 @@ final class StructuredColumnSchema extends AbstractColumnSchema implements Struc
      */
     private array $columns = [];
 
+    /**
+     * @psalm-param ColumnType::* $type
+     */
     public function __construct(
-        string $type = Schema::TYPE_STRUCTURED,
+        string $type = ColumnType::STRUCTURED,
     ) {
         parent::__construct($type);
     }

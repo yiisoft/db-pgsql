@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Yiisoft\Db\Pgsql\Tests;
 
 use Throwable;
+use Yiisoft\Db\Constant\ColumnType;
 use Yiisoft\Db\Driver\Pdo\PdoConnectionInterface;
 use Yiisoft\Db\Exception\Exception;
 use Yiisoft\Db\Exception\IntegrityException;
@@ -18,7 +19,6 @@ use Yiisoft\Db\Query\Query;
 use Yiisoft\Db\Query\QueryInterface;
 use Yiisoft\Db\QueryBuilder\Condition\ArrayOverlapsCondition;
 use Yiisoft\Db\QueryBuilder\Condition\JsonOverlapsCondition;
-use Yiisoft\Db\Schema\SchemaInterface;
 use Yiisoft\Db\Tests\Common\CommonQueryBuilderTest;
 
 use function version_compare;
@@ -99,7 +99,7 @@ final class QueryBuilderTest extends CommonQueryBuilderTest
             $qb->alterColumn(
                 'foo1',
                 'bar',
-                (new Column(SchemaInterface::TYPE_STRING, 255))->asString()
+                (new Column(ColumnType::STRING, 255))->asString()
             ),
         );
 
@@ -124,7 +124,7 @@ final class QueryBuilderTest extends CommonQueryBuilderTest
             $qb->alterColumn(
                 'foo1',
                 'bar',
-                (new Column(SchemaInterface::TYPE_STRING, 255))->notNull()->asString()
+                (new Column(ColumnType::STRING, 255))->notNull()->asString()
             ),
         );
 
@@ -135,7 +135,7 @@ final class QueryBuilderTest extends CommonQueryBuilderTest
             $qb->alterColumn(
                 'foo1',
                 'bar',
-                (new Column(SchemaInterface::TYPE_STRING, 255))->null()->asString()
+                (new Column(ColumnType::STRING, 255))->null()->asString()
             ),
         );
 
@@ -146,7 +146,7 @@ final class QueryBuilderTest extends CommonQueryBuilderTest
             $qb->alterColumn(
                 'foo1',
                 'bar',
-                (new Column(SchemaInterface::TYPE_STRING, 255))->null()->defaultValue('xxx')->asString()
+                (new Column(ColumnType::STRING, 255))->null()->defaultValue('xxx')->asString()
             ),
         );
 
@@ -157,7 +157,7 @@ final class QueryBuilderTest extends CommonQueryBuilderTest
             $qb->alterColumn(
                 'foo1',
                 'bar',
-                (new Column(SchemaInterface::TYPE_STRING, 255))->check('char_length(bar) > 5')->asString()
+                (new Column(ColumnType::STRING, 255))->check('char_length(bar) > 5')->asString()
             ),
         );
 
@@ -168,7 +168,7 @@ final class QueryBuilderTest extends CommonQueryBuilderTest
             $qb->alterColumn(
                 'foo1',
                 'bar',
-                (new Column(SchemaInterface::TYPE_STRING, 255))->defaultValue('')->asString()
+                (new Column(ColumnType::STRING, 255))->defaultValue('')->asString()
             ),
         );
 
@@ -179,7 +179,7 @@ final class QueryBuilderTest extends CommonQueryBuilderTest
             $qb->alterColumn(
                 'foo1',
                 'bar',
-                (new Column(SchemaInterface::TYPE_STRING, 255))->defaultValue('AbCdE')->asString()
+                (new Column(ColumnType::STRING, 255))->defaultValue('AbCdE')->asString()
             ),
         );
 
@@ -190,7 +190,7 @@ final class QueryBuilderTest extends CommonQueryBuilderTest
             $qb->alterColumn(
                 'foo1',
                 'bar',
-                (new Column(SchemaInterface::TYPE_TIMESTAMP))
+                (new Column(ColumnType::TIMESTAMP))
                     ->defaultExpression('CURRENT_TIMESTAMP')
                     ->asString()
             ),
@@ -203,7 +203,7 @@ final class QueryBuilderTest extends CommonQueryBuilderTest
             $qb->alterColumn(
                 'foo1',
                 'bar',
-                (new Column(SchemaInterface::TYPE_STRING, 30))->unique()->asString()
+                (new Column(ColumnType::STRING, 30))->unique()->asString()
             ),
         );
 
@@ -214,7 +214,7 @@ final class QueryBuilderTest extends CommonQueryBuilderTest
             $qb->alterColumn(
                 'foo1',
                 'bar',
-                (new Column(SchemaInterface::TYPE_STRING, 30))->unique()
+                (new Column(ColumnType::STRING, 30))->unique()
             ),
         );
 

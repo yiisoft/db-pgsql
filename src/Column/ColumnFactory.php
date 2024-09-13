@@ -4,10 +4,9 @@ declare(strict_types=1);
 
 namespace Yiisoft\Db\Pgsql\Column;
 
-use Yiisoft\Db\Pgsql\Schema;
+use Yiisoft\Db\Constant\ColumnType;
 use Yiisoft\Db\Schema\Column\AbstractColumnFactory;
 use Yiisoft\Db\Schema\Column\ColumnSchemaInterface;
-use Yiisoft\Db\Schema\SchemaInterface;
 
 use const PHP_INT_SIZE;
 
@@ -46,72 +45,73 @@ final class ColumnFactory extends AbstractColumnFactory
      * @psalm-suppress MissingClassConstType
      */
     private const TYPE_MAP = [
-        'bool' => SchemaInterface::TYPE_BOOLEAN,
-        'boolean' => SchemaInterface::TYPE_BOOLEAN,
-        'bit' => SchemaInterface::TYPE_BIT,
-        'bit varying' => SchemaInterface::TYPE_BIT,
-        'varbit' => SchemaInterface::TYPE_BIT,
-        'smallint' => SchemaInterface::TYPE_SMALLINT,
-        'int2' => SchemaInterface::TYPE_SMALLINT,
-        'smallserial' => SchemaInterface::TYPE_SMALLINT,
-        'serial2' => SchemaInterface::TYPE_SMALLINT,
-        'int4' => SchemaInterface::TYPE_INTEGER,
-        'int' => SchemaInterface::TYPE_INTEGER,
-        'integer' => SchemaInterface::TYPE_INTEGER,
-        'serial' => SchemaInterface::TYPE_INTEGER,
-        'serial4' => SchemaInterface::TYPE_INTEGER,
-        'bigint' => SchemaInterface::TYPE_BIGINT,
-        'int8' => SchemaInterface::TYPE_BIGINT,
-        'bigserial' => SchemaInterface::TYPE_BIGINT,
-        'serial8' => SchemaInterface::TYPE_BIGINT,
-        'oid' => SchemaInterface::TYPE_BIGINT, // shouldn't be used. it's pg internal!
-        'pg_lsn' => SchemaInterface::TYPE_BIGINT,
-        'real' => SchemaInterface::TYPE_FLOAT,
-        'float4' => SchemaInterface::TYPE_FLOAT,
-        'float8' => SchemaInterface::TYPE_DOUBLE,
-        'double precision' => SchemaInterface::TYPE_DOUBLE,
-        'decimal' => SchemaInterface::TYPE_DECIMAL,
-        'numeric' => SchemaInterface::TYPE_DECIMAL,
-        'money' => SchemaInterface::TYPE_MONEY,
-        'char' => SchemaInterface::TYPE_CHAR,
-        'character' => SchemaInterface::TYPE_CHAR,
-        'bpchar' => SchemaInterface::TYPE_CHAR,
-        'character varying' => SchemaInterface::TYPE_STRING,
-        'varchar' => SchemaInterface::TYPE_STRING,
-        'text' => SchemaInterface::TYPE_TEXT,
-        'bytea' => SchemaInterface::TYPE_BINARY,
-        'date' => SchemaInterface::TYPE_DATE,
-        'time' => SchemaInterface::TYPE_TIME,
-        'time without time zone' => SchemaInterface::TYPE_TIME,
-        'time with time zone' => SchemaInterface::TYPE_TIME,
-        'timetz' => SchemaInterface::TYPE_TIME,
-        'timestamp' => SchemaInterface::TYPE_TIMESTAMP,
-        'timestamp without time zone' => SchemaInterface::TYPE_TIMESTAMP,
-        'timestamp with time zone' => SchemaInterface::TYPE_TIMESTAMP,
-        'timestamptz' => SchemaInterface::TYPE_TIMESTAMP,
-        'abstime' => SchemaInterface::TYPE_TIMESTAMP,
-        'interval' => SchemaInterface::TYPE_STRING,
-        'box' => SchemaInterface::TYPE_STRING,
-        'circle' => SchemaInterface::TYPE_STRING,
-        'point' => SchemaInterface::TYPE_STRING,
-        'line' => SchemaInterface::TYPE_STRING,
-        'lseg' => SchemaInterface::TYPE_STRING,
-        'polygon' => SchemaInterface::TYPE_STRING,
-        'path' => SchemaInterface::TYPE_STRING,
-        'cidr' => SchemaInterface::TYPE_STRING,
-        'inet' => SchemaInterface::TYPE_STRING,
-        'macaddr' => SchemaInterface::TYPE_STRING,
-        'tsquery' => SchemaInterface::TYPE_STRING,
-        'tsvector' => SchemaInterface::TYPE_STRING,
-        'txid_snapshot' => SchemaInterface::TYPE_STRING,
-        'unknown' => SchemaInterface::TYPE_STRING,
-        'uuid' => SchemaInterface::TYPE_STRING,
-        'xml' => SchemaInterface::TYPE_STRING,
-        'json' => SchemaInterface::TYPE_JSON,
-        'jsonb' => SchemaInterface::TYPE_JSON,
+        'bool' => ColumnType::BOOLEAN,
+        'boolean' => ColumnType::BOOLEAN,
+        'bit' => ColumnType::BIT,
+        'bit varying' => ColumnType::BIT,
+        'varbit' => ColumnType::BIT,
+        'smallint' => ColumnType::SMALLINT,
+        'int2' => ColumnType::SMALLINT,
+        'smallserial' => ColumnType::SMALLINT,
+        'serial2' => ColumnType::SMALLINT,
+        'int4' => ColumnType::INTEGER,
+        'int' => ColumnType::INTEGER,
+        'integer' => ColumnType::INTEGER,
+        'serial' => ColumnType::INTEGER,
+        'serial4' => ColumnType::INTEGER,
+        'bigint' => ColumnType::BIGINT,
+        'int8' => ColumnType::BIGINT,
+        'bigserial' => ColumnType::BIGINT,
+        'serial8' => ColumnType::BIGINT,
+        'oid' => ColumnType::BIGINT, // shouldn't be used. it's pg internal!
+        'pg_lsn' => ColumnType::BIGINT,
+        'real' => ColumnType::FLOAT,
+        'float4' => ColumnType::FLOAT,
+        'float8' => ColumnType::DOUBLE,
+        'double precision' => ColumnType::DOUBLE,
+        'decimal' => ColumnType::DECIMAL,
+        'numeric' => ColumnType::DECIMAL,
+        'money' => ColumnType::MONEY,
+        'char' => ColumnType::CHAR,
+        'character' => ColumnType::CHAR,
+        'bpchar' => ColumnType::CHAR,
+        'character varying' => ColumnType::STRING,
+        'varchar' => ColumnType::STRING,
+        'text' => ColumnType::TEXT,
+        'bytea' => ColumnType::BINARY,
+        'date' => ColumnType::DATE,
+        'time' => ColumnType::TIME,
+        'time without time zone' => ColumnType::TIME,
+        'time with time zone' => ColumnType::TIME,
+        'timetz' => ColumnType::TIME,
+        'timestamp' => ColumnType::TIMESTAMP,
+        'timestamp without time zone' => ColumnType::TIMESTAMP,
+        'timestamp with time zone' => ColumnType::TIMESTAMP,
+        'timestamptz' => ColumnType::TIMESTAMP,
+        'abstime' => ColumnType::TIMESTAMP,
+        'interval' => ColumnType::STRING,
+        'box' => ColumnType::STRING,
+        'circle' => ColumnType::STRING,
+        'point' => ColumnType::STRING,
+        'line' => ColumnType::STRING,
+        'lseg' => ColumnType::STRING,
+        'polygon' => ColumnType::STRING,
+        'path' => ColumnType::STRING,
+        'cidr' => ColumnType::STRING,
+        'inet' => ColumnType::STRING,
+        'macaddr' => ColumnType::STRING,
+        'tsquery' => ColumnType::STRING,
+        'tsvector' => ColumnType::STRING,
+        'txid_snapshot' => ColumnType::STRING,
+        'unknown' => ColumnType::STRING,
+        'uuid' => ColumnType::STRING,
+        'xml' => ColumnType::STRING,
+        'json' => ColumnType::JSON,
+        'jsonb' => ColumnType::JSON,
     ];
 
     /**
+     * @psalm-param ColumnType::* $type
      * @psalm-param ColumnInfo $info
      * @psalm-suppress MoreSpecificImplementedParamType
      */
@@ -125,17 +125,18 @@ final class ColumnFactory extends AbstractColumnFactory
                 ->dimension($dimension)
                 ->column($this->fromType($type, $info));
         } else {
+            /** @psalm-suppress ArgumentTypeCoercion */
             $column = match ($type) {
-                SchemaInterface::TYPE_BOOLEAN => new BooleanColumnSchema($type),
-                SchemaInterface::TYPE_BIT => new BitColumnSchema($type),
-                SchemaInterface::TYPE_TINYINT => new IntegerColumnSchema($type),
-                SchemaInterface::TYPE_SMALLINT => new IntegerColumnSchema($type),
-                SchemaInterface::TYPE_INTEGER => new IntegerColumnSchema($type),
-                SchemaInterface::TYPE_BIGINT => PHP_INT_SIZE !== 8
+                ColumnType::BOOLEAN => new BooleanColumnSchema($type),
+                ColumnType::BIT => new BitColumnSchema($type),
+                ColumnType::TINYINT => new IntegerColumnSchema($type),
+                ColumnType::SMALLINT => new IntegerColumnSchema($type),
+                ColumnType::INTEGER => new IntegerColumnSchema($type),
+                ColumnType::BIGINT => PHP_INT_SIZE !== 8
                     ? new BigIntColumnSchema($type)
                     : new IntegerColumnSchema($type),
-                SchemaInterface::TYPE_BINARY => new BinaryColumnSchema($type),
-                Schema::TYPE_STRUCTURED => (new StructuredColumnSchema($type))->columns($info['columns'] ?? []),
+                ColumnType::BINARY => new BinaryColumnSchema($type),
+                ColumnType::STRUCTURED => (new StructuredColumnSchema($type))->columns($info['columns'] ?? []),
                 default => parent::fromType($type, $info),
             };
         }
@@ -145,6 +146,6 @@ final class ColumnFactory extends AbstractColumnFactory
 
     protected function getType(string $dbType, array $info = []): string
     {
-        return self::TYPE_MAP[$dbType] ?? SchemaInterface::TYPE_STRING;
+        return self::TYPE_MAP[$dbType] ?? ColumnType::STRING;
     }
 }

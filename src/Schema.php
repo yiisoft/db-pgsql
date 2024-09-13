@@ -6,6 +6,7 @@ namespace Yiisoft\Db\Pgsql;
 
 use JsonException;
 use Throwable;
+use Yiisoft\Db\Constant\ColumnType;
 use Yiisoft\Db\Constraint\CheckConstraint;
 use Yiisoft\Db\Constraint\Constraint;
 use Yiisoft\Db\Constraint\DefaultValueConstraint;
@@ -31,6 +32,7 @@ use function array_map;
 use function array_unique;
 use function array_values;
 use function explode;
+use function in_array;
 use function is_string;
 use function preg_match;
 use function preg_replace;
@@ -92,15 +94,6 @@ use function substr;
  */
 final class Schema extends AbstractPdoSchema
 {
-    /**
-     * Define the abstract column type as `array`.
-     */
-    public const TYPE_ARRAY = 'array';
-    /**
-     * Define the abstract column type as `structured`.
-     */
-    public const TYPE_STRUCTURED = 'structured';
-
     /**
      * @var string|null The default schema used for the current session.
      */
@@ -745,7 +738,7 @@ final class Schema extends AbstractPdoSchema
             }
 
             $column = $this->getColumnFactory()
-                ->fromType(self::TYPE_STRUCTURED, ['dimension' => $info['dimension'], 'columns' => $columns]);
+                ->fromType(ColumnType::STRUCTURED, ['dimension' => $info['dimension'], 'columns' => $columns]);
         } else {
             $column = $this->getColumnFactory()
                 ->fromDbType($dbType, ['dimension' => $info['dimension']]);
@@ -823,12 +816,12 @@ final class Schema extends AbstractPdoSchema
             return null;
         }
 
-        if ($column->getType() === self::TYPE_BOOLEAN && in_array($defaultValue, ['true', 'false'], true)) {
+        if ($column->getType() === ColumnType::BOOLEAN && in_array($defaultValue, ['true', 'false'], true)) {
             return $defaultValue === 'true';
         }
 
         if (
-            in_array($column->getType(), [self::TYPE_TIMESTAMP, self::TYPE_DATE, self::TYPE_TIME], true)
+            in_array($column->getType(), [ColumnType::TIMESTAMP, ColumnType::DATE, ColumnType::TIME], true)
             && in_array(strtoupper($defaultValue), ['NOW()', 'CURRENT_TIMESTAMP', 'CURRENT_DATE', 'CURRENT_TIME'], true)
         ) {
             return new Expression($defaultValue);
@@ -837,7 +830,7 @@ final class Schema extends AbstractPdoSchema
         $value = preg_replace("/^B?['(](.*?)[)'](?:::[^:]+)?$/s", '$1', $defaultValue);
         $value = str_replace("''", "'", $value);
 
-        if ($column->getType() === self::TYPE_BINARY && str_starts_with($value, '\\x')) {
+        if ($column->getType() === ColumnType::BINARY && str_starts_with($value, '\\x')) {
             return hex2bin(substr($value, 2));
         }
 
