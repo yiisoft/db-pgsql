@@ -715,7 +715,7 @@ final class Schema extends AbstractPdoSchema
      */
     private function loadColumnSchema(array $info): ColumnSchemaInterface
     {
-        $columnFactory = $this->db->getColumnBuilderClass()::columnFactory();
+        $columnFactory = $this->db->getColumnFactory();
         $dbType = $info['data_type'];
 
         if (!in_array($info['type_scheme'], [$this->defaultSchema, 'pg_catalog'], true)) {

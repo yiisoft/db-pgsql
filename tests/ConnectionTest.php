@@ -10,7 +10,7 @@ use Yiisoft\Db\Connection\ConnectionInterface;
 use Yiisoft\Db\Exception\Exception;
 use Yiisoft\Db\Exception\InvalidConfigException;
 use Yiisoft\Db\Exception\NotSupportedException;
-use Yiisoft\Db\Pgsql\Column\ColumnBuilder;
+use Yiisoft\Db\Pgsql\Column\ColumnFactory;
 use Yiisoft\Db\Pgsql\Tests\Support\TestTrait;
 use Yiisoft\Db\Tests\Common\CommonConnectionTest;
 use Yiisoft\Db\Transaction\TransactionInterface;
@@ -135,10 +135,10 @@ final class ConnectionTest extends CommonConnectionTest
         $db->close();
     }
 
-    public function testGetColumnBuilderClass(): void
+    public function testGetColumnFactory(): void
     {
         $db = $this->getConnection();
 
-        $this->assertSame(ColumnBuilder::class, $db->getColumnBuilderClass());
+        $this->assertInstanceOf(ColumnFactory::class, $db->getColumnFactory());
     }
 }

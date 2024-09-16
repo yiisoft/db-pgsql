@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Yiisoft\Db\Pgsql\Column;
 
 use Yiisoft\Db\Constant\ColumnType;
+use Yiisoft\Db\Constant\PseudoType;
 use Yiisoft\Db\Schema\Column\AbstractColumnFactory;
 use Yiisoft\Db\Schema\Column\ColumnSchemaInterface;
 
@@ -109,6 +110,18 @@ final class ColumnFactory extends AbstractColumnFactory
         'json' => ColumnType::JSON,
         'jsonb' => ColumnType::JSON,
     ];
+
+    public function fromPseudoType(string $pseudoType, array $info = []): ColumnSchemaInterface
+    {
+        return match ($pseudoType) {
+            PseudoType::PK => ColumnBuilder::primaryKey()->load($info),
+            PseudoType::UPK => ColumnBuilder::primaryKey()->unsigned()->load($info),
+            PseudoType::BIGPK => ColumnBuilder::bigPrimaryKey()->load($info),
+            PseudoType::UBIGPK => ColumnBuilder::bigPrimaryKey()->unsigned()->load($info),
+            PseudoType::UUID_PK => ColumnBuilder::uuidPrimaryKey()->load($info),
+            PseudoType::UUID_PK_SEQ => ColumnBuilder::uuidPrimaryKey(true)->load($info),
+        };
+    }
 
     /**
      * @psalm-param ColumnType::* $type

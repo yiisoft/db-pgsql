@@ -14,6 +14,7 @@
 - Enh #355: Implement `ColumnFactory` class (@Tigrov)
 - Enh #359: Separate column type constants (@Tigrov)
 - Enh #359: Remove `Schema::TYPE_ARRAY` and `Schema::TYPE_STRUCTURED` constants (@Tigrov)
+- Enh #360: Realize `ColumnBuilder` class (@Tigrov)
 
 ## 1.3.0 March 21, 2024
 

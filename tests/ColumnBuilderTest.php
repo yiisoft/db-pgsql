@@ -2,7 +2,9 @@
 
 declare(strict_types=1);
 
-use Yiisoft\Db\Pgsql\Column\ColumnFactory;
+namespace Yiisoft\Db\Pgsql\Tests;
+
+use Yiisoft\Db\Pgsql\Column\ColumnBuilder;
 use Yiisoft\Db\Pgsql\Tests\Support\TestTrait;
 use Yiisoft\Db\Tests\AbstractColumnBuilderTest;
 
@@ -13,11 +15,21 @@ final class ColumnBuilderTest extends AbstractColumnBuilderTest
 {
     use TestTrait;
 
-    public function testColumnFactory(): void
+    public function getColumnBuilderClass(): string
     {
-        $db = $this->getConnection();
-        $columnBuilderClass = $db->getColumnBuilderClass();
+        return ColumnBuilder::class;
+    }
 
-        $this->assertInstanceOf(ColumnFactory::class, $columnBuilderClass::columnFactory());
+    /**
+     * @dataProvider \Yiisoft\Db\Pgsql\Tests\Provider\ColumnBuilderProvider::buildingMethods
+     */
+    public function testBuildingMethods(
+        string $buildingMethod,
+        array $args,
+        string $expectedInstanceOf,
+        string $expectedType,
+        array $expectedMethodResults = [],
+    ): void {
+        parent::testBuildingMethods($buildingMethod, $args, $expectedInstanceOf, $expectedType, $expectedMethodResults);
     }
 }

@@ -314,7 +314,7 @@ final class ColumnSchemaTest extends CommonColumnSchemaTest
     public function testDbTypecastArrayColumnSchema(string $dbType, string $type, array $values): void
     {
         $db = $this->getConnection();
-        $columnFactory = $db->getColumnBuilderClass()::columnFactory();
+        $columnFactory = $db->getColumnFactory();
 
         $arrayCol = (new ArrayColumnSchema())->column($columnFactory->fromType($type)->dbType($dbType));
 
@@ -336,7 +336,7 @@ final class ColumnSchemaTest extends CommonColumnSchemaTest
     public function testPhpTypecastArrayColumnSchema(string $dbType, string $type, array $values): void
     {
         $db = $this->getConnection();
-        $columnFactory = $db->getColumnBuilderClass()::columnFactory();
+        $columnFactory = $db->getColumnFactory();
 
         $arrayCol = (new ArrayColumnSchema())->column($columnFactory->fromType($type)->dbType($dbType));
 
