@@ -19,11 +19,9 @@ use Yiisoft\Db\Exception\NotSupportedException;
 use Yiisoft\Db\Expression\Expression;
 use Yiisoft\Db\Helper\DbArrayHelper;
 use Yiisoft\Db\Pgsql\Column\ArrayColumnSchema;
-use Yiisoft\Db\Pgsql\Column\ColumnFactory;
 use Yiisoft\Db\Pgsql\Column\SequenceColumnSchemaInterface;
 use Yiisoft\Db\Pgsql\Column\StructuredColumnSchemaInterface;
 use Yiisoft\Db\Schema\Builder\ColumnInterface;
-use Yiisoft\Db\Schema\Column\ColumnFactoryInterface;
 use Yiisoft\Db\Schema\Column\ColumnSchemaInterface;
 use Yiisoft\Db\Schema\TableSchemaInterface;
 
@@ -109,11 +107,6 @@ final class Schema extends AbstractPdoSchema
     public function createColumn(string $type, array|int|string $length = null): ColumnInterface
     {
         return new Column($type, $length);
-    }
-
-    public function getColumnFactory(): ColumnFactoryInterface
-    {
-        return new ColumnFactory();
     }
 
     /**
@@ -722,6 +715,7 @@ final class Schema extends AbstractPdoSchema
      */
     private function loadColumnSchema(array $info): ColumnSchemaInterface
     {
+        $columnFactory = $this->db->getColumnFactory();
         $dbType = $info['data_type'];
 
         if (!in_array($info['type_scheme'], [$this->defaultSchema, 'pg_catalog'], true)) {
@@ -737,10 +731,10 @@ final class Schema extends AbstractPdoSchema
                 $columns = $structured->getColumns();
             }
 
-            $column = $this->getColumnFactory()
+            $column = $columnFactory
                 ->fromType(ColumnType::STRUCTURED, ['dimension' => $info['dimension'], 'columns' => $columns]);
         } else {
-            $column = $this->getColumnFactory()
+            $column = $columnFactory
                 ->fromDbType($dbType, ['dimension' => $info['dimension']]);
         }
 

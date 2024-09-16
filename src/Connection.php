@@ -7,7 +7,9 @@ namespace Yiisoft\Db\Pgsql;
 use Yiisoft\Db\Driver\Pdo\AbstractPdoConnection;
 use Yiisoft\Db\Driver\Pdo\PdoCommandInterface;
 use Yiisoft\Db\Exception\InvalidArgumentException;
+use Yiisoft\Db\Pgsql\Column\ColumnFactory;
 use Yiisoft\Db\QueryBuilder\QueryBuilderInterface;
+use Yiisoft\Db\Schema\Column\ColumnFactoryInterface;
 use Yiisoft\Db\Schema\Quoter;
 use Yiisoft\Db\Schema\QuoterInterface;
 use Yiisoft\Db\Schema\SchemaInterface;
@@ -42,6 +44,11 @@ final class Connection extends AbstractPdoConnection
     public function createTransaction(): TransactionInterface
     {
         return new Transaction($this);
+    }
+
+    public function getColumnFactory(): ColumnFactoryInterface
+    {
+        return new ColumnFactory();
     }
 
     public function getLastInsertID(string $sequenceName = null): string
