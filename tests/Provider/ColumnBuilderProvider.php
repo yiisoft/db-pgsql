@@ -65,7 +65,7 @@ class ColumnBuilderProvider extends \Yiisoft\Db\Tests\Provider\ColumnBuilderProv
                 ],
                 StructuredColumnSchema::class,
                 ColumnType::STRUCTURED,
-                ['getDbType' => 'money_currency', 'getColumns' => $columns]
+                ['getDbType' => 'money_currency', 'getColumns' => $columns],
             ],
         ];
     }

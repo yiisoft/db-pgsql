@@ -11,7 +11,7 @@ final class ColumnBuilder extends \Yiisoft\Db\Schema\Column\ColumnBuilder
 {
     public static function boolean(): ColumnSchemaInterface
     {
-        return (new BooleanColumnSchema(ColumnType::BOOLEAN));
+        return new BooleanColumnSchema(ColumnType::BOOLEAN);
     }
 
     public static function bit(int|null $size = null): ColumnSchemaInterface
