@@ -247,7 +247,7 @@ final class SchemaTest extends CommonSchemaTest
         $column = $tableSchema->getColumn('user_timezone');
 
         $this->assertNotNull($column);
-        $this->assertFalse($column->isAllowNull());
+        $this->assertTrue($column->isNotNull());
         $this->assertEquals('numeric', $column->getDbType());
         $this->assertEquals(0, $column->getDefaultValue());
 
@@ -550,7 +550,7 @@ final class SchemaTest extends CommonSchemaTest
         $tableSchema = $schema->getTableSchema('test_domain_type');
         $column = $tableSchema->getColumn('sex');
 
-        $this->assertFalse($column->isAllowNull());
+        $this->assertTrue($column->isNotNull());
         $this->assertEquals('char', $column->getDbType());
         $this->assertEquals('x', $column->getDefaultValue());
 

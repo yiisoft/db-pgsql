@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Yiisoft\Db\Pgsql\Column;
 
 use Yiisoft\Db\Constant\ColumnType;
+use Yiisoft\Db\Constraint\ForeignKeyConstraint;
 use Yiisoft\Db\Schema\Column\AbstractColumnFactory;
 use Yiisoft\Db\Schema\Column\ColumnSchemaInterface;
 
@@ -12,8 +13,8 @@ use const PHP_INT_SIZE;
 
 /**
  * @psalm-type ColumnInfo = array{
- *     allow_null?: bool|string|null,
  *     auto_increment?: bool|string,
+ *     check?: string|null,
  *     columns?: array<string, ColumnSchemaInterface>,
  *     comment?: string|null,
  *     computed?: bool|string,
@@ -24,13 +25,15 @@ use const PHP_INT_SIZE;
  *     extra?: string|null,
  *     primary_key?: bool|string,
  *     name?: string,
- *     precision?: int|string|null,
+ *     not_null?: bool|string|null,
+ *     reference?: ForeignKeyConstraint|null,
  *     sequence_name?: string|null,
  *     scale?: int|string|null,
  *     schema?: string|null,
  *     size?: int|string|null,
  *     table?: string|null,
  *     type?: string,
+ *     unique?: bool|string,
  * }
  */
 final class ColumnFactory extends AbstractColumnFactory

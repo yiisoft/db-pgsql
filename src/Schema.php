@@ -50,16 +50,14 @@ use function substr;
  *   type_scheme: string|null,
  *   character_maximum_length: int,
  *   column_comment: string|null,
- *   modifier: int,
  *   is_nullable: bool,
  *   column_default: string|null,
  *   is_autoinc: bool,
  *   sequence_name: string|null,
  *   enum_values: string|null,
- *   numeric_precision: int|null,
- *   numeric_scale: int|null,
  *   size: string|null,
- *   is_pkey: bool|null,
+ *   scale: int|null,
+ *   contype: string|null,
  *   dimension: int
  * }
  * @psalm-type ConstraintArray = array<
@@ -623,7 +621,6 @@ final class Schema extends AbstractPdoSchema
             (SELECT nspname FROM pg_namespace WHERE oid = COALESCE(td.typnamespace, tb.typnamespace, t.typnamespace)) AS type_scheme,
             a.attlen AS character_maximum_length,
             pg_catalog.col_description(c.oid, a.attnum) AS column_comment,
-            information_schema._pg_truetypmod(a, t) AS modifier,
             NOT (a.attnotnull OR t.typnotnull) AS is_nullable,
             COALESCE(t.typdefault, pg_get_expr(ad.adbin, ad.adrelid)) AS column_default,
             COALESCE(pg_get_expr(ad.adbin, ad.adrelid) ~ 'nextval', false) $orIdentity AS is_autoinc,
@@ -639,19 +636,25 @@ final class Schema extends AbstractPdoSchema
                 ',')
                 ELSE NULL
             END AS enum_values,
-            information_schema._pg_numeric_precision(
-                COALESCE(td.oid, tb.oid, a.atttypid),
-                information_schema._pg_truetypmod(a, t)
-            ) AS numeric_precision,
+            COALESCE(
+                information_schema._pg_char_max_length(
+                    COALESCE(td.oid, tb.oid, a.atttypid),
+                    a.atttypmod
+                ),
+                information_schema._pg_datetime_precision(
+                    COALESCE(td.oid, tb.oid, a.atttypid),
+                    a.atttypmod
+                ),
+                CASE a.atttypmod
+                    WHEN -1 THEN null
+                    ELSE ((a.atttypmod - 4) >> 16) & 65535
+                END
+            ) AS size,
             information_schema._pg_numeric_scale(
                 COALESCE(td.oid, tb.oid, a.atttypid),
-                information_schema._pg_truetypmod(a, t)
-            ) AS numeric_scale,
-            information_schema._pg_char_max_length(
-                COALESCE(td.oid, tb.oid, a.atttypid),
-                information_schema._pg_truetypmod(a, t)
-            ) AS size,
-            ct.oid IS NOT NULL AS is_pkey,
+                a.atttypmod
+            ) AS scale,
+            ct.contype,
             COALESCE(NULLIF(a.attndims, 0), NULLIF(t.typndims, 0), (t.typcategory='A')::int) AS dimension
         FROM
             pg_class c
@@ -663,11 +666,11 @@ final class Schema extends AbstractPdoSchema
             LEFT JOIN pg_type td ON t.typndims > 0 AND t.typbasetype > 0 AND tb.typelem = td.oid
             LEFT JOIN pg_namespace d ON d.oid = c.relnamespace
             LEFT JOIN pg_rewrite rw ON c.relkind = 'v' AND rw.ev_class = c.oid AND rw.rulename = '_RETURN'
-            LEFT JOIN pg_constraint ct ON ct.conrelid = c.oid AND ct.contype = 'p' AND a.attnum = ANY (ct.conkey)
-                OR rw.ev_action IS NOT NULL AND ct.contype = 'p'
-                AND (ARRAY(
+            LEFT JOIN pg_constraint ct ON (ct.contype = 'p' OR ct.contype = 'u' AND cardinality(ct.conkey) = 1)
+                AND (ct.conrelid = c.oid AND a.attnum = ANY (ct.conkey)
+                OR rw.ev_action IS NOT NULL AND (ARRAY(
                     SELECT regexp_matches(rw.ev_action, '{TARGETENTRY .*? :resorigtbl (\d+) :resorigcol (\d+) ', 'g')
-                ))[a.attnum:a.attnum] <@ (ct.conrelid::text || ct.conkey::text[])
+                ))[a.attnum:a.attnum] <@ (ct.conrelid::text || ct.conkey::text[]))
         WHERE
             a.attnum > 0 AND t.typname != '' AND NOT a.attisdropped
             AND c.relname = :tableName
@@ -738,18 +741,19 @@ final class Schema extends AbstractPdoSchema
                 ->fromDbType($dbType, ['dimension' => $info['dimension']]);
         }
 
+        /** @psalm-suppress DeprecatedMethod */
         $column->name($info['column_name']);
         $column->dbType($dbType);
-        $column->allowNull($info['is_nullable']);
+        $column->notNull(!$info['is_nullable']);
         $column->autoIncrement($info['is_autoinc']);
         $column->comment($info['column_comment']);
         $column->enumValues($info['enum_values'] !== null
             ? explode(',', str_replace(["''"], ["'"], $info['enum_values']))
             : null);
-        $column->primaryKey((bool) $info['is_pkey']);
-        $column->precision($info['numeric_precision']);
-        $column->scale($info['numeric_scale']);
-        $column->size($info['size'] === null ? null : (int) $info['size']);
+        $column->primaryKey($info['contype'] === 'p');
+        $column->unique($info['contype'] === 'u');
+        $column->scale($info['scale']);
+        $column->size($info['size']);
 
         /**
          * pg_get_serial_sequence() doesn't track DEFAULT value change.
@@ -771,9 +775,8 @@ final class Schema extends AbstractPdoSchema
             $arrayColumn = $column->getColumn();
             $arrayColumn->dbType($dbType);
             $arrayColumn->enumValues($column->getEnumValues());
-            $arrayColumn->precision($info['numeric_precision']);
-            $arrayColumn->scale($info['numeric_scale']);
-            $arrayColumn->size($info['size'] === null ? null : (int) $info['size']);
+            $arrayColumn->scale($info['scale']);
+            $arrayColumn->size($info['size']);
         }
 
         $column->defaultValue($this->normalizeDefaultValue($defaultValue, $column));

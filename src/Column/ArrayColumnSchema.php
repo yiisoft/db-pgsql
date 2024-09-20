@@ -58,7 +58,6 @@ final class ArrayColumnSchema extends AbstractColumnSchema
         if ($this->column === null) {
             $this->column = (new ColumnFactory())->fromDbType($this->getDbType() ?? '');
             $this->column->enumValues($this->getEnumValues());
-            $this->column->precision($this->getPrecision());
             $this->column->scale($this->getScale());
             $this->column->size($this->getSize());
         }

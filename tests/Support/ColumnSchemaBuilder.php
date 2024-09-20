@@ -11,12 +11,12 @@ use Yiisoft\Db\Schema\Column\StringColumnSchema;
 
 class ColumnSchemaBuilder
 {
-    public static function numeric(string $name, int|null $precision, int|null $scale, mixed $defaultValue = null): ColumnSchemaInterface
+    public static function numeric(string $name, int|null $size, int|null $scale, mixed $defaultValue = null): ColumnSchemaInterface
     {
         $column = new DoubleColumnSchema(ColumnType::DECIMAL);
         $column->name($name);
         $column->dbType('numeric');
-        $column->precision($precision);
+        $column->size($size);
         $column->scale($scale);
         $column->defaultValue($defaultValue);
 
