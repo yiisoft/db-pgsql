@@ -55,7 +55,7 @@ use function substr;
  *   is_autoinc: bool,
  *   sequence_name: string|null,
  *   enum_values: string|null,
- *   size: string|null,
+ *   size: int|null,
  *   scale: int|null,
  *   contype: string|null,
  *   dimension: int
