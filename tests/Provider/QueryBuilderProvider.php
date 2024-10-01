@@ -27,7 +27,7 @@ final class QueryBuilderProvider extends \Yiisoft\Db\Tests\Provider\QueryBuilder
         $buildCondition = parent::buildCondition();
 
         $priceColumns = [
-            'value' => ColumnSchemaBuilder::numeric(name: 'value', precision: 10, scale: 2),
+            'value' => ColumnSchemaBuilder::numeric(name: 'value', size: 10, scale: 2),
             'currency_code' => ColumnSchemaBuilder::char(name: 'currency_code', size: 3),
         ];
 
