@@ -15,6 +15,7 @@ use const PHP_INT_SIZE;
  * @psalm-type ColumnInfo = array{
  *     auto_increment?: bool|string,
  *     check?: string|null,
+ *     column?: ColumnSchemaInterface,
  *     columns?: array<string, ColumnSchemaInterface>,
  *     comment?: string|null,
  *     computed?: bool|string,
@@ -127,7 +128,7 @@ final class ColumnFactory extends AbstractColumnFactory
             unset($info['dimension']);
             $column = (new ArrayColumnSchema())
                 ->dimension($dimension)
-                ->column($this->fromType($type, $info));
+                ->column($info['column'] ?? $this->fromType($type, $info));
         } else {
             $column = match ($type) {
                 ColumnType::BOOLEAN => new BooleanColumnSchema($type),
