@@ -4,16 +4,13 @@ declare(strict_types=1);
 
 namespace Yiisoft\Db\Pgsql\Tests\Provider;
 
-use Yiisoft\Db\Constant\ColumnType;
 use Yiisoft\Db\Pgsql\Column\ArrayColumnSchema;
 use Yiisoft\Db\Pgsql\Column\BinaryColumnSchema;
 use Yiisoft\Db\Pgsql\Column\BitColumnSchema;
 use Yiisoft\Db\Pgsql\Column\BooleanColumnSchema;
-use Yiisoft\Db\Pgsql\Column\ColumnBuilder;
 use Yiisoft\Db\Pgsql\Column\IntegerColumnSchema;
 use Yiisoft\Db\Pgsql\Column\StructuredColumnSchema;
 use Yiisoft\Db\Schema\Column\DoubleColumnSchema;
-use Yiisoft\Db\Schema\Column\StringColumnSchema;
 
 class ColumnBuilderProvider extends \Yiisoft\Db\Tests\Provider\ColumnBuilderProvider
 {

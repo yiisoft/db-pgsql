@@ -20,5 +20,4 @@ final class ArrayColumnSchema extends BaseArrayColumnSchema
     {
         return new ArrayParser();
     }
-
 }
