@@ -103,6 +103,7 @@ final class ColumnFactory extends AbstractColumnFactory
         'cidr' => ColumnType::STRING,
         'inet' => ColumnType::STRING,
         'macaddr' => ColumnType::STRING,
+        'macaddr8' => ColumnType::STRING,
         'tsquery' => ColumnType::STRING,
         'tsvector' => ColumnType::STRING,
         'txid_snapshot' => ColumnType::STRING,

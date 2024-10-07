@@ -44,6 +44,7 @@ final class DDLQueryBuilder extends AbstractDDLQueryBuilder
             return "ALTER TABLE $tableName ALTER COLUMN $columnName $type";
         }
 
+        /** @psalm-suppress DeprecatedMethod */
         $type = 'TYPE ' . $this->queryBuilder->getColumnType($type);
         $multiAlterStatement = [];
         $constraintPrefix = preg_replace('/[^a-z0-9_]/i', '', $table . '_' . $column);

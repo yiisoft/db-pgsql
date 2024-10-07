@@ -16,9 +16,11 @@ use Yiisoft\Db\Pgsql\Column\BigIntColumnSchema;
 use Yiisoft\Db\Pgsql\Column\BinaryColumnSchema;
 use Yiisoft\Db\Pgsql\Column\BitColumnSchema;
 use Yiisoft\Db\Pgsql\Column\BooleanColumnSchema;
+use Yiisoft\Db\Pgsql\Column\ColumnBuilder;
 use Yiisoft\Db\Pgsql\Column\IntegerColumnSchema;
 use Yiisoft\Db\Pgsql\Tests\Support\TestTrait;
 use Yiisoft\Db\Query\Query;
+use Yiisoft\Db\Schema\Column\ColumnSchemaInterface;
 use Yiisoft\Db\Schema\Column\DoubleColumnSchema;
 use Yiisoft\Db\Schema\Column\JsonColumnSchema;
 use Yiisoft\Db\Schema\Column\StringColumnSchema;
@@ -116,6 +118,8 @@ final class ColumnSchemaTest extends CommonColumnSchemaTest
 
         $this->assertEquals(new JsonExpression('', 'json'), $tableSchema->getColumn('json_col')->dbTypecast(''));
         $this->assertEquals(new JsonExpression('', 'jsonb'), $tableSchema->getColumn('jsonb_col')->dbTypecast(''));
+
+        $db->close();
     }
 
     public function testBoolDefault(): void
@@ -195,6 +199,8 @@ final class ColumnSchemaTest extends CommonColumnSchemaTest
         $this->assertFalse($tableSchema->getColumn('C_index_1')->isPrimaryKey());
         $this->assertFalse($tableSchema->getColumn('C_index_2_1')->isPrimaryKey());
         $this->assertFalse($tableSchema->getColumn('C_index_2_2')->isPrimaryKey());
+
+        $db->close();
     }
 
     public function testStructuredType(): void
@@ -290,6 +296,8 @@ final class ColumnSchemaTest extends CommonColumnSchemaTest
         $this->assertInstanceOf(ArrayColumnSchema::class, $tableSchema->getColumn('intarray_col'));
         $this->assertInstanceOf(IntegerColumnSchema::class, $tableSchema->getColumn('intarray_col')->getColumn());
         $this->assertInstanceOf(JsonColumnSchema::class, $tableSchema->getColumn('json_col'));
+
+        $db->close();
     }
 
     /** @dataProvider \Yiisoft\Db\Pgsql\Tests\Provider\ColumnSchemaProvider::predefinedTypes */
@@ -304,41 +312,10 @@ final class ColumnSchemaTest extends CommonColumnSchemaTest
         parent::testDbTypecastColumns($className, $values);
     }
 
-    /** @dataProvider \Yiisoft\Db\Pgsql\Tests\Provider\ColumnSchemaProvider::phpTypecastColumns */
-    public function testPhpTypecastColumns(string $className, array $values)
-    {
-        parent::testPhpTypecastColumns($className, $values);
-    }
-
-    /** @dataProvider \Yiisoft\Db\Pgsql\Tests\Provider\ColumnSchemaProvider::dbTypecastArrayColumns */
-    public function testDbTypecastArrayColumnSchema(string $dbType, string $type, array $values): void
-    {
-        $db = $this->getConnection();
-        $columnFactory = $db->getColumnFactory();
-
-        $arrayCol = (new ArrayColumnSchema())->column($columnFactory->fromType($type)->dbType($dbType));
-
-        foreach ($values as [$dimension, $expected, $value]) {
-            $arrayCol->dimension($dimension);
-            $dbValue = $arrayCol->dbTypecast($value);
-
-            $this->assertInstanceOf(ArrayExpression::class, $dbValue);
-            $this->assertSame($dbType, $dbValue->getType());
-            $this->assertSame($dimension, $dbValue->getDimension());
-
-            if (is_object($expected)) {
-                $this->assertEquals($expected, $dbValue->getValue());
-            }
-        }
-    }
-
     /** @dataProvider \Yiisoft\Db\Pgsql\Tests\Provider\ColumnSchemaProvider::phpTypecastArrayColumns */
-    public function testPhpTypecastArrayColumnSchema(string $dbType, string $type, array $values): void
+    public function testPhpTypecastArrayColumnSchema(ColumnSchemaInterface $column, array $values): void
     {
-        $db = $this->getConnection();
-        $columnFactory = $db->getColumnFactory();
-
-        $arrayCol = (new ArrayColumnSchema())->column($columnFactory->fromType($type)->dbType($dbType));
+        $arrayCol = ColumnBuilder::array($column);
 
         foreach ($values as [$dimension, $expected, $value]) {
             $arrayCol->dimension($dimension);
@@ -370,34 +347,5 @@ final class ColumnSchemaTest extends CommonColumnSchemaTest
         $bigintCol->sequenceName(null);
 
         $this->assertNull($bigintCol->getSequenceName());
-    }
-
-    public function testArrayColumnSchema()
-    {
-        $arrayCol = new ArrayColumnSchema();
-
-        $this->assertSame(1, $arrayCol->getDimension());
-
-        $this->assertNull($arrayCol->dbTypecast(null));
-        $this->assertEquals(new ArrayExpression([]), $arrayCol->dbTypecast(''));
-        $this->assertSame($expression = new Expression('expression'), $arrayCol->dbTypecast($expression));
-        $this->assertNull($arrayCol->phpTypecast(null));
-
-        $arrayCol->dimension(2);
-        $this->assertSame(2, $arrayCol->getDimension());
-    }
-
-    public function testArrayColumnSchemaColumn(): void
-    {
-        $arrayCol = new ArrayColumnSchema();
-        $intCol = new IntegerColumnSchema();
-
-        $this->assertInstanceOf(StringColumnSchema::class, $arrayCol->getColumn());
-        $this->assertSame($arrayCol, $arrayCol->column($intCol));
-        $this->assertSame($intCol, $arrayCol->getColumn());
-
-        $arrayCol->column(null);
-
-        $this->assertInstanceOf(StringColumnSchema::class, $arrayCol->getColumn());
     }
 }

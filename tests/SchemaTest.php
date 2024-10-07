@@ -15,6 +15,7 @@ use Yiisoft\Db\Exception\Exception;
 use Yiisoft\Db\Exception\InvalidConfigException;
 use Yiisoft\Db\Exception\NotSupportedException;
 use Yiisoft\Db\Expression\Expression;
+use Yiisoft\Db\Pgsql\Column\ColumnFactory;
 use Yiisoft\Db\Pgsql\Schema;
 use Yiisoft\Db\Pgsql\Tests\Support\TestTrait;
 use Yiisoft\Db\Schema\SchemaInterface;
@@ -516,6 +517,8 @@ final class SchemaTest extends CommonSchemaTest
         $schema = $db->getSchema()->getTableSchema('schema2.custom_type_test_table');
         $this->assertEquals('my_type', $schema->getColumn('test_type')->getDbType());
         $this->assertEquals('schema2.my_type2', $schema->getColumn('test_type2')->getDbType());
+
+        $db->close();
     }
 
     public function testNotConnectionPDO(): void
@@ -643,5 +646,16 @@ final class SchemaTest extends CommonSchemaTest
         $this->assertSame(['non_unique_index'], $tableIndexes[4]->getColumnNames());
         $this->assertFalse($tableIndexes[4]->isPrimary());
         $this->assertFalse($tableIndexes[4]->isUnique());
+
+        $db->close();
+    }
+
+    public function testGetColumnFactory(): void
+    {
+        $db = $this->getConnection();
+
+        $this->assertInstanceOf(ColumnFactory::class, $db->getSchema()->getColumnFactory());
+
+        $db->close();
     }
 }
