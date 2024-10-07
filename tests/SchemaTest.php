@@ -516,6 +516,8 @@ final class SchemaTest extends CommonSchemaTest
         $schema = $db->getSchema()->getTableSchema('schema2.custom_type_test_table');
         $this->assertEquals('my_type', $schema->getColumn('test_type')->getDbType());
         $this->assertEquals('schema2.my_type2', $schema->getColumn('test_type2')->getDbType());
+
+        $db->close();
     }
 
     public function testNotConnectionPDO(): void
@@ -643,5 +645,7 @@ final class SchemaTest extends CommonSchemaTest
         $this->assertSame(['non_unique_index'], $tableIndexes[4]->getColumnNames());
         $this->assertFalse($tableIndexes[4]->isPrimary());
         $this->assertFalse($tableIndexes[4]->isUnique());
+
+        $db->close();
     }
 }

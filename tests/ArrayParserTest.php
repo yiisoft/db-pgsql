@@ -18,7 +18,6 @@ final class ArrayParserTest extends TestCase
     {
         $arrayParse = new ArrayParser();
 
-        $this->assertNull($arrayParse->parse(null));
         $this->assertSame([0 => null, 1 => null], $arrayParse->parse('{NULL,NULL}'));
         $this->assertSame([], $arrayParse->parse('{}'));
         $this->assertSame([0 => null, 1 => null], $arrayParse->parse('{,}'));
