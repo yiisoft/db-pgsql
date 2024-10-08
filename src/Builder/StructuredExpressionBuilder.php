@@ -13,6 +13,7 @@ use Yiisoft\Db\Expression\ExpressionInterface;
 use Yiisoft\Db\Expression\StructuredExpression;
 use Yiisoft\Db\QueryBuilder\QueryBuilderInterface;
 
+use Yiisoft\Db\Schema\Column\ColumnSchemaInterface;
 use function implode;
 
 /**
@@ -59,6 +60,8 @@ final class StructuredExpressionBuilder implements ExpressionBuilderInterface
     /**
      * Builds a placeholder array out of $expression values.
      *
+     * @param array|object $value The expression value.
+     * @param ColumnSchemaInterface[] $columns The structured type columns.
      * @param array $params The binding parameters.
      *
      * @throws Exception
