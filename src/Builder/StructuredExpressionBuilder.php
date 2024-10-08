@@ -14,6 +14,7 @@ use Yiisoft\Db\Expression\StructuredExpression;
 use Yiisoft\Db\QueryBuilder\QueryBuilderInterface;
 
 use Yiisoft\Db\Schema\Column\ColumnSchemaInterface;
+
 use function implode;
 
 /**
