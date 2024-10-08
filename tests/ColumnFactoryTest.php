@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Yiisoft\Db\Pgsql\Tests;
 
+use Yiisoft\Db\Pgsql\Column\ArrayColumnSchema;
 use Yiisoft\Db\Pgsql\Tests\Support\TestTrait;
 use Yiisoft\Db\Tests\AbstractColumnFactoryTest;
 
@@ -18,6 +19,19 @@ final class ColumnFactoryTest extends AbstractColumnFactoryTest
     public function testFromDbType(string $dbType, string $expectedType, string $expectedInstanceOf): void
     {
         parent::testFromDbType($dbType, $expectedType, $expectedInstanceOf);
+
+        $db = $this->getConnection();
+        $columnFactory = $db->getColumnFactory();
+
+        // With dimension
+        $column = $columnFactory->fromDbType($dbType, ['dimension' => 1]);
+
+        $this->assertInstanceOf(ArrayColumnSchema::class, $column);
+        $this->assertInstanceOf($expectedInstanceOf, $column->getColumn());
+        $this->assertSame($expectedType, $column->getColumn()->getType());
+        $this->assertSame($dbType, $column->getColumn()->getDbType());
+
+        $db->close();
     }
 
     /** @dataProvider \Yiisoft\Db\Pgsql\Tests\Provider\ColumnFactoryProvider::definitions */
@@ -44,5 +58,17 @@ final class ColumnFactoryTest extends AbstractColumnFactoryTest
     public function testFromType(string $type, string $expectedType, string $expectedInstanceOf): void
     {
         parent::testFromType($type, $expectedType, $expectedInstanceOf);
+
+        $db = $this->getConnection();
+        $columnFactory = $db->getColumnFactory();
+
+        // With dimension
+        $column = $columnFactory->fromType($type, ['dimension' => 1]);
+
+        $this->assertInstanceOf(ArrayColumnSchema::class, $column);
+        $this->assertInstanceOf($expectedInstanceOf, $column->getColumn());
+        $this->assertSame($expectedType, $column->getColumn()->getType());
+
+        $db->close();
     }
 }

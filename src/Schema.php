@@ -24,7 +24,7 @@ use Yiisoft\Db\Pgsql\Column\SequenceColumnSchemaInterface;
 use Yiisoft\Db\Schema\Builder\ColumnInterface;
 use Yiisoft\Db\Schema\Column\ColumnFactoryInterface;
 use Yiisoft\Db\Schema\Column\ColumnSchemaInterface;
-use Yiisoft\Db\Schema\Column\StructuredColumnSchemaInterface;
+use Yiisoft\Db\Schema\Column\StructuredColumnSchema;
 use Yiisoft\Db\Schema\TableSchemaInterface;
 
 use function array_change_key_case;
@@ -789,7 +789,7 @@ final class Schema extends AbstractPdoSchema
 
         $column->defaultValue($this->normalizeDefaultValue($defaultValue, $column));
 
-        if ($column instanceof StructuredColumnSchemaInterface) {
+        if ($column instanceof StructuredColumnSchema) {
             /** @psalm-var array|null $defaultValue */
             $defaultValue = $column->getDefaultValue();
 

@@ -312,6 +312,12 @@ final class ColumnSchemaTest extends CommonColumnSchemaTest
         parent::testDbTypecastColumns($className, $values);
     }
 
+    /** @dataProvider \Yiisoft\Db\Pgsql\Tests\Provider\ColumnSchemaProvider::phpTypecastColumns */
+    public function testPhpTypecastColumns(string $className, array $values)
+    {
+        parent::testPhpTypecastColumns($className, $values);
+    }
+
     /** @dataProvider \Yiisoft\Db\Pgsql\Tests\Provider\ColumnSchemaProvider::phpTypecastArrayColumns */
     public function testPhpTypecastArrayColumnSchema(ColumnSchemaInterface $column, array $values): void
     {

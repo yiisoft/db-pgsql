@@ -4,10 +4,6 @@ declare(strict_types=1);
 
 namespace Yiisoft\Db\Pgsql\Tests\Provider;
 
-use ArrayIterator;
-use Yiisoft\Db\Pgsql\Tests\Support\ColumnSchemaBuilder;
-use Yiisoft\Db\Tests\Support\TraversableObject;
-
 final class StructuredTypeProvider
 {
     public static function columns(): array
