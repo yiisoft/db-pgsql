@@ -8,6 +8,7 @@ use Yiisoft\Db\Expression\ArrayExpression;
 use Yiisoft\Db\Expression\Expression;
 use Yiisoft\Db\Expression\ExpressionBuilderInterface;
 use Yiisoft\Db\Expression\JsonExpression;
+use Yiisoft\Db\Expression\StructuredExpression;
 use Yiisoft\Db\Pgsql\Builder\ArrayExpressionBuilder;
 use Yiisoft\Db\Pgsql\Builder\ArrayOverlapsConditionBuilder;
 use Yiisoft\Db\Pgsql\Builder\JsonOverlapsConditionBuilder;

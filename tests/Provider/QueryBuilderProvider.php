@@ -8,8 +8,8 @@ use Yiisoft\Db\Constant\ColumnType;
 use Yiisoft\Db\Expression\ArrayExpression;
 use Yiisoft\Db\Expression\Expression;
 use Yiisoft\Db\Expression\JsonExpression;
-use Yiisoft\Db\Pgsql\StructuredExpression;
-use Yiisoft\Db\Pgsql\Tests\Support\ColumnSchemaBuilder;
+use Yiisoft\Db\Expression\StructuredExpression;
+use Yiisoft\Db\Pgsql\Column\ColumnBuilder;
 use Yiisoft\Db\Pgsql\Tests\Support\TestTrait;
 use Yiisoft\Db\Query\Query;
 use Yiisoft\Db\Tests\Support\TraversableObject;
@@ -27,8 +27,8 @@ final class QueryBuilderProvider extends \Yiisoft\Db\Tests\Provider\QueryBuilder
         $buildCondition = parent::buildCondition();
 
         $priceColumns = [
-            'value' => ColumnSchemaBuilder::numeric(name: 'value', size: 10, scale: 2),
-            'currency_code' => ColumnSchemaBuilder::char(name: 'currency_code', size: 3),
+            'value' => ColumnBuilder::money(10, 2),
+            'currency_code' => ColumnBuilder::char(3),
         ];
 
         return array_merge(
@@ -267,11 +267,10 @@ final class QueryBuilderProvider extends \Yiisoft\Db\Tests\Provider\QueryBuilder
                     [':qp0' => 10, ':qp1' => 'USD'],
                 ],
                 'structured with columns' => [
-                    ['=', 'price_col', new StructuredExpression(['value' => 10, 'currency_code' => 'USD'], 'currency_money_structured', $priceColumns)],
+                    ['=', 'price_col', new StructuredExpression(['value' => '10', 'currency_code' => 'USD'], 'currency_money_structured', $priceColumns)],
                     '[[price_col]] = ROW(:qp0, :qp1)::currency_money_structured',
                     [':qp0' => 10.0, ':qp1' => 'USD'],
                 ],
-                'scalar can not be converted to structured' => [['=', 'price_col', new StructuredExpression(1)], '"price_col" = NULL', []],
                 'array of structured' => [
                     ['=', 'price_array', new ArrayExpression(
                         [
@@ -283,9 +282,10 @@ final class QueryBuilderProvider extends \Yiisoft\Db\Tests\Provider\QueryBuilder
                     '"price_array" = ARRAY[:qp0, ROW(:qp1, :qp2), ROW(:qp3, :qp4)]',
                     [':qp0' => null, ':qp1' => 11.11, ':qp2' => 'USD', ':qp3' => null, ':qp4' => null],
                 ],
-                'structured null value' => [['=', 'price_col', new StructuredExpression(null)], '"price_col" = NULL', []],
                 'structured null values' => [
-                    ['=', 'price_col', new StructuredExpression([null, null])], '"price_col" = ROW(:qp0, :qp1)', [':qp0' => null, ':qp1' => null],
+                    ['=', 'price_col', new StructuredExpression([null, null])],
+                    '"price_col" = ROW(:qp0, :qp1)',
+                    [':qp0' => null, ':qp1' => null],
                 ],
                 'structured query' => [
                     ['=', 'price_col', new StructuredExpression(
@@ -294,20 +294,20 @@ final class QueryBuilderProvider extends \Yiisoft\Db\Tests\Provider\QueryBuilder
                     '[[price_col]] = (SELECT [[price]] FROM [[product]] WHERE [[id]]=:qp0)',
                     [':qp0' => 1],
                 ],
-                'structured query with type' => [
-                    [
-                        '=',
-                        'price_col',
-                        new StructuredExpression(
-                            (new Query(self::getDb()))->select('price')->from('product')->where(['id' => 1]),
-                            'currency_money_structured'
-                        ),
-                    ],
-                    '[[price_col]] = (SELECT [[price]] FROM [[product]] WHERE [[id]]=:qp0)::currency_money_structured',
-                    [':qp0' => 1],
+                'structured with an expression' => [
+                    ['=', 'price_col', new StructuredExpression(
+                        new Expression('ROW(:qp0, :qp1)', [':qp0' => 10, ':qp1' => 'USD'])
+                    )],
+                    '[[price_col]] = ROW(:qp0, :qp1)',
+                    [':qp0' => 10, ':qp1' => 'USD'],
                 ],
-                'traversable objects are supported in structured' => [
+                'structured with a traversable object' => [
                     ['=', 'price_col', new StructuredExpression(new TraversableObject([10, 'USD']))],
+                    '[[price_col]] = ROW(:qp0, :qp1)',
+                    [':qp0' => 10, ':qp1' => 'USD'],
+                ],
+                'structured with an object' => [
+                    ['=', 'price_col', new StructuredExpression((object) [10, 'USD'])],
                     '[[price_col]] = ROW(:qp0, :qp1)',
                     [':qp0' => 10, ':qp1' => 'USD'],
                 ],

@@ -56,12 +56,6 @@ final class ColumnBuilder extends \Yiisoft\Db\Schema\Column\ColumnBuilder
             ->column($column);
     }
 
-    /**
-     * @param string|null $dbType The DB type of the column.
-     * @param ColumnSchemaInterface[] $columns The columns (name -> instance) that the structured column should contain.
-     *
-     * @psalm-param array<string, ColumnSchemaInterface> $columns
-     */
     public static function structured(string|null $dbType = null, array $columns = []): ColumnSchemaInterface
     {
         return (new StructuredColumnSchema(ColumnType::STRUCTURED))

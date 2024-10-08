@@ -53,6 +53,8 @@ final class PdoCommandTest extends CommonPdoCommandTest
         $columnSchema = $db->getTableSchema('{{%table_with_array_col}}')->getColumn('array_col');
 
         $this->assertSame($arrValue, $columnSchema->phpTypecast($selectData['array_col']));
+
+        $db->close();
     }
 
     public function testCommandLogging(): void

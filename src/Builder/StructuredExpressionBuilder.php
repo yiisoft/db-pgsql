@@ -10,9 +10,10 @@ use Yiisoft\Db\Exception\InvalidConfigException;
 use Yiisoft\Db\Exception\NotSupportedException;
 use Yiisoft\Db\Expression\ExpressionBuilderInterface;
 use Yiisoft\Db\Expression\ExpressionInterface;
-use Yiisoft\Db\Pgsql\StructuredExpression;
-use Yiisoft\Db\Query\QueryInterface;
+use Yiisoft\Db\Expression\StructuredExpression;
 use Yiisoft\Db\QueryBuilder\QueryBuilderInterface;
+
+use Yiisoft\Db\Schema\Column\ColumnSchemaInterface;
 
 use function implode;
 
@@ -40,23 +41,19 @@ final class StructuredExpressionBuilder implements ExpressionBuilderInterface
      */
     public function build(ExpressionInterface $expression, array &$params = []): string
     {
-        $value = $expression->getValue();
+        $value = $expression->getNormalizedValue();
 
         if (empty($value)) {
             return 'NULL';
         }
 
-        if ($value instanceof QueryInterface) {
-            [$sql, $params] = $this->queryBuilder->build($value, $params);
-            return "($sql)" . $this->getTypeHint($expression);
+        if ($value instanceof ExpressionInterface) {
+            $sql = $this->queryBuilder->buildExpression($value, $params);
+            return $sql . $this->getTypeHint($expression);
         }
 
         /** @psalm-var string[] $placeholders */
-        $placeholders = $this->buildPlaceholders($expression, $params);
-
-        if (empty($placeholders)) {
-            return 'NULL';
-        }
+        $placeholders = $this->buildPlaceholders($value, $expression->getColumns(), $params);
 
         return 'ROW(' . implode(', ', $placeholders) . ')' . $this->getTypeHint($expression);
     }
@@ -64,6 +61,8 @@ final class StructuredExpressionBuilder implements ExpressionBuilderInterface
     /**
      * Builds a placeholder array out of $expression values.
      *
+     * @param array|object $value The expression value.
+     * @param ColumnSchemaInterface[] $columns The structured type columns.
      * @param array $params The binding parameters.
      *
      * @throws Exception
@@ -71,16 +70,9 @@ final class StructuredExpressionBuilder implements ExpressionBuilderInterface
      * @throws InvalidConfigException
      * @throws NotSupportedException
      */
-    private function buildPlaceholders(StructuredExpression $expression, array &$params): array
+    private function buildPlaceholders(array|object $value, array $columns, array &$params): array
     {
-        $value = $expression->getNormalizedValue();
-
-        if (!is_iterable($value)) {
-            return [];
-        }
-
         $placeholders = [];
-        $columns = $expression->getColumns();
 
         /** @psalm-var int|string $columnName */
         foreach ($value as $columnName => $item) {

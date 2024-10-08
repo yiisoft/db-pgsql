@@ -4,17 +4,17 @@ declare(strict_types=1);
 
 namespace Yiisoft\Db\Pgsql;
 
+use Yiisoft\Db\Syntax\ParserToArrayInterface;
+
 use function in_array;
 
 /**
  * Structured type representation to PHP array parser for PostgreSQL Server.
  */
-final class StructuredParser
+final class StructuredParser implements ParserToArrayInterface
 {
     /**
      * Converts structured (composite) type value from PostgreSQL to PHP array
-     *
-     * @param string $value String to convert.
      */
     public function parse(string $value): array|null
     {

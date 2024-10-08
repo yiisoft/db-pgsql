@@ -4,21 +4,21 @@ declare(strict_types=1);
 
 namespace Yiisoft\Db\Pgsql;
 
+use Yiisoft\Db\Syntax\ParserToArrayInterface;
+
 use function in_array;
 
 /**
  * Array representation to PHP array parser for PostgreSQL Server.
  */
-final class ArrayParser
+final class ArrayParser implements ParserToArrayInterface
 {
     /**
      * Convert an array from PostgresSQL to PHP.
-     *
-     * @param string|null $value String to convert.
      */
-    public function parse(string|null $value): array|null
+    public function parse(string $value): array|null
     {
-        return $value !== null && $value[0] === '{'
+        return $value[0] === '{'
             ? $this->parseArray($value)
             : null;
     }
