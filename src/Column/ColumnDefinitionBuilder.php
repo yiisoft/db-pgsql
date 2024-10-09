@@ -78,7 +78,6 @@ final class ColumnDefinitionBuilder extends AbstractColumnDefinitionBuilder
             ColumnType::TIMESTAMP => 'timestamp',
             ColumnType::DATE => 'date',
             ColumnType::TIME => 'time',
-            ColumnType::ARRAY => 'jsonb',
             ColumnType::STRUCTURED => 'jsonb',
             ColumnType::JSON => 'jsonb',
             default => 'varchar',
