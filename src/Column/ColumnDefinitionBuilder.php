@@ -10,17 +10,6 @@ use Yiisoft\Db\Schema\Column\ColumnSchemaInterface;
 
 final class ColumnDefinitionBuilder extends AbstractColumnDefinitionBuilder
 {
-    protected const CLAUSES = [
-        'type',
-        'not_null',
-        'primary_key',
-        'unique',
-        'default',
-        'check',
-        'references',
-        'extra',
-    ];
-
     protected const GENERATE_UUID_EXPRESSION = 'gen_random_uuid()';
 
     protected const TYPES_WITH_SIZE = [
@@ -45,6 +34,18 @@ final class ColumnDefinitionBuilder extends AbstractColumnDefinitionBuilder
         'decimal',
         'numeric',
     ];
+
+    public function build(ColumnSchemaInterface $column): string
+    {
+        return $this->buildType($column)
+            . $this->buildNotNull($column)
+            . $this->buildPrimaryKey($column)
+            . $this->buildUnique($column)
+            . $this->buildDefault($column)
+            . $this->buildCheck($column)
+            . $this->buildReferences($column)
+            . $this->buildExtra($column);
+    }
 
     protected function buildType(ColumnSchemaInterface $column): string
     {
