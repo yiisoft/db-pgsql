@@ -19,6 +19,7 @@ use Yiisoft\Db\Query\Query;
 use Yiisoft\Db\Query\QueryInterface;
 use Yiisoft\Db\QueryBuilder\Condition\ArrayOverlapsCondition;
 use Yiisoft\Db\QueryBuilder\Condition\JsonOverlapsCondition;
+use Yiisoft\Db\Schema\Column\ColumnSchemaInterface;
 use Yiisoft\Db\Tests\Common\CommonQueryBuilderTest;
 
 use function version_compare;
@@ -433,6 +434,8 @@ final class QueryBuilderTest extends CommonQueryBuilderTest
         );
 
         $qb->dropDefaultValue('T_constraints_1', 'CN_pk');
+
+        $db->close();
     }
 
     /**
@@ -782,5 +785,11 @@ final class QueryBuilderTest extends CommonQueryBuilderTest
         $this->assertSame($expectedCount, $count);
 
         $db->close();
+    }
+
+    /** @dataProvider \Yiisoft\Db\Pgsql\Tests\Provider\QueryBuilderProvider::buildColumnDefinition() */
+    public function testBuildColumnDefinition(string $expected, ColumnSchemaInterface|string $column): void
+    {
+        parent::testBuildColumnDefinition($expected, $column);
     }
 }
