@@ -3,19 +3,20 @@
 ## 2.0.0 under development
 
 - Enh #336: Implement `SqlParser` and `ExpressionBuilder` driver classes (@Tigrov)
-- Enh #315: Implement `ColumnSchemaInterface` classes according to the data type of database table columns
+- New #315: Implement `ColumnSchemaInterface` classes according to the data type of database table columns
   for type casting performance. Related with yiisoft/db#752 (@Tigrov)
 - Chg #348: Replace call of `SchemaInterface::getRawTableName()` to `QuoterInterface::getRawTableName()` (@Tigrov)
 - Enh #349: Add method chaining for column classes (@Tigrov)
-- Enh #350: Add array overlaps and JSON overlaps condition builders (@Tigrov)
+- New #350: Add array overlaps and JSON overlaps condition builders (@Tigrov)
 - Enh #353: Update `bit` type according to main PR yiisoft/db#860 (@Tigrov) 
 - Enh #354: Refactor PHP type of `ColumnSchemaInterface` instances (@Tigrov)
 - Enh #356: Raise minimum PHP version to `^8.1` with minor refactoring (@Tigrov)
-- Enh #355: Implement `ColumnFactory` class (@Tigrov)
+- New #355: Implement `ColumnFactory` class (@Tigrov)
 - Enh #359: Separate column type constants (@Tigrov)
 - Enh #359: Remove `Schema::TYPE_ARRAY` and `Schema::TYPE_STRUCTURED` constants (@Tigrov)
-- Enh #360: Realize `ColumnBuilder` class (@Tigrov)
+- New #360: Realize `ColumnBuilder` class (@Tigrov)
 - Enh #362: Update according changes in `ColumnSchemaInterface` (@Tigrov)
+- New #364: Add `ColumnDefinitionBuilder` class (@Tigrov)
 
 ## 1.3.0 March 21, 2024
 
