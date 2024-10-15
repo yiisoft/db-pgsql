@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Yiisoft\Db\Pgsql\Tests\Provider;
 
 use Yiisoft\Db\Constant\ColumnType;
+use Yiisoft\Db\Constant\PseudoType;
 use Yiisoft\Db\Expression\ArrayExpression;
 use Yiisoft\Db\Expression\Expression;
 use Yiisoft\Db\Expression\JsonExpression;
@@ -535,5 +536,61 @@ final class QueryBuilderProvider extends \Yiisoft\Db\Tests\Provider\QueryBuilder
         $data[] = [new ArrayExpression([0,1,2,7]), 1];
 
         return $data;
+    }
+
+    public static function buildColumnDefinition(): array
+    {
+        $values = parent::buildColumnDefinition();
+
+        $values[PseudoType::PK][0] = 'serial PRIMARY KEY';
+        $values[PseudoType::UPK][0] = 'serial PRIMARY KEY';
+        $values[PseudoType::BIGPK][0] = 'bigserial PRIMARY KEY';
+        $values[PseudoType::UBIGPK][0] = 'bigserial PRIMARY KEY';
+        $values[PseudoType::UUID_PK][0] = 'uuid PRIMARY KEY DEFAULT gen_random_uuid()';
+        $values[PseudoType::UUID_PK_SEQ][0] = 'uuid PRIMARY KEY DEFAULT gen_random_uuid()';
+        $values['primaryKey()'][0] = 'serial PRIMARY KEY';
+        $values['smallPrimaryKey()'][0] = 'smallserial PRIMARY KEY';
+        $values['bigPrimaryKey()'][0] = 'bigserial PRIMARY KEY';
+        $values['uuidPrimaryKey()'][0] = 'uuid PRIMARY KEY DEFAULT gen_random_uuid()';
+        $values['bit()'][0] = 'varbit';
+        $values['bit(1)'][0] = 'varbit(1)';
+        $values['bit(8)'][0] = 'varbit(8)';
+        $values['bit(1000)'][0] = 'varbit(1000)';
+        $values['tinyint()'][0] = 'smallint';
+        $values['tinyint(2)'][0] = 'smallint';
+        $values['smallint(4)'][0] = 'smallint';
+        $values['integer(8)'][0] = 'integer';
+        $values['bigint(15)'][0] = 'bigint';
+        $values['float()'][0] = 'real';
+        $values['float(10)'][0] = 'real';
+        $values['float(10,2)'][0] = 'real';
+        $values['double()'][0] = 'double precision';
+        $values['double(10)'][0] = 'double precision';
+        $values['double(10,2)'][0] = 'double precision';
+        $values['decimal()'][0] = 'numeric(10,0)';
+        $values['decimal(5)'][0] = 'numeric(5,0)';
+        $values['decimal(5,2)'][0] = 'numeric(5,2)';
+        $values['decimal(null)'][0] = 'numeric';
+        $values['money()'][0] = 'money';
+        $values['money(10)'][0] = 'money';
+        $values['money(10,2)'][0] = 'money';
+        $values['money(null)'][0] = 'money';
+        $values['text(1000)'][0] = 'text';
+        $values['binary()'][0] = 'bytea';
+        $values['binary(1000)'][0] = 'bytea';
+        $values['uuid()'][0] = 'uuid';
+        $values['datetime()'][0] = 'timestamp(0)';
+        $values['datetime(6)'][0] = 'timestamp(6)';
+        $values['datetime(null)'][0] = 'timestamp';
+        $values['array()'][0] = 'varchar[]';
+        $values['structured()'][0] = 'jsonb';
+        $values["structured('structured_type')"][0] = 'structured_type';
+        $values['json()'][0] = 'jsonb';
+        $values['json(100)'][0] = 'jsonb';
+        $values['unsigned()'][0] = 'integer';
+        $values['scale(2)'][0] = 'numeric(10,2)';
+        $values['integer(8)->scale(2)'][0] = 'integer';
+
+        return $values;
     }
 }
