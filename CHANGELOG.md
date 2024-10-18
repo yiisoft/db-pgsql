@@ -17,6 +17,7 @@
 - New #360: Realize `ColumnBuilder` class (@Tigrov)
 - Enh #362: Update according changes in `ColumnSchemaInterface` (@Tigrov)
 - New #364: Add `ColumnDefinitionBuilder` class (@Tigrov)
+- Enh #365: Refactor `Dsn` class (@Tigrov)
 
 ## 1.3.0 March 21, 2024
 
