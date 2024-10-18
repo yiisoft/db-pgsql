@@ -50,17 +50,17 @@ use function substr;
  *   data_type: string,
  *   type_type: string|null,
  *   type_scheme: string|null,
- *   character_maximum_length: int,
+ *   character_maximum_length: int|string,
  *   column_comment: string|null,
- *   is_nullable: bool,
+ *   is_nullable: bool|string,
  *   column_default: string|null,
- *   is_autoinc: bool,
+ *   is_autoinc: bool|string,
  *   sequence_name: string|null,
  *   enum_values: string|null,
- *   size: int|null,
- *   scale: int|null,
+ *   size: int|string|null,
+ *   scale: int|string|null,
  *   contype: string|null,
- *   dimension: int
+ *   dimension: int|string
  * }
  * @psalm-type ConstraintArray = array<
  *   array-key,
@@ -742,26 +742,31 @@ final class Schema extends AbstractPdoSchema
                 $columns = $structured->getColumns();
             }
 
+            /** @psalm-suppress ArgumentTypeCoercion */
             $column = $columnFactory
-                ->fromType(ColumnType::STRUCTURED, ['dimension' => $info['dimension'], 'columns' => $columns]);
+                ->fromType(ColumnType::STRUCTURED, [
+                    'columns' => $columns,
+                    'dbType' => $dbType,
+                    'dimension' => (int) $info['dimension'],
+                ]);
         } else {
+            /** @psalm-suppress ArgumentTypeCoercion */
             $column = $columnFactory
-                ->fromDbType($dbType, ['dimension' => $info['dimension']]);
+                ->fromDbType($dbType, ['dimension' => (int) $info['dimension']]);
         }
 
         /** @psalm-suppress DeprecatedMethod */
         $column->name($info['column_name']);
-        $column->dbType($dbType);
         $column->notNull(!$info['is_nullable']);
-        $column->autoIncrement($info['is_autoinc']);
+        $column->autoIncrement((bool) $info['is_autoinc']);
         $column->comment($info['column_comment']);
         $column->enumValues($info['enum_values'] !== null
             ? explode(',', str_replace(["''"], ["'"], $info['enum_values']))
             : null);
         $column->primaryKey($info['contype'] === 'p');
         $column->unique($info['contype'] === 'u');
-        $column->scale($info['scale']);
-        $column->size($info['size']);
+        $column->scale($info['scale'] !== null ? (int) $info['scale'] : null);
+        $column->size($info['size'] !== null ? (int) $info['size'] : null);
 
         /**
          * pg_get_serial_sequence() doesn't track DEFAULT value change.
@@ -781,10 +786,9 @@ final class Schema extends AbstractPdoSchema
         } elseif ($column instanceof ArrayColumnSchema) {
             /** @var ColumnSchemaInterface $arrayColumn */
             $arrayColumn = $column->getColumn();
-            $arrayColumn->dbType($dbType);
             $arrayColumn->enumValues($column->getEnumValues());
-            $arrayColumn->scale($info['scale']);
-            $arrayColumn->size($info['size']);
+            $arrayColumn->scale($column->getScale());
+            $arrayColumn->size($column->getSize());
         }
 
         $column->defaultValue($this->normalizeDefaultValue($defaultValue, $column));
