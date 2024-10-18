@@ -18,7 +18,7 @@ final class Dsn extends AbstractDsn
      */
     public function __construct(
         string $driver = 'pgsql',
-        string $host = 'localhost',
+        string $host = '127.0.0.1',
         string|null $databaseName = 'postgres',
         string $port = '5432',
         array $options = []
