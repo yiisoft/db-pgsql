@@ -120,33 +120,32 @@ final class ColumnFactory extends AbstractColumnFactory
      * @psalm-param ColumnInfo $info
      * @psalm-suppress MoreSpecificImplementedParamType
      * @psalm-suppress ArgumentTypeCoercion
+     * @psalm-suppress InvalidNamedArgument
+     * @psalm-suppress PossiblyInvalidArgument
      */
     public function fromType(string $type, array $info = []): ColumnSchemaInterface
     {
-        $dimension = (int)($info['dimension'] ?? 0);
+        $dimension = $info['dimension'] ?? 0;
+        unset($info['dimension']);
 
         if ($dimension > 0) {
-            unset($info['dimension']);
-            $column = (new ArrayColumnSchema())
-                ->dimension($dimension)
-                ->column($info['column'] ?? $this->fromType($type, $info));
-        } else {
-            $column = match ($type) {
-                ColumnType::BOOLEAN => new BooleanColumnSchema($type),
-                ColumnType::BIT => new BitColumnSchema($type),
-                ColumnType::TINYINT => new IntegerColumnSchema($type),
-                ColumnType::SMALLINT => new IntegerColumnSchema($type),
-                ColumnType::INTEGER => new IntegerColumnSchema($type),
-                ColumnType::BIGINT => PHP_INT_SIZE !== 8
-                    ? new BigIntColumnSchema($type)
-                    : new IntegerColumnSchema($type),
-                ColumnType::BINARY => new BinaryColumnSchema($type),
-                ColumnType::STRUCTURED => (new StructuredColumnSchema($type))->columns($info['columns'] ?? []),
-                default => parent::fromType($type, $info),
-            };
+            $info['column'] ??= $this->fromType($type, $info);
+            return new ArrayColumnSchema(...$info, dimension: $dimension);
         }
 
-        return $column->load($info);
+        return match ($type) {
+            ColumnType::BOOLEAN => new BooleanColumnSchema($type, ...$info),
+            ColumnType::BIT => new BitColumnSchema($type, ...$info),
+            ColumnType::TINYINT => new IntegerColumnSchema($type, ...$info),
+            ColumnType::SMALLINT => new IntegerColumnSchema($type, ...$info),
+            ColumnType::INTEGER => new IntegerColumnSchema($type, ...$info),
+            ColumnType::BIGINT => PHP_INT_SIZE !== 8
+                ? new BigIntColumnSchema($type, ...$info)
+                : new IntegerColumnSchema($type, ...$info),
+            ColumnType::BINARY => new BinaryColumnSchema($type, ...$info),
+            ColumnType::STRUCTURED => new StructuredColumnSchema($type, ...$info),
+            default => parent::fromType($type, $info),
+        };
     }
 
     protected function getType(string $dbType, array $info = []): string
