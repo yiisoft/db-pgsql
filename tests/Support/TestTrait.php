@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Yiisoft\Db\Pgsql\Tests\Support;
 
 use Yiisoft\Db\Driver\Pdo\PdoConnectionInterface;
+use Yiisoft\Db\Driver\Pdo\PdoDriverInterface;
 use Yiisoft\Db\Exception\Exception;
 use Yiisoft\Db\Exception\InvalidConfigException;
 use Yiisoft\Db\Pgsql\Connection;
@@ -23,9 +24,7 @@ trait TestTrait
      */
     protected function getConnection(bool $fixture = false): PdoConnectionInterface
     {
-        $pdoDriver = new Driver($this->getDsn(), 'root', 'root');
-        $pdoDriver->charset('utf8');
-        $db = new Connection($pdoDriver, DbHelper::getSchemaCache());
+        $db = new Connection($this->getDriver(), DbHelper::getSchemaCache());
 
         if ($fixture) {
             DbHelper::loadFixture($db, __DIR__ . "/Fixture/$this->fixture");
@@ -36,15 +35,25 @@ trait TestTrait
 
     protected static function getDb(): PdoConnectionInterface
     {
-        $dsn = (new Dsn(databaseName: 'yiitest'))->asString();
+        $dsn = (new Dsn(
+            host: self::getHost(),
+            databaseName: self::getDatabaseName(),
+            port: self::getPort(),
+        ))->asString();
+        $driver = new Driver($dsn, self::getUsername(), self::getPassword());
+        $driver->charset('utf8');
 
-        return new Connection(new Driver($dsn, 'root', 'root'), DbHelper::getSchemaCache());
+        return new Connection($driver, DbHelper::getSchemaCache());
     }
 
     protected function getDsn(): string
     {
         if ($this->dsn === '') {
-            $this->dsn = (new Dsn(databaseName: 'yiitest'))->asString();
+            $this->dsn = (new Dsn(
+                host: self::getHost(),
+                databaseName: self::getDatabaseName(),
+                port: self::getPort(),
+            ))->asString();
         }
 
         return $this->dsn;
@@ -72,5 +81,38 @@ trait TestTrait
         DbHelper::loadFixture($db, __DIR__ . '/Fixture/pgsql.sql');
 
         $db->close();
+    }
+
+    private function getDriver(): PdoDriverInterface
+    {
+        $driver = new Driver($this->getDsn(), self::getUsername(), self::getPassword());
+        $driver->charset('utf8');
+
+        return $driver;
+    }
+
+    private static function getDatabaseName(): string
+    {
+        return getenv('YII_PGSQL_DATABASE');
+    }
+
+    private static function getHost(): string
+    {
+        return getenv('YII_PGSQL_HOST');
+    }
+
+    private static function getPort(): string
+    {
+        return getenv('YII_PGSQL_PORT');
+    }
+
+    private static function getUsername(): string
+    {
+        return getenv('YII_PGSQL_USER');
+    }
+
+    private static function getPassword(): string
+    {
+        return getenv('YII_PGSQL_PASSWORD');
     }
 }

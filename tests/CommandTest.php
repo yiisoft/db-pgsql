@@ -277,12 +277,6 @@ final class CommandTest extends CommonCommandTest
 
     public function testShowDatabases(): void
     {
-        $dsn = new Dsn('pgsql', '127.0.0.1');
-        $db = new Connection(new Driver($dsn->asString(), 'root', 'root'), DbHelper::getSchemaCache());
-
-        $command = $db->createCommand();
-
-        $this->assertSame('pgsql:host=127.0.0.1;dbname=postgres;port=5432', $db->getDriver()->getDsn());
-        $this->assertSame(['yiitest'], $command->showDatabases());
+        $this->assertSame([self::getDatabaseName()], static::getDb()->createCommand()->showDatabases());
     }
 }

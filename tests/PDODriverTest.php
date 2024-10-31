@@ -33,7 +33,7 @@ final class PDODriverTest extends TestCase
 
         $this->assertEqualsIgnoringCase('UTF8', array_values($charset)[0]);
 
-        $pdoDriver = new Driver('pgsql:host=127.0.0.1;dbname=yiitest;port=5432', 'root', 'root');
+        $pdoDriver = $this->getDriver();
         $pdoDriver->charset('latin1');
         $pdo = $pdoDriver->createConnection();
         $charset = $pdo->query('SHOW client_encoding', PDO::FETCH_ASSOC)->fetch();
