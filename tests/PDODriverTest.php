@@ -8,7 +8,6 @@ use PDO;
 use PHPUnit\Framework\TestCase;
 use Yiisoft\Db\Exception\Exception;
 use Yiisoft\Db\Exception\InvalidConfigException;
-use Yiisoft\Db\Pgsql\Driver;
 use Yiisoft\Db\Pgsql\Tests\Support\TestTrait;
 
 /**
