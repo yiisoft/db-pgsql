@@ -6,10 +6,12 @@ namespace Yiisoft\Db\Pgsql\Tests\Provider;
 
 use Yiisoft\Db\Constant\ColumnType;
 use Yiisoft\Db\Expression\Expression;
+use Yiisoft\Db\Pgsql\Column\ArrayColumn;
 use Yiisoft\Db\Pgsql\Column\BinaryColumn;
 use Yiisoft\Db\Pgsql\Column\BitColumn;
 use Yiisoft\Db\Pgsql\Column\BooleanColumn;
 use Yiisoft\Db\Pgsql\Column\IntegerColumn;
+use Yiisoft\Db\Pgsql\Column\StructuredColumn;
 use Yiisoft\Db\Schema\Column\DoubleColumn;
 use Yiisoft\Db\Schema\Column\JsonColumn;
 use Yiisoft\Db\Schema\Column\StringColumn;
@@ -89,7 +91,9 @@ final class ColumnFactoryProvider extends \Yiisoft\Db\Tests\Provider\ColumnFacto
     {
         $definitions = parent::definitions();
 
-        unset($definitions['bigint UNSIGNED']);
+        $definitions['bigint UNSIGNED'][1] = new IntegerColumn(ColumnType::BIGINT, dbType: 'bigint', unsigned: true);
+        $definitions['integer[]'][1] = new ArrayColumn(dbType: 'integer', column: new IntegerColumn(dbType: 'integer'));
+        $definitions['string(126)[][]'][1] = new ArrayColumn(size: 126, dimension: 2, column: new StringColumn(size: 126));
 
         return $definitions;
     }
@@ -97,7 +101,10 @@ final class ColumnFactoryProvider extends \Yiisoft\Db\Tests\Provider\ColumnFacto
     public static function pseudoTypes(): array
     {
         $result = parent::pseudoTypes();
-        $result['ubigpk'][2] = IntegerColumn::class;
+        $result['pk'][1] = new IntegerColumn(primaryKey: true, autoIncrement: true);
+        $result['upk'][1] = new IntegerColumn(primaryKey: true, autoIncrement: true, unsigned: true);
+        $result['bigpk'][1] = new IntegerColumn(ColumnType::BIGINT, primaryKey: true, autoIncrement: true);
+        $result['ubigpk'][1] = new IntegerColumn(ColumnType::BIGINT, primaryKey: true, autoIncrement: true, unsigned: true);
 
         return $result;
     }
@@ -117,5 +124,23 @@ final class ColumnFactoryProvider extends \Yiisoft\Db\Tests\Provider\ColumnFacto
         $defaultValueRaw[] = [ColumnType::BINARY, '(1 + 2)::int', new Expression('(1 + 2)::int')];
 
         return $defaultValueRaw;
+    }
+
+    public static function types(): array
+    {
+        $types = parent::types();
+
+        return [
+            ...$types,
+            // type, expected type, expected instance of
+            'binary' => [ColumnType::BINARY, ColumnType::BINARY, BinaryColumn::class],
+            'boolean' => [ColumnType::BOOLEAN, ColumnType::BOOLEAN, BooleanColumn::class],
+            'tinyint' => [ColumnType::TINYINT, ColumnType::TINYINT, IntegerColumn::class],
+            'smallint' => [ColumnType::SMALLINT, ColumnType::SMALLINT, IntegerColumn::class],
+            'integer' => [ColumnType::INTEGER, ColumnType::INTEGER, IntegerColumn::class],
+            'bigint' => [ColumnType::BIGINT, ColumnType::BIGINT, IntegerColumn::class],
+            'array' => [ColumnType::ARRAY, ColumnType::ARRAY, ArrayColumn::class],
+            'structured' => [ColumnType::STRUCTURED, ColumnType::STRUCTURED, StructuredColumn::class],
+        ];
     }
 }
