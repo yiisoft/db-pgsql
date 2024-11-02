@@ -37,7 +37,7 @@ use const PHP_INT_SIZE;
  *     unique?: bool|string,
  * }
  */
-class ColumnFactory extends AbstractColumnFactory
+final class ColumnFactory extends AbstractColumnFactory
 {
     /**
      * The mapping from physical column types (keys) to abstract column types (values).
