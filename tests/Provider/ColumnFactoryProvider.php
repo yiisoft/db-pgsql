@@ -92,4 +92,12 @@ final class ColumnFactoryProvider extends \Yiisoft\Db\Tests\Provider\ColumnFacto
 
         return $definitions;
     }
+
+    public static function pseudoTypes(): array
+    {
+        $result = parent::pseudoTypes();
+        $result['ubigpk'][2] = IntegerColumnSchema::class;
+
+        return $result;
+    }
 }

@@ -37,7 +37,7 @@ use const PHP_INT_SIZE;
  *     unique?: bool|string,
  * }
  */
-final class ColumnFactory extends AbstractColumnFactory
+class ColumnFactory extends AbstractColumnFactory
 {
     /**
      * The mapping from physical column types (keys) to abstract column types (values).
@@ -45,10 +45,9 @@ final class ColumnFactory extends AbstractColumnFactory
      * @link https://www.postgresql.org/docs/current/datatype.html#DATATYPE-TABLE
      *
      * @var string[]
-     *
-     * @psalm-suppress MissingClassConstType
+     * @psalm-var array<string, ColumnType::*>
      */
-    private const TYPE_MAP = [
+    protected const TYPE_MAP = [
         'bool' => ColumnType::BOOLEAN,
         'boolean' => ColumnType::BOOLEAN,
         'bit' => ColumnType::BIT,
@@ -115,46 +114,21 @@ final class ColumnFactory extends AbstractColumnFactory
         'jsonb' => ColumnType::JSON,
     ];
 
-    /**
-     * @psalm-param ColumnType::* $type
-     * @psalm-param ColumnInfo $info
-     * @psalm-suppress MoreSpecificImplementedParamType
-     * @psalm-suppress ArgumentTypeCoercion
-     * @psalm-suppress InvalidNamedArgument
-     * @psalm-suppress PossiblyInvalidArgument
-     */
-    public function fromType(string $type, array $info = []): ColumnSchemaInterface
+    protected function getColumnClass(string $type, array $info = []): string
     {
-        $dimension = $info['dimension'] ?? 0;
-        unset($info['dimension']);
-
-        if ($dimension > 0) {
-            $info['column'] ??= $this->fromType($type, $info);
-            return new ArrayColumnSchema(...$info, dimension: $dimension);
-        }
-
         return match ($type) {
-            ColumnType::BOOLEAN => new BooleanColumnSchema($type, ...$info),
-            ColumnType::BIT => new BitColumnSchema($type, ...$info),
-            ColumnType::TINYINT => new IntegerColumnSchema($type, ...$info),
-            ColumnType::SMALLINT => new IntegerColumnSchema($type, ...$info),
-            ColumnType::INTEGER => new IntegerColumnSchema($type, ...$info),
+            ColumnType::BOOLEAN => BooleanColumnSchema::class,
+            ColumnType::BIT => BitColumnSchema::class,
+            ColumnType::TINYINT => IntegerColumnSchema::class,
+            ColumnType::SMALLINT => IntegerColumnSchema::class,
+            ColumnType::INTEGER => IntegerColumnSchema::class,
             ColumnType::BIGINT => PHP_INT_SIZE !== 8
-                ? new BigIntColumnSchema($type, ...$info)
-                : new IntegerColumnSchema($type, ...$info),
-            ColumnType::BINARY => new BinaryColumnSchema($type, ...$info),
-            ColumnType::STRUCTURED => new StructuredColumnSchema($type, ...$info),
-            default => parent::fromType($type, $info),
+                ? BigIntColumnSchema::class
+                : IntegerColumnSchema::class,
+            ColumnType::BINARY => BinaryColumnSchema::class,
+            ColumnType::ARRAY => ArrayColumnSchema::class,
+            ColumnType::STRUCTURED => StructuredColumnSchema::class,
+            default => parent::getColumnClass($type, $info),
         };
-    }
-
-    protected function getType(string $dbType, array $info = []): string
-    {
-        return self::TYPE_MAP[$dbType] ?? ColumnType::STRING;
-    }
-
-    protected function isDbType(string $dbType): bool
-    {
-        return isset(self::TYPE_MAP[$dbType]);
     }
 }

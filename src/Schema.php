@@ -18,7 +18,6 @@ use Yiisoft\Db\Exception\InvalidConfigException;
 use Yiisoft\Db\Exception\NotSupportedException;
 use Yiisoft\Db\Expression\Expression;
 use Yiisoft\Db\Helper\DbArrayHelper;
-use Yiisoft\Db\Pgsql\Column\ArrayColumnSchema;
 use Yiisoft\Db\Pgsql\Column\ColumnFactory;
 use Yiisoft\Db\Pgsql\Column\SequenceColumnSchemaInterface;
 use Yiisoft\Db\Schema\Builder\ColumnInterface;
@@ -44,8 +43,6 @@ use function substr;
  * Implements the PostgreSQL Server specific schema, supporting PostgreSQL Server version 9.6 and above.
  *
  * @psalm-type ColumnArray = array{
- *   table_schema: string,
- *   table_name: string,
  *   column_name: string,
  *   data_type: string,
  *   type_type: string|null,
@@ -60,7 +57,9 @@ use function substr;
  *   size: int|string|null,
  *   scale: int|string|null,
  *   contype: string|null,
- *   dimension: int|string
+ *   dimension: int|string,
+ *   schema: string,
+ *   table: string
  * }
  * @psalm-type ConstraintArray = array<
  *   array-key,
@@ -621,8 +620,6 @@ final class Schema extends AbstractPdoSchema
 
         $sql = <<<SQL
         SELECT
-            d.nspname AS table_schema,
-            c.relname AS table_name,
             a.attname AS column_name,
             COALESCE(td.typname, tb.typname, t.typname) AS data_type,
             COALESCE(td.typtype, tb.typtype, t.typtype) AS type_type,
@@ -687,9 +684,12 @@ final class Schema extends AbstractPdoSchema
             a.attnum;
         SQL;
 
+        $schemaName = $table->getSchemaName();
+        $tableName = $table->getName();
+
         $columns = $this->db->createCommand($sql, [
-            ':schemaName' => $table->getSchemaName(),
-            ':tableName' => $table->getName(),
+            ':schemaName' => $schemaName,
+            ':tableName' => $tableName,
         ])->queryAll();
 
         if (empty($columns)) {
@@ -698,9 +698,12 @@ final class Schema extends AbstractPdoSchema
 
         /** @psalm-var ColumnArray $info */
         foreach ($columns as $info) {
-            /** @psalm-var ColumnArray $info */
             $info = array_change_key_case($info);
 
+            $info['schema'] = $schemaName;
+            $info['table'] = $tableName;
+
+            /** @psalm-var ColumnArray $info */
             $column = $this->loadColumnSchema($info);
 
             $table->column($info['column_name'], $column);
@@ -733,40 +736,43 @@ final class Schema extends AbstractPdoSchema
             $dbType = $info['type_scheme'] . '.' . $dbType;
         }
 
-        $columns = [];
+        $columnInfo = [
+            'autoIncrement' => (bool) $info['is_autoinc'],
+            'comment' => $info['column_comment'],
+            'dbType' => $dbType,
+            'enumValues' => $info['enum_values'] !== null
+                ? explode(',', str_replace(["''"], ["'"], $info['enum_values']))
+                : null,
+            'name' => $info['column_name'],
+            'notNull' => !$info['is_nullable'],
+            'primaryKey' => $info['contype'] === 'p',
+            'scale' => $info['scale'] !== null ? (int) $info['scale'] : null,
+            'schema' => $info['schema'],
+            'size' => $info['size'] !== null ? (int) $info['size'] : null,
+            'table' => $info['table'],
+            'unique' => $info['contype'] === 'u',
+        ];
 
         if ($info['type_type'] === 'c') {
             $structured = $this->resolveTableName($dbType);
 
             if ($this->findColumns($structured)) {
-                $columns = $structured->getColumns();
+                $columnInfo['columns'] = $structured->getColumns();
             }
 
-            /** @psalm-suppress ArgumentTypeCoercion */
-            $column = $columnFactory
-                ->fromType(ColumnType::STRUCTURED, [
-                    'columns' => $columns,
-                    'dbType' => $dbType,
-                    'dimension' => (int) $info['dimension'],
-                ]);
+            $column = $columnFactory->fromType(ColumnType::STRUCTURED, $columnInfo);
         } else {
-            /** @psalm-suppress ArgumentTypeCoercion */
-            $column = $columnFactory
-                ->fromDbType($dbType, ['dimension' => (int) $info['dimension']]);
+            $column = $columnFactory->fromDbType($dbType, $columnInfo);
         }
 
-        /** @psalm-suppress DeprecatedMethod */
-        $column->name($info['column_name']);
-        $column->notNull(!$info['is_nullable']);
-        $column->autoIncrement((bool) $info['is_autoinc']);
-        $column->comment($info['column_comment']);
-        $column->enumValues($info['enum_values'] !== null
-            ? explode(',', str_replace(["''"], ["'"], $info['enum_values']))
-            : null);
-        $column->primaryKey($info['contype'] === 'p');
-        $column->unique($info['contype'] === 'u');
-        $column->scale($info['scale'] !== null ? (int) $info['scale'] : null);
-        $column->size($info['size'] !== null ? (int) $info['size'] : null);
+        $dimension = (int) $info['dimension'];
+
+        if ($dimension > 0) {
+            $columnInfo['column'] = $column;
+            $columnInfo['dimension'] = $dimension;
+
+            $column = $columnFactory->fromType(ColumnType::ARRAY, $columnInfo);
+        }
 
         /**
          * pg_get_serial_sequence() doesn't track DEFAULT value change.
@@ -783,12 +789,6 @@ final class Schema extends AbstractPdoSchema
             } elseif ($info['sequence_name'] !== null) {
                 $column->sequenceName($this->resolveTableName($info['sequence_name'])->getFullName());
             }
-        } elseif ($column instanceof ArrayColumnSchema) {
-            /** @var ColumnSchemaInterface $arrayColumn */
-            $arrayColumn = $column->getColumn();
-            $arrayColumn->enumValues($column->getEnumValues());
-            $arrayColumn->scale($column->getScale());
-            $arrayColumn->size($column->getSize());
         }
 
         $column->defaultValue($this->normalizeDefaultValue($defaultValue, $column));
@@ -799,7 +799,9 @@ final class Schema extends AbstractPdoSchema
 
             if (is_array($defaultValue)) {
                 foreach ($column->getColumns() as $structuredColumnName => $structuredColumn) {
-                    $structuredColumn->defaultValue($defaultValue[$structuredColumnName] ?? null);
+                    if (isset($defaultValue[$structuredColumnName])) {
+                        $structuredColumn->defaultValue($defaultValue[$structuredColumnName]);
+                    }
                 }
             }
         }

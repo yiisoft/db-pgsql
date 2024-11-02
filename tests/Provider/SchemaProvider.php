@@ -504,16 +504,6 @@ final class SchemaProvider extends \Yiisoft\Db\Tests\Provider\SchemaProvider
         ];
     }
 
-    public static function columnsTypeChar(): array
-    {
-        $columnsTypeChar = parent::columnsTypeChar();
-
-        $columnsTypeChar[0][3] = 'bpchar';
-        $columnsTypeChar[1][3] = 'varchar';
-
-        return $columnsTypeChar;
-    }
-
     public static function constraints(): array
     {
         $constraints = parent::constraints();
