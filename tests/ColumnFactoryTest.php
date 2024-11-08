@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Yiisoft\Db\Pgsql\Tests;
 
+use Yiisoft\Db\Constant\ColumnType;
 use Yiisoft\Db\Pgsql\Column\ArrayColumnSchema;
 use Yiisoft\Db\Pgsql\Tests\Support\TestTrait;
 use Yiisoft\Db\Tests\AbstractColumnFactoryTest;
@@ -23,8 +24,8 @@ final class ColumnFactoryTest extends AbstractColumnFactoryTest
         $db = $this->getConnection();
         $columnFactory = $db->getSchema()->getColumnFactory();
 
-        // With dimension
-        $column = $columnFactory->fromDbType($dbType, ['dimension' => 1]);
+        // For array type
+        $column = $columnFactory->fromType(ColumnType::ARRAY, ['dbType' => $dbType]);
 
         $this->assertInstanceOf(ArrayColumnSchema::class, $column);
         $this->assertInstanceOf($expectedInstanceOf, $column->getColumn());
@@ -62,8 +63,8 @@ final class ColumnFactoryTest extends AbstractColumnFactoryTest
         $db = $this->getConnection();
         $columnFactory = $db->getSchema()->getColumnFactory();
 
-        // With dimension
-        $column = $columnFactory->fromType($type, ['dimension' => 1]);
+        // For array type
+        $column = $columnFactory->fromType(ColumnType::ARRAY, ['column' => $columnFactory->fromType($type)]);
 
         $this->assertInstanceOf(ArrayColumnSchema::class, $column);
         $this->assertInstanceOf($expectedInstanceOf, $column->getColumn());
