@@ -175,7 +175,7 @@ final class ColumnFactory extends AbstractColumnFactory
         if ($value[0] === "'" && $value[-1] === "'") {
             $value = substr($value, 1, -1);
 
-            if (str_starts_with($value, '\\x')) {
+            if ($column->getType() === ColumnType::BINARY && str_starts_with($value, '\\x')) {
                 return hex2bin(substr($value, 2));
             }
 

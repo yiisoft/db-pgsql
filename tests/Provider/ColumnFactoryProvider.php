@@ -110,6 +110,7 @@ final class ColumnFactoryProvider extends \Yiisoft\Db\Tests\Provider\ColumnFacto
         $defaultValueRaw[] = [ColumnType::TEXT, "'str''ing'::\"text\"", "str'ing"];
         $defaultValueRaw[] = [ColumnType::INTEGER, '(-1)::"int"', -1];
         $defaultValueRaw[] = [ColumnType::BIT, "B'1011'::\"bit\"", 0b1011];
+        $defaultValueRaw[] = [ColumnType::STRING, "'\\x737472696e67'", '\\x737472696e67'];
         $defaultValueRaw[] = [ColumnType::BINARY, "'\\x737472696e67'::bytea", 'string'];
 
         return $defaultValueRaw;
