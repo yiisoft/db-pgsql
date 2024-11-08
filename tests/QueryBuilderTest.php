@@ -13,7 +13,8 @@ use Yiisoft\Db\Exception\InvalidConfigException;
 use Yiisoft\Db\Exception\NotSupportedException;
 use Yiisoft\Db\Expression\Expression;
 use Yiisoft\Db\Expression\ExpressionInterface;
-use Yiisoft\Db\Pgsql\Column;
+use Yiisoft\Db\Pgsql\Column\ColumnBuilder;
+use Yiisoft\Db\Pgsql\Tests\Provider\QueryBuilderProvider;
 use Yiisoft\Db\Pgsql\Tests\Support\TestTrait;
 use Yiisoft\Db\Query\Query;
 use Yiisoft\Db\Query\QueryInterface;
@@ -32,6 +33,11 @@ use function version_compare;
 final class QueryBuilderTest extends CommonQueryBuilderTest
 {
     use TestTrait;
+
+    public function getBuildColumnDefinitionProvider(): array
+    {
+        return QueryBuilderProvider::buildColumnDefinition();
+    }
 
     protected PdoConnectionInterface $db;
 
@@ -100,7 +106,7 @@ final class QueryBuilderTest extends CommonQueryBuilderTest
             $qb->alterColumn(
                 'foo1',
                 'bar',
-                (new Column(ColumnType::STRING, 255))->asString()
+                ColumnBuilder::string()
             ),
         );
 
@@ -125,7 +131,7 @@ final class QueryBuilderTest extends CommonQueryBuilderTest
             $qb->alterColumn(
                 'foo1',
                 'bar',
-                (new Column(ColumnType::STRING, 255))->notNull()->asString()
+                ColumnBuilder::string()->notNull()
             ),
         );
 
@@ -136,7 +142,7 @@ final class QueryBuilderTest extends CommonQueryBuilderTest
             $qb->alterColumn(
                 'foo1',
                 'bar',
-                (new Column(ColumnType::STRING, 255))->null()->asString()
+                ColumnBuilder::string()->notNull(false)
             ),
         );
 
@@ -147,7 +153,7 @@ final class QueryBuilderTest extends CommonQueryBuilderTest
             $qb->alterColumn(
                 'foo1',
                 'bar',
-                (new Column(ColumnType::STRING, 255))->null()->defaultValue('xxx')->asString()
+                ColumnBuilder::string()->notNull(false)->defaultValue('xxx')
             ),
         );
 
@@ -158,7 +164,7 @@ final class QueryBuilderTest extends CommonQueryBuilderTest
             $qb->alterColumn(
                 'foo1',
                 'bar',
-                (new Column(ColumnType::STRING, 255))->check('char_length(bar) > 5')->asString()
+                ColumnBuilder::string()->check('char_length(bar) > 5')
             ),
         );
 
@@ -169,7 +175,7 @@ final class QueryBuilderTest extends CommonQueryBuilderTest
             $qb->alterColumn(
                 'foo1',
                 'bar',
-                (new Column(ColumnType::STRING, 255))->defaultValue('')->asString()
+                ColumnBuilder::string()->defaultValue('')
             ),
         );
 
@@ -180,31 +186,19 @@ final class QueryBuilderTest extends CommonQueryBuilderTest
             $qb->alterColumn(
                 'foo1',
                 'bar',
-                (new Column(ColumnType::STRING, 255))->defaultValue('AbCdE')->asString()
+                ColumnBuilder::string()->defaultValue('AbCdE')
             ),
         );
 
         $this->assertSame(
             <<<SQL
-            ALTER TABLE "foo1" ALTER COLUMN "bar" TYPE timestamp(0), ALTER COLUMN "bar" SET DEFAULT CURRENT_TIMESTAMP
+            ALTER TABLE "foo1" ALTER COLUMN "bar" TYPE timestamp, ALTER COLUMN "bar" SET DEFAULT CURRENT_TIMESTAMP
             SQL,
             $qb->alterColumn(
                 'foo1',
                 'bar',
-                (new Column(ColumnType::TIMESTAMP))
-                    ->defaultExpression('CURRENT_TIMESTAMP')
-                    ->asString()
-            ),
-        );
-
-        $this->assertSame(
-            <<<SQL
-            ALTER TABLE "foo1" ALTER COLUMN "bar" TYPE varchar(30), ADD UNIQUE ("bar")
-            SQL,
-            $qb->alterColumn(
-                'foo1',
-                'bar',
-                (new Column(ColumnType::STRING, 30))->unique()->asString()
+                ColumnBuilder::timestamp()
+                    ->defaultValue(new Expression('CURRENT_TIMESTAMP'))
             ),
         );
 
@@ -215,7 +209,18 @@ final class QueryBuilderTest extends CommonQueryBuilderTest
             $qb->alterColumn(
                 'foo1',
                 'bar',
-                (new Column(ColumnType::STRING, 30))->unique()
+                ColumnBuilder::string(30)->unique()
+            ),
+        );
+
+        $this->assertSame(
+            <<<SQL
+            ALTER TABLE "foo1" ALTER COLUMN "bar" TYPE varchar(30), ADD UNIQUE ("bar")
+            SQL,
+            $qb->alterColumn(
+                'foo1',
+                'bar',
+                ColumnBuilder::string(30)->unique()
             ),
         );
 
@@ -368,11 +373,11 @@ final class QueryBuilderTest extends CommonQueryBuilderTest
         $this->assertSame(
             <<<SQL
             CREATE TABLE "test" (
-            \t"id" serial NOT NULL PRIMARY KEY,
+            \t"id" serial PRIMARY KEY,
             \t"name" varchar(255) NOT NULL,
             \t"email" varchar(255) NOT NULL,
             \t"status" integer NOT NULL,
-            \t"created_at" timestamp(0) NOT NULL
+            \t"created_at" timestamp NOT NULL
             )
             SQL,
             $qb->createTable(

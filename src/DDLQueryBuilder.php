@@ -9,10 +9,12 @@ use Yiisoft\Db\Exception\NotSupportedException;
 use Yiisoft\Db\QueryBuilder\AbstractDDLQueryBuilder;
 use Yiisoft\Db\Schema\Builder\ColumnInterface;
 
+use Yiisoft\Db\Schema\Column\ColumnSchemaInterface;
 use function array_diff;
 use function array_unshift;
 use function explode;
 use function implode;
+use function is_string;
 use function preg_match;
 use function preg_replace;
 use function str_contains;
@@ -27,38 +29,33 @@ final class DDLQueryBuilder extends AbstractDDLQueryBuilder
         throw new NotSupportedException(__METHOD__ . ' is not supported by PostgreSQL.');
     }
 
-    public function alterColumn(string $table, string $column, ColumnInterface|string $type): string
+    public function alterColumn(string $table, string $column, ColumnInterface|ColumnSchemaInterface|string $type): string
     {
         $columnName = $this->quoter->quoteColumnName($column);
         $tableName = $this->quoter->quoteTableName($table);
-
-        if ($type instanceof ColumnInterface) {
-            $type = $type->asString();
-        }
 
         /**
          * @link https://github.com/yiisoft/yii2/issues/4492
          * @link https://www.postgresql.org/docs/9.1/static/sql-altertable.html
          */
-        if (preg_match('/^(DROP|SET|RESET|USING)\s+/i', $type)) {
-            return "ALTER TABLE $tableName ALTER COLUMN $columnName $type";
+        if (is_string($type)) {
+            if (preg_match('/^(DROP|SET|RESET|USING)\s+/i', $type) === 1) {
+                return "ALTER TABLE $tableName ALTER COLUMN $columnName $type";
+            }
+
+            $type = $this->schema->getColumnFactory()->fromDefinition($type);
         }
 
-        /** @psalm-suppress DeprecatedMethod */
-        $type = 'TYPE ' . $this->queryBuilder->getColumnType($type);
+        // $type = 'TYPE ' . $this->queryBuilder->buildColumnDefinition($type);
         $multiAlterStatement = [];
-        $constraintPrefix = preg_replace('/[^a-z0-9_]/i', '', $table . '_' . $column);
+        $constraintPrefix = preg_replace('/\W/', '', $table . '_' . $column);
 
-        if (preg_match('/\s+DEFAULT\s+(["\']?\w*["\']?)/i', $type, $matches)) {
-            $type = preg_replace('/\s+DEFAULT\s+(["\']?\w*["\']?)/i', '', $type);
-            $multiAlterStatement[] = "ALTER COLUMN $columnName SET DEFAULT $matches[1]";
+        if ($type->hasDefaultValue()) {
+            $defaultValue = $this->queryBuilder->getColumnDefinitionBuilder()->buildDefaultValue($type);
+            $multiAlterStatement[] = "ALTER COLUMN $columnName SET DEFAULT $defaultValue";
         }
 
-        $type = preg_replace('/\s+NOT\s+NULL/i', '', $type, -1, $count);
-
-        if ($count > 0) {
-            $multiAlterStatement[] = "ALTER COLUMN $columnName SET NOT NULL";
-        } else {
+{
             /** remove extra null if any */
             $type = preg_replace('/\s+NULL/i', '', $type, -1, $count);
             if ($count > 0) {
