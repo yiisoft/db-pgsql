@@ -100,4 +100,18 @@ final class ColumnFactoryProvider extends \Yiisoft\Db\Tests\Provider\ColumnFacto
 
         return $result;
     }
+
+    public static function defaultValueRaw(): array
+    {
+        $defaultValueRaw = parent::defaultValueRaw();
+
+        $defaultValueRaw[] = [ColumnType::TEXT, 'NULL::"text"', null];
+        $defaultValueRaw[] = [ColumnType::TEXT, '(NULL)::"text"', null];
+        $defaultValueRaw[] = [ColumnType::TEXT, "'str''ing'::\"text\"", "str'ing"];
+        $defaultValueRaw[] = [ColumnType::INTEGER, '(-1)::"int"', -1];
+        $defaultValueRaw[] = [ColumnType::BIT, "B'1011'::\"bit\"", 0b1011];
+        $defaultValueRaw[] = [ColumnType::BINARY, "'\\x737472696e67'::bytea", 'string'];
+
+        return $defaultValueRaw;
+    }
 }
