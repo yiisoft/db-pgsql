@@ -165,7 +165,7 @@ final class ColumnFactory extends AbstractColumnFactory
             return $column->phpTypecast(substr($value, 2, -1));
         }
 
-        $value = null;
+        $value = parent::normalizeNotNullDefaultValue($value, $column);
 
         if ($value instanceof Expression) {
             return new Expression($defaultValue);
