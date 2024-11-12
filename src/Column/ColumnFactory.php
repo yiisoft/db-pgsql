@@ -162,34 +162,18 @@ final class ColumnFactory extends AbstractColumnFactory
 
     protected function normalizeNotNullDefaultValue(string $defaultValue, ColumnSchemaInterface $column): mixed
     {
-        $value = preg_replace('/::[^:]+$/', '$1', $defaultValue);
-
-        if ($value[0] === '(' && $value[-1] === ')') {
-            $value = substr($value, 1, -1);
-        }
-
-        if (is_numeric($value)) {
-            return $column->phpTypecast($value);
-        }
-
-        if ($value[0] === "'" && $value[-1] === "'") {
-            $value = substr($value, 1, -1);
-
-            if ($column->getType() === ColumnType::BINARY && str_starts_with($value, '\\x')) {
-                return hex2bin(substr($value, 2));
-            }
-
-            return $column->phpTypecast(str_replace("''", "'", $value));
-        }
+        $value = preg_replace("/::[^:']+$/", '$1', $defaultValue);
 
         if (str_starts_with($value, "B'") && $value[-1] === "'") {
             return $column->phpTypecast(substr($value, 2, -1));
         }
 
-        return match ($value) {
-            'true' => true,
-            'false' => false,
-            default => new Expression($defaultValue),
-        };
+        $value = parent::normalizeNotNullDefaultValue($value, $column);
+
+        if ($value instanceof Expression) {
+            return new Expression($defaultValue);
+        }
+
+        return $value;
     }
 }
