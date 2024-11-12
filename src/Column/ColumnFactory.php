@@ -10,10 +10,7 @@ use Yiisoft\Db\Expression\Expression;
 use Yiisoft\Db\Schema\Column\AbstractColumnFactory;
 use Yiisoft\Db\Schema\Column\ColumnSchemaInterface;
 
-use function hex2bin;
-use function is_numeric;
 use function preg_replace;
-use function str_replace;
 use function str_starts_with;
 use function substr;
 
