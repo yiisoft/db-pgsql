@@ -9,7 +9,9 @@ use Yiisoft\Db\Schema\Column\ColumnSchemaInterface;
 interface SequenceColumnSchemaInterface extends ColumnSchemaInterface
 {
     /**
-     * @return string|null name of an associated sequence if column is auto incremental.
+     * Returns name of an associated sequence if column is auto incremental.
+     *
+     * @psalm-mutation-free
      */
     public function getSequenceName(): string|null;
 
