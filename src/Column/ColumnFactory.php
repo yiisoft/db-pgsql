@@ -6,8 +6,13 @@ namespace Yiisoft\Db\Pgsql\Column;
 
 use Yiisoft\Db\Constant\ColumnType;
 use Yiisoft\Db\Constraint\ForeignKeyConstraint;
+use Yiisoft\Db\Expression\Expression;
 use Yiisoft\Db\Schema\Column\AbstractColumnFactory;
 use Yiisoft\Db\Schema\Column\ColumnSchemaInterface;
+
+use function preg_replace;
+use function str_starts_with;
+use function substr;
 
 use const PHP_INT_SIZE;
 
@@ -114,6 +119,26 @@ final class ColumnFactory extends AbstractColumnFactory
         'jsonb' => ColumnType::JSON,
     ];
 
+    public function fromType(string $type, array $info = []): ColumnSchemaInterface
+    {
+        $column = parent::fromType($type, $info);
+
+        if ($column instanceof StructuredColumnSchema) {
+            /** @psalm-var array|null $defaultValue */
+            $defaultValue = $column->getDefaultValue();
+
+            if (is_array($defaultValue)) {
+                foreach ($column->getColumns() as $structuredColumnName => $structuredColumn) {
+                    if (isset($defaultValue[$structuredColumnName])) {
+                        $structuredColumn->defaultValue($defaultValue[$structuredColumnName]);
+                    }
+                }
+            }
+        }
+
+        return $column;
+    }
+
     protected function getColumnClass(string $type, array $info = []): string
     {
         return match ($type) {
@@ -130,5 +155,22 @@ final class ColumnFactory extends AbstractColumnFactory
             ColumnType::STRUCTURED => StructuredColumnSchema::class,
             default => parent::getColumnClass($type, $info),
         };
+    }
+
+    protected function normalizeNotNullDefaultValue(string $defaultValue, ColumnSchemaInterface $column): mixed
+    {
+        $value = preg_replace("/::[^:']+$/", '$1', $defaultValue);
+
+        if (str_starts_with($value, "B'") && $value[-1] === "'") {
+            return $column->phpTypecast(substr($value, 2, -1));
+        }
+
+        $value = parent::normalizeNotNullDefaultValue($value, $column);
+
+        if ($value instanceof Expression) {
+            return new Expression($defaultValue);
+        }
+
+        return $value;
     }
 }
