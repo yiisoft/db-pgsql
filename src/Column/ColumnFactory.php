@@ -6,8 +6,13 @@ namespace Yiisoft\Db\Pgsql\Column;
 
 use Yiisoft\Db\Constant\ColumnType;
 use Yiisoft\Db\Constraint\ForeignKeyConstraint;
+use Yiisoft\Db\Expression\Expression;
 use Yiisoft\Db\Schema\Column\AbstractColumnFactory;
 use Yiisoft\Db\Schema\Column\ColumnSchemaInterface;
+
+use function preg_replace;
+use function str_starts_with;
+use function substr;
 
 use const PHP_INT_SIZE;
 
@@ -45,10 +50,9 @@ final class ColumnFactory extends AbstractColumnFactory
      * @link https://www.postgresql.org/docs/current/datatype.html#DATATYPE-TABLE
      *
      * @var string[]
-     *
-     * @psalm-suppress MissingClassConstType
+     * @psalm-var array<string, ColumnType::*>
      */
-    private const TYPE_MAP = [
+    protected const TYPE_MAP = [
         'bool' => ColumnType::BOOLEAN,
         'boolean' => ColumnType::BOOLEAN,
         'bit' => ColumnType::BIT,
@@ -115,46 +119,58 @@ final class ColumnFactory extends AbstractColumnFactory
         'jsonb' => ColumnType::JSON,
     ];
 
-    /**
-     * @psalm-param ColumnType::* $type
-     * @psalm-param ColumnInfo $info
-     * @psalm-suppress MoreSpecificImplementedParamType
-     * @psalm-suppress ArgumentTypeCoercion
-     * @psalm-suppress InvalidNamedArgument
-     * @psalm-suppress PossiblyInvalidArgument
-     */
     public function fromType(string $type, array $info = []): ColumnSchemaInterface
     {
-        $dimension = $info['dimension'] ?? 0;
-        unset($info['dimension']);
+        $column = parent::fromType($type, $info);
 
-        if ($dimension > 0) {
-            $info['column'] ??= $this->fromType($type, $info);
-            return new ArrayColumnSchema(...$info, dimension: $dimension);
+        if ($column instanceof StructuredColumnSchema) {
+            /** @psalm-var array|null $defaultValue */
+            $defaultValue = $column->getDefaultValue();
+
+            if (is_array($defaultValue)) {
+                foreach ($column->getColumns() as $structuredColumnName => $structuredColumn) {
+                    if (isset($defaultValue[$structuredColumnName])) {
+                        $structuredColumn->defaultValue($defaultValue[$structuredColumnName]);
+                    }
+                }
+            }
         }
 
+        return $column;
+    }
+
+    protected function getColumnClass(string $type, array $info = []): string
+    {
         return match ($type) {
-            ColumnType::BOOLEAN => new BooleanColumnSchema($type, ...$info),
-            ColumnType::BIT => new BitColumnSchema($type, ...$info),
-            ColumnType::TINYINT => new IntegerColumnSchema($type, ...$info),
-            ColumnType::SMALLINT => new IntegerColumnSchema($type, ...$info),
-            ColumnType::INTEGER => new IntegerColumnSchema($type, ...$info),
+            ColumnType::BOOLEAN => BooleanColumnSchema::class,
+            ColumnType::BIT => BitColumnSchema::class,
+            ColumnType::TINYINT => IntegerColumnSchema::class,
+            ColumnType::SMALLINT => IntegerColumnSchema::class,
+            ColumnType::INTEGER => IntegerColumnSchema::class,
             ColumnType::BIGINT => PHP_INT_SIZE !== 8
-                ? new BigIntColumnSchema($type, ...$info)
-                : new IntegerColumnSchema($type, ...$info),
-            ColumnType::BINARY => new BinaryColumnSchema($type, ...$info),
-            ColumnType::STRUCTURED => new StructuredColumnSchema($type, ...$info),
-            default => parent::fromType($type, $info),
+                ? BigIntColumnSchema::class
+                : IntegerColumnSchema::class,
+            ColumnType::BINARY => BinaryColumnSchema::class,
+            ColumnType::ARRAY => ArrayColumnSchema::class,
+            ColumnType::STRUCTURED => StructuredColumnSchema::class,
+            default => parent::getColumnClass($type, $info),
         };
     }
 
-    protected function getType(string $dbType, array $info = []): string
+    protected function normalizeNotNullDefaultValue(string $defaultValue, ColumnSchemaInterface $column): mixed
     {
-        return self::TYPE_MAP[$dbType] ?? ColumnType::STRING;
-    }
+        $value = preg_replace("/::[^:']+$/", '$1', $defaultValue);
 
-    protected function isDbType(string $dbType): bool
-    {
-        return isset(self::TYPE_MAP[$dbType]);
+        if (str_starts_with($value, "B'") && $value[-1] === "'") {
+            return $column->phpTypecast(substr($value, 2, -1));
+        }
+
+        $value = parent::normalizeNotNullDefaultValue($value, $column);
+
+        if ($value instanceof Expression) {
+            return new Expression($defaultValue);
+        }
+
+        return $value;
     }
 }
