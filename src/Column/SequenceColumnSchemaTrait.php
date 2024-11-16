@@ -9,7 +9,7 @@ trait SequenceColumnSchemaTrait
     /**
      * @var string|null Name of an associated sequence if column is auto incremental.
      */
-    private string|null $sequenceName = null;
+    protected string|null $sequenceName = null;
 
     public function getSequenceName(): string|null
     {
