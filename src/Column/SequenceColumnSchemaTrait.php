@@ -11,6 +11,9 @@ trait SequenceColumnSchemaTrait
      */
     protected string|null $sequenceName = null;
 
+    /**
+     * @psalm-mutation-free
+     */
     public function getSequenceName(): string|null
     {
         return $this->sequenceName;
