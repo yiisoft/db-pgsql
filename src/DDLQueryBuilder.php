@@ -46,38 +46,32 @@ final class DDLQueryBuilder extends AbstractDDLQueryBuilder
             $type = $this->schema->getColumnFactory()->fromDefinition($type);
         }
 
-        // $type = 'TYPE ' . $this->queryBuilder->buildColumnDefinition($type);
-        $multiAlterStatement = [];
-        $constraintPrefix = preg_replace('/\W/', '', $table . '_' . $column);
+        $columnDefinitionBuilder = $this->queryBuilder->getColumnDefinitionBuilder();
+
+        $multiAlterStatement = ["ALTER COLUMN $columnName TYPE " . $columnDefinitionBuilder->buildType($type) . $columnDefinitionBuilder->buildExtra($type)];
 
         if ($type->hasDefaultValue()) {
-            $defaultValue = $this->queryBuilder->getColumnDefinitionBuilder()->buildDefaultValue($type);
+            $defaultValue = $columnDefinitionBuilder->buildDefaultValue($type);
             $multiAlterStatement[] = "ALTER COLUMN $columnName SET DEFAULT $defaultValue";
         }
 
-{
-            /** remove extra null if any */
-            $type = preg_replace('/\s+NULL/i', '', $type, -1, $count);
-            if ($count > 0) {
-                $multiAlterStatement[] = "ALTER COLUMN $columnName DROP NOT NULL";
-            }
+        match ($type->isNotNull()) {
+            true => $multiAlterStatement[] = "ALTER COLUMN $columnName SET NOT NULL",
+            false => $multiAlterStatement[] = "ALTER COLUMN $columnName DROP NOT NULL",
+            default => null,
+        };
+
+        $check = $type->getCheck();
+        if (!empty($check)) {
+            $constraintPrefix = preg_replace('/\W/', '', $table . '_' . $column);
+            $multiAlterStatement[] = "ADD CONSTRAINT {$constraintPrefix}_check CHECK ($check)";
         }
 
-        if (preg_match('/\s+CHECK\s+\((.+)\)/i', $type, $matches)) {
-            $type = preg_replace('/\s+CHECK\s+\((.+)\)/i', '', $type);
-            $multiAlterStatement[] = "ADD CONSTRAINT {$constraintPrefix}_check CHECK ($matches[1])";
-        }
-
-        $type = preg_replace('/\s+UNIQUE/i', '', $type, -1, $count);
-
-        if ($count > 0) {
+        if ($type->isUnique()) {
             $multiAlterStatement[] = "ADD UNIQUE ($columnName)";
         }
 
-        /** add what's left at the beginning */
-        array_unshift($multiAlterStatement, "ALTER COLUMN $columnName $type");
-
-        return 'ALTER TABLE ' . $tableName . ' ' . implode(', ', $multiAlterStatement);
+        return "ALTER TABLE $tableName " . implode(', ', $multiAlterStatement);
     }
 
     /**

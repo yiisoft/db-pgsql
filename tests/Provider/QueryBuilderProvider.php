@@ -23,6 +23,37 @@ final class QueryBuilderProvider extends \Yiisoft\Db\Tests\Provider\QueryBuilder
 
     protected static string $driverName = 'pgsql';
 
+    public static function alterColumn(): array
+    {
+        return [
+            ['SET NOT null', 'ALTER TABLE "foo1" ALTER COLUMN "bar" SET NOT null'],
+            ['drop default', 'ALTER TABLE "foo1" ALTER COLUMN "bar" drop default'],
+            ['reset xyz', 'ALTER TABLE "foo1" ALTER COLUMN "bar" reset xyz'],
+            ['string', 'ALTER TABLE "foo1" ALTER COLUMN "bar" TYPE varchar(255)'],
+            ['varchar(255)', 'ALTER TABLE "foo1" ALTER COLUMN "bar" TYPE varchar(255)'],
+            ['string NOT NULL', 'ALTER TABLE "foo1" ALTER COLUMN "bar" TYPE varchar(255), ALTER COLUMN "bar" SET NOT NULL'],
+            ['string NULL', 'ALTER TABLE "foo1" ALTER COLUMN "bar" TYPE varchar(255), ALTER COLUMN "bar" DROP NOT NULL'],
+            ['string DEFAULT NULL', 'ALTER TABLE "foo1" ALTER COLUMN "bar" TYPE varchar(255), ALTER COLUMN "bar" SET DEFAULT NULL'],
+            ["string DEFAULT ''", 'ALTER TABLE "foo1" ALTER COLUMN "bar" TYPE varchar(255), ALTER COLUMN "bar" SET DEFAULT \'\''],
+            ["timestamp(0) DEFAULT now()", 'ALTER TABLE "foo1" ALTER COLUMN "bar" TYPE timestamp(0), ALTER COLUMN "bar" SET DEFAULT now()'],
+            ['string CHECK (char_length(bar) > 5)', 'ALTER TABLE "foo1" ALTER COLUMN "bar" TYPE varchar(255), ADD CONSTRAINT foo1_bar_check CHECK (char_length(bar) > 5)'],
+            ['string(30) UNIQUE', 'ALTER TABLE "foo1" ALTER COLUMN "bar" TYPE varchar(30), ADD UNIQUE ("bar")'],
+            ['varchar(255) USING bar::varchar', 'ALTER TABLE "foo1" ALTER COLUMN "bar" TYPE varchar(255) USING bar::varchar'],
+            ['varchar(255) using cast("bar" as varchar)', 'ALTER TABLE "foo1" ALTER COLUMN "bar" TYPE varchar(255) using cast("bar" as varchar)'],
+            [ColumnBuilder::string(), 'ALTER TABLE "foo1" ALTER COLUMN "bar" TYPE varchar(255)'],
+            [ColumnBuilder::string()->notNull(), 'ALTER TABLE "foo1" ALTER COLUMN "bar" TYPE varchar(255), ALTER COLUMN "bar" SET NOT NULL'],
+            [ColumnBuilder::string()->null(), 'ALTER TABLE "foo1" ALTER COLUMN "bar" TYPE varchar(255), ALTER COLUMN "bar" DROP NOT NULL'],
+            [ColumnBuilder::string()->defaultValue(null), 'ALTER TABLE "foo1" ALTER COLUMN "bar" TYPE varchar(255), ALTER COLUMN "bar" SET DEFAULT NULL'],
+            [ColumnBuilder::string()->defaultValue(''), 'ALTER TABLE "foo1" ALTER COLUMN "bar" TYPE varchar(255), ALTER COLUMN "bar" SET DEFAULT \'\''],
+            [ColumnBuilder::string()->null()->defaultValue('xxx'), 'ALTER TABLE "foo1" ALTER COLUMN "bar" TYPE varchar(255), ALTER COLUMN "bar" SET DEFAULT \'xxx\', ALTER COLUMN "bar" DROP NOT NULL'],
+            [ColumnBuilder::timestamp()->defaultValue(new Expression('now()')), 'ALTER TABLE "foo1" ALTER COLUMN "bar" TYPE timestamp(0), ALTER COLUMN "bar" SET DEFAULT now()'],
+            [ColumnBuilder::string()->check('char_length(bar) > 5'), 'ALTER TABLE "foo1" ALTER COLUMN "bar" TYPE varchar(255), ADD CONSTRAINT foo1_bar_check CHECK (char_length(bar) > 5)'],
+            [ColumnBuilder::string(30)->unique(), 'ALTER TABLE "foo1" ALTER COLUMN "bar" TYPE varchar(30), ADD UNIQUE ("bar")'],
+            [ColumnBuilder::string()->extra('USING bar::varchar'), 'ALTER TABLE "foo1" ALTER COLUMN "bar" TYPE varchar(255) USING bar::varchar'],
+            [ColumnBuilder::string()->extra('using cast("bar" as varchar)'), 'ALTER TABLE "foo1" ALTER COLUMN "bar" TYPE varchar(255) using cast("bar" as varchar)'],
+        ];
+    }
+
     public static function buildCondition(): array
     {
         $buildCondition = parent::buildCondition();

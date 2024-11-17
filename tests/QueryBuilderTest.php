@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Yiisoft\Db\Pgsql\Tests;
 
+use PHPUnit\Framework\Attributes\DataProviderExternal;
 use Throwable;
-use Yiisoft\Db\Constant\ColumnType;
 use Yiisoft\Db\Driver\Pdo\PdoConnectionInterface;
 use Yiisoft\Db\Exception\Exception;
 use Yiisoft\Db\Exception\IntegrityException;
@@ -61,170 +61,10 @@ final class QueryBuilderTest extends CommonQueryBuilderTest
         $db->close();
     }
 
-    /**
-     * @throws Exception
-     * @throws InvalidConfigException
-     */
-    public function testAlterColumn(): void
+    #[DataProviderExternal(QueryBuilderProvider::class, 'alterColumn')]
+    public function testAlterColumn(string|ColumnSchemaInterface $type, string $expected): void
     {
-        $db = $this->getConnection();
-
-        $qb = $db->getQueryBuilder();
-
-        $this->assertSame(
-            <<<SQL
-            ALTER TABLE "foo1" ALTER COLUMN "bar" TYPE varchar(255)
-            SQL,
-            $qb->alterColumn('foo1', 'bar', 'varchar(255)'),
-        );
-
-        $this->assertSame(
-            <<<SQL
-            ALTER TABLE "foo1" ALTER COLUMN "bar" SET NOT null
-            SQL,
-            $qb->alterColumn('foo1', 'bar', 'SET NOT null'),
-        );
-
-        $this->assertSame(
-            <<<SQL
-            ALTER TABLE "foo1" ALTER COLUMN "bar" drop default
-            SQL,
-            $qb->alterColumn('foo1', 'bar', 'drop default'),
-        );
-
-        $this->assertSame(
-            <<<SQL
-            ALTER TABLE "foo1" ALTER COLUMN "bar" reset xyz
-            SQL,
-            $qb->alterColumn('foo1', 'bar', 'reset xyz'),
-        );
-
-        $this->assertSame(
-            <<<SQL
-            ALTER TABLE "foo1" ALTER COLUMN "bar" TYPE varchar(255)
-            SQL,
-            $qb->alterColumn(
-                'foo1',
-                'bar',
-                ColumnBuilder::string()
-            ),
-        );
-
-        $this->assertSame(
-            <<<SQL
-            ALTER TABLE "foo1" ALTER COLUMN "bar" TYPE varchar(255) USING bar::varchar
-            SQL,
-            $qb->alterColumn('foo1', 'bar', 'varchar(255) USING bar::varchar'),
-        );
-
-        $this->assertSame(
-            <<<SQL
-            ALTER TABLE "foo1" ALTER COLUMN "bar" TYPE varchar(255) using cast("bar" as varchar)
-            SQL,
-            $qb->alterColumn('foo1', 'bar', 'varchar(255) using cast("bar" as varchar)'),
-        );
-
-        $this->assertSame(
-            <<<SQL
-            ALTER TABLE "foo1" ALTER COLUMN "bar" TYPE varchar(255), ALTER COLUMN "bar" SET NOT NULL
-            SQL,
-            $qb->alterColumn(
-                'foo1',
-                'bar',
-                ColumnBuilder::string()->notNull()
-            ),
-        );
-
-        $this->assertSame(
-            <<<SQL
-            ALTER TABLE "foo1" ALTER COLUMN "bar" TYPE varchar(255), ALTER COLUMN "bar" SET DEFAULT NULL, ALTER COLUMN "bar" DROP NOT NULL
-            SQL,
-            $qb->alterColumn(
-                'foo1',
-                'bar',
-                ColumnBuilder::string()->notNull(false)
-            ),
-        );
-
-        $this->assertSame(
-            <<<SQL
-            ALTER TABLE "foo1" ALTER COLUMN "bar" TYPE varchar(255), ALTER COLUMN "bar" SET DEFAULT 'xxx', ALTER COLUMN "bar" DROP NOT NULL
-            SQL,
-            $qb->alterColumn(
-                'foo1',
-                'bar',
-                ColumnBuilder::string()->notNull(false)->defaultValue('xxx')
-            ),
-        );
-
-        $this->assertSame(
-            <<<SQL
-            ALTER TABLE "foo1" ALTER COLUMN "bar" TYPE varchar(255), ADD CONSTRAINT foo1_bar_check CHECK (char_length(bar) > 5)
-            SQL,
-            $qb->alterColumn(
-                'foo1',
-                'bar',
-                ColumnBuilder::string()->check('char_length(bar) > 5')
-            ),
-        );
-
-        $this->assertSame(
-            <<<SQL
-            ALTER TABLE "foo1" ALTER COLUMN "bar" TYPE varchar(255), ALTER COLUMN "bar" SET DEFAULT ''
-            SQL,
-            $qb->alterColumn(
-                'foo1',
-                'bar',
-                ColumnBuilder::string()->defaultValue('')
-            ),
-        );
-
-        $this->assertSame(
-            <<<SQL
-            ALTER TABLE "foo1" ALTER COLUMN "bar" TYPE varchar(255), ALTER COLUMN "bar" SET DEFAULT 'AbCdE'
-            SQL,
-            $qb->alterColumn(
-                'foo1',
-                'bar',
-                ColumnBuilder::string()->defaultValue('AbCdE')
-            ),
-        );
-
-        $this->assertSame(
-            <<<SQL
-            ALTER TABLE "foo1" ALTER COLUMN "bar" TYPE timestamp, ALTER COLUMN "bar" SET DEFAULT CURRENT_TIMESTAMP
-            SQL,
-            $qb->alterColumn(
-                'foo1',
-                'bar',
-                ColumnBuilder::timestamp()
-                    ->defaultValue(new Expression('CURRENT_TIMESTAMP'))
-            ),
-        );
-
-        $this->assertSame(
-            <<<SQL
-            ALTER TABLE "foo1" ALTER COLUMN "bar" TYPE varchar(30), ADD UNIQUE ("bar")
-            SQL,
-            $qb->alterColumn(
-                'foo1',
-                'bar',
-                ColumnBuilder::string(30)->unique()
-            ),
-        );
-
-        $this->assertSame(
-            <<<SQL
-            ALTER TABLE "foo1" ALTER COLUMN "bar" TYPE varchar(30), ADD UNIQUE ("bar")
-            SQL,
-            $qb->alterColumn(
-                'foo1',
-                'bar',
-                ColumnBuilder::string(30)->unique()
-            ),
-        );
-
-        $db->close();
+        parent::testAlterColumn($type, $expected);
     }
 
     /**
