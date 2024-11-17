@@ -16,7 +16,7 @@
 - Enh #359: Remove `Schema::TYPE_ARRAY` and `Schema::TYPE_STRUCTURED` constants (@Tigrov)
 - New #360: Realize `ColumnBuilder` class (@Tigrov)
 - Enh #362: Update according changes in `ColumnSchemaInterface` (@Tigrov)
-- New #364: Add `ColumnDefinitionBuilder` class (@Tigrov)
+- New #364, #372: Add `ColumnDefinitionBuilder` class (@Tigrov)
 - Enh #365: Refactor `Dsn` class (@Tigrov)
 - Enh #366: Use constructor to create columns and initialize properties (@Tigrov)
 - Enh #370: Refactor `Schema::normalizeDefaultValue()` method and move it to `ColumnFactory` class (@Tigrov)
