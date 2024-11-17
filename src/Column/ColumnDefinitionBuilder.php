@@ -59,7 +59,7 @@ final class ColumnDefinitionBuilder extends AbstractColumnDefinitionBuilder
     protected function getDbType(ColumnSchemaInterface $column): string
     {
         /** @psalm-suppress DocblockTypeContradiction */
-        return match ($column->getType()) {
+        return $column->getDbType() ?? match ($column->getType()) {
             ColumnType::BOOLEAN => 'boolean',
             ColumnType::BIT => 'varbit',
             ColumnType::TINYINT => $column->isAutoIncrement() ? 'smallserial' : 'smallint',
@@ -71,7 +71,7 @@ final class ColumnDefinitionBuilder extends AbstractColumnDefinitionBuilder
             ColumnType::DECIMAL => 'numeric',
             ColumnType::MONEY => 'money',
             ColumnType::CHAR => 'char',
-            ColumnType::STRING => 'varchar',
+            ColumnType::STRING => 'varchar(' . ($column->getSize() ?? 255) . ')',
             ColumnType::TEXT => 'text',
             ColumnType::BINARY => 'bytea',
             ColumnType::UUID => 'uuid',
