@@ -8,10 +8,9 @@ use Throwable;
 use Yiisoft\Db\Exception\NotSupportedException;
 use Yiisoft\Db\QueryBuilder\AbstractDDLQueryBuilder;
 use Yiisoft\Db\Schema\Builder\ColumnInterface;
-
 use Yiisoft\Db\Schema\Column\ColumnSchemaInterface;
+
 use function array_diff;
-use function array_unshift;
 use function explode;
 use function implode;
 use function is_string;
@@ -34,6 +33,10 @@ final class DDLQueryBuilder extends AbstractDDLQueryBuilder
         $columnName = $this->quoter->quoteColumnName($column);
         $tableName = $this->quoter->quoteTableName($table);
 
+        if ($type instanceof ColumnInterface) {
+            $type = $type->asString();
+        }
+
         /**
          * @link https://github.com/yiisoft/yii2/issues/4492
          * @link https://www.postgresql.org/docs/9.1/static/sql-altertable.html
@@ -48,10 +51,12 @@ final class DDLQueryBuilder extends AbstractDDLQueryBuilder
 
         $columnDefinitionBuilder = $this->queryBuilder->getColumnDefinitionBuilder();
 
-        $multiAlterStatement = ["ALTER COLUMN $columnName TYPE " . $columnDefinitionBuilder->buildType($type) . $columnDefinitionBuilder->buildExtra($type)];
+        $multiAlterStatement = ["ALTER COLUMN $columnName TYPE " . $columnDefinitionBuilder->buildAlter($type)];
 
         if ($type->hasDefaultValue()) {
-            $defaultValue = $columnDefinitionBuilder->buildDefaultValue($type);
+            $defaultValue = $type->dbTypecast($type->getDefaultValue());
+            $defaultValue = $this->queryBuilder->prepareValue($defaultValue);
+
             $multiAlterStatement[] = "ALTER COLUMN $columnName SET DEFAULT $defaultValue";
         }
 
