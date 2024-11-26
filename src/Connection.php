@@ -20,7 +20,7 @@ use Yiisoft\Db\Transaction\TransactionInterface;
  */
 final class Connection extends AbstractPdoConnection
 {
-    public function createCommand(string $sql = null, array $params = []): PdoCommandInterface
+    public function createCommand(?string $sql = null, array $params = []): PdoCommandInterface
     {
         $command = new Command($this);
 
@@ -44,7 +44,7 @@ final class Connection extends AbstractPdoConnection
         return new Transaction($this);
     }
 
-    public function getLastInsertID(string $sequenceName = null): string
+    public function getLastInsertID(?string $sequenceName = null): string
     {
         if ($sequenceName === null) {
             throw new InvalidArgumentException('PostgreSQL not support lastInsertId without sequence name.');

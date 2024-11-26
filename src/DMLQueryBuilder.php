@@ -34,7 +34,7 @@ final class DMLQueryBuilder extends AbstractDMLQueryBuilder
         return $sql;
     }
 
-    public function resetSequence(string $table, int|string $value = null): string
+    public function resetSequence(string $table, null|int|string $value = null): string
     {
         $tableSchema = $this->schema->getTableSchema($table);
 

@@ -177,7 +177,7 @@ final class Schema extends AbstractPdoSchema
      */
     protected string|array $tableQuoteCharacter = '"';
 
-    public function createColumn(string $type, array|int|string $length = null): ColumnInterface
+    public function createColumn(string $type, null|array|int|string $length = null): ColumnInterface
     {
         return new Column($type, $length);
     }
