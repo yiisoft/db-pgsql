@@ -93,26 +93,26 @@ trait TestTrait
 
     private static function getDatabaseName(): string
     {
-        return getenv('YII_PGSQL_DATABASE');
+        return getenv('YII_PGSQL_DATABASE') ?: '';
     }
 
     private static function getHost(): string
     {
-        return getenv('YII_PGSQL_HOST');
+        return getenv('YII_PGSQL_HOST') ?: '';
     }
 
     private static function getPort(): string
     {
-        return getenv('YII_PGSQL_PORT');
+        return getenv('YII_PGSQL_PORT') ?: '';
     }
 
     private static function getUsername(): string
     {
-        return getenv('YII_PGSQL_USER');
+        return getenv('YII_PGSQL_USER') ?: '';
     }
 
     private static function getPassword(): string
     {
-        return getenv('YII_PGSQL_PASSWORD');
+        return getenv('YII_PGSQL_PASSWORD') ?: '';
     }
 }
