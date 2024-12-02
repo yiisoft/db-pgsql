@@ -555,7 +555,7 @@ final class QueryBuilderProvider extends \Yiisoft\Db\Tests\Provider\QueryBuilder
         $values['bit()'][0] = 'varbit';
         $values['bit(1)'][0] = 'varbit(1)';
         $values['bit(8)'][0] = 'varbit(8)';
-        $values['bit(1000)'][0] = 'varbit(1000)';
+        $values['bit(64)'][0] = 'varbit(64)';
         $values['tinyint()'][0] = 'smallint';
         $values['tinyint(2)'][0] = 'smallint';
         $values['smallint(4)'][0] = 'smallint';
@@ -582,14 +582,33 @@ final class QueryBuilderProvider extends \Yiisoft\Db\Tests\Provider\QueryBuilder
         $values['datetime()'][0] = 'timestamp(0)';
         $values['datetime(6)'][0] = 'timestamp(6)';
         $values['datetime(null)'][0] = 'timestamp';
-        $values['array()'][0] = 'varchar[]';
+        $values['array()'][0] = 'varchar(255)[]';
         $values['structured()'][0] = 'jsonb';
-        $values["structured('structured_type')"][0] = 'structured_type';
         $values['json()'][0] = 'jsonb';
         $values['json(100)'][0] = 'jsonb';
+        $values["check('value > 5')"][0] = 'integer CHECK ("col_59" > 5)';
         $values['unsigned()'][0] = 'integer';
         $values['scale(2)'][0] = 'numeric(10,2)';
         $values['integer(8)->scale(2)'][0] = 'integer';
+
+        return $values;
+    }
+
+    public static function prepareParam(): array
+    {
+        $values = parent::prepareParam();
+
+        $values['binary'][0] = "'\\x737472696e67'::bytea";
+
+        return $values;
+    }
+
+    public static function prepareValue(): array
+    {
+        $values = parent::prepareValue();
+
+        $values['binary'][0] = "'\\x737472696e67'::bytea";
+        $values['paramBinary'][0] = "'\\x737472696e67'::bytea";
 
         return $values;
     }

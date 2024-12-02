@@ -4,7 +4,10 @@ declare(strict_types=1);
 
 namespace Yiisoft\Db\Pgsql\Tests;
 
+use PHPUnit\Framework\Attributes\DataProviderExternal;
+use Yiisoft\Db\Constant\ColumnType;
 use Yiisoft\Db\Pgsql\Column\ArrayColumnSchema;
+use Yiisoft\Db\Pgsql\Tests\Provider\ColumnFactoryProvider;
 use Yiisoft\Db\Pgsql\Tests\Support\TestTrait;
 use Yiisoft\Db\Tests\AbstractColumnFactoryTest;
 
@@ -15,7 +18,7 @@ final class ColumnFactoryTest extends AbstractColumnFactoryTest
 {
     use TestTrait;
 
-    /** @dataProvider \Yiisoft\Db\Pgsql\Tests\Provider\ColumnFactoryProvider::dbTypes */
+    #[DataProviderExternal(ColumnFactoryProvider::class, 'dbTypes')]
     public function testFromDbType(string $dbType, string $expectedType, string $expectedInstanceOf): void
     {
         parent::testFromDbType($dbType, $expectedType, $expectedInstanceOf);
@@ -23,8 +26,8 @@ final class ColumnFactoryTest extends AbstractColumnFactoryTest
         $db = $this->getConnection();
         $columnFactory = $db->getSchema()->getColumnFactory();
 
-        // With dimension
-        $column = $columnFactory->fromDbType($dbType, ['dimension' => 1]);
+        // For array type
+        $column = $columnFactory->fromType(ColumnType::ARRAY, ['dbType' => $dbType]);
 
         $this->assertInstanceOf(ArrayColumnSchema::class, $column);
         $this->assertInstanceOf($expectedInstanceOf, $column->getColumn());
@@ -34,7 +37,7 @@ final class ColumnFactoryTest extends AbstractColumnFactoryTest
         $db->close();
     }
 
-    /** @dataProvider \Yiisoft\Db\Pgsql\Tests\Provider\ColumnFactoryProvider::definitions */
+    #[DataProviderExternal(ColumnFactoryProvider::class, 'definitions')]
     public function testFromDefinition(
         string $definition,
         string $expectedType,
@@ -44,7 +47,7 @@ final class ColumnFactoryTest extends AbstractColumnFactoryTest
         parent::testFromDefinition($definition, $expectedType, $expectedInstanceOf, $expectedMethodResults);
     }
 
-    /** @dataProvider \Yiisoft\Db\Pgsql\Tests\Provider\ColumnFactoryProvider::pseudoTypes */
+    #[DataProviderExternal(ColumnFactoryProvider::class, 'pseudoTypes')]
     public function testFromPseudoType(
         string $pseudoType,
         string $expectedType,
@@ -54,7 +57,7 @@ final class ColumnFactoryTest extends AbstractColumnFactoryTest
         parent::testFromPseudoType($pseudoType, $expectedType, $expectedInstanceOf, $expectedMethodResults);
     }
 
-    /** @dataProvider \Yiisoft\Db\Pgsql\Tests\Provider\ColumnFactoryProvider::types */
+    #[DataProviderExternal(ColumnFactoryProvider::class, 'types')]
     public function testFromType(string $type, string $expectedType, string $expectedInstanceOf): void
     {
         parent::testFromType($type, $expectedType, $expectedInstanceOf);
@@ -62,13 +65,19 @@ final class ColumnFactoryTest extends AbstractColumnFactoryTest
         $db = $this->getConnection();
         $columnFactory = $db->getSchema()->getColumnFactory();
 
-        // With dimension
-        $column = $columnFactory->fromType($type, ['dimension' => 1]);
+        // For array type
+        $column = $columnFactory->fromType(ColumnType::ARRAY, ['column' => $columnFactory->fromType($type)]);
 
         $this->assertInstanceOf(ArrayColumnSchema::class, $column);
         $this->assertInstanceOf($expectedInstanceOf, $column->getColumn());
         $this->assertSame($expectedType, $column->getColumn()->getType());
 
         $db->close();
+    }
+
+    #[DataProviderExternal(ColumnFactoryProvider::class, 'defaultValueRaw')]
+    public function testFromTypeDefaultValueRaw(string $type, string|null $defaultValueRaw, mixed $expected): void
+    {
+        parent::testFromTypeDefaultValueRaw($type, $defaultValueRaw, $expected);
     }
 }
