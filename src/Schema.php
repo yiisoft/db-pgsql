@@ -611,7 +611,7 @@ final class Schema extends AbstractPdoSchema
     {
         $orIdentity = '';
 
-        if (version_compare($this->db->getServerVersion(), '12.0', '>=')) {
+        if (version_compare($this->db->getServerInfo()->getVersion(), '12.0', '>=')) {
             $orIdentity = 'OR a.attidentity != \'\'';
         }
 
