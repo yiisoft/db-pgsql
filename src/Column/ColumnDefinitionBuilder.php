@@ -47,6 +47,12 @@ final class ColumnDefinitionBuilder extends AbstractColumnDefinitionBuilder
             . $this->buildExtra($column);
     }
 
+    public function buildAlter(ColumnSchemaInterface $column): string
+    {
+        return $this->buildType($column)
+            . $this->buildExtra($column);
+    }
+
     protected function buildType(ColumnSchemaInterface $column): string
     {
         if ($column instanceof \Yiisoft\Db\Schema\Column\ArrayColumnSchema) {
