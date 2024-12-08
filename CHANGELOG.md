@@ -21,6 +21,7 @@
 - Enh #366: Use constructor to create columns and initialize properties (@Tigrov)
 - Enh #370: Refactor `Schema::normalizeDefaultValue()` method and move it to `ColumnFactory` class (@Tigrov)
 - New #373: Override `QueryBuilder::prepareBinary()` method (@Tigrov)
+- Chg #375: Update `QueryBuilder` constructor (@Tigrov)
 
 ## 1.3.0 March 21, 2024
 
