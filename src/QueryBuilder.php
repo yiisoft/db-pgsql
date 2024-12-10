@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Yiisoft\Db\Pgsql;
 
+use Yiisoft\Db\Connection\ServerInfoInterface;
 use Yiisoft\Db\Constant\ColumnType;
 use Yiisoft\Db\Constant\PseudoType;
 use Yiisoft\Db\Pgsql\Column\ColumnDefinitionBuilder;
@@ -50,14 +51,17 @@ final class QueryBuilder extends AbstractQueryBuilder
         PseudoType::UUID_PK => 'uuid PRIMARY KEY',
     ];
 
-    public function __construct(QuoterInterface $quoter, SchemaInterface $schema)
+    public function __construct(QuoterInterface $quoter, SchemaInterface $schema, ServerInfoInterface $serverInfo)
     {
-        $ddlBuilder = new DDLQueryBuilder($this, $quoter, $schema);
-        $dmlBuilder = new DMLQueryBuilder($this, $quoter, $schema);
-        $dqlBuilder = new DQLQueryBuilder($this, $quoter);
-        $columnDefinitionBuilder = new ColumnDefinitionBuilder($this);
-
-        parent::__construct($quoter, $schema, $ddlBuilder, $dmlBuilder, $dqlBuilder, $columnDefinitionBuilder);
+        parent::__construct(
+            $quoter,
+            $schema,
+            $serverInfo,
+            new DDLQueryBuilder($this, $quoter, $schema),
+            new DMLQueryBuilder($this, $quoter, $schema),
+            new DQLQueryBuilder($this, $quoter),
+            new ColumnDefinitionBuilder($this),
+        );
     }
 
     protected function prepareBinary(string $binary): string

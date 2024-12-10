@@ -65,7 +65,7 @@ final class SchemaTest extends CommonSchemaTest
     {
         $db = $this->getConnection();
 
-        if (version_compare($db->getServerVersion(), '10', '>')) {
+        if (version_compare($db->getServerInfo()->getVersion(), '10', '>')) {
             if ($tableName === 'type') {
                 $columns['ts_default']['defaultValue'] = new Expression('CURRENT_TIMESTAMP');
             }
@@ -111,7 +111,7 @@ final class SchemaTest extends CommonSchemaTest
     {
         $this->fixture = 'pgsql12.sql';
 
-        if (version_compare($this->getConnection()->getServerVersion(), '12.0', '<')) {
+        if (version_compare($this->getConnection()->getServerInfo()->getVersion(), '12.0', '<')) {
             $this->markTestSkipped('PostgresSQL < 12.0 does not support GENERATED AS IDENTITY columns.');
         }
 
@@ -251,7 +251,7 @@ final class SchemaTest extends CommonSchemaTest
     {
         $this->fixture = 'pgsql10.sql';
 
-        if (version_compare($this->getConnection()->getServerVersion(), '10.0', '<')) {
+        if (version_compare($this->getConnection()->getServerInfo()->getVersion(), '10.0', '<')) {
             $this->markTestSkipped('PostgresSQL < 10.0 does not support PARTITION BY clause.');
         }
 
@@ -603,7 +603,7 @@ final class SchemaTest extends CommonSchemaTest
     {
         $this->fixture = 'pgsql11.sql';
 
-        if (version_compare($this->getConnection()->getServerVersion(), '11.0', '<')) {
+        if (version_compare($this->getConnection()->getServerInfo()->getVersion(), '11.0', '<')) {
             $this->markTestSkipped('PostgresSQL < 11.0 does not support INCLUDE clause.');
         }
 

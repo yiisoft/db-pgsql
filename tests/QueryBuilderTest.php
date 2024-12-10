@@ -583,7 +583,7 @@ final class QueryBuilderTest extends CommonQueryBuilderTest
      */
     public function testResetSequencePgsql12(): void
     {
-        if (version_compare($this->getConnection()->getServerVersion(), '12.0', '<')) {
+        if (version_compare($this->getConnection()->getServerInfo()->getVersion(), '12.0', '<')) {
             $this->markTestSkipped('PostgreSQL < 12.0 does not support GENERATED AS IDENTITY columns.');
         }
 
