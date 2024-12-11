@@ -16,6 +16,7 @@ use Yiisoft\Db\Query\Query;
 use Yiisoft\Db\Tests\Support\TraversableObject;
 
 use function array_replace;
+use function version_compare;
 
 final class QueryBuilderProvider extends \Yiisoft\Db\Tests\Provider\QueryBuilderProvider
 {
@@ -621,6 +622,19 @@ final class QueryBuilderProvider extends \Yiisoft\Db\Tests\Provider\QueryBuilder
         $values['unsigned()'][0] = 'integer';
         $values['scale(2)'][0] = 'numeric(10,2)';
         $values['integer(8)->scale(2)'][0] = 'integer';
+
+        $db = self::getDb();
+        $serverVersion = self::getDb()->getServerInfo()->getVersion();
+        $db->close();
+
+        if (version_compare($serverVersion, '12', '<')) {
+            $uuidExpression = "uuid_in(overlay(overlay(md5(now()::text || random()::text) placing '4' from 13) placing"
+                . ' to_hex(floor(4 * random() + 8)::int)::text from 17)::cstring)';
+
+            $values[PseudoType::UUID_PK][0] = "uuid PRIMARY KEY DEFAULT $uuidExpression";
+            $values[PseudoType::UUID_PK_SEQ][0] = "uuid PRIMARY KEY DEFAULT $uuidExpression";
+            $values['uuidPrimaryKey()'][0] = "uuid PRIMARY KEY DEFAULT $uuidExpression";
+        }
 
         return $values;
     }
