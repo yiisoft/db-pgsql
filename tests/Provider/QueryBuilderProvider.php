@@ -627,7 +627,7 @@ final class QueryBuilderProvider extends \Yiisoft\Db\Tests\Provider\QueryBuilder
         $serverVersion = self::getDb()->getServerInfo()->getVersion();
         $db->close();
 
-        if (version_compare($serverVersion, '12', '<')) {
+        if (version_compare($serverVersion, '13', '<')) {
             $uuidExpression = "uuid_in(overlay(overlay(md5(now()::text || random()::text) placing '4' from 13) placing"
                 . ' to_hex(floor(4 * random() + 8)::int)::text from 17)::cstring)';
 
