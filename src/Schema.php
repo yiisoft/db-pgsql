@@ -103,6 +103,7 @@ final class Schema extends AbstractPdoSchema
     /** @deprecated Use {@see ColumnBuilder} instead. Will be removed in 2.0. */
     public function createColumn(string $type, array|int|string $length = null): ColumnInterface
     {
+        /** @psalm-suppress DeprecatedClass */
         return new Column($type, $length);
     }
 

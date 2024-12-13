@@ -8,10 +8,10 @@ use Yiisoft\Db\Constant\ColumnType;
 use Yiisoft\Db\QueryBuilder\AbstractColumnDefinitionBuilder;
 use Yiisoft\Db\Schema\Column\ColumnSchemaInterface;
 
+use function version_compare;
+
 final class ColumnDefinitionBuilder extends AbstractColumnDefinitionBuilder
 {
-    protected const GENERATE_UUID_EXPRESSION = 'gen_random_uuid()';
-
     protected const TYPES_WITH_SIZE = [
         'bit',
         'bit varying',
@@ -44,6 +44,12 @@ final class ColumnDefinitionBuilder extends AbstractColumnDefinitionBuilder
             . $this->buildDefault($column)
             . $this->buildCheck($column)
             . $this->buildReferences($column)
+            . $this->buildExtra($column);
+    }
+
+    public function buildAlter(ColumnSchemaInterface $column): string
+    {
+        return $this->buildType($column)
             . $this->buildExtra($column);
     }
 
@@ -83,5 +89,17 @@ final class ColumnDefinitionBuilder extends AbstractColumnDefinitionBuilder
             ColumnType::JSON => 'jsonb',
             default => 'varchar',
         };
+    }
+
+    protected function getDefaultUuidExpression(): string
+    {
+        $serverVersion = $this->queryBuilder->getServerInfo()->getVersion();
+
+        if (version_compare($serverVersion, '13', '<')) {
+            return "uuid_in(overlay(overlay(md5(now()::text || random()::text) placing '4' from 13) placing"
+                . ' to_hex(floor(4 * random() + 8)::int)::text from 17)::cstring)';
+        }
+
+        return 'gen_random_uuid()';
     }
 }
