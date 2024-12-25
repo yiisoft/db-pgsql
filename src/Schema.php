@@ -671,12 +671,9 @@ final class Schema extends AbstractPdoSchema
                     ct.conrelid = c.oid AND a.attnum = ANY (ct.conkey)
                     OR rw.ev_action IS NOT NULL
                     AND strpos(rw.ev_action, ':resorigtbl ' || ct.conrelid || ' ') > 0
-                    AND regexp_like(
-                        rw.ev_action,
-                        ' :resno ' || a.attnum || ' :resname \S+ :ressortgroupref \d+ :resorigtbl '
+                    AND rw.ev_action ~ ('.* :resno ' || a.attnum || ' :resname \S+ :ressortgroupref \d+ :resorigtbl '
                         || ct.conrelid || ' :resorigcol (?:'
-                        || replace(substr(ct.conkey::text, 2, length(ct.conkey::text) - 2), ',', '|') || ') '
-                    )
+                        || replace(substr(ct.conkey::text, 2, length(ct.conkey::text) - 2), ',', '|') || ') .*')
                 )
         WHERE
             a.attnum > 0 AND t.typname != '' AND NOT a.attisdropped
@@ -836,12 +833,9 @@ final class Schema extends AbstractPdoSchema
             ON "c"."conrelid" = "tc"."oid" AND "a"."attnum" = ANY ("c"."conkey")
                 OR "rw"."ev_action" IS NOT NULL AND "c"."conrelid" != 0
                 AND strpos("rw"."ev_action", ':resorigtbl ' || "c"."conrelid" || ' ') > 0
-                AND regexp_like(
-                    "rw"."ev_action",
-                    ' :resno ' || "a"."attnum" || ' :resname \S+ :ressortgroupref \d+ :resorigtbl '
+                AND "rw"."ev_action" ~ ('.* :resno ' || "a"."attnum" || ' :resname \S+ :ressortgroupref \d+ :resorigtbl '
                     || "c"."conrelid" || ' :resorigcol (?:'
-                    || replace(substr("c"."conkey"::text, 2, length("c"."conkey"::text) - 2), ',', '|') || ') '
-                )
+                    || replace(substr("c"."conkey"::text, 2, length("c"."conkey"::text) - 2), ',', '|') || ') .*')
         LEFT JOIN "pg_class" AS "ftc"
             ON "ftc"."oid" = "c"."confrelid"
         LEFT JOIN "pg_namespace" AS "ftcns"
