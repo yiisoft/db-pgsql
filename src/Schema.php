@@ -301,15 +301,12 @@ final class Schema extends AbstractPdoSchema
         FROM "pg_class" AS "tc"
         INNER JOIN "pg_namespace" AS "tcns"
             ON "tcns"."oid" = "tc"."relnamespace"
-        LEFT JOIN pg_rewrite AS rw
-            ON tc.relkind = 'v' AND rw.ev_class = tc.oid AND rw.rulename = '_RETURN'
+        LEFT JOIN "pg_rewrite" AS "rw"
+            ON "tc"."relkind" = 'v' AND "rw"."ev_class" = "tc"."oid" AND "rw"."rulename" = '_RETURN'
         INNER JOIN "pg_index" AS "i"
             ON "i"."indrelid" = "tc"."oid"
-                OR rw.ev_action IS NOT NULL
-                AND (SELECT regexp_matches(
-                    rw.ev_action,
-                    '{TARGETENTRY .*? :resorigtbl ' || "i"."indrelid" || ' :resorigcol ' || "i"."indkey"[0] || ' '
-                )) IS NOT NULL
+                OR "rw"."ev_action" IS NOT NULL
+                AND strpos("rw"."ev_action", ':resorigtbl ' || "i"."indrelid" || ' :resorigcol ' || "i"."indkey"[0] || ' ') > 0
         INNER JOIN "pg_class" AS "ic"
             ON "ic"."oid" = "i"."indexrelid"
         INNER JOIN "pg_attribute" AS "ia"
@@ -665,15 +662,22 @@ final class Schema extends AbstractPdoSchema
             LEFT JOIN pg_attrdef ad ON a.attrelid = ad.adrelid AND a.attnum = ad.adnum
             LEFT JOIN pg_type t ON a.atttypid = t.oid
             LEFT JOIN pg_type tb ON (a.attndims > 0 OR t.typcategory='A') AND t.typelem > 0 AND t.typelem = tb.oid
-                                        OR t.typbasetype > 0 AND t.typbasetype = tb.oid
+                OR t.typbasetype > 0 AND t.typbasetype = tb.oid
             LEFT JOIN pg_type td ON t.typndims > 0 AND t.typbasetype > 0 AND tb.typelem = td.oid
             LEFT JOIN pg_namespace d ON d.oid = c.relnamespace
             LEFT JOIN pg_rewrite rw ON c.relkind = 'v' AND rw.ev_class = c.oid AND rw.rulename = '_RETURN'
             LEFT JOIN pg_constraint ct ON (ct.contype = 'p' OR ct.contype = 'u' AND cardinality(ct.conkey) = 1)
-                AND (ct.conrelid = c.oid AND a.attnum = ANY (ct.conkey)
-                OR rw.ev_action IS NOT NULL AND (ARRAY(
-                    SELECT regexp_matches(rw.ev_action, '{TARGETENTRY .*? :resorigtbl (\d+) :resorigcol (\d+) ', 'g')
-                ))[a.attnum:a.attnum] <@ (ct.conrelid::text || ct.conkey::text[]))
+                AND (
+                    ct.conrelid = c.oid AND a.attnum = ANY (ct.conkey)
+                    OR rw.ev_action IS NOT NULL
+                    AND strpos(rw.ev_action, ':resorigtbl ' || ct.conrelid || ' ') > 0
+                    AND regexp_like(
+                        rw.ev_action,
+                        ' :resno ' || a.attnum || ' :resname \S+ :ressortgroupref \d+ :resorigtbl '
+                        || ct.conrelid || ' :resorigcol (?:'
+                        || replace(substr(ct.conkey::text, 2, length(ct.conkey::text) - 2), ',', '|') || ') '
+                    )
+                )
         WHERE
             a.attnum > 0 AND t.typname != '' AND NOT a.attisdropped
             AND c.relname = :tableName
@@ -831,9 +835,13 @@ final class Schema extends AbstractPdoSchema
         INNER JOIN "pg_constraint" AS "c"
             ON "c"."conrelid" = "tc"."oid" AND "a"."attnum" = ANY ("c"."conkey")
                 OR "rw"."ev_action" IS NOT NULL AND "c"."conrelid" != 0
-                AND (ARRAY(
-                    SELECT regexp_matches("rw"."ev_action", '{TARGETENTRY .*? :resorigtbl (\d+) :resorigcol (\d+) ', 'g')
-                ))["a"."attnum":"a"."attnum"] <@ ("c"."conrelid"::text || "c"."conkey"::text[])
+                AND strpos("rw"."ev_action", ':resorigtbl ' || "c"."conrelid" || ' ') > 0
+                AND regexp_like(
+                    "rw"."ev_action",
+                    ' :resno ' || "a"."attnum" || ' :resname \S+ :ressortgroupref \d+ :resorigtbl '
+                    || "c"."conrelid" || ' :resorigcol (?:'
+                    || replace(substr("c"."conkey"::text, 2, length("c"."conkey"::text) - 2), ',', '|') || ') '
+                )
         LEFT JOIN "pg_class" AS "ftc"
             ON "ftc"."oid" = "c"."confrelid"
         LEFT JOIN "pg_namespace" AS "ftcns"
