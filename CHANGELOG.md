@@ -23,6 +23,7 @@
 - New #373: Override `QueryBuilder::prepareBinary()` method (@Tigrov)
 - Chg #375: Update `QueryBuilder` constructor (@Tigrov)
 - Enh #374: Use `ColumnDefinitionBuilder` to generate table column SQL representation (@Tigrov)
+- Enh #378: Improve loading schemas of views (@Tigrov)
 
 ## 1.3.0 March 21, 2024
 
