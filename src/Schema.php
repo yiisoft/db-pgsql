@@ -669,7 +669,7 @@ final class Schema extends AbstractPdoSchema
             LEFT JOIN pg_constraint ct ON (ct.contype = 'p' OR ct.contype = 'u' AND cardinality(ct.conkey) = 1)
                 AND (
                     ct.conrelid = c.oid AND a.attnum = ANY (ct.conkey)
-                    OR rw.ev_action IS NOT NULL
+                    OR rw.ev_action IS NOT NULL AND ct.conrelid != 0
                     AND strpos(rw.ev_action, ':resorigtbl ' || ct.conrelid || ' ') > 0
                     AND rw.ev_action ~ ('.* :resno ' || a.attnum || ' :resname \S+ :ressortgroupref \d+ :resorigtbl '
                         || ct.conrelid || ' :resorigcol (?:'
