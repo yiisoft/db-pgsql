@@ -5,8 +5,6 @@ declare(strict_types=1);
 namespace Yiisoft\Db\Pgsql;
 
 use Yiisoft\Db\Connection\ServerInfoInterface;
-use Yiisoft\Db\Constant\ColumnType;
-use Yiisoft\Db\Constant\PseudoType;
 use Yiisoft\Db\Pgsql\Column\ColumnDefinitionBuilder;
 use Yiisoft\Db\QueryBuilder\AbstractQueryBuilder;
 use Yiisoft\Db\Schema\QuoterInterface;
