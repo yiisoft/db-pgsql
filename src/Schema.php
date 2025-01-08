@@ -19,7 +19,6 @@ use Yiisoft\Db\Exception\NotSupportedException;
 use Yiisoft\Db\Helper\DbArrayHelper;
 use Yiisoft\Db\Pgsql\Column\ColumnFactory;
 use Yiisoft\Db\Pgsql\Column\SequenceColumnSchemaInterface;
-use Yiisoft\Db\Schema\Builder\ColumnInterface;
 use Yiisoft\Db\Schema\Column\ColumnFactoryInterface;
 use Yiisoft\Db\Schema\Column\ColumnSchemaInterface;
 use Yiisoft\Db\Schema\TableSchemaInterface;
@@ -92,20 +91,6 @@ final class Schema extends AbstractPdoSchema
      * @var string|null The default schema used for the current session.
      */
     protected string|null $defaultSchema = 'public';
-
-    /**
-     * @var string|string[] Character used to quote schema, table, etc. names.
-     *
-     * An array of 2 characters can be used in case starting and ending characters are different.
-     */
-    protected string|array $tableQuoteCharacter = '"';
-
-    /** @deprecated Use {@see ColumnBuilder} instead. Will be removed in 2.0. */
-    public function createColumn(string $type, array|int|string $length = null): ColumnInterface
-    {
-        /** @psalm-suppress DeprecatedClass */
-        return new Column($type, $length);
-    }
 
     public function getColumnFactory(): ColumnFactoryInterface
     {
