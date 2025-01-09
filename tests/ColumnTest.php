@@ -11,20 +11,20 @@ use Yiisoft\Db\Exception\InvalidConfigException;
 use Yiisoft\Db\Expression\ArrayExpression;
 use Yiisoft\Db\Expression\Expression;
 use Yiisoft\Db\Expression\JsonExpression;
-use Yiisoft\Db\Pgsql\Column\ArrayColumnSchema;
-use Yiisoft\Db\Pgsql\Column\BigIntColumnSchema;
-use Yiisoft\Db\Pgsql\Column\BinaryColumnSchema;
-use Yiisoft\Db\Pgsql\Column\BitColumnSchema;
-use Yiisoft\Db\Pgsql\Column\BooleanColumnSchema;
+use Yiisoft\Db\Pgsql\Column\ArrayColumn;
+use Yiisoft\Db\Pgsql\Column\BigIntColumn;
+use Yiisoft\Db\Pgsql\Column\BinaryColumn;
+use Yiisoft\Db\Pgsql\Column\BitColumn;
+use Yiisoft\Db\Pgsql\Column\BooleanColumn;
 use Yiisoft\Db\Pgsql\Column\ColumnBuilder;
-use Yiisoft\Db\Pgsql\Column\IntegerColumnSchema;
+use Yiisoft\Db\Pgsql\Column\IntegerColumn;
 use Yiisoft\Db\Pgsql\Tests\Support\TestTrait;
 use Yiisoft\Db\Query\Query;
-use Yiisoft\Db\Schema\Column\ColumnSchemaInterface;
-use Yiisoft\Db\Schema\Column\DoubleColumnSchema;
-use Yiisoft\Db\Schema\Column\JsonColumnSchema;
-use Yiisoft\Db\Schema\Column\StringColumnSchema;
-use Yiisoft\Db\Tests\Common\CommonColumnSchemaTest;
+use Yiisoft\Db\Schema\Column\ColumnInterface;
+use Yiisoft\Db\Schema\Column\DoubleColumn;
+use Yiisoft\Db\Schema\Column\JsonColumn;
+use Yiisoft\Db\Schema\Column\StringColumn;
+use Yiisoft\Db\Tests\Common\CommonColumnTest;
 
 use function stream_get_contents;
 
@@ -33,7 +33,7 @@ use function stream_get_contents;
  *
  * @psalm-suppress PropertyNotSetInConstructor
  */
-final class ColumnSchemaTest extends CommonColumnSchemaTest
+final class ColumnTest extends CommonColumnTest
 {
     use TestTrait;
 
@@ -281,45 +281,45 @@ final class ColumnSchemaTest extends CommonColumnSchemaTest
         $db->close();
     }
 
-    public function testColumnSchemaInstance()
+    public function testColumnInstance()
     {
         $db = $this->getConnection(true);
         $schema = $db->getSchema();
         $tableSchema = $schema->getTableSchema('type');
 
-        $this->assertInstanceOf(IntegerColumnSchema::class, $tableSchema->getColumn('int_col'));
-        $this->assertInstanceOf(StringColumnSchema::class, $tableSchema->getColumn('char_col'));
-        $this->assertInstanceOf(DoubleColumnSchema::class, $tableSchema->getColumn('float_col'));
-        $this->assertInstanceOf(BinaryColumnSchema::class, $tableSchema->getColumn('blob_col'));
-        $this->assertInstanceOf(BooleanColumnSchema::class, $tableSchema->getColumn('bool_col'));
-        $this->assertInstanceOf(BitColumnSchema::class, $tableSchema->getColumn('bit_col'));
-        $this->assertInstanceOf(ArrayColumnSchema::class, $tableSchema->getColumn('intarray_col'));
-        $this->assertInstanceOf(IntegerColumnSchema::class, $tableSchema->getColumn('intarray_col')->getColumn());
-        $this->assertInstanceOf(JsonColumnSchema::class, $tableSchema->getColumn('json_col'));
+        $this->assertInstanceOf(IntegerColumn::class, $tableSchema->getColumn('int_col'));
+        $this->assertInstanceOf(StringColumn::class, $tableSchema->getColumn('char_col'));
+        $this->assertInstanceOf(DoubleColumn::class, $tableSchema->getColumn('float_col'));
+        $this->assertInstanceOf(BinaryColumn::class, $tableSchema->getColumn('blob_col'));
+        $this->assertInstanceOf(BooleanColumn::class, $tableSchema->getColumn('bool_col'));
+        $this->assertInstanceOf(BitColumn::class, $tableSchema->getColumn('bit_col'));
+        $this->assertInstanceOf(ArrayColumn::class, $tableSchema->getColumn('intarray_col'));
+        $this->assertInstanceOf(IntegerColumn::class, $tableSchema->getColumn('intarray_col')->getColumn());
+        $this->assertInstanceOf(JsonColumn::class, $tableSchema->getColumn('json_col'));
 
         $db->close();
     }
 
-    /** @dataProvider \Yiisoft\Db\Pgsql\Tests\Provider\ColumnSchemaProvider::predefinedTypes */
+    /** @dataProvider \Yiisoft\Db\Pgsql\Tests\Provider\ColumnProvider::predefinedTypes */
     public function testPredefinedType(string $className, string $type, string $phpType)
     {
         parent::testPredefinedType($className, $type, $phpType);
     }
 
-    /** @dataProvider \Yiisoft\Db\Pgsql\Tests\Provider\ColumnSchemaProvider::dbTypecastColumns */
+    /** @dataProvider \Yiisoft\Db\Pgsql\Tests\Provider\ColumnProvider::dbTypecastColumns */
     public function testDbTypecastColumns(string $className, array $values)
     {
         parent::testDbTypecastColumns($className, $values);
     }
 
-    /** @dataProvider \Yiisoft\Db\Pgsql\Tests\Provider\ColumnSchemaProvider::phpTypecastColumns */
+    /** @dataProvider \Yiisoft\Db\Pgsql\Tests\Provider\ColumnProvider::phpTypecastColumns */
     public function testPhpTypecastColumns(string $className, array $values)
     {
         parent::testPhpTypecastColumns($className, $values);
     }
 
-    /** @dataProvider \Yiisoft\Db\Pgsql\Tests\Provider\ColumnSchemaProvider::phpTypecastArrayColumns */
-    public function testPhpTypecastArrayColumnSchema(ColumnSchemaInterface $column, array $values): void
+    /** @dataProvider \Yiisoft\Db\Pgsql\Tests\Provider\ColumnProvider::phpTypecastArrayColumns */
+    public function testPhpTypecastArrayColumn(ColumnInterface $column, array $values): void
     {
         $arrayCol = ColumnBuilder::array($column);
 
@@ -329,9 +329,9 @@ final class ColumnSchemaTest extends CommonColumnSchemaTest
         }
     }
 
-    public function testIntegerColumnSchema()
+    public function testIntegerColumn()
     {
-        $intCol = new IntegerColumnSchema();
+        $intCol = new IntegerColumn();
 
         $this->assertNull($intCol->getSequenceName());
         $this->assertSame($intCol, $intCol->sequenceName('int_seq'));
@@ -342,9 +342,9 @@ final class ColumnSchemaTest extends CommonColumnSchemaTest
         $this->assertNull($intCol->getSequenceName());
     }
 
-    public function testBigIntColumnSchema()
+    public function testBigIntColumn()
     {
-        $bigintCol = new BigIntColumnSchema();
+        $bigintCol = new BigIntColumn();
 
         $this->assertNull($bigintCol->getSequenceName());
         $this->assertSame($bigintCol, $bigintCol->sequenceName('bigint_seq'));

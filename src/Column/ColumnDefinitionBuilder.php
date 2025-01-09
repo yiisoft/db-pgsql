@@ -6,7 +6,7 @@ namespace Yiisoft\Db\Pgsql\Column;
 
 use Yiisoft\Db\Constant\ColumnType;
 use Yiisoft\Db\QueryBuilder\AbstractColumnDefinitionBuilder;
-use Yiisoft\Db\Schema\Column\ColumnSchemaInterface;
+use Yiisoft\Db\Schema\Column\ColumnInterface;
 
 use function version_compare;
 
@@ -35,7 +35,7 @@ final class ColumnDefinitionBuilder extends AbstractColumnDefinitionBuilder
         'numeric',
     ];
 
-    public function build(ColumnSchemaInterface $column): string
+    public function build(ColumnInterface $column): string
     {
         return $this->buildType($column)
             . $this->buildNotNull($column)
@@ -47,22 +47,22 @@ final class ColumnDefinitionBuilder extends AbstractColumnDefinitionBuilder
             . $this->buildExtra($column);
     }
 
-    public function buildAlter(ColumnSchemaInterface $column): string
+    public function buildAlter(ColumnInterface $column): string
     {
         return $this->buildType($column)
             . $this->buildExtra($column);
     }
 
-    protected function buildType(ColumnSchemaInterface $column): string
+    protected function buildType(ColumnInterface $column): string
     {
-        if ($column instanceof \Yiisoft\Db\Schema\Column\ArrayColumnSchema) {
+        if ($column instanceof \Yiisoft\Db\Schema\Column\ArrayColumn) {
             return $this->buildType($column->getColumn()) . str_repeat('[]', $column->getDimension());
         }
 
         return parent::buildType($column);
     }
 
-    protected function getDbType(ColumnSchemaInterface $column): string
+    protected function getDbType(ColumnInterface $column): string
     {
         /** @psalm-suppress DocblockTypeContradiction */
         return $column->getDbType() ?? match ($column->getType()) {

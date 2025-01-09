@@ -8,7 +8,7 @@ use Yiisoft\Db\Constant\ColumnType;
 use Yiisoft\Db\Constraint\ForeignKeyConstraint;
 use Yiisoft\Db\Expression\Expression;
 use Yiisoft\Db\Schema\Column\AbstractColumnFactory;
-use Yiisoft\Db\Schema\Column\ColumnSchemaInterface;
+use Yiisoft\Db\Schema\Column\ColumnInterface;
 
 use function preg_replace;
 use function str_starts_with;
@@ -20,8 +20,8 @@ use const PHP_INT_SIZE;
  * @psalm-type ColumnInfo = array{
  *     auto_increment?: bool|string,
  *     check?: string|null,
- *     column?: ColumnSchemaInterface,
- *     columns?: array<string, ColumnSchemaInterface>,
+ *     column?: ColumnInterface,
+ *     columns?: array<string, ColumnInterface>,
  *     comment?: string|null,
  *     computed?: bool|string,
  *     db_type?: string|null,
@@ -119,11 +119,11 @@ final class ColumnFactory extends AbstractColumnFactory
         'jsonb' => ColumnType::JSON,
     ];
 
-    public function fromType(string $type, array $info = []): ColumnSchemaInterface
+    public function fromType(string $type, array $info = []): ColumnInterface
     {
         $column = parent::fromType($type, $info);
 
-        if ($column instanceof StructuredColumnSchema) {
+        if ($column instanceof StructuredColumn) {
             /** @psalm-var array|null $defaultValue */
             $defaultValue = $column->getDefaultValue();
 
@@ -142,22 +142,22 @@ final class ColumnFactory extends AbstractColumnFactory
     protected function getColumnClass(string $type, array $info = []): string
     {
         return match ($type) {
-            ColumnType::BOOLEAN => BooleanColumnSchema::class,
-            ColumnType::BIT => BitColumnSchema::class,
-            ColumnType::TINYINT => IntegerColumnSchema::class,
-            ColumnType::SMALLINT => IntegerColumnSchema::class,
-            ColumnType::INTEGER => IntegerColumnSchema::class,
+            ColumnType::BOOLEAN => BooleanColumn::class,
+            ColumnType::BIT => BitColumn::class,
+            ColumnType::TINYINT => IntegerColumn::class,
+            ColumnType::SMALLINT => IntegerColumn::class,
+            ColumnType::INTEGER => IntegerColumn::class,
             ColumnType::BIGINT => PHP_INT_SIZE !== 8
-                ? BigIntColumnSchema::class
-                : IntegerColumnSchema::class,
-            ColumnType::BINARY => BinaryColumnSchema::class,
-            ColumnType::ARRAY => ArrayColumnSchema::class,
-            ColumnType::STRUCTURED => StructuredColumnSchema::class,
+                ? BigIntColumn::class
+                : IntegerColumn::class,
+            ColumnType::BINARY => BinaryColumn::class,
+            ColumnType::ARRAY => ArrayColumn::class,
+            ColumnType::STRUCTURED => StructuredColumn::class,
             default => parent::getColumnClass($type, $info),
         };
     }
 
-    protected function normalizeNotNullDefaultValue(string $defaultValue, ColumnSchemaInterface $column): mixed
+    protected function normalizeNotNullDefaultValue(string $defaultValue, ColumnInterface $column): mixed
     {
         $value = preg_replace("/::[^:']+$/", '$1', $defaultValue);
 

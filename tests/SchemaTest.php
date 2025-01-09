@@ -61,7 +61,7 @@ final class SchemaTest extends CommonSchemaTest
      *
      * @throws Exception
      */
-    public function testColumnSchema(array $columns, string $tableName): void
+    public function testColumns(array $columns, string $tableName): void
     {
         $db = $this->getConnection();
 
@@ -71,7 +71,7 @@ final class SchemaTest extends CommonSchemaTest
             }
         }
 
-        $this->columnSchema($columns, $tableName);
+        $this->assertTableColumns($columns, $tableName);
 
         $db->close();
     }
@@ -81,7 +81,7 @@ final class SchemaTest extends CommonSchemaTest
      * @throws InvalidConfigException
      * @throws Throwable
      */
-    public function testColumnSchemaTypeMapNoExist(): void
+    public function testColumnTypeMapNoExist(): void
     {
         $db = $this->getConnection();
 
@@ -449,10 +449,10 @@ final class SchemaTest extends CommonSchemaTest
 
         $this->assertNotNull($tableSchema);
 
-        $columnSchema = $tableSchema->getColumn('timestamp');
+        $column = $tableSchema->getColumn('timestamp');
 
-        $this->assertNotNull($columnSchema);
-        $this->assertNull($columnSchema->getDefaultValue());
+        $this->assertNotNull($column);
+        $this->assertNull($column->getDefaultValue());
 
         $db->close();
     }
@@ -574,14 +574,14 @@ final class SchemaTest extends CommonSchemaTest
     }
 
     /** @dataProvider \Yiisoft\Db\Pgsql\Tests\Provider\StructuredTypeProvider::columns */
-    public function testStructuredTypeColumnSchema(array $columns, string $tableName): void
+    public function testStructuredTypeColumn(array $columns, string $tableName): void
     {
-        $this->testStructuredTypeColumnSchemaRecursive($columns, $tableName);
+        $this->testStructuredTypeColumnRecursive($columns, $tableName);
     }
 
-    private function testStructuredTypeColumnSchemaRecursive(array $columns, string $tableName): void
+    private function testStructuredTypeColumnRecursive(array $columns, string $tableName): void
     {
-        $this->columnSchema($columns, $tableName);
+        $this->assertTableColumns($columns, $tableName);
 
         $db = $this->getConnection(true);
         $table = $db->getTableSchema($tableName, true);
@@ -592,7 +592,7 @@ final class SchemaTest extends CommonSchemaTest
                     isset($columns[$name]['columns']),
                     "Columns of structured type `$name` do not exist, dbType is `{$column->getDbType()}`."
                 );
-                $this->testStructuredTypeColumnSchemaRecursive($columns[$name]['columns'], $column->getDbType());
+                $this->testStructuredTypeColumnRecursive($columns[$name]['columns'], $column->getDbType());
             }
         }
 

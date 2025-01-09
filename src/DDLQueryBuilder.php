@@ -7,7 +7,7 @@ namespace Yiisoft\Db\Pgsql;
 use Throwable;
 use Yiisoft\Db\Exception\NotSupportedException;
 use Yiisoft\Db\QueryBuilder\AbstractDDLQueryBuilder;
-use Yiisoft\Db\Schema\Column\ColumnSchemaInterface;
+use Yiisoft\Db\Schema\Column\ColumnInterface;
 
 use function array_diff;
 use function explode;
@@ -27,7 +27,7 @@ final class DDLQueryBuilder extends AbstractDDLQueryBuilder
         throw new NotSupportedException(__METHOD__ . ' is not supported by PostgreSQL.');
     }
 
-    public function alterColumn(string $table, string $column, ColumnSchemaInterface|string $type): string
+    public function alterColumn(string $table, string $column, ColumnInterface|string $type): string
     {
         $columnName = $this->quoter->quoteColumnName($column);
         $tableName = $this->quoter->quoteTableName($table);
