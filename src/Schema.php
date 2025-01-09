@@ -18,9 +18,9 @@ use Yiisoft\Db\Exception\InvalidConfigException;
 use Yiisoft\Db\Exception\NotSupportedException;
 use Yiisoft\Db\Helper\DbArrayHelper;
 use Yiisoft\Db\Pgsql\Column\ColumnFactory;
-use Yiisoft\Db\Pgsql\Column\SequenceColumnSchemaInterface;
+use Yiisoft\Db\Pgsql\Column\SequenceColumnInterface;
 use Yiisoft\Db\Schema\Column\ColumnFactoryInterface;
-use Yiisoft\Db\Schema\Column\ColumnSchemaInterface;
+use Yiisoft\Db\Schema\Column\ColumnInterface;
 use Yiisoft\Db\Schema\TableSchemaInterface;
 
 use function array_change_key_case;
@@ -80,7 +80,7 @@ use function substr;
  * }
  * @psalm-type CreateInfo = array{
  *   dimension?: int|string,
- *   columns?: array<string, ColumnSchemaInterface>
+ *   columns?: array<string, ColumnInterface>
  * }
  *
  * @psalm-suppress MissingClassConstType
@@ -688,14 +688,14 @@ final class Schema extends AbstractPdoSchema
             $info['table'] = $tableName;
 
             /** @psalm-var ColumnArray $info */
-            $column = $this->loadColumnSchema($info);
+            $column = $this->loadColumn($info);
 
             $table->column($info['column_name'], $column);
 
             if ($column->isPrimaryKey()) {
                 $table->primaryKey($info['column_name']);
 
-                if ($column instanceof SequenceColumnSchemaInterface && $table->getSequenceName() === null) {
+                if ($column instanceof SequenceColumnInterface && $table->getSequenceName() === null) {
                     $table->sequenceName($column->getSequenceName());
                 }
             }
@@ -705,13 +705,13 @@ final class Schema extends AbstractPdoSchema
     }
 
     /**
-     * Loads the column information into a {@see ColumnSchemaInterface} object.
+     * Loads the column information into a {@see ColumnInterface} object.
      *
      * @psalm-param ColumnArray $info Column information.
      *
-     * @return ColumnSchemaInterface The column schema object.
+     * @return ColumnInterface The column object.
      */
-    private function loadColumnSchema(array $info): ColumnSchemaInterface
+    private function loadColumn(array $info): ColumnInterface
     {
         $columnFactory = $this->getColumnFactory();
         $dbType = $info['data_type'];

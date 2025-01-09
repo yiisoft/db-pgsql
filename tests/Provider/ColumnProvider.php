@@ -5,23 +5,23 @@ declare(strict_types=1);
 namespace Yiisoft\Db\Pgsql\Tests\Provider;
 
 use Yiisoft\Db\Expression\Expression;
-use Yiisoft\Db\Pgsql\Column\BigIntColumnSchema;
-use Yiisoft\Db\Pgsql\Column\BinaryColumnSchema;
-use Yiisoft\Db\Pgsql\Column\BitColumnSchema;
-use Yiisoft\Db\Pgsql\Column\BooleanColumnSchema;
+use Yiisoft\Db\Pgsql\Column\BigIntColumn;
+use Yiisoft\Db\Pgsql\Column\BinaryColumn;
+use Yiisoft\Db\Pgsql\Column\BitColumn;
+use Yiisoft\Db\Pgsql\Column\BooleanColumn;
 use Yiisoft\Db\Pgsql\Column\ColumnBuilder;
-use Yiisoft\Db\Pgsql\Column\IntegerColumnSchema;
+use Yiisoft\Db\Pgsql\Column\IntegerColumn;
 
-class ColumnSchemaProvider extends \Yiisoft\Db\Tests\Provider\ColumnSchemaProvider
+class ColumnProvider extends \Yiisoft\Db\Tests\Provider\ColumnProvider
 {
     public static function predefinedTypes(): array
     {
         $values = parent::predefinedTypes();
-        $values['integer'][0] = IntegerColumnSchema::class;
-        $values['bigint'][0] = BigIntColumnSchema::class;
-        $values['binary'][0] = BinaryColumnSchema::class;
-        $values['boolean'][0] = BooleanColumnSchema::class;
-        $values['bit'][0] = BitColumnSchema::class;
+        $values['integer'][0] = IntegerColumn::class;
+        $values['bigint'][0] = BigIntColumn::class;
+        $values['binary'][0] = BinaryColumn::class;
+        $values['boolean'][0] = BooleanColumn::class;
+        $values['bit'][0] = BitColumn::class;
 
         return $values;
     }
@@ -29,12 +29,12 @@ class ColumnSchemaProvider extends \Yiisoft\Db\Tests\Provider\ColumnSchemaProvid
     public static function dbTypecastColumns(): array
     {
         $values = parent::dbTypecastColumns();
-        $values['integer'][0] = IntegerColumnSchema::class;
-        $values['bigint'][0] = BigIntColumnSchema::class;
-        $values['binary'][0] = BinaryColumnSchema::class;
-        $values['boolean'][0] = BooleanColumnSchema::class;
+        $values['integer'][0] = IntegerColumn::class;
+        $values['bigint'][0] = BigIntColumn::class;
+        $values['binary'][0] = BinaryColumn::class;
+        $values['boolean'][0] = BooleanColumn::class;
         $values['bit'] = [
-            BitColumnSchema::class,
+            BitColumn::class,
             [
                 [null, null],
                 [null, ''],
@@ -53,12 +53,12 @@ class ColumnSchemaProvider extends \Yiisoft\Db\Tests\Provider\ColumnSchemaProvid
     public static function phpTypecastColumns(): array
     {
         $values = parent::phpTypecastColumns();
-        $values['integer'][0] = IntegerColumnSchema::class;
-        $values['bigint'][0] = BigIntColumnSchema::class;
-        $values['binary'][0] = BinaryColumnSchema::class;
+        $values['integer'][0] = IntegerColumn::class;
+        $values['bigint'][0] = BigIntColumn::class;
+        $values['binary'][0] = BinaryColumn::class;
         $values['binary'][1][] = ["\x10\x11\x12", '\x101112'];
         $values['boolean'] = [
-            BooleanColumnSchema::class,
+            BooleanColumn::class,
             [
                 [null, null],
                 [true, true],
@@ -70,7 +70,7 @@ class ColumnSchemaProvider extends \Yiisoft\Db\Tests\Provider\ColumnSchemaProvid
             ],
         ];
         $values['bit'] = [
-            BitColumnSchema::class,
+            BitColumn::class,
             [
                 [null, null],
                 [0b1001, '1001'],
@@ -94,7 +94,7 @@ class ColumnSchemaProvider extends \Yiisoft\Db\Tests\Provider\ColumnSchemaProvid
                 ],
             ],
             [
-                new BigIntColumnSchema(),
+                new BigIntColumn(),
                 [
                     [1, ['1', '2', '9223372036854775807'], '{1,2,9223372036854775807}'],
                     [2, [['1', '2'], ['9223372036854775807']], '{{1,2},{9223372036854775807}}'],

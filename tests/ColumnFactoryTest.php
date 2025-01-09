@@ -6,7 +6,7 @@ namespace Yiisoft\Db\Pgsql\Tests;
 
 use PHPUnit\Framework\Attributes\DataProviderExternal;
 use Yiisoft\Db\Constant\ColumnType;
-use Yiisoft\Db\Pgsql\Column\ArrayColumnSchema;
+use Yiisoft\Db\Pgsql\Column\ArrayColumn;
 use Yiisoft\Db\Pgsql\Tests\Provider\ColumnFactoryProvider;
 use Yiisoft\Db\Pgsql\Tests\Support\TestTrait;
 use Yiisoft\Db\Tests\AbstractColumnFactoryTest;
@@ -29,7 +29,7 @@ final class ColumnFactoryTest extends AbstractColumnFactoryTest
         // For array type
         $column = $columnFactory->fromType(ColumnType::ARRAY, ['dbType' => $dbType]);
 
-        $this->assertInstanceOf(ArrayColumnSchema::class, $column);
+        $this->assertInstanceOf(ArrayColumn::class, $column);
         $this->assertInstanceOf($expectedInstanceOf, $column->getColumn());
         $this->assertSame($expectedType, $column->getColumn()->getType());
         $this->assertSame($dbType, $column->getColumn()->getDbType());
@@ -68,7 +68,7 @@ final class ColumnFactoryTest extends AbstractColumnFactoryTest
         // For array type
         $column = $columnFactory->fromType(ColumnType::ARRAY, ['column' => $columnFactory->fromType($type)]);
 
-        $this->assertInstanceOf(ArrayColumnSchema::class, $column);
+        $this->assertInstanceOf(ArrayColumn::class, $column);
         $this->assertInstanceOf($expectedInstanceOf, $column->getColumn());
         $this->assertSame($expectedType, $column->getColumn()->getType());
 
