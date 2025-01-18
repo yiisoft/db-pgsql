@@ -139,6 +139,11 @@ final class ColumnFactory extends AbstractColumnFactory
         return $column;
     }
 
+    protected function columnDefinitionParser(): ColumnDefinitionParser
+    {
+        return new ColumnDefinitionParser();
+    }
+
     protected function getColumnClass(string $type, array $info = []): string
     {
         return match ($type) {
