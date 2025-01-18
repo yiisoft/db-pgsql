@@ -14,9 +14,9 @@ class ColumnDefinitionParserProvider extends \Yiisoft\Db\Tests\Provider\ColumnDe
             ['character varying(126)', ['type' => 'character varying', 'size' => 126]],
             ['bit varying(8)', ['type' => 'bit varying', 'size' => 8]],
             ['timestamp without time zone', ['type' => 'timestamp without time zone']],
-            ['timestamp with time zone', ['type' => 'timestamp with time zone']],
+            ['timestamp(3) with time zone', ['type' => 'timestamp(3) with time zone', 'size' => 3]],
             ['time without time zone', ['type' => 'time without time zone']],
-            ['time with time zone', ['type' => 'time with time zone']],
+            ['time (3) with time zone', ['type' => 'time (3) with time zone', 'size' => 3]],
         ];
     }
 }
