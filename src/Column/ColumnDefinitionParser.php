@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Yiisoft\Db\Pgsql\Column;
 
 use function preg_match;
+use function preg_replace;
 use function strlen;
 use function strtolower;
 use function substr;
@@ -26,7 +27,7 @@ final class ColumnDefinitionParser extends \Yiisoft\Db\Syntax\ColumnDefinitionPa
     {
         preg_match(self::TYPE_PATTERN, $definition, $matches);
 
-        $type = strtolower($matches[3] ?? $matches[1]);
+        $type = strtolower($matches[3] ?? preg_replace('/\s*\(\d+\)/', '', $matches[1]));
         $info = ['type' => $type];
 
         $typeDetails = $matches[4] ?? $matches[2] ?? '';
