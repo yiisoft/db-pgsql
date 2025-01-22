@@ -636,7 +636,14 @@ final class QueryBuilderProvider extends \Yiisoft\Db\Tests\Provider\QueryBuilder
             $values['uuidPrimaryKey()'][0] = "uuid PRIMARY KEY DEFAULT $uuidExpression";
         }
 
-        return $values;
+        return [
+            ...$values,
+            ['character varying(255)', 'character varying(255)'],
+            ['timestamp(5)', 'timestamp (5) without time zone'],
+            ['timestamptz', 'timestamp with time zone'],
+            ['time(3)', 'time(3) without time zone'],
+            ['timetz(0)', 'time(0) with time zone'],
+        ];
     }
 
     public static function prepareParam(): array

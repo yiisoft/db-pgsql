@@ -64,30 +64,39 @@ final class ColumnDefinitionBuilder extends AbstractColumnDefinitionBuilder
 
     protected function getDbType(ColumnInterface $column): string
     {
+        $dbType = $column->getDbType();
+
         /** @psalm-suppress DocblockTypeContradiction */
-        return $column->getDbType() ?? match ($column->getType()) {
-            ColumnType::BOOLEAN => 'boolean',
-            ColumnType::BIT => 'varbit',
-            ColumnType::TINYINT => $column->isAutoIncrement() ? 'smallserial' : 'smallint',
-            ColumnType::SMALLINT => $column->isAutoIncrement() ? 'smallserial' : 'smallint',
-            ColumnType::INTEGER => $column->isAutoIncrement() ? 'serial' : 'integer',
-            ColumnType::BIGINT => $column->isAutoIncrement() ? 'bigserial' : 'bigint',
-            ColumnType::FLOAT => 'real',
-            ColumnType::DOUBLE => 'double precision',
-            ColumnType::DECIMAL => 'numeric',
-            ColumnType::MONEY => 'money',
-            ColumnType::CHAR => 'char',
-            ColumnType::STRING => 'varchar(' . ($column->getSize() ?? 255) . ')',
-            ColumnType::TEXT => 'text',
-            ColumnType::BINARY => 'bytea',
-            ColumnType::UUID => 'uuid',
-            ColumnType::DATETIME => 'timestamp',
-            ColumnType::TIMESTAMP => 'timestamp',
-            ColumnType::DATE => 'date',
-            ColumnType::TIME => 'time',
-            ColumnType::STRUCTURED => 'jsonb',
-            ColumnType::JSON => 'jsonb',
-            default => 'varchar',
+        return match ($dbType) {
+            default => $dbType,
+            null => match ($column->getType()) {
+                ColumnType::BOOLEAN => 'boolean',
+                ColumnType::BIT => 'varbit',
+                ColumnType::TINYINT => $column->isAutoIncrement() ? 'smallserial' : 'smallint',
+                ColumnType::SMALLINT => $column->isAutoIncrement() ? 'smallserial' : 'smallint',
+                ColumnType::INTEGER => $column->isAutoIncrement() ? 'serial' : 'integer',
+                ColumnType::BIGINT => $column->isAutoIncrement() ? 'bigserial' : 'bigint',
+                ColumnType::FLOAT => 'real',
+                ColumnType::DOUBLE => 'double precision',
+                ColumnType::DECIMAL => 'numeric',
+                ColumnType::MONEY => 'money',
+                ColumnType::CHAR => 'char',
+                ColumnType::STRING => 'varchar(' . ($column->getSize() ?? 255) . ')',
+                ColumnType::TEXT => 'text',
+                ColumnType::BINARY => 'bytea',
+                ColumnType::UUID => 'uuid',
+                ColumnType::DATETIME => 'timestamp',
+                ColumnType::TIMESTAMP => 'timestamp',
+                ColumnType::DATE => 'date',
+                ColumnType::TIME => 'time',
+                ColumnType::STRUCTURED => 'jsonb',
+                ColumnType::JSON => 'jsonb',
+                default => 'varchar',
+            },
+            'timestamp without time zone' => 'timestamp',
+            'timestamp with time zone' => 'timestamptz',
+            'time without time zone' => 'time',
+            'time with time zone' => 'timetz',
         };
     }
 
