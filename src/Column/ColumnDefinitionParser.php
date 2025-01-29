@@ -9,19 +9,20 @@ use function preg_replace;
 use function strlen;
 use function strtolower;
 use function substr;
+use function substr_count;
 
 /**
  * Parses column definition string. For example, `string(255)` or `int unsigned`.
  */
 final class ColumnDefinitionParser extends \Yiisoft\Db\Syntax\ColumnDefinitionParser
 {
-    private const TYPE_PATTERN = '/^('
+    private const TYPE_PATTERN = '/^(?:('
         . 'time(?:stamp)?\s*(?:\((\d+)\))? with(?:out)? time zone'
         . ')|('
         . '(?:character|bit) varying'
         . '|double precision'
         . '|\w*'
-        . ')(?:\(([^)]+)\))?\s*/i';
+        . ')(?:\(([^)]+)\))?)(\[[\d\[\]]*\])?\s*/i';
 
     public function parse(string $definition): array
     {
@@ -38,6 +39,10 @@ final class ColumnDefinitionParser extends \Yiisoft\Db\Syntax\ColumnDefinitionPa
             } else {
                 $info += $this->sizeInfo($typeDetails);
             }
+        }
+
+        if (isset($matches[5])) {
+            $info['dimension'] = substr_count($matches[5], '[');
         }
 
         $extra = substr($definition, strlen($matches[0]));
