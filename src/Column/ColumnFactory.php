@@ -168,7 +168,7 @@ final class ColumnFactory extends AbstractColumnFactory
             return ColumnType::ARRAY;
         }
 
-        return static::TYPE_MAP[$dbType] ?? ColumnType::STRING;
+        return self::TYPE_MAP[$dbType] ?? ColumnType::STRING;
     }
 
     protected function normalizeNotNullDefaultValue(string $defaultValue, ColumnInterface $column): mixed
