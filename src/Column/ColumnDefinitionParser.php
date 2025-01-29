@@ -42,6 +42,7 @@ final class ColumnDefinitionParser extends \Yiisoft\Db\Syntax\ColumnDefinitionPa
         }
 
         if (isset($matches[5])) {
+            /** @psalm-var positive-int */
             $info['dimension'] = substr_count($matches[5], '[');
         }
 
