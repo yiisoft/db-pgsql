@@ -24,6 +24,7 @@ use Yiisoft\Db\Schema\Column\ColumnInterface;
 use Yiisoft\Db\Schema\TableSchemaInterface;
 
 use function array_change_key_case;
+use function array_column;
 use function array_map;
 use function array_unique;
 use function array_values;
@@ -326,7 +327,7 @@ final class Schema extends AbstractPdoSchema
         foreach ($indexes as $name => $index) {
             $ic = (new IndexConstraint())
                 ->name($name)
-                ->columnNames(DbArrayHelper::getColumn($index, 'column_name'))
+                ->columnNames(array_column($index, 'column_name'))
                 ->primary($index[0]['index_is_primary'])
                 ->unique($index[0]['index_is_unique']);
 
@@ -871,7 +872,7 @@ final class Schema extends AbstractPdoSchema
                     case 'p':
                         $result[self::PRIMARY_KEY] = (new Constraint())
                             ->name($name)
-                            ->columnNames(DbArrayHelper::getColumn($constraint, 'column_name'));
+                            ->columnNames(array_column($constraint, 'column_name'));
                         break;
                     case 'f':
                         $onDelete = $actionTypes[$constraint[0]['on_delete']] ?? null;
@@ -880,12 +881,12 @@ final class Schema extends AbstractPdoSchema
                         $result[self::FOREIGN_KEYS][] = (new ForeignKeyConstraint())
                             ->name($name)
                             ->columnNames(array_values(
-                                array_unique(DbArrayHelper::getColumn($constraint, 'column_name'))
+                                array_unique(array_column($constraint, 'column_name'))
                             ))
                             ->foreignSchemaName($constraint[0]['foreign_table_schema'])
                             ->foreignTableName($constraint[0]['foreign_table_name'])
                             ->foreignColumnNames(array_values(
-                                array_unique(DbArrayHelper::getColumn($constraint, 'foreign_column_name'))
+                                array_unique(array_column($constraint, 'foreign_column_name'))
                             ))
                             ->onDelete($onDelete)
                             ->onUpdate($onUpdate);
@@ -893,12 +894,12 @@ final class Schema extends AbstractPdoSchema
                     case 'u':
                         $result[self::UNIQUES][] = (new Constraint())
                             ->name($name)
-                            ->columnNames(DbArrayHelper::getColumn($constraint, 'column_name'));
+                            ->columnNames(array_column($constraint, 'column_name'));
                         break;
                     case 'c':
                         $result[self::CHECKS][] = (new CheckConstraint())
                             ->name($name)
-                            ->columnNames(DbArrayHelper::getColumn($constraint, 'column_name'))
+                            ->columnNames(array_column($constraint, 'column_name'))
                             ->expression($constraint[0]['check_expr']);
                         break;
                 }
