@@ -638,7 +638,9 @@ final class QueryBuilderProvider extends \Yiisoft\Db\Tests\Provider\QueryBuilder
 
         return [
             ...$values,
+            ['int[]', 'int[]'],
             ['character varying(255)', 'character varying(255)'],
+            ['character varying(255)[][]', 'character varying(255)[][]'],
             ['timestamp(5)', 'timestamp (5) without time zone'],
             ['timestamptz', 'timestamp with time zone'],
             ['time(3)', 'time(3) without time zone'],
