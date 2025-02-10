@@ -6,6 +6,8 @@ namespace Yiisoft\Db\Pgsql\Tests\Provider;
 
 use Yiisoft\Db\Expression\ArrayExpression;
 use Yiisoft\Db\Expression\JsonExpression;
+use Yiisoft\Db\Pgsql\Column\ColumnBuilder;
+use Yiisoft\Db\Pgsql\IndexMethod;
 use Yiisoft\Db\Pgsql\Tests\Support\TestTrait;
 
 final class CommandProvider extends \Yiisoft\Db\Tests\Provider\CommandProvider
@@ -89,5 +91,18 @@ final class CommandProvider extends \Yiisoft\Db\Tests\Provider\CommandProvider
                 SQL,
             ],
         ]);
+    }
+
+    public static function createIndex(): array
+    {
+        return [
+            ...parent::createIndex(),
+            [['col1' => ColumnBuilder::integer()], ['col1'], null, IndexMethod::BTREE],
+            [['col1' => ColumnBuilder::integer()], ['col1'], null, IndexMethod::HASH],
+            [['col1' => ColumnBuilder::integer()], ['col1'], null, IndexMethod::BRIN],
+            [['col1' => ColumnBuilder::array()], ['col1'], null, IndexMethod::GIN],
+            [['col1' => 'point'], ['col1'], null, IndexMethod::GIST],
+            [['col1' => 'point'], ['col1'], null, IndexMethod::SPGIST],
+        ];
     }
 }

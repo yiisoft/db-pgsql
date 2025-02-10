@@ -28,6 +28,7 @@
 - Enh #380: Rename `ColumnSchemaInterface` to `ColumnInterface` (@Tigrov)
 - Enh #381, #383: Add `ColumnDefinitionParser` class (@Tigrov)
 - Enh #382: Replace `DbArrayHelper::getColumn()` with `array_column()` (@Tigrov)
+- New #384: Add `IndexMethod` class (@Tigrov)
 
 ## 1.3.0 March 21, 2024
 
