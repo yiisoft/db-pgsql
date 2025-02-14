@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Yiisoft\Db\Pgsql\Column;
 
-use Yiisoft\Db\Schema\Column\ColumnSchemaInterface;
+use Yiisoft\Db\Schema\Column\ColumnInterface;
 
-interface SequenceColumnSchemaInterface extends ColumnSchemaInterface
+interface SequenceColumnInterface extends ColumnInterface
 {
     /**
      * Returns name of an associated sequence if column is auto incremental.

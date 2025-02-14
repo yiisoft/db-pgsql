@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Yiisoft\Db\Pgsql\Column;
 
-trait SequenceColumnSchemaTrait
+trait SequenceColumnTrait
 {
     /**
      * @var string|null Name of an associated sequence if column is auto incremental.

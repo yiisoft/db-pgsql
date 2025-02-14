@@ -18,13 +18,13 @@ use Yiisoft\Db\Exception\InvalidConfigException;
 use Yiisoft\Db\Exception\NotSupportedException;
 use Yiisoft\Db\Helper\DbArrayHelper;
 use Yiisoft\Db\Pgsql\Column\ColumnFactory;
-use Yiisoft\Db\Pgsql\Column\SequenceColumnSchemaInterface;
-use Yiisoft\Db\Schema\Builder\ColumnInterface;
+use Yiisoft\Db\Pgsql\Column\SequenceColumnInterface;
 use Yiisoft\Db\Schema\Column\ColumnFactoryInterface;
-use Yiisoft\Db\Schema\Column\ColumnSchemaInterface;
+use Yiisoft\Db\Schema\Column\ColumnInterface;
 use Yiisoft\Db\Schema\TableSchemaInterface;
 
 use function array_change_key_case;
+use function array_column;
 use function array_map;
 use function array_unique;
 use function array_values;
@@ -81,7 +81,7 @@ use function substr;
  * }
  * @psalm-type CreateInfo = array{
  *   dimension?: int|string,
- *   columns?: array<string, ColumnSchemaInterface>
+ *   columns?: array<string, ColumnInterface>
  * }
  *
  * @psalm-suppress MissingClassConstType
@@ -92,19 +92,6 @@ final class Schema extends AbstractPdoSchema
      * @var string|null The default schema used for the current session.
      */
     protected string|null $defaultSchema = 'public';
-
-    /**
-     * @var string|string[] Character used to quote schema, table, etc. names.
-     *
-     * An array of 2 characters can be used in case starting and ending characters are different.
-     */
-    protected string|array $tableQuoteCharacter = '"';
-
-    /** @deprecated Use {@see ColumnBuilder} instead. Will be removed in 2.0. */
-    public function createColumn(string $type, array|int|string $length = null): ColumnInterface
-    {
-        return new Column($type, $length);
-    }
 
     public function getColumnFactory(): ColumnFactoryInterface
     {
@@ -300,15 +287,12 @@ final class Schema extends AbstractPdoSchema
         FROM "pg_class" AS "tc"
         INNER JOIN "pg_namespace" AS "tcns"
             ON "tcns"."oid" = "tc"."relnamespace"
-        LEFT JOIN pg_rewrite AS rw
-            ON tc.relkind = 'v' AND rw.ev_class = tc.oid AND rw.rulename = '_RETURN'
+        LEFT JOIN "pg_rewrite" AS "rw"
+            ON "tc"."relkind" = 'v' AND "rw"."ev_class" = "tc"."oid" AND "rw"."rulename" = '_RETURN'
         INNER JOIN "pg_index" AS "i"
             ON "i"."indrelid" = "tc"."oid"
-                OR rw.ev_action IS NOT NULL
-                AND (SELECT regexp_matches(
-                    rw.ev_action,
-                    '{TARGETENTRY .*? :resorigtbl ' || "i"."indrelid" || ' :resorigcol ' || "i"."indkey"[0] || ' '
-                )) IS NOT NULL
+                OR "rw"."ev_action" IS NOT NULL
+                AND strpos("rw"."ev_action", ':resorigtbl ' || "i"."indrelid" || ' :resorigcol ' || "i"."indkey"[0] || ' ') > 0
         INNER JOIN "pg_class" AS "ic"
             ON "ic"."oid" = "i"."indexrelid"
         INNER JOIN "pg_attribute" AS "ia"
@@ -343,7 +327,7 @@ final class Schema extends AbstractPdoSchema
         foreach ($indexes as $name => $index) {
             $ic = (new IndexConstraint())
                 ->name($name)
-                ->columnNames(DbArrayHelper::getColumn($index, 'column_name'))
+                ->columnNames(array_column($index, 'column_name'))
                 ->primary($index[0]['index_is_primary'])
                 ->unique($index[0]['index_is_unique']);
 
@@ -664,15 +648,19 @@ final class Schema extends AbstractPdoSchema
             LEFT JOIN pg_attrdef ad ON a.attrelid = ad.adrelid AND a.attnum = ad.adnum
             LEFT JOIN pg_type t ON a.atttypid = t.oid
             LEFT JOIN pg_type tb ON (a.attndims > 0 OR t.typcategory='A') AND t.typelem > 0 AND t.typelem = tb.oid
-                                        OR t.typbasetype > 0 AND t.typbasetype = tb.oid
+                OR t.typbasetype > 0 AND t.typbasetype = tb.oid
             LEFT JOIN pg_type td ON t.typndims > 0 AND t.typbasetype > 0 AND tb.typelem = td.oid
             LEFT JOIN pg_namespace d ON d.oid = c.relnamespace
             LEFT JOIN pg_rewrite rw ON c.relkind = 'v' AND rw.ev_class = c.oid AND rw.rulename = '_RETURN'
             LEFT JOIN pg_constraint ct ON (ct.contype = 'p' OR ct.contype = 'u' AND cardinality(ct.conkey) = 1)
-                AND (ct.conrelid = c.oid AND a.attnum = ANY (ct.conkey)
-                OR rw.ev_action IS NOT NULL AND (ARRAY(
-                    SELECT regexp_matches(rw.ev_action, '{TARGETENTRY .*? :resorigtbl (\d+) :resorigcol (\d+) ', 'g')
-                ))[a.attnum:a.attnum] <@ (ct.conrelid::text || ct.conkey::text[]))
+                AND (
+                    ct.conrelid = c.oid AND a.attnum = ANY (ct.conkey)
+                    OR rw.ev_action IS NOT NULL AND ct.conrelid != 0
+                    AND strpos(rw.ev_action, ':resorigtbl ' || ct.conrelid || ' ') > 0
+                    AND rw.ev_action ~ ('.* :resno ' || a.attnum || ' :resname \S+ :ressortgroupref \d+ :resorigtbl '
+                        || ct.conrelid || ' :resorigcol (?:'
+                        || replace(substr(ct.conkey::text, 2, length(ct.conkey::text) - 2), ',', '|') || ') .*')
+                )
         WHERE
             a.attnum > 0 AND t.typname != '' AND NOT a.attisdropped
             AND c.relname = :tableName
@@ -701,14 +689,14 @@ final class Schema extends AbstractPdoSchema
             $info['table'] = $tableName;
 
             /** @psalm-var ColumnArray $info */
-            $column = $this->loadColumnSchema($info);
+            $column = $this->loadColumn($info);
 
             $table->column($info['column_name'], $column);
 
             if ($column->isPrimaryKey()) {
                 $table->primaryKey($info['column_name']);
 
-                if ($column instanceof SequenceColumnSchemaInterface && $table->getSequenceName() === null) {
+                if ($column instanceof SequenceColumnInterface && $table->getSequenceName() === null) {
                     $table->sequenceName($column->getSequenceName());
                 }
             }
@@ -718,13 +706,13 @@ final class Schema extends AbstractPdoSchema
     }
 
     /**
-     * Loads the column information into a {@see ColumnSchemaInterface} object.
+     * Loads the column information into a {@see ColumnInterface} object.
      *
      * @psalm-param ColumnArray $info Column information.
      *
-     * @return ColumnSchemaInterface The column schema object.
+     * @return ColumnInterface The column object.
      */
-    private function loadColumnSchema(array $info): ColumnSchemaInterface
+    private function loadColumn(array $info): ColumnInterface
     {
         $columnFactory = $this->getColumnFactory();
         $dbType = $info['data_type'];
@@ -830,9 +818,10 @@ final class Schema extends AbstractPdoSchema
         INNER JOIN "pg_constraint" AS "c"
             ON "c"."conrelid" = "tc"."oid" AND "a"."attnum" = ANY ("c"."conkey")
                 OR "rw"."ev_action" IS NOT NULL AND "c"."conrelid" != 0
-                AND (ARRAY(
-                    SELECT regexp_matches("rw"."ev_action", '{TARGETENTRY .*? :resorigtbl (\d+) :resorigcol (\d+) ', 'g')
-                ))["a"."attnum":"a"."attnum"] <@ ("c"."conrelid"::text || "c"."conkey"::text[])
+                AND strpos("rw"."ev_action", ':resorigtbl ' || "c"."conrelid" || ' ') > 0
+                AND "rw"."ev_action" ~ ('.* :resno ' || "a"."attnum" || ' :resname \S+ :ressortgroupref \d+ :resorigtbl '
+                    || "c"."conrelid" || ' :resorigcol (?:'
+                    || replace(substr("c"."conkey"::text, 2, length("c"."conkey"::text) - 2), ',', '|') || ') .*')
         LEFT JOIN "pg_class" AS "ftc"
             ON "ftc"."oid" = "c"."confrelid"
         LEFT JOIN "pg_namespace" AS "ftcns"
@@ -883,7 +872,7 @@ final class Schema extends AbstractPdoSchema
                     case 'p':
                         $result[self::PRIMARY_KEY] = (new Constraint())
                             ->name($name)
-                            ->columnNames(DbArrayHelper::getColumn($constraint, 'column_name'));
+                            ->columnNames(array_column($constraint, 'column_name'));
                         break;
                     case 'f':
                         $onDelete = $actionTypes[$constraint[0]['on_delete']] ?? null;
@@ -892,12 +881,12 @@ final class Schema extends AbstractPdoSchema
                         $result[self::FOREIGN_KEYS][] = (new ForeignKeyConstraint())
                             ->name($name)
                             ->columnNames(array_values(
-                                array_unique(DbArrayHelper::getColumn($constraint, 'column_name'))
+                                array_unique(array_column($constraint, 'column_name'))
                             ))
                             ->foreignSchemaName($constraint[0]['foreign_table_schema'])
                             ->foreignTableName($constraint[0]['foreign_table_name'])
                             ->foreignColumnNames(array_values(
-                                array_unique(DbArrayHelper::getColumn($constraint, 'foreign_column_name'))
+                                array_unique(array_column($constraint, 'foreign_column_name'))
                             ))
                             ->onDelete($onDelete)
                             ->onUpdate($onUpdate);
@@ -905,12 +894,12 @@ final class Schema extends AbstractPdoSchema
                     case 'u':
                         $result[self::UNIQUES][] = (new Constraint())
                             ->name($name)
-                            ->columnNames(DbArrayHelper::getColumn($constraint, 'column_name'));
+                            ->columnNames(array_column($constraint, 'column_name'));
                         break;
                     case 'c':
                         $result[self::CHECKS][] = (new CheckConstraint())
                             ->name($name)
-                            ->columnNames(DbArrayHelper::getColumn($constraint, 'column_name'))
+                            ->columnNames(array_column($constraint, 'column_name'))
                             ->expression($constraint[0]['check_expr']);
                         break;
                 }

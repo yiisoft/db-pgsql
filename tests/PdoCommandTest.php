@@ -50,9 +50,9 @@ final class PdoCommandTest extends CommonPdoCommandTest
 
         $this->assertEquals('{1,2,3,4}', $selectData['array_col']);
 
-        $columnSchema = $db->getTableSchema('{{%table_with_array_col}}')->getColumn('array_col');
+        $column = $db->getTableSchema('{{%table_with_array_col}}')->getColumn('array_col');
 
-        $this->assertSame($arrValue, $columnSchema->phpTypecast($selectData['array_col']));
+        $this->assertSame($arrValue, $column->phpTypecast($selectData['array_col']));
 
         $db->close();
     }
