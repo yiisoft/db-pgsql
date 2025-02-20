@@ -12,6 +12,7 @@ use Yiisoft\Db\Expression\Expression;
 use Yiisoft\Db\Expression\JsonExpression;
 use Yiisoft\Db\Expression\StructuredExpression;
 use Yiisoft\Db\Pgsql\Column\ColumnBuilder;
+use Yiisoft\Db\Pgsql\Column\StructuredColumn;
 use Yiisoft\Db\Pgsql\Tests\Support\TestTrait;
 use Yiisoft\Db\Query\Query;
 use Yiisoft\Db\Tests\Support\TraversableObject;
@@ -65,7 +66,7 @@ final class QueryBuilderProvider extends \Yiisoft\Db\Tests\Provider\QueryBuilder
 
         $priceColumns = [
             'value' => ColumnBuilder::money(10, 2),
-            'currency_code' => ColumnBuilder::char(3),
+            'currency_code' => ColumnBuilder::char(3)->defaultValue('USD'),
         ];
 
         return [
@@ -252,7 +253,10 @@ final class QueryBuilderProvider extends \Yiisoft\Db\Tests\Provider\QueryBuilder
                 [':qp0' => 10, ':qp1' => 'USD'],
             ],
             'structured with columns' => [
-                ['=', 'price_col', new StructuredExpression(['value' => '10', 'currency_code' => 'USD'], 'currency_money_structured', $priceColumns)],
+                ['=', 'price_col', new StructuredExpression(
+                    ['value' => '10', 'currency_code' => 'USD'],
+                    ColumnBuilder::structured('currency_money_structured', $priceColumns)
+                )],
                 '[[price_col]] = ROW(:qp0,:qp1)::currency_money_structured',
                 [':qp0' => 10.0, ':qp1' => 'USD'],
             ],
@@ -288,6 +292,14 @@ final class QueryBuilderProvider extends \Yiisoft\Db\Tests\Provider\QueryBuilder
                 ['=', 'price_col', new StructuredExpression((object) [10, 'USD'])],
                 '[[price_col]] = ROW(:qp0,:qp1)',
                 [':qp0' => 10, ':qp1' => 'USD'],
+            ],
+            'structured with not all values' => [
+                ['=', 'price_col', new StructuredExpression(
+                    ['10'],
+                    new StructuredColumn(columns: $priceColumns)
+                )],
+                '[[price_col]] = ROW(:qp0,:qp1)',
+                [':qp0' => 10.0, ':qp1' => 'USD'],
             ],
         ];
     }
