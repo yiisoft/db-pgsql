@@ -45,6 +45,7 @@
         "roave/infection-static-analysis-plugin": "^1.16",
         "spatie/phpunit-watcher": "^1.23",
         "vimeo/psalm": "^5.25",
+        "vlucas/phpdotenv": "^5.6",
         "yiisoft/aliases": "^2.0",
         "yiisoft/cache-file": "^3.1",
         "yiisoft/var-dumper": "^1.5"
@@ -52,7 +53,8 @@
     "autoload": {
         "psr-4": {
             "Yiisoft\\Db\\Pgsql\\": "src"
-        }
+        },
+        "files": ["tests/bootstrap.php"]
     },
     "autoload-dev": {
         "psr-4": {

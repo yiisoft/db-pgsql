@@ -9,13 +9,9 @@ use Throwable;
 use Yiisoft\Db\Exception\Exception;
 use Yiisoft\Db\Exception\InvalidConfigException;
 use Yiisoft\Db\Exception\NotSupportedException;
-use Yiisoft\Db\Pgsql\Connection;
-use Yiisoft\Db\Pgsql\Dsn;
-use Yiisoft\Db\Pgsql\Driver;
 use Yiisoft\Db\Pgsql\Tests\Provider\CommandProvider;
 use Yiisoft\Db\Pgsql\Tests\Support\TestTrait;
 use Yiisoft\Db\Tests\Common\CommonCommandTest;
-use Yiisoft\Db\Tests\Support\DbHelper;
 
 use function serialize;
 
@@ -279,13 +275,7 @@ final class CommandTest extends CommonCommandTest
 
     public function testShowDatabases(): void
     {
-        $dsn = new Dsn('pgsql', '127.0.0.1');
-        $db = new Connection(new Driver($dsn->asString(), 'root', 'root'), DbHelper::getSchemaCache());
-
-        $command = $db->createCommand();
-
-        $this->assertSame('pgsql:host=127.0.0.1;dbname=postgres;port=5432', $db->getDriver()->getDsn());
-        $this->assertSame(['yiitest'], $command->showDatabases());
+        $this->assertSame([self::getDatabaseName()], self::getDb()->createCommand()->showDatabases());
     }
 
     #[DataProviderExternal(CommandProvider::class, 'createIndex')]
