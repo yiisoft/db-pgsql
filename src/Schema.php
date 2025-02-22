@@ -7,6 +7,7 @@ namespace Yiisoft\Db\Pgsql;
 use JsonException;
 use Throwable;
 use Yiisoft\Db\Constant\ColumnType;
+use Yiisoft\Db\Constant\ReferentialAction;
 use Yiisoft\Db\Constraint\CheckConstraint;
 use Yiisoft\Db\Constraint\Constraint;
 use Yiisoft\Db\Constraint\DefaultValueConstraint;
