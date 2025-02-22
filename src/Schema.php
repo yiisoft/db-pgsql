@@ -68,8 +68,8 @@ use function substr;
  *     foreign_table_schema: string|null,
  *     foreign_table_name: string|null,
  *     foreign_column_name: string|null,
- *     on_update: ReferentialAction::*,
- *     on_delete: ReferentialAction::*,
+ *     on_update: string,
+ *     on_delete: string,
  *     check_expr: string
  *   }
  * >
@@ -833,13 +833,13 @@ final class Schema extends AbstractPdoSchema
         ORDER BY "a"."attnum" ASC, "fa"."attnum" ASC
         SQL;
 
-        /** @psalm-var string[] $actionTypes */
+        /** @psalm-var ReferentialAction::*[] $actionTypes */
         $actionTypes = [
-            'a' => 'NO ACTION',
-            'r' => 'RESTRICT',
-            'c' => 'CASCADE',
-            'n' => 'SET NULL',
-            'd' => 'SET DEFAULT',
+            'a' => ReferentialAction::NO_ACTION,
+            'r' => ReferentialAction::RESTRICT,
+            'c' => ReferentialAction::CASCADE,
+            'n' => ReferentialAction::SET_NULL,
+            'd' => ReferentialAction::SET_DEFAULT,
         ];
 
         $resolvedName = $this->resolveTableName($tableName);
