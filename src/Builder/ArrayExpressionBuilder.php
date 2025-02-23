@@ -4,162 +4,179 @@ declare(strict_types=1);
 
 namespace Yiisoft\Db\Pgsql\Builder;
 
-use Yiisoft\Db\Exception\Exception;
-use Yiisoft\Db\Exception\InvalidArgumentException;
-use Yiisoft\Db\Exception\InvalidConfigException;
-use Yiisoft\Db\Exception\NotSupportedException;
+use Yiisoft\Db\Command\Param;
+use Yiisoft\Db\Constant\ColumnType;
+use Yiisoft\Db\Constant\DataType;
 use Yiisoft\Db\Expression\ArrayExpression;
-use Yiisoft\Db\Expression\ExpressionBuilderInterface;
 use Yiisoft\Db\Expression\ExpressionInterface;
-use Yiisoft\Db\Expression\JsonExpression;
+use Yiisoft\Db\Pgsql\Data\LazyArray;
 use Yiisoft\Db\Query\QueryInterface;
-use Yiisoft\Db\QueryBuilder\QueryBuilderInterface;
+use Yiisoft\Db\Schema\Column\AbstractArrayColumn;
+use Yiisoft\Db\Schema\Column\ColumnInterface;
 
+use function array_map;
 use function implode;
-use function in_array;
-use function is_iterable;
+use function is_array;
+use function iterator_to_array;
 use function str_repeat;
 
 /**
  * Builds expressions for {@see ArrayExpression} for PostgreSQL Server.
  */
-final class ArrayExpressionBuilder implements ExpressionBuilderInterface
+final class ArrayExpressionBuilder extends \Yiisoft\Db\Expression\ArrayExpressionBuilder
 {
-    public function __construct(private QueryBuilderInterface $queryBuilder)
+    protected const LAZY_ARRAY_CLASS = LazyArray::class;
+
+    protected function buildStringValue(string $value, ArrayExpression $expression, array &$params): string
     {
+        $param = new Param($value, DataType::STRING);
+
+        $column = $this->getColumn($expression);
+        $dbType = $this->getColumnDbType($column);
+
+        $typeHint = $this->getTypeHint($dbType, $column?->getDimension() ?? 1);
+
+        return $this->queryBuilder->bindParam($param, $params) . $typeHint;
+    }
+
+    protected function buildSubquery(QueryInterface $query, ArrayExpression $expression, array &$params): string
+    {
+        $column = $this->getColumn($expression);
+        $dbType = $this->getColumnDbType($column);
+
+        return $this->buildNestedSubquery($query, $dbType, $column?->getDimension() ?? 1, $params);
+    }
+
+    protected function buildValue(iterable $value, ArrayExpression $expression, array &$params): string
+    {
+        $column = $this->getColumn($expression);
+        $dbType = $this->getColumnDbType($column);
+
+        return $this->buildNestedValue($value, $dbType, $column?->getColumn(), $column?->getDimension() ?? 1, $params);
     }
 
     /**
-     * The Method builds the raw SQL from the expression that won't be additionally escaped or quoted.
-     *
-     * @param ArrayExpression $expression The expression build.
-     * @param array $params The binding parameters.
-     *
-     * @throws Exception
-     * @throws InvalidArgumentException
-     * @throws InvalidConfigException
-     * @throws NotSupportedException
-     *
-     * @return string The raw SQL that won't be additionally escaped or quoted.
+     * @param string[] $placeholders
      */
-    public function build(ExpressionInterface $expression, array &$params = []): string
+    private function buildNestedArray(array $placeholders, string $dbType, int $dimension): string
     {
-        /** @psalm-var array|mixed|QueryInterface $value */
-        $value = $expression->getValue();
+        $typeHint = $this->getTypeHint($dbType, $dimension);
 
-        if ($value === null) {
-            return 'NULL';
-        }
-
-        if ($value instanceof QueryInterface) {
-            [$sql, $params] = $this->queryBuilder->build($value, $params);
-            return $this->buildSubqueryArray($sql, $expression);
-        }
-
-        /** @psalm-var string[] $placeholders */
-        $placeholders = $this->buildPlaceholders($expression, $params);
-
-        return 'ARRAY[' . implode(', ', $placeholders) . ']' . $this->getTypeHint($expression);
+        return 'ARRAY[' . implode(',', $placeholders) . ']' . $typeHint;
     }
 
-    /**
-     * Builds a placeholder array out of $expression values.
-     *
-     * @param array $params The binding parameters.
-     *
-     * @throws Exception
-     * @throws InvalidArgumentException
-     * @throws InvalidConfigException
-     * @throws NotSupportedException
-     */
-    private function buildPlaceholders(ArrayExpression $expression, array &$params): array
+    private function buildNestedSubquery(QueryInterface $query, string $dbType, int $dimension, array &$params): string
+    {
+        [$sql, $params] = $this->queryBuilder->build($query, $params);
+
+        return "ARRAY($sql)" . $this->getTypeHint($dbType, $dimension);
+    }
+
+    private function buildNestedValue(iterable $value, string $dbType, ColumnInterface|null $column, int $dimension, array &$params): string
     {
         $placeholders = [];
 
-        /** @psalm-var mixed $value */
-        $value = $expression->getValue();
-
-        if (!is_iterable($value)) {
-            return $placeholders;
-        }
-
-        if ($expression->getDimension() > 1) {
-            /** @psalm-var mixed $item */
+        if ($dimension > 1) {
+            /** @var iterable|null $item */
             foreach ($value as $item) {
-                $placeholders[] = $this->build($this->unnestArrayExpression($expression, $item), $params);
+                if ($item === null) {
+                    $placeholders[] = 'NULL';
+                } elseif ($item instanceof ExpressionInterface) {
+                    $placeholders[] = $item instanceof QueryInterface
+                        ? $this->buildNestedSubquery($item, $dbType, $dimension - 1, $params)
+                        : $this->queryBuilder->buildExpression($item, $params);
+                } else {
+                    $placeholders[] = $this->buildNestedValue($item, $dbType, $column, $dimension - 1, $params);
+                }
             }
-            return $placeholders;
+        } else {
+            $value = $this->dbTypecast($value, $column);
+
+            foreach ($value as $item) {
+                if ($item instanceof ExpressionInterface) {
+                    $placeholders[] = $this->queryBuilder->buildExpression($item, $params);
+                } else {
+                    $placeholders[] = $this->queryBuilder->bindParam($item, $params);
+                }
+            }
         }
 
-        /** @psalm-var ExpressionInterface|int $item */
-        foreach ($value as $item) {
-            if ($item instanceof QueryInterface) {
-                [$sql, $params] = $this->queryBuilder->build($item, $params);
-                $placeholders[] = $this->buildSubqueryArray($sql, $expression);
-                continue;
-            }
-
-            $item = $this->typecastValue($expression, $item);
-
-            if ($item instanceof ExpressionInterface) {
-                $placeholders[] = $this->queryBuilder->buildExpression($item, $params);
-            } else {
-                $placeholders[] = $this->queryBuilder->bindParam($item, $params);
-            }
-        }
-
-        return $placeholders;
+        return $this->buildNestedArray($placeholders, $dbType, $dimension);
     }
 
-    private function unnestArrayExpression(ArrayExpression $expression, mixed $value): ArrayExpression
-    {
-        return new ArrayExpression($value, $expression->getType(), $expression->getDimension() - 1);
-    }
-
-    /**
-     * @return string The typecast expression based on {@see type}.
-     */
-    private function getTypeHint(ArrayExpression $expression): string
+    private function getColumn(ArrayExpression $expression): AbstractArrayColumn|null
     {
         $type = $expression->getType();
 
-        if ($type === null) {
+        if ($type === null || $type instanceof AbstractArrayColumn) {
+            return $type;
+        }
+
+        $info = [];
+
+        if ($type instanceof ColumnInterface) {
+            $info['column'] = $type;
+        } elseif ($type !== ColumnType::ARRAY) {
+            $column = $this
+                ->queryBuilder
+                ->getSchema()
+                ->getColumnFactory()
+                ->fromDefinition($type);
+
+            if ($column instanceof AbstractArrayColumn) {
+                return $column;
+            }
+
+            $info['column'] = $column;
+        }
+
+        /** @var AbstractArrayColumn */
+        return $this
+            ->queryBuilder
+            ->getSchema()
+            ->getColumnFactory()
+            ->fromType(ColumnType::ARRAY, $info);
+    }
+
+    private function getColumnDbType(AbstractArrayColumn|null $column): string
+    {
+        if ($column === null) {
             return '';
         }
 
-        $dimension = $expression->getDimension();
-
-        return '::' . $type . str_repeat('[]', $dimension);
+        return rtrim($this->queryBuilder->getColumnDefinitionBuilder()->buildType($column), '[]');
     }
 
     /**
-     * Build an array expression from a sub-query SQL.
-     *
-     * @param string $sql The sub-query SQL.
-     * @param ArrayExpression $expression The array expression.
-     *
-     * @return string The sub-query array expression.
+     * Return the type hint expression based on type and dimension.
      */
-    private function buildSubqueryArray(string $sql, ArrayExpression $expression): string
+    private function getTypeHint(string $dbType, int $dimension): string
     {
-        return 'ARRAY(' . $sql . ')' . $this->getTypeHint($expression);
+        if (empty($dbType)) {
+            return '';
+        }
+
+        return '::' . $dbType . str_repeat('[]', $dimension);
     }
 
     /**
-     * @return array|bool|ExpressionInterface|float|int|JsonExpression|string|null The cast value or expression.
+     * Converts array values for use in a db query.
+     *
+     * @param iterable $value The array or iterable object.
+     * @param ColumnInterface|null $column The column instance to typecast values.
+     *
+     * @return iterable Converted values.
      */
-    private function typecastValue(
-        ArrayExpression $expression,
-        array|bool|float|int|string|ExpressionInterface|null $value
-    ): array|bool|float|int|string|JsonExpression|ExpressionInterface|null {
-        if ($value instanceof ExpressionInterface) {
+    private function dbTypecast(iterable $value, ColumnInterface|null $column): iterable
+    {
+        if ($column === null) {
             return $value;
         }
 
-        if (in_array($expression->getType(), ['json', 'jsonb'], true)) {
-            return new JsonExpression($value);
+        if (!is_array($value)) {
+            $value = iterator_to_array($value, false);
         }
 
-        return $value;
+        return array_map($column->dbTypecast(...), $value);
     }
 }

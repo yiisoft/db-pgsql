@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Yiisoft\Db\Pgsql\Builder;
 
 use JsonException;
+use Yiisoft\Db\Command\Param;
+use Yiisoft\Db\Constant\DataType;
 use Yiisoft\Db\Exception\Exception;
 use Yiisoft\Db\Exception\InvalidArgumentException;
 use Yiisoft\Db\Exception\InvalidConfigException;
@@ -14,8 +16,10 @@ use Yiisoft\Db\Expression\ExpressionBuilderInterface;
 use Yiisoft\Db\Expression\ExpressionInterface;
 use Yiisoft\Db\Expression\JsonExpression;
 use Yiisoft\Db\QueryBuilder\QueryBuilderInterface;
-use Yiisoft\Db\Query\QueryInterface;
-use Yiisoft\Json\Json;
+
+use function json_encode;
+
+use const JSON_THROW_ON_ERROR;
 
 /**
  * Builds expressions for {@see `Yiisoft\Db\Expression\JsonExpression`} for PostgreSQL Server.
@@ -45,18 +49,22 @@ final class JsonExpressionBuilder implements ExpressionBuilderInterface
         /** @psalm-var mixed $value */
         $value = $expression->getValue();
 
-        if ($value instanceof QueryInterface) {
-            [$sql, $params] = $this->queryBuilder->build($value, $params);
-            return "($sql)" . $this->getTypeHint($expression);
+        if ($value === null) {
+            return 'NULL';
         }
 
-        if ($value instanceof ArrayExpression) {
-            $placeholder = 'array_to_json(' . $this->queryBuilder->buildExpression($value, $params) . ')';
+        if ($value instanceof ExpressionInterface) {
+            $statement = $this->queryBuilder->buildExpression($value, $params);
+
+            if ($value instanceof ArrayExpression) {
+                $statement = 'array_to_json(' . $statement . ')';
+            }
         } else {
-            $placeholder = $this->queryBuilder->bindParam(Json::encode($value), $params);
+            $param = new Param(json_encode($value, JSON_THROW_ON_ERROR), DataType::STRING);
+            $statement = $this->queryBuilder->bindParam($param, $params);
         }
 
-        return $placeholder . $this->getTypeHint($expression);
+        return $statement . $this->getTypeHint($expression);
     }
 
     /**
