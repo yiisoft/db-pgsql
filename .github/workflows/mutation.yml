@@ -79,8 +79,3 @@ jobs:
           vendor/bin/roave-infection-static-analysis-plugin --threads=2 --ignore-msi-with-no-mutations --only-covered
         env:
           STRYKER_DASHBOARD_API_KEY: ${{ secrets.STRYKER_DASHBOARD_API_KEY }}
-          YII_PGSQL_DATABASE: yiitest
-          YII_PGSQL_HOST: 127.0.0.1
-          YII_PGSQL_PORT: 5432
-          YII_PGSQL_USER: root
-          YII_PGSQL_PASSWORD: root
