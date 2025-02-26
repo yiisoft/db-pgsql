@@ -5,12 +5,17 @@ declare(strict_types=1);
 namespace Yiisoft\Db\Pgsql\Tests\Provider;
 
 use Yiisoft\Db\Expression\Expression;
+use Yiisoft\Db\Pgsql\Column\ArrayColumn;
+use Yiisoft\Db\Pgsql\Column\ArrayLazyColumn;
 use Yiisoft\Db\Pgsql\Column\BigIntColumn;
 use Yiisoft\Db\Pgsql\Column\BinaryColumn;
 use Yiisoft\Db\Pgsql\Column\BitColumn;
 use Yiisoft\Db\Pgsql\Column\BooleanColumn;
 use Yiisoft\Db\Pgsql\Column\IntegerColumn;
 use Yiisoft\Db\Pgsql\Column\StructuredColumn;
+use Yiisoft\Db\Pgsql\Column\StructuredLazyColumn;
+use Yiisoft\Db\Pgsql\Data\LazyArray;
+use Yiisoft\Db\Pgsql\Data\StructuredLazyArray;
 use Yiisoft\Db\Schema\Column\DoubleColumn;
 use Yiisoft\Db\Schema\Column\JsonColumn;
 use Yiisoft\Db\Schema\Column\StringColumn;
@@ -81,7 +86,41 @@ class ColumnProvider extends \Yiisoft\Db\Tests\Provider\ColumnProvider
             ],
         ];
 
-        return $values;
+        return [
+            ...$values,
+            'array' => [
+                (new ArrayColumn())->column(new IntegerColumn()),
+                [
+                    [null, null],
+                    [[], '{}'],
+                    [[1, 2, 3, null], '{1,2,3,}'],
+                ],
+            ],
+            'arrayLazy' => [
+                $column = (new ArrayLazyColumn())->column(new IntegerColumn()),
+                [
+                    [null, null],
+                    [new LazyArray('{}', $column->getColumn()), '{}'],
+                    [new LazyArray('{1,2,3,}', $column->getColumn()), '{1,2,3,}'],
+                ],
+            ],
+            'structured' => [
+                (new StructuredColumn())->columns(['int' => new IntegerColumn(), 'bool' => new BooleanColumn()]),
+                [
+                    [null, null],
+                    [['int' => null, 'bool' => null], '(,)'],
+                    [['int' => 1, 'bool' => true], '(1,t)'],
+                ],
+            ],
+            'structuredLazy' => [
+                $structuredCol = (new StructuredLazyColumn())->columns(['int' => new IntegerColumn(), 'bool' => new BooleanColumn()]),
+                [
+                    [null, null],
+                    [new StructuredLazyArray('(,)', $structuredCol->getColumns()), '(,)'],
+                    [new StructuredLazyArray('(1,t)', $structuredCol->getColumns()), '(1,t)'],
+                ],
+            ],
+        ];
     }
 
     public static function phpTypecastArrayColumns()
