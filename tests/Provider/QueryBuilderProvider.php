@@ -229,6 +229,15 @@ final class QueryBuilderProvider extends \Yiisoft\Db\Tests\Provider\QueryBuilder
                     ':qp7' => 'f',
                 ],
             ],
+            'array as a string' => [
+                [
+                    '=',
+                    'colname',
+                    new ArrayExpression('{1,2,3}'),
+                ],
+                '"colname" = :qp0',
+                [':qp0' => new Param('{1,2,3}', DataType::STRING)],
+            ],
 
             /* Checks to verity that operators work correctly */
             [['@>', 'id', new ArrayExpression([1])], '"id" @> ARRAY[:qp0]', [':qp0' => 1]],
@@ -300,6 +309,11 @@ final class QueryBuilderProvider extends \Yiisoft\Db\Tests\Provider\QueryBuilder
                 )],
                 '[[price_col]] = ROW(:qp0,:qp1)',
                 [':qp0' => 10.0, ':qp1' => 'USD'],
+            ],
+            'structured as a string' => [
+                ['=', 'price_col', new StructuredExpression('(10,USD)', 'currency_money_structured')],
+                '[[price_col]] = :qp0::currency_money_structured',
+                [':qp0' => new Param('(10,USD)', DataType::STRING)],
             ],
         ];
     }

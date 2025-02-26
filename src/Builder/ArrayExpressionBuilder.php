@@ -7,6 +7,7 @@ namespace Yiisoft\Db\Pgsql\Builder;
 use Yiisoft\Db\Command\Param;
 use Yiisoft\Db\Constant\ColumnType;
 use Yiisoft\Db\Constant\DataType;
+use Yiisoft\Db\Expression\AbstractArrayExpressionBuilder;
 use Yiisoft\Db\Expression\ArrayExpression;
 use Yiisoft\Db\Expression\ExpressionInterface;
 use Yiisoft\Db\Pgsql\Data\LazyArray;
@@ -23,7 +24,7 @@ use function str_repeat;
 /**
  * Builds expressions for {@see ArrayExpression} for PostgreSQL Server.
  */
-final class ArrayExpressionBuilder extends \Yiisoft\Db\Expression\ArrayExpressionBuilder
+final class ArrayExpressionBuilder extends AbstractArrayExpressionBuilder
 {
     protected const LAZY_ARRAY_CLASS = LazyArray::class;
 

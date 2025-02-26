@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Yiisoft\Db\Pgsql\Column;
 
-use Yiisoft\Db\Pgsql\Data\LazyArrayStructured;
+use Yiisoft\Db\Pgsql\Data\StructuredLazyArray;
 use Yiisoft\Db\Schema\Column\AbstractStructuredColumn;
 
 use function is_string;
@@ -18,7 +18,7 @@ final class StructuredColumn extends AbstractStructuredColumn
     public function phpTypecast(mixed $value): array|null
     {
         if (is_string($value)) {
-            return (new LazyArrayStructured($value, $this->columns))->getValue();
+            return (new StructuredLazyArray($value, $this->columns))->getValue();
         }
 
         return $value;

@@ -10,9 +10,10 @@ use Yiisoft\Db\Exception\Exception;
 use Yiisoft\Db\Exception\InvalidArgumentException;
 use Yiisoft\Db\Exception\InvalidConfigException;
 use Yiisoft\Db\Exception\NotSupportedException;
+use Yiisoft\Db\Expression\AbstractStructuredExpressionBuilder;
 use Yiisoft\Db\Expression\ExpressionInterface;
 use Yiisoft\Db\Expression\StructuredExpression;
-use Yiisoft\Db\Pgsql\Data\LazyArrayStructured;
+use Yiisoft\Db\Pgsql\Data\StructuredLazyArray;
 use Yiisoft\Db\Query\QueryInterface;
 use Yiisoft\Db\Schema\Column\AbstractStructuredColumn;
 
@@ -21,9 +22,9 @@ use function implode;
 /**
  * Builds expressions for {@see StructuredExpression} for PostgreSQL Server.
  */
-final class StructuredExpressionBuilder extends \Yiisoft\Db\Expression\StructuredExpressionBuilder
+final class StructuredExpressionBuilder extends AbstractStructuredExpressionBuilder
 {
-    protected const LAZY_ARRAY_CLASS = LazyArrayStructured::class;
+    protected const LAZY_ARRAY_CLASS = StructuredLazyArray::class;
 
     protected function buildStringValue(string $value, StructuredExpression $expression, array &$params): string
     {

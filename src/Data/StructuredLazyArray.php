@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Yiisoft\Db\Pgsql\Data;
 
-use Yiisoft\Db\Schema\Data\AbstractLazyArrayStructured;
+use Yiisoft\Db\Schema\Data\AbstractStructuredLazyArray;
 
-final class LazyArrayStructured extends AbstractLazyArrayStructured
+final class StructuredLazyArray extends AbstractStructuredLazyArray
 {
     protected function parse(string $value): array|null
     {
