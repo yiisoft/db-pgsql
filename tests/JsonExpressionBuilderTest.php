@@ -9,6 +9,7 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Yiisoft\Db\Command\Param;
 use Yiisoft\Db\Constant\DataType;
+use Yiisoft\Db\Expression\ArrayExpression;
 use Yiisoft\Db\Expression\JsonExpression;
 use Yiisoft\Db\Pgsql\Builder\JsonExpressionBuilder;
 use Yiisoft\Db\Pgsql\Column\IntegerColumn;
@@ -58,6 +59,25 @@ final class JsonExpressionBuilderTest extends TestCase
 
         $this->assertSame(':qp0', $builder->build($expression, $params));
         $this->assertEquals([':qp0' => new Param($expected, DataType::STRING)], $params);
+    }
+
+    public function testBuildArrayExpression(): void
+    {
+        $db = $this->getConnection();
+        $qb = $db->getQueryBuilder();
+
+        $params = [];
+        $builder = new JsonExpressionBuilder($qb);
+        $expression = new JsonExpression(new ArrayExpression([1,2,3]));
+
+        $this->assertSame('array_to_json(ARRAY[:qp0,:qp1,:qp2])', $builder->build($expression, $params));
+        $this->assertSame([':qp0' => 1, ':qp1' => 2, ':qp2' => 3], $params);
+
+        $params = [];
+        $expression = new JsonExpression(new ArrayExpression([1,2,3]), 'jsonb');
+
+        $this->assertSame('array_to_json(ARRAY[:qp0,:qp1,:qp2])::jsonb', $builder->build($expression, $params));
+        $this->assertSame([':qp0' => 1, ':qp1' => 2, ':qp2' => 3], $params);
     }
 
     public function testBuildNull(): void
