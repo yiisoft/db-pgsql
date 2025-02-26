@@ -6,8 +6,10 @@ namespace Yiisoft\Db\Pgsql\Column;
 
 use Yiisoft\Db\Constant\ColumnType;
 use Yiisoft\Db\QueryBuilder\AbstractColumnDefinitionBuilder;
+use Yiisoft\Db\Schema\Column\AbstractArrayColumn;
 use Yiisoft\Db\Schema\Column\ColumnInterface;
 
+use function str_repeat;
 use function version_compare;
 
 final class ColumnDefinitionBuilder extends AbstractColumnDefinitionBuilder
@@ -53,10 +55,20 @@ final class ColumnDefinitionBuilder extends AbstractColumnDefinitionBuilder
             . $this->buildExtra($column);
     }
 
-    protected function buildType(ColumnInterface $column): string
+    public function buildType(ColumnInterface $column): string
     {
-        if ($column instanceof \Yiisoft\Db\Schema\Column\ArrayColumn) {
-            return $this->buildType($column->getColumn()) . str_repeat('[]', $column->getDimension());
+        if ($column instanceof AbstractArrayColumn) {
+            if (!empty($column->getDbType())) {
+                $dbType = parent::buildType($column);
+
+                if ($dbType[-1] === ']') {
+                    return $dbType;
+                }
+            } else {
+                $dbType = parent::buildType($column->getColumn() ?? $column);
+            }
+
+            return $dbType . str_repeat('[]', $column->getDimension());
         }
 
         return parent::buildType($column);

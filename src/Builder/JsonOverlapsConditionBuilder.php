@@ -35,6 +35,7 @@ final class JsonOverlapsConditionBuilder extends AbstractOverlapsConditionBuilde
         $values = $expression->getValues();
 
         if ($values instanceof JsonExpression) {
+            /** @psalm-suppress MixedArgument */
             $values = new ArrayExpression($values->getValue());
         } elseif (!$values instanceof ExpressionInterface) {
             $values = new ArrayExpression($values);

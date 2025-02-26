@@ -2,50 +2,52 @@
 
 declare(strict_types=1);
 
-namespace Yiisoft\Db\Pgsql;
-
-use Yiisoft\Db\Syntax\ParserToArrayInterface;
+namespace Yiisoft\Db\Pgsql\Data;
 
 use function in_array;
 
 /**
- * Array representation to PHP array parser for PostgreSQL Server.
+ * Structured type representation to PHP array parser for PostgreSQL Server.
  */
-final class ArrayParser implements ParserToArrayInterface
+final class StructuredParser
 {
     /**
-     * Convert an array from PostgresSQL to PHP.
+     * Converts structured (composite) type value from PostgreSQL to PHP array.
+     *
+     * @param string $value Value to parse.
+     *
+     * @return (string|null)[]|null Parsed value.
+     *
+     * @psalm-return non-empty-list<null|string>|null
      */
     public function parse(string $value): array|null
     {
-        return $value[0] === '{'
-            ? $this->parseArray($value)
-            : null;
+        if ($value[0] !== '(') {
+            return null;
+        }
+
+        return $this->parseComposite($value);
     }
 
     /**
-     * Parse PostgreSQL array encoded in string.
+     * Parses PostgreSQL composite type value encoded in string.
      *
      * @param string $value String to parse.
-     * @param int $i parse starting position.
+     *
+     * @return (string|null)[] Parsed value.
+     *
+     * @psalm-return non-empty-list<null|string>
      */
-    private function parseArray(string $value, int &$i = 0): array
+    private function parseComposite(string $value): array
     {
-        if ($value[++$i] === '}') {
-            ++$i;
-            return [];
-        }
-
-        for ($result = [];; ++$i) {
+        for ($result = [], $i = 1;; ++$i) {
             $result[] = match ($value[$i]) {
-                '{' => $this->parseArray($value, $i),
-                ',', '}' => null,
+                ',', ')' => null,
                 '"' => $this->parseQuotedString($value, $i),
                 default => $this->parseUnquotedString($value, $i),
             };
 
-            if ($value[$i] === '}') {
-                ++$i;
+            if ($value[$i] === ')') {
                 return $result;
             }
         }
@@ -71,13 +73,11 @@ final class ArrayParser implements ParserToArrayInterface
     /**
      * Parses unquoted string.
      */
-    private function parseUnquotedString(string $value, int &$i): string|null
+    private function parseUnquotedString(string $value, int &$i): string
     {
         for ($result = '';; ++$i) {
-            if (in_array($value[$i], [',', '}'], true)) {
-                return $result !== 'NULL'
-                    ? $result
-                    : null;
+            if (in_array($value[$i], [',', ')'], true)) {
+                return $result;
             }
 
             $result .= $value[$i];

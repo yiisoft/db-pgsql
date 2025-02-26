@@ -18,13 +18,14 @@ use Yiisoft\Db\Pgsql\Column\BitColumn;
 use Yiisoft\Db\Pgsql\Column\BooleanColumn;
 use Yiisoft\Db\Pgsql\Column\ColumnBuilder;
 use Yiisoft\Db\Pgsql\Column\IntegerColumn;
+use Yiisoft\Db\Pgsql\Column\StructuredColumn;
 use Yiisoft\Db\Pgsql\Tests\Support\TestTrait;
 use Yiisoft\Db\Query\Query;
 use Yiisoft\Db\Schema\Column\ColumnInterface;
 use Yiisoft\Db\Schema\Column\DoubleColumn;
 use Yiisoft\Db\Schema\Column\JsonColumn;
 use Yiisoft\Db\Schema\Column\StringColumn;
-use Yiisoft\Db\Tests\Common\CommonColumnTest;
+use Yiisoft\Db\Tests\AbstractColumnTest;
 
 use function stream_get_contents;
 
@@ -33,7 +34,7 @@ use function stream_get_contents;
  *
  * @psalm-suppress PropertyNotSetInConstructor
  */
-final class ColumnTest extends CommonColumnTest
+final class ColumnTest extends AbstractColumnTest
 {
     use TestTrait;
 
@@ -259,21 +260,29 @@ final class ColumnTest extends CommonColumnTest
         );
 
         $priceCol = $tableSchema->getColumn('price_col');
-        $this->assertNull($priceCol->phpTypecast(1), 'For scalar value returns `null`');
-
         $priceCol->columns([]);
-        $this->assertSame([5, 'USD'], $priceCol->phpTypecast([5, 'USD']), 'No type casting for empty columns');
-
-        $priceArray = $tableSchema->getColumn('price_array');
-        $this->assertEquals(
-            new ArrayExpression([], 'currency_money_structured', 1),
-            $priceArray->dbTypecast(1),
-            'For scalar value returns empty array'
-        );
+        $this->assertSame(['5', 'USD'], $priceCol->phpTypecast('(5,USD)'), 'No type casting for empty columns');
 
         $priceArray2 = $tableSchema->getColumn('price_array2');
         $this->assertEquals(
-            new ArrayExpression([null, null], 'currency_money_structured', 2),
+            new ArrayExpression(
+                [null, null],
+                new ArrayColumn(
+                    dbType: 'currency_money_structured',
+                    dimension: 2,
+                    name: 'price_array2',
+                    notNull: false,
+                    column: new StructuredColumn(
+                        dbType: 'currency_money_structured',
+                        name: 'price_array2',
+                        notNull: false,
+                        columns: [
+                            'value' => new DoubleColumn(ColumnType::DECIMAL, dbType: 'numeric', name: 'value', notNull: false, scale: 2, size: 10),
+                            'currency_code' => new StringColumn(ColumnType::CHAR, dbType: 'bpchar', name: 'currency_code', notNull: false, size: 3),
+                        ],
+                    ),
+                ),
+            ),
             $priceArray2->dbTypecast([null, null]),
             'Double array of null values'
         );
@@ -307,15 +316,15 @@ final class ColumnTest extends CommonColumnTest
     }
 
     /** @dataProvider \Yiisoft\Db\Pgsql\Tests\Provider\ColumnProvider::dbTypecastColumns */
-    public function testDbTypecastColumns(string $className, array $values)
+    public function testDbTypecastColumns(ColumnInterface $column, array $values)
     {
-        parent::testDbTypecastColumns($className, $values);
+        parent::testDbTypecastColumns($column, $values);
     }
 
     /** @dataProvider \Yiisoft\Db\Pgsql\Tests\Provider\ColumnProvider::phpTypecastColumns */
-    public function testPhpTypecastColumns(string $className, array $values)
+    public function testPhpTypecastColumns(ColumnInterface $column, array $values)
     {
-        parent::testPhpTypecastColumns($className, $values);
+        parent::testPhpTypecastColumns($column, $values);
     }
 
     /** @dataProvider \Yiisoft\Db\Pgsql\Tests\Provider\ColumnProvider::phpTypecastArrayColumns */

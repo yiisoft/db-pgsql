@@ -30,6 +30,7 @@
 - Enh #382: Replace `DbArrayHelper::getColumn()` with `array_column()` (@Tigrov)
 - New #384: Add `IndexMethod` class (@Tigrov)
 - Bug #387: Explicitly mark nullable parameters (@vjik)
+- Enh #386: Refactor array, structured and JSON expression builders (@Tigrov)
 
 ## 1.3.0 March 21, 2024
 

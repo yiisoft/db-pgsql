@@ -9,16 +9,16 @@ use Yiisoft\Db\Schema\Column\AbstractArrayColumn;
 
 use function is_string;
 
-final class ArrayColumn extends AbstractArrayColumn
+final class ArrayLazyColumn extends AbstractArrayColumn
 {
     /**
      * @param string|null $value
      * @psalm-suppress MoreSpecificImplementedParamType
      */
-    public function phpTypecast(mixed $value): array|null
+    public function phpTypecast(mixed $value): LazyArray|null
     {
         if (is_string($value)) {
-            return (new LazyArray($value, $this->getColumn(), $this->dimension))->getValue();
+            return new LazyArray($value, $this->getColumn(), $this->dimension);
         }
 
         return $value;
