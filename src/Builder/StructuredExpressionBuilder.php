@@ -16,6 +16,7 @@ use Yiisoft\Db\Expression\StructuredExpression;
 use Yiisoft\Db\Pgsql\Data\StructuredLazyArray;
 use Yiisoft\Db\Query\QueryInterface;
 use Yiisoft\Db\Schema\Column\AbstractStructuredColumn;
+use Yiisoft\Db\Schema\Data\LazyArrayInterface;
 
 use function implode;
 
@@ -24,8 +25,6 @@ use function implode;
  */
 final class StructuredExpressionBuilder extends AbstractStructuredExpressionBuilder
 {
-    protected const LAZY_ARRAY_CLASS = StructuredLazyArray::class;
-
     protected function buildStringValue(string $value, StructuredExpression $expression, array &$params): string
     {
         $param = new Param($value, DataType::STRING);
@@ -47,6 +46,15 @@ final class StructuredExpressionBuilder extends AbstractStructuredExpressionBuil
         $placeholders = $this->buildPlaceholders($value, $expression, $params);
 
         return 'ROW(' . implode(',', $placeholders) . ')' . $this->getTypeHint($expression);
+    }
+
+    protected function getLazyArrayValue(LazyArrayInterface $value): array|string
+    {
+        if ($value instanceof StructuredLazyArray) {
+            return $value->getRawValue();
+        }
+
+        return $value->getValue();
     }
 
     /**

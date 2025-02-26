@@ -59,18 +59,8 @@ final class QueryBuilderProvider extends \Yiisoft\Db\Tests\Provider\QueryBuilder
 
     public static function buildCondition(): array
     {
-        $buildCondition = parent::buildCondition();
-
-        $buildCondition['object with type'][1] = '"json_col" = :qp0::json';
-        $buildCondition['query with type'][1] = '"json_col" = (SELECT "params" FROM "user" WHERE "id"=:qp0)::json';
-
-        $priceColumns = [
-            'value' => ColumnBuilder::money(10, 2),
-            'currency_code' => ColumnBuilder::char(3)->defaultValue('USD'),
-        ];
-
         return [
-            ...$buildCondition,
+            ...parent::buildCondition(),
             /**
             * adding conditions for ILIKE i.e. case insensitive LIKE.
             *
@@ -109,136 +99,6 @@ final class QueryBuilderProvider extends \Yiisoft\Db\Tests\Provider\QueryBuilder
                 [':qp0' => '%heyho%', ':qp1' => '%abc%'],
             ],
 
-            /* array condition corner cases */
-            [['@>', 'id', new ArrayExpression([1])], '"id" @> ARRAY[:qp0]', [':qp0' => 1]],
-            [
-                ['&&', 'price', new ArrayExpression([12, 14], 'float')],
-                '"price" && ARRAY[:qp0,:qp1]::real[]',
-                [':qp0' => 12, ':qp1' => 14],
-            ],
-            [
-                ['@>', 'id', new ArrayExpression([2, 3])],
-                '"id" @> ARRAY[:qp0,:qp1]',
-                [':qp0' => 2, ':qp1' => 3],
-            ],
-            'array of arrays' => [
-                ['@>', 'id', new ArrayExpression([[1,2], [3,4]], 'float[][]')],
-                '"id" @> ARRAY[ARRAY[:qp0,:qp1]::real[],ARRAY[:qp2,:qp3]::real[]\\]::real[][]',
-                [':qp0' => 1, ':qp1' => 2, ':qp2' => 3, ':qp3' => 4],
-            ],
-            [['@>', 'id', new ArrayExpression([])], '"id" @> ARRAY[]', []],
-            'array can contain nulls' => [
-                ['@>', 'id', new ArrayExpression([null])], '"id" @> ARRAY[:qp0]', [':qp0' => null],
-            ],
-            'traversable objects are supported' => [
-                ['@>', 'id', new ArrayExpression(new TraversableObject([1, 2, 3]))],
-                '[[id]] @> ARRAY[:qp0,:qp1,:qp2]',
-                [':qp0' => 1, ':qp1' => 2, ':qp2' => 3],
-            ],
-            [['@>', 'time', new ArrayExpression([new Expression('now()')])], '[[time]] @> ARRAY[now()]', []],
-            [
-                [
-                    '@>',
-                    'id',
-                    new ArrayExpression(
-                        (new Query(self::getDb()))->select('id')->from('users')->where(['active' => 1])
-                    ),
-                ],
-                '[[id]] @> ARRAY(SELECT [[id]] FROM [[users]] WHERE [[active]]=:qp0)',
-                [':qp0' => 1],
-            ],
-            [
-                [
-                    '@>',
-                    'id',
-                    new ArrayExpression(
-                        [
-                            (new Query(self::getDb()))->select('id')->from('users')->where(['active' => 1]),
-                        ],
-                        'integer[][]'
-                    ),
-                ],
-                '[[id]] @> ARRAY[ARRAY(SELECT [[id]] FROM [[users]] WHERE [[active]]=:qp0)::integer[]]::integer[][]',
-                [':qp0' => 1],
-            ],
-
-            /* json conditions */
-            [
-                ['=', 'prices', new JsonExpression(['seeds' => 15, 'apples' => 25], 'jsonb')],
-                '[[prices]] = :qp0::jsonb', [':qp0' => new Param('{"seeds":15,"apples":25}', DataType::STRING)],
-            ],
-            'query with type' => [
-                [
-                    '=',
-                    'jsoncol',
-                    new JsonExpression(
-                        (new Query(self::getDb()))->select('params')->from('user')->where(['id' => 1]),
-                        'jsonb'
-                    ),
-                ],
-                '[[jsoncol]] = (SELECT [[params]] FROM [[user]] WHERE [[id]]=:qp0)::jsonb',
-                [':qp0' => 1],
-            ],
-            'array of json expressions' => [
-                [
-                    '=',
-                    'colname',
-                    new ArrayExpression(
-                        [new JsonExpression(['a' => null, 'b' => 123, 'c' => [4, 5]]), new JsonExpression([true])]
-                    ),
-                ],
-                '"colname" = ARRAY[:qp0,:qp1]',
-                [':qp0' => new Param('{"a":null,"b":123,"c":[4,5]}', DataType::STRING), ':qp1' => new Param('[true]', DataType::STRING)],
-            ],
-            'Items in ArrayExpression of type json should be casted to Json' => [
-                ['=', 'colname', new ArrayExpression([['a' => null, 'b' => 123, 'c' => [4, 5]], [true]], 'jsonb')],
-                '"colname" = ARRAY[:qp0::jsonb,:qp1::jsonb]::jsonb[]',
-                [':qp0' => new Param('{"a":null,"b":123,"c":[4,5]}', DataType::STRING), ':qp1' => new Param('[true]', DataType::STRING)],
-            ],
-            'Two dimension array of text' => [
-                [
-                    '=',
-                    'colname',
-                    new ArrayExpression([['text1', 'text2'], ['text3', 'text4'], [null, 'text5']], 'text[][]'),
-                ],
-                '"colname" = ARRAY[ARRAY[:qp0,:qp1]::text[],ARRAY[:qp2,:qp3]::text[],ARRAY[:qp4,:qp5]::text[]]::text[][]',
-                [
-                    ':qp0' => 'text1',
-                    ':qp1' => 'text2',
-                    ':qp2' => 'text3',
-                    ':qp3' => 'text4',
-                    ':qp4' => null,
-                    ':qp5' => 'text5',
-                ],
-            ],
-            'Three dimension array of booleans' => [
-                [
-                    '=',
-                    'colname',
-                    new ArrayExpression([[[true], [false, null]], [[false], [true], [false]], [['t', 'f']]], 'bool[][][]'),
-                ],
-                '"colname" = ARRAY[ARRAY[ARRAY[:qp0]::bool[],ARRAY[:qp1,:qp2]::bool[]]::bool[][],ARRAY[ARRAY[:qp3]::bool[],ARRAY[:qp4]::bool[],ARRAY[:qp5]::bool[]]::bool[][],ARRAY[ARRAY[:qp6,:qp7]::bool[]]::bool[][]]::bool[][][]',
-                [
-                    ':qp0' => true,
-                    ':qp1' => false,
-                    ':qp2' => null,
-                    ':qp3' => false,
-                    ':qp4' => true,
-                    ':qp5' => false,
-                    ':qp6' => 't',
-                    ':qp7' => 'f',
-                ],
-            ],
-            'array as a string' => [
-                [
-                    '=',
-                    'colname',
-                    new ArrayExpression('{1,2,3}'),
-                ],
-                '"colname" = :qp0',
-                [':qp0' => new Param('{1,2,3}', DataType::STRING)],
-            ],
-
             /* Checks to verity that operators work correctly */
             [['@>', 'id', new ArrayExpression([1])], '"id" @> ARRAY[:qp0]', [':qp0' => 1]],
             [['<@', 'id', new ArrayExpression([1])], '"id" <@ ARRAY[:qp0]', [':qp0' => 1]],
@@ -249,72 +109,6 @@ final class QueryBuilderProvider extends \Yiisoft\Db\Tests\Provider\QueryBuilder
             [['>=', 'id', new ArrayExpression([1])], '"id" >= ARRAY[:qp0]', [':qp0' => 1]],
             [['<=', 'id', new ArrayExpression([1])], '"id" <= ARRAY[:qp0]', [':qp0' => 1]],
             [['&&', 'id', new ArrayExpression([1])], '"id" && ARRAY[:qp0]', [':qp0' => 1]],
-
-            /* structured conditions */
-            'structured without type' => [
-                ['=', 'price_col', new StructuredExpression(['value' => 10, 'currency_code' => 'USD'])],
-                '[[price_col]] = ROW(:qp0,:qp1)',
-                [':qp0' => 10, ':qp1' => 'USD'],
-            ],
-            'structured with type' => [
-                ['=', 'price_col', new StructuredExpression(['value' => 10, 'currency_code' => 'USD'], 'currency_money_structured')],
-                '[[price_col]] = ROW(:qp0,:qp1)::currency_money_structured',
-                [':qp0' => 10, ':qp1' => 'USD'],
-            ],
-            'structured with columns' => [
-                ['=', 'price_col', new StructuredExpression(
-                    ['value' => '10', 'currency_code' => 'USD'],
-                    ColumnBuilder::structured('currency_money_structured', $priceColumns)
-                )],
-                '[[price_col]] = ROW(:qp0,:qp1)::currency_money_structured',
-                [':qp0' => 10.0, ':qp1' => 'USD'],
-            ],
-            'array of structured' => [
-                ['=', 'price_array', new ArrayExpression(
-                    [
-                        null,
-                        new StructuredExpression(['value' => 11.11, 'currency_code' => 'USD']),
-                        new StructuredExpression(['value' => null, 'currency_code' => null]),
-                    ]
-                )],
-                '"price_array" = ARRAY[:qp0,ROW(:qp1,:qp2),ROW(:qp3,:qp4)]',
-                [':qp0' => null, ':qp1' => 11.11, ':qp2' => 'USD', ':qp3' => null, ':qp4' => null],
-            ],
-            'structured null values' => [
-                ['=', 'price_col', new StructuredExpression([null, null])],
-                '"price_col" = ROW(:qp0,:qp1)',
-                [':qp0' => null, ':qp1' => null],
-            ],
-            'structured query' => [
-                ['=', 'price_col', new StructuredExpression(
-                    (new Query(self::getDb()))->select('price')->from('product')->where(['id' => 1])
-                )],
-                '[[price_col]] = (SELECT [[price]] FROM [[product]] WHERE [[id]]=:qp0)',
-                [':qp0' => 1],
-            ],
-            'structured with a traversable object' => [
-                ['=', 'price_col', new StructuredExpression(new TraversableObject([10, 'USD']))],
-                '[[price_col]] = ROW(:qp0,:qp1)',
-                [':qp0' => 10, ':qp1' => 'USD'],
-            ],
-            'structured with an object' => [
-                ['=', 'price_col', new StructuredExpression((object) [10, 'USD'])],
-                '[[price_col]] = ROW(:qp0,:qp1)',
-                [':qp0' => 10, ':qp1' => 'USD'],
-            ],
-            'structured with not all values' => [
-                ['=', 'price_col', new StructuredExpression(
-                    ['10'],
-                    new StructuredColumn(columns: $priceColumns)
-                )],
-                '[[price_col]] = ROW(:qp0,:qp1)',
-                [':qp0' => 10.0, ':qp1' => 'USD'],
-            ],
-            'structured as a string' => [
-                ['=', 'price_col', new StructuredExpression('(10,USD)', 'currency_money_structured')],
-                '[[price_col]] = :qp0::currency_money_structured',
-                [':qp0' => new Param('(10,USD)', DataType::STRING)],
-            ],
         ];
     }
 

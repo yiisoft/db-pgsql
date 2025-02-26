@@ -14,6 +14,7 @@ use Yiisoft\Db\Pgsql\Data\LazyArray;
 use Yiisoft\Db\Query\QueryInterface;
 use Yiisoft\Db\Schema\Column\AbstractArrayColumn;
 use Yiisoft\Db\Schema\Column\ColumnInterface;
+use Yiisoft\Db\Schema\Data\LazyArrayInterface;
 
 use function array_map;
 use function implode;
@@ -26,8 +27,6 @@ use function str_repeat;
  */
 final class ArrayExpressionBuilder extends AbstractArrayExpressionBuilder
 {
-    protected const LAZY_ARRAY_CLASS = LazyArray::class;
-
     protected function buildStringValue(string $value, ArrayExpression $expression, array &$params): string
     {
         $param = new Param($value, DataType::STRING);
@@ -54,6 +53,15 @@ final class ArrayExpressionBuilder extends AbstractArrayExpressionBuilder
         $dbType = $this->getColumnDbType($column);
 
         return $this->buildNestedValue($value, $dbType, $column?->getColumn(), $column?->getDimension() ?? 1, $params);
+    }
+
+    protected function getLazyArrayValue(LazyArrayInterface $value): array|string
+    {
+        if ($value instanceof LazyArray) {
+            return $value->getRawValue();
+        }
+
+        return $value->getValue();
     }
 
     /**
