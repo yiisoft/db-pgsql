@@ -41,31 +41,31 @@ final class ArrayExpressionBuilderTest extends TestCase
                 new ArrayIterator(['a', 'b', 'c']),
                 'varchar',
                 'ARRAY[:qp0,:qp1,:qp2]::varchar[]',
-                [':qp0' => 'a', ':qp1' => 'b', ':qp2' => 'c']
+                [':qp0' => 'a', ':qp1' => 'b', ':qp2' => 'c'],
             ],
             [
                 new LazyArray('{1,2,3}'),
                 'int[]',
                 ':qp0::int[]',
-                [':qp0' => new Param('{1,2,3}', DataType::STRING)]
+                [':qp0' => new Param('{1,2,3}', DataType::STRING)],
             ],
             [
                 new \Yiisoft\Db\Schema\Data\LazyArray('[1,2,3]'),
                 ColumnBuilder::integer(),
                 'ARRAY[:qp0,:qp1,:qp2]::integer[]',
-                [':qp0' => 1, ':qp1' => 2, ':qp2' => 3]
+                [':qp0' => 1, ':qp1' => 2, ':qp2' => 3],
             ],
             [
                 new StructuredLazyArray('(1,2,3)'),
                 'int',
                 'ARRAY[:qp0,:qp1,:qp2]::int[]',
-                [':qp0' => 1, ':qp1' => 2, ':qp2' => 3]
+                [':qp0' => 1, ':qp1' => 2, ':qp2' => 3],
             ],
             [
                 new JsonLazyArray('[1,2,3]'),
                 ColumnBuilder::array(ColumnBuilder::integer()),
                 'ARRAY[:qp0,:qp1,:qp2]::integer[]',
-                [':qp0' => 1, ':qp1' => 2, ':qp2' => 3]
+                [':qp0' => 1, ':qp1' => 2, ':qp2' => 3],
             ],
             [[new Expression('now()')], null, 'ARRAY[now()]', []],
             [
@@ -100,13 +100,13 @@ final class ArrayExpressionBuilderTest extends TestCase
                 (new Query(self::getDb()))->select('id')->from('users')->where(['active' => 1]),
                 null,
                 'ARRAY(SELECT "id" FROM "users" WHERE "active"=:qp0)',
-                [':qp0' => 1]
+                [':qp0' => 1],
             ],
             [
                 [(new Query(self::getDb()))->select('id')->from('users')->where(['active' => 1])],
                 'integer[][]',
                 'ARRAY[ARRAY(SELECT "id" FROM "users" WHERE "active"=:qp0)::integer[]]::integer[][]',
-                [':qp0' => 1]
+                [':qp0' => 1],
             ],
             [
                 [[[true], [false, null]], [['t', 'f'], null], null],
@@ -124,19 +124,19 @@ final class ArrayExpressionBuilderTest extends TestCase
                 ['a' => '1', 'b' => null],
                 ColumnType::STRING,
                 'ARRAY[:qp0,:qp1]::varchar(255)[]',
-                [':qp0' => '1', ':qp1' => null]
+                [':qp0' => '1', ':qp1' => null],
             ],
             [
                 '{1,2,3}',
                 'string[]',
                 ':qp0::varchar(255)[]',
-                [':qp0' => new Param('{1,2,3}', DataType::STRING)]
+                [':qp0' => new Param('{1,2,3}', DataType::STRING)],
             ],
             [
                 [[1, null], null],
                 'int[][]',
                 'ARRAY[ARRAY[:qp0,:qp1]::int[],NULL]::int[][]',
-                [':qp0' => '1', ':qp1' => null]
+                [':qp0' => '1', ':qp1' => null],
             ],
         ];
     }

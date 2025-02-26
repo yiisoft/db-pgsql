@@ -84,7 +84,7 @@ final class StructuredExpressionBuilderTest extends TestCase
                 $column,
                 'ROW(:qp0,:qp1)::currency_money',
                 [':qp0' => 5, ':qp1' => 'USD'],
-                ],
+            ],
             [
                 ['currency_code' => 'USD', 'value' => '5'],
                 $column,

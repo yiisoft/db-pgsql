@@ -4,18 +4,12 @@ declare(strict_types=1);
 
 namespace Yiisoft\Db\Pgsql\Tests\Provider;
 
-use Yiisoft\Db\Command\Param;
-use Yiisoft\Db\Constant\DataType;
 use Yiisoft\Db\Constant\PseudoType;
 use Yiisoft\Db\Expression\ArrayExpression;
 use Yiisoft\Db\Expression\Expression;
-use Yiisoft\Db\Expression\JsonExpression;
-use Yiisoft\Db\Expression\StructuredExpression;
 use Yiisoft\Db\Pgsql\Column\ColumnBuilder;
-use Yiisoft\Db\Pgsql\Column\StructuredColumn;
 use Yiisoft\Db\Pgsql\Tests\Support\TestTrait;
 use Yiisoft\Db\Query\Query;
-use Yiisoft\Db\Tests\Support\TraversableObject;
 
 use function array_replace;
 use function version_compare;
