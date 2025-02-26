@@ -395,6 +395,7 @@ final class QueryBuilderProvider extends \Yiisoft\Db\Tests\Provider\QueryBuilder
 
         return [
             ...$values,
+            ['text[]', ColumnBuilder::array()->dbType('text[]')],
             ['int[]', 'int[]'],
             ['character varying(255)', 'character varying(255)'],
             ['character varying(255)[][]', 'character varying(255)[][]'],
