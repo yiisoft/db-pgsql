@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Yiisoft\Db\Pgsql\Tests;
 
 use PHPUnit\Framework\TestCase;
-use Yiisoft\Db\Pgsql\ArrayParser;
+use Yiisoft\Db\Pgsql\Data\ArrayParser;
 
 /**
  * @group pgsql

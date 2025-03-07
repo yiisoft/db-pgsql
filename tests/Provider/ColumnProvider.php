@@ -5,12 +5,20 @@ declare(strict_types=1);
 namespace Yiisoft\Db\Pgsql\Tests\Provider;
 
 use Yiisoft\Db\Expression\Expression;
+use Yiisoft\Db\Pgsql\Column\ArrayColumn;
+use Yiisoft\Db\Pgsql\Column\ArrayLazyColumn;
 use Yiisoft\Db\Pgsql\Column\BigIntColumn;
 use Yiisoft\Db\Pgsql\Column\BinaryColumn;
 use Yiisoft\Db\Pgsql\Column\BitColumn;
 use Yiisoft\Db\Pgsql\Column\BooleanColumn;
-use Yiisoft\Db\Pgsql\Column\ColumnBuilder;
 use Yiisoft\Db\Pgsql\Column\IntegerColumn;
+use Yiisoft\Db\Pgsql\Column\StructuredColumn;
+use Yiisoft\Db\Pgsql\Column\StructuredLazyColumn;
+use Yiisoft\Db\Pgsql\Data\LazyArray;
+use Yiisoft\Db\Pgsql\Data\StructuredLazyArray;
+use Yiisoft\Db\Schema\Column\DoubleColumn;
+use Yiisoft\Db\Schema\Column\JsonColumn;
+use Yiisoft\Db\Schema\Column\StringColumn;
 
 class ColumnProvider extends \Yiisoft\Db\Tests\Provider\ColumnProvider
 {
@@ -29,12 +37,12 @@ class ColumnProvider extends \Yiisoft\Db\Tests\Provider\ColumnProvider
     public static function dbTypecastColumns(): array
     {
         $values = parent::dbTypecastColumns();
-        $values['integer'][0] = IntegerColumn::class;
-        $values['bigint'][0] = BigIntColumn::class;
-        $values['binary'][0] = BinaryColumn::class;
-        $values['boolean'][0] = BooleanColumn::class;
+        $values['integer'][0] = new IntegerColumn();
+        $values['bigint'][0] = new BigIntColumn();
+        $values['binary'][0] = new BinaryColumn();
+        $values['boolean'][0] = new BooleanColumn();
         $values['bit'] = [
-            BitColumn::class,
+            new BitColumn(),
             [
                 [null, null],
                 [null, ''],
@@ -53,12 +61,12 @@ class ColumnProvider extends \Yiisoft\Db\Tests\Provider\ColumnProvider
     public static function phpTypecastColumns(): array
     {
         $values = parent::phpTypecastColumns();
-        $values['integer'][0] = IntegerColumn::class;
-        $values['bigint'][0] = BigIntColumn::class;
-        $values['binary'][0] = BinaryColumn::class;
+        $values['integer'][0] = new IntegerColumn();
+        $values['bigint'][0] = new BigIntColumn();
+        $values['binary'][0] = new BinaryColumn();
         $values['binary'][1][] = ["\x10\x11\x12", '\x101112'];
         $values['boolean'] = [
-            BooleanColumn::class,
+            new BooleanColumn(),
             [
                 [null, null],
                 [true, true],
@@ -70,7 +78,7 @@ class ColumnProvider extends \Yiisoft\Db\Tests\Provider\ColumnProvider
             ],
         ];
         $values['bit'] = [
-            BitColumn::class,
+            new BitColumn(),
             [
                 [null, null],
                 [0b1001, '1001'],
@@ -78,7 +86,41 @@ class ColumnProvider extends \Yiisoft\Db\Tests\Provider\ColumnProvider
             ],
         ];
 
-        return $values;
+        return [
+            ...$values,
+            'array' => [
+                (new ArrayColumn())->column(new IntegerColumn()),
+                [
+                    [null, null],
+                    [[], '{}'],
+                    [[1, 2, 3, null], '{1,2,3,}'],
+                ],
+            ],
+            'arrayLazy' => [
+                $column = (new ArrayLazyColumn())->column(new IntegerColumn()),
+                [
+                    [null, null],
+                    [new LazyArray('{}', $column->getColumn()), '{}'],
+                    [new LazyArray('{1,2,3,}', $column->getColumn()), '{1,2,3,}'],
+                ],
+            ],
+            'structured' => [
+                (new StructuredColumn())->columns(['int' => new IntegerColumn(), 'bool' => new BooleanColumn()]),
+                [
+                    [null, null],
+                    [['int' => null, 'bool' => null], '(,)'],
+                    [['int' => 1, 'bool' => true], '(1,t)'],
+                ],
+            ],
+            'structuredLazy' => [
+                $structuredCol = (new StructuredLazyColumn())->columns(['int' => new IntegerColumn(), 'bool' => new BooleanColumn()]),
+                [
+                    [null, null],
+                    [new StructuredLazyArray('(,)', $structuredCol->getColumns()), '(,)'],
+                    [new StructuredLazyArray('(1,t)', $structuredCol->getColumns()), '(1,t)'],
+                ],
+            ],
+        ];
     }
 
     public static function phpTypecastArrayColumns()
@@ -86,7 +128,7 @@ class ColumnProvider extends \Yiisoft\Db\Tests\Provider\ColumnProvider
         return [
             // [column, values]
             [
-                ColumnBuilder::integer(),
+                new IntegerColumn(),
                 [
                     // [dimension, expected, typecast value]
                     [1, [1, 2, 3, null], '{1,2,3,}'],
@@ -101,35 +143,35 @@ class ColumnProvider extends \Yiisoft\Db\Tests\Provider\ColumnProvider
                 ],
             ],
             [
-                ColumnBuilder::double(),
+                new DoubleColumn(),
                 [
                     [1, [1.0, 2.2, null], '{1,2.2,}'],
                     [2, [[1.0], [2.2, null]], '{{1},{2.2,}}'],
                 ],
             ],
             [
-                ColumnBuilder::boolean(),
+                new BooleanColumn(),
                 [
                     [1, [true, false, null], '{t,f,}'],
                     [2, [[true, false, null]], '{{t,f,}}'],
                 ],
             ],
             [
-                ColumnBuilder::string(),
+                new StringColumn(),
                 [
                     [1, ['1', '2', '', null], '{1,2,"",}'],
                     [2, [['1', '2'], [''], [null]], '{{1,2},{""},{NULL}}'],
                 ],
             ],
             [
-                ColumnBuilder::binary(),
+                new BinaryColumn(),
                 [
                     [1, ["\x10\x11", '', null], '{\x1011,"",}'],
                     [2, [["\x10\x11"], ['', null]], '{{\x1011},{"",}}'],
                 ],
             ],
             [
-                ColumnBuilder::json(),
+                new JsonColumn(),
                 [
                     [1, [[1, 2, 3], null], '{"[1,2,3]",}'],
                     [1, [[1, 2, 3]], '{{1,2,3}}'],
@@ -137,14 +179,14 @@ class ColumnProvider extends \Yiisoft\Db\Tests\Provider\ColumnProvider
                 ],
             ],
             [
-                ColumnBuilder::bit(),
+                new BitColumn(),
                 [
                     [1, [0b1011, 0b1001, null], '{1011,1001,}'],
                     [2, [[0b1011, 0b1001, null]], '{{1011,1001,}}'],
                 ],
             ],
             [
-                ColumnBuilder::structured(),
+                new StructuredColumn(),
                 [
                     [1, [['10', 'USD'], null], '{"(10,USD)",}'],
                     [2, [[['10', 'USD'], null]], '{{"(10,USD)",}}'],
