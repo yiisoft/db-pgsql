@@ -31,6 +31,8 @@
 - New #384: Add `IndexMethod` class (@Tigrov)
 - Bug #387: Explicitly mark nullable parameters (@vjik)
 - Enh #386: Refactor array, structured and JSON expression builders (@Tigrov)
+- Chg #388: Change supported PHP versions to `8.1 - 8.4` (@Tigrov)
+- Enh #388: Minor refactoring (@Tigrov)
 
 ## 1.3.0 March 21, 2024
 
