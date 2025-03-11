@@ -28,7 +28,9 @@ final class ColumnDefinitionParser extends \Yiisoft\Db\Syntax\ColumnDefinitionPa
     {
         preg_match(self::TYPE_PATTERN, $definition, $matches);
 
-        $type = strtolower($matches[3] ?? preg_replace('/\s*\(\d+\)/', '', $matches[1]));
+        /** @var string $type */
+        $type = $matches[3] ?? preg_replace('/\s*\(\d+\)/', '', $matches[1]);
+        $type = strtolower($type);
         $info = ['type' => $type];
 
         $typeDetails = $matches[4] ?? $matches[2] ?? '';

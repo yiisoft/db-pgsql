@@ -121,6 +121,7 @@ final class DDLQueryBuilder extends AbstractDDLQueryBuilder
     {
         if (str_contains($table, '.') && !str_contains($name, '.')) {
             if (str_contains($table, '{{')) {
+                /** @var string $table */
                 $table = preg_replace('/{{(.*?)}}/', '\1', $table);
                 [$schema] = explode('.', $table);
                 if (!str_contains($schema, '%')) {

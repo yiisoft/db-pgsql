@@ -164,6 +164,7 @@ final class ColumnFactory extends AbstractColumnFactory
 
     protected function normalizeNotNullDefaultValue(string $defaultValue, ColumnInterface $column): mixed
     {
+        /** @var string $value */
         $value = preg_replace("/::[^:']+$/", '$1', $defaultValue);
 
         if (str_starts_with($value, "B'") && $value[-1] === "'") {
