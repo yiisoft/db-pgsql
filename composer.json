@@ -53,14 +53,14 @@
     "autoload": {
         "psr-4": {
             "Yiisoft\\Db\\Pgsql\\": "src"
-        },
-        "files": ["tests/bootstrap.php"]
+        }
     },
     "autoload-dev": {
         "psr-4": {
             "Yiisoft\\Db\\Pgsql\\Tests\\": "tests",
             "Yiisoft\\Db\\Tests\\": "vendor/yiisoft/db/tests"
-        }
+        },
+        "files": ["tests/bootstrap.php"]
     },
     "config": {
         "sort-packages": true,
