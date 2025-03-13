@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Yiisoft\Db\Pgsql\Tests\Provider;
 
+use Yiisoft\Db\Command\Param;
+use Yiisoft\Db\Constant\DataType;
 use Yiisoft\Db\Constant\PseudoType;
 use Yiisoft\Db\Expression\ArrayExpression;
 use Yiisoft\Db\Expression\Expression;
@@ -67,30 +69,30 @@ final class QueryBuilderProvider extends \Yiisoft\Db\Tests\Provider\QueryBuilder
             [['or not ilike', 'name', []], '', []],
 
             /* simple ilike */
-            [['ilike', 'name', 'heyho'], '"name" ILIKE :qp0', [':qp0' => '%heyho%']],
-            [['not ilike', 'name', 'heyho'], '"name" NOT ILIKE :qp0', [':qp0' => '%heyho%']],
-            [['or ilike', 'name', 'heyho'], '"name" ILIKE :qp0', [':qp0' => '%heyho%']],
-            [['or not ilike', 'name', 'heyho'], '"name" NOT ILIKE :qp0', [':qp0' => '%heyho%']],
+            [['ilike', 'name', 'heyho'], '"name" ILIKE :qp0', [':qp0' => new Param('%heyho%', DataType::STRING)]],
+            [['not ilike', 'name', 'heyho'], '"name" NOT ILIKE :qp0', [':qp0' => new Param('%heyho%', DataType::STRING)]],
+            [['or ilike', 'name', 'heyho'], '"name" ILIKE :qp0', [':qp0' => new Param('%heyho%', DataType::STRING)]],
+            [['or not ilike', 'name', 'heyho'], '"name" NOT ILIKE :qp0', [':qp0' => new Param('%heyho%', DataType::STRING)]],
 
             /* ilike for many values */
             [
                 ['ilike', 'name', ['heyho', 'abc']],
                 '"name" ILIKE :qp0 AND "name" ILIKE :qp1',
-                [':qp0' => '%heyho%', ':qp1' => '%abc%'],
+                [':qp0' => new Param('%heyho%', DataType::STRING), ':qp1' => new Param('%abc%', DataType::STRING)],
             ],
             [
                 ['not ilike', 'name', ['heyho', 'abc']],
                 '"name" NOT ILIKE :qp0 AND "name" NOT ILIKE :qp1',
-                [':qp0' => '%heyho%', ':qp1' => '%abc%'],
+                [':qp0' => new Param('%heyho%', DataType::STRING), ':qp1' => new Param('%abc%', DataType::STRING)],
             ],
             [
                 ['or ilike', 'name', ['heyho', 'abc']],
-                '"name" ILIKE :qp0 OR "name" ILIKE :qp1', [':qp0' => '%heyho%', ':qp1' => '%abc%'],
+                '"name" ILIKE :qp0 OR "name" ILIKE :qp1', [':qp0' => new Param('%heyho%', DataType::STRING), ':qp1' => new Param('%abc%', DataType::STRING)],
             ],
             [
                 ['or not ilike', 'name', ['heyho', 'abc']],
                 '"name" NOT ILIKE :qp0 OR "name" NOT ILIKE :qp1',
-                [':qp0' => '%heyho%', ':qp1' => '%abc%'],
+                [':qp0' => new Param('%heyho%', DataType::STRING), ':qp1' => new Param('%abc%', DataType::STRING)],
             ],
 
             /* Checks to verity that operators work correctly */
