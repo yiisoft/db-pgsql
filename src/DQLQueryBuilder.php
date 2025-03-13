@@ -12,6 +12,7 @@ use Yiisoft\Db\Expression\StructuredExpression;
 use Yiisoft\Db\Pgsql\Builder\ArrayExpressionBuilder;
 use Yiisoft\Db\Pgsql\Builder\ArrayOverlapsConditionBuilder;
 use Yiisoft\Db\Pgsql\Builder\JsonOverlapsConditionBuilder;
+use Yiisoft\Db\Pgsql\Builder\LikeConditionBuilder;
 use Yiisoft\Db\Pgsql\Builder\StructuredExpressionBuilder;
 use Yiisoft\Db\Pgsql\Builder\ExpressionBuilder;
 use Yiisoft\Db\Pgsql\Builder\JsonExpressionBuilder;
@@ -62,6 +63,7 @@ final class DQLQueryBuilder extends AbstractDQLQueryBuilder
             JsonOverlapsCondition::class => JsonOverlapsConditionBuilder::class,
             StructuredExpression::class => StructuredExpressionBuilder::class,
             Expression::class => ExpressionBuilder::class,
+            LikeCondition::class => LikeConditionBuilder::class,
         ];
     }
 }
