@@ -15,7 +15,7 @@ final class LikeConditionBuilder extends \Yiisoft\Db\QueryBuilder\Condition\Buil
     {
         [$andor, $not, $operator] = parent::parseOperator($expression);
 
-        $operator = match($expression->getCaseSensitive()) {
+        $operator = match ($expression->getCaseSensitive()) {
             true => 'LIKE',
             false => 'ILIKE',
             default => $operator,
