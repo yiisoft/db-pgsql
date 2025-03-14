@@ -33,6 +33,7 @@
 - Enh #386: Refactor array, structured and JSON expression builders (@Tigrov)
 - Chg #388: Change supported PHP versions to `8.1 - 8.4` (@Tigrov)
 - Enh #388: Minor refactoring (@Tigrov)
+- Chg #390: Remove `yiisoft/json` dependency (@Tigrov)
 
 ## 1.3.0 March 21, 2024
 
