@@ -32,11 +32,9 @@
     ],
     "require": {
         "php": "8.1 - 8.4",
-        "ext-json": "*",
         "ext-pdo": "*",
         "ext-pdo_pgsql": "*",
-        "yiisoft/db": "dev-master",
-        "yiisoft/json": "^1.0"
+        "yiisoft/db": "dev-master"
     },
     "require-dev": {
         "maglnet/composer-require-checker": "^4.7.1",
