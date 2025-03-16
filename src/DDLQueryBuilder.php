@@ -41,7 +41,7 @@ final class DDLQueryBuilder extends AbstractDDLQueryBuilder
                 return "ALTER TABLE $tableName ALTER COLUMN $columnName $type";
             }
 
-            $type = $this->schema->getColumnFactory()->fromDefinition($type);
+            $type = $this->queryBuilder->getColumnFactory()->fromDefinition($type);
         }
 
         $columnDefinitionBuilder = $this->queryBuilder->getColumnDefinitionBuilder();
