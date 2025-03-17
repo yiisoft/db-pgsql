@@ -128,7 +128,6 @@ final class ArrayExpressionBuilder extends AbstractArrayExpressionBuilder
         } elseif ($type !== ColumnType::ARRAY) {
             $column = $this
                 ->queryBuilder
-                ->getSchema()
                 ->getColumnFactory()
                 ->fromDefinition($type);
 
@@ -142,7 +141,6 @@ final class ArrayExpressionBuilder extends AbstractArrayExpressionBuilder
         /** @var AbstractArrayColumn */
         return $this
             ->queryBuilder
-            ->getSchema()
             ->getColumnFactory()
             ->fromType(ColumnType::ARRAY, $info);
     }

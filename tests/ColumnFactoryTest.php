@@ -25,7 +25,7 @@ final class ColumnFactoryTest extends AbstractColumnFactoryTest
         parent::testFromDbType($dbType, $expectedType, $expectedInstanceOf);
 
         $db = $this->getConnection();
-        $columnFactory = $db->getSchema()->getColumnFactory();
+        $columnFactory = $db->getColumnFactory();
 
         // For array type
         $column = $columnFactory->fromType(ColumnType::ARRAY, ['dbType' => $dbType]);
@@ -56,7 +56,7 @@ final class ColumnFactoryTest extends AbstractColumnFactoryTest
         parent::testFromType($type, $expectedType, $expectedInstanceOf);
 
         $db = $this->getConnection();
-        $columnFactory = $db->getSchema()->getColumnFactory();
+        $columnFactory = $db->getColumnFactory();
 
         // For array type
         $column = $columnFactory->fromType(ColumnType::ARRAY, ['column' => $columnFactory->fromType($type)]);

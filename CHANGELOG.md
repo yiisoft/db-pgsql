@@ -34,6 +34,7 @@
 - Chg #388: Change supported PHP versions to `8.1 - 8.4` (@Tigrov)
 - Enh #388: Minor refactoring (@Tigrov)
 - Chg #390: Remove `yiisoft/json` dependency (@Tigrov)
+- Enh #393: Refactor according changes in `db` package (@Tigrov)
 - New #391: Add `caseSensitive` option to like condition (@vjik)
 
 ## 1.3.0 March 21, 2024
