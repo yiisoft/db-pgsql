@@ -83,7 +83,7 @@ trait TestTrait
         $db->close();
     }
 
-    private function getDriver(): PdoDriverInterface
+    protected function getDriver(): PdoDriverInterface
     {
         $driver = new Driver($this->getDsn(), self::getUsername(), self::getPassword());
         $driver->charset('utf8');
