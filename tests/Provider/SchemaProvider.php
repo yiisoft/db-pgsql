@@ -542,6 +542,7 @@ final class SchemaProvider extends \Yiisoft\Db\Tests\Provider\SchemaProvider
     {
         return [
             [null, []],
+            [null, ['native_type' => '']],
             [new IntegerColumn(dbType: 'int4', name: 'int_col'), [
                 'pgsql:oid' => 23,
                 'pgsql:table_oid' => 40133105,
@@ -734,6 +735,15 @@ final class SchemaProvider extends \Yiisoft\Db\Tests\Provider\SchemaProvider
                 'name' => 'jsonb',
                 'len' => -1,
                 'precision' => -1,
+            ]],
+            [new StringColumn(dbType: 'interval', name: 'interval', size: 3), [
+                'pgsql:oid' => 1186,
+                'pgsql:table_oid' => 0,
+                'native_type' => 'interval',
+                'pdo_type' => 2,
+                'name' => 'interval',
+                'len' => 16,
+                'precision' => 2147418115,
             ]],
         ];
     }
