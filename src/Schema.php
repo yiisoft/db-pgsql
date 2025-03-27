@@ -700,6 +700,112 @@ final class Schema extends AbstractPdoSchema
     }
 
     /**
+     * @psalm-param array{
+     *     "pgsql:oid": int,
+     *     "pgsql:table_oid": int,
+     *     table?: string,
+     *     native_type: string,
+     *     pdo_type: int,
+     *     name: string,
+     *     len: int,
+     *     precision: int,
+     * } $info
+     *
+     * @psalm-suppress MoreSpecificImplementedParamType
+     */
+    protected function loadResultColumn(array $info): ColumnInterface|null
+    {
+        if (empty($info['native_type'])) {
+            return null;
+        }
+
+        $dbType = $info['native_type'];
+
+        $columnInfo = ['fromResult' => true];
+
+        if (!empty($info['table'])) {
+            $columnInfo['table'] = $info['table'];
+            $columnInfo['name'] = $info['name'];
+        } elseif (!empty($info['name'])) {
+            $columnInfo['name'] = $info['name'];
+        }
+
+        if ($info['precision'] !== -1) {
+            $columnInfo['size'] = match ($dbType) {
+                'varchar', 'bpchar' => $info['precision'] - 4,
+                'numeric' => (($info['precision'] - 4) >> 16) & 0xFFFF,
+                'interval' => ($info['precision'] & 0xFFFF) === 0xFFFF ? 6 : $info['precision'] & 0xFFFF,
+                default => $info['precision'],
+            };
+
+            if ($dbType === 'numeric') {
+                $columnInfo['scale'] = ($info['precision'] - 4) & 0xFFFF;
+            }
+        }
+
+        $isArray = $dbType[0] === '_';
+
+        if ($isArray) {
+            $dbType = substr($dbType, 1);
+        }
+
+        if ($info['pgsql:oid'] > 16000) {
+            /** @var string[] $typeInfo */
+            $typeInfo = $this->db->createCommand(<<<SQL
+                SELECT
+                    ns.nspname AS schema,
+                    COALESCE(t2.typname, t.typname) AS typname,
+                    COALESCE(t2.typtype, t.typtype) AS typtype,
+                    CASE WHEN COALESCE(t2.typtype, t.typtype) = 'e'::char
+                        THEN array_to_string(
+                            (
+                                SELECT array_agg(enumlabel)
+                                FROM pg_enum
+                                WHERE enumtypid = COALESCE(t2.oid, t.oid)
+                            )::varchar[],
+                        ',')
+                        ELSE NULL
+                    END AS enum_values
+                FROM pg_type AS t
+                LEFT JOIN pg_type AS t2 ON t.typcategory='A' AND t2.oid = t.typelem OR t.typbasetype > 0 AND t2.oid = t.typbasetype
+                LEFT JOIN pg_namespace AS ns ON ns.oid = COALESCE(t2.typnamespace, t.typnamespace)
+                WHERE t.oid = :oid
+                SQL,
+                [':oid' => $info['pgsql:oid']]
+            )->queryOne();
+
+            $dbType = match ($typeInfo['schema']) {
+                $this->defaultSchema, 'pg_catalog' => $typeInfo['schema'] . '.' . $typeInfo['typname'],
+                default => $typeInfo['typname'],
+            };
+
+            if ($typeInfo['typtype'] === 'c') {
+                $structured = $this->resolveTableName($dbType);
+
+                if ($this->findColumns($structured)) {
+                    $columnInfo['columns'] = $structured->getColumns();
+                }
+
+                $columnInfo['type'] = ColumnType::STRUCTURED;
+            } elseif (!empty($typeInfo['enum_values'])) {
+                $columnInfo['enumValues'] = explode(',', str_replace(["''"], ["'"], $typeInfo['enum_values']));
+            }
+        }
+
+        $columnFactory = $this->db->getColumnFactory();
+        $column = $columnFactory->fromDbType($dbType, $columnInfo);
+
+        if ($isArray) {
+            $columnInfo['dbType'] = $dbType;
+            $columnInfo['column'] = $column;
+
+            return $columnFactory->fromType(ColumnType::ARRAY, $columnInfo);
+        }
+
+        return $column;
+    }
+
+    /**
      * Loads the column information into a {@see ColumnInterface} object.
      *
      * @psalm-param ColumnArray $info Column information.

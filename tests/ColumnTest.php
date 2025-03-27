@@ -19,6 +19,7 @@ use Yiisoft\Db\Pgsql\Column\BooleanColumn;
 use Yiisoft\Db\Pgsql\Column\ColumnBuilder;
 use Yiisoft\Db\Pgsql\Column\IntegerColumn;
 use Yiisoft\Db\Pgsql\Column\StructuredColumn;
+use Yiisoft\Db\Pgsql\Connection;
 use Yiisoft\Db\Pgsql\Tests\Support\TestTrait;
 use Yiisoft\Db\Query\Query;
 use Yiisoft\Db\Schema\Column\ColumnInterface;
@@ -38,19 +39,9 @@ final class ColumnTest extends AbstractColumnTest
 {
     use TestTrait;
 
-    /**
-     * @throws Exception
-     * @throws InvalidConfigException
-     * @throws Throwable
-     */
-    public function testPhpTypeCast(): void
+    private function insertTypeValues(Connection $db): void
     {
-        $db = $this->getConnection(true);
-
-        $command = $db->createCommand();
-        $schema = $db->getSchema();
-        $tableSchema = $schema->getTableSchema('type');
-        $command->insert(
+        $db->createCommand()->insert(
             'type',
             [
                 'int_col' => 1,
@@ -70,11 +61,109 @@ final class ColumnTest extends AbstractColumnTest
                 'jsonb_col' => new JsonExpression(new ArrayExpression([1, 2, 3])),
                 'jsonarray_col' => [new ArrayExpression([[',', 'null', true, 'false', 'f']], ColumnType::JSON)],
             ]
-        );
-        $command->execute();
-        $query = (new Query($db))->from('type')->one();
+        )->execute();
+    }
 
-        $this->assertNotNull($tableSchema);
+    private function assertResultValues(array $result): void
+    {
+        $this->assertSame(1, $result['int_col']);
+        $this->assertSame(str_repeat('x', 100), $result['char_col']);
+        $this->assertSame(1.234, $result['float_col']);
+        $this->assertSame("\x10\x11\x12", stream_get_contents($result['blob_col']));
+        $this->assertFalse($result['bool_col']);
+        $this->assertSame(0b0110_0100, $result['bit_col']);
+        $this->assertSame(0b1_1100_1000, $result['varbit_col']);
+        $this->assertSame(33.22, $result['numeric_col']);
+        $this->assertSame([1, -2, null, 42], $result['intarray_col']);
+        $this->assertSame([null, 1.2, -2.2, null, null], $result['numericarray_col']);
+        $this->assertSame(['', 'some text', '""', '\\\\', '[",","null",true,"false","f"]', null], $result['varchararray_col']);
+        $this->assertNull($result['textarray2_col']);
+        $this->assertSame([['a' => 1, 'b' => null, 'c' => [1, 3, 5]]], $result['json_col']);
+        $this->assertSame(['1', '2', '3'], $result['jsonb_col']);
+        $this->assertSame([[[',', 'null', true, 'false', 'f']]], $result['jsonarray_col']);
+    }
+
+    public function testQueryTypecasting(): void
+    {
+        $db = $this->getConnection(true);
+
+        $this->insertTypeValues($db);
+
+        $result = (new Query($db))->typecasting()->from('type')->one();
+
+        $this->assertResultValues($result);
+
+        $db->close();
+    }
+
+    public function testCommandPhpTypecasting(): void
+    {
+        $db = $this->getConnection(true);
+
+        $this->insertTypeValues($db);
+
+        $result = $db->createCommand('SELECT * FROM type')->phpTypecasting()->queryOne();
+
+        $this->assertResultValues($result);
+
+        $db->close();
+    }
+
+    public function testSelectPhpTypecasting(): void
+    {
+        $db = $this->getConnection(true);
+
+        $result = $db->createCommand(
+            <<<SQL
+            SELECT
+                null AS "null",
+                1 AS "1",
+                2.5 AS "2.5",
+                true AS "true",
+                false AS "false",
+                'string' AS "string",
+                'VAL1'::my_type AS "enum",
+                'VAL2'::schema2.my_type2 AS "enum2",
+                '{1,2,3}'::int[] AS "intarray",
+                '{"a":1}'::jsonb AS "jsonb",
+                '(10,USD)'::currency_money_structured AS "composite"
+            SQL
+        )->phpTypecasting()->queryOne();
+
+        $this->assertSame(
+            [
+                'null' => null,
+                1 => 1,
+                '2.5' => 2.5,
+                'true' => true,
+                'false' => false,
+                'string' => 'string',
+                'enum' => 'VAL1',
+                'enum2' => 'VAL2',
+                'intarray' => [1, 2, 3],
+                'jsonb' => ['a' => 1],
+                'composite' => ['value' => 10.0, 'currency_code' => 'USD'],
+            ],
+            $result,
+        );
+
+        $db->close();
+    }
+
+    /**
+     * @throws Exception
+     * @throws InvalidConfigException
+     * @throws Throwable
+     */
+    public function testPhpTypeCast(): void
+    {
+        $db = $this->getConnection(true);
+        $schema = $db->getSchema();
+        $tableSchema = $schema->getTableSchema('type');
+
+        $this->insertTypeValues($db);
+
+        $query = (new Query($db))->from('type')->one();
 
         $intColPhpTypeCast = $tableSchema->getColumn('int_col')?->phpTypecast($query['int_col']);
         $charColPhpTypeCast = $tableSchema->getColumn('char_col')?->phpTypecast($query['char_col']);

@@ -29,6 +29,7 @@ use const PHP_INT_SIZE;
  *     dimension?: int|string,
  *     enum_values?: array|null,
  *     extra?: string|null,
+ *     fromResult?: bool,
  *     primary_key?: bool|string,
  *     name?: string,
  *     not_null?: bool|string|null,
