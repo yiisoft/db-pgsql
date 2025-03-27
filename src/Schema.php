@@ -751,7 +751,8 @@ final class Schema extends AbstractPdoSchema
 
         if ($info['pgsql:oid'] > 16000) {
             /** @var string[] $typeInfo */
-            $typeInfo = $this->db->createCommand(<<<SQL
+            $typeInfo = $this->db->createCommand(
+                <<<SQL
                 SELECT
                     ns.nspname AS schema,
                     COALESCE(t2.typname, t.typname) AS typname,
