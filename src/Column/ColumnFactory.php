@@ -144,10 +144,9 @@ final class ColumnFactory extends AbstractColumnFactory
         return new ColumnDefinitionParser();
     }
 
-    protected function getColumnClass(string $type, array &$info = []): string
+    protected function getColumnClass(string $type, array $info = []): string
     {
-        /** @psalm-var class-string<ColumnInterface> */
-        return $this->mapType($this->columnClassMap, $type, $info) ?? match ($type) {
+        return match ($type) {
             ColumnType::BOOLEAN => BooleanColumn::class,
             ColumnType::BIT => BitColumn::class,
             ColumnType::TINYINT => IntegerColumn::class,
