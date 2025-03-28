@@ -906,28 +906,4 @@ final class Schema extends AbstractPdoSchema
 
         return $result[$returnType];
     }
-
-    /**
-     * Returns the cache key for the specified table name.
-     *
-     * @param string $name The table name.
-     *
-     * @return array The cache key.
-     */
-    protected function getCacheKey(string $name): array
-    {
-        return [self::class, ...$this->generateCacheKey(), $this->db->getQuoter()->getRawTableName($name)];
-    }
-
-    /**
-     * Returns the cache tag name.
-     *
-     * This allows {@see refresh()} to invalidate all cached table schemas.
-     *
-     * @return string The cache tag name.
-     */
-    protected function getCacheTag(): string
-    {
-        return md5(serialize([self::class, ...$this->generateCacheKey()]));
-    }
 }
