@@ -66,7 +66,7 @@ final class SchemaTest extends CommonSchemaTest
 
         if (version_compare($db->getServerInfo()->getVersion(), '10', '>')) {
             if ($tableName === 'type') {
-                $columns['ts_default']['defaultValue'] = new Expression('CURRENT_TIMESTAMP');
+                $columns['ts_default']->defaultValue(new Expression('CURRENT_TIMESTAMP'));
             }
         }
 
@@ -575,27 +575,7 @@ final class SchemaTest extends CommonSchemaTest
     /** @dataProvider \Yiisoft\Db\Pgsql\Tests\Provider\StructuredTypeProvider::columns */
     public function testStructuredTypeColumn(array $columns, string $tableName): void
     {
-        $this->testStructuredTypeColumnRecursive($columns, $tableName);
-    }
-
-    private function testStructuredTypeColumnRecursive(array $columns, string $tableName): void
-    {
         $this->assertTableColumns($columns, $tableName);
-
-        $db = $this->getConnection(true);
-        $table = $db->getTableSchema($tableName, true);
-
-        foreach ($table->getColumns() as $name => $column) {
-            if ($column->getType() === ColumnType::STRUCTURED) {
-                $this->assertTrue(
-                    isset($columns[$name]['columns']),
-                    "Columns of structured type `$name` do not exist, dbType is `{$column->getDbType()}`."
-                );
-                $this->testStructuredTypeColumnRecursive($columns[$name]['columns'], $column->getDbType());
-            }
-        }
-
-        $db->close();
     }
 
     public function testTableIndexes(): void
