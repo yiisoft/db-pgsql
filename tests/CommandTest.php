@@ -110,9 +110,9 @@ final class CommandTest extends CommonCommandTest
         $db = $this->getConnection(true);
 
         $command = $db->createCommand();
-        $command->insertBatch('{{bool_values}}', [[true], [false]], ['bool_col']);
+        $batchCommand = $command->insertBatch('{{bool_values}}', [[true], [false]], ['bool_col']);
 
-        $this->assertSame(2, $command->execute());
+        $this->assertSame(2, $batchCommand->execute());
 
         $command->setSql(
             <<<SQL
