@@ -34,7 +34,7 @@
         "php": "8.1 - 8.4",
         "ext-pdo": "*",
         "ext-pdo_pgsql": "*",
-        "yiisoft/db": "dev-master"
+        "yiisoft/db": "1.3.*"
     },
     "require-dev": {
         "maglnet/composer-require-checker": "^4.7.1",
