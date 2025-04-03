@@ -124,7 +124,7 @@ final class ColumnFactory extends AbstractColumnFactory
         $column = parent::fromType($type, $info);
 
         if ($column instanceof StructuredColumn) {
-            $this->initStructuredDefaultValue($column);
+            $this->initializeStructuredDefaultValue($column);
         }
 
         return $column;
@@ -174,7 +174,7 @@ final class ColumnFactory extends AbstractColumnFactory
     /**
      * Initializes the default value for structured columns.
      */
-    private function initStructuredDefaultValue(StructuredColumn $column): void
+    private function initializeStructuredDefaultValue(StructuredColumn $column): void
     {
         /** @psalm-var array|null $defaultValue */
         $defaultValue = $column->getDefaultValue();
@@ -185,7 +185,7 @@ final class ColumnFactory extends AbstractColumnFactory
                     $structuredColumn->defaultValue($defaultValue[$structuredColumnName]);
 
                     if ($structuredColumn instanceof StructuredColumn) {
-                        $this->initStructuredDefaultValue($structuredColumn);
+                        $this->initializeStructuredDefaultValue($structuredColumn);
                     }
                 }
             }
