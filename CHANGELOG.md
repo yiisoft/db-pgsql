@@ -11,7 +11,7 @@
 - Enh #353: Update `bit` type according to main PR yiisoft/db#860 (@Tigrov) 
 - Enh #354: Refactor PHP type of `ColumnSchemaInterface` instances (@Tigrov)
 - Enh #356: Raise minimum PHP version to `^8.1` with minor refactoring (@Tigrov)
-- New #355, #368, #370: Implement `ColumnFactory` class (@Tigrov)
+- New #355, #368, #370, #399: Implement `ColumnFactory` class (@Tigrov)
 - Enh #359: Separate column type constants (@Tigrov)
 - Enh #359: Remove `Schema::TYPE_ARRAY` and `Schema::TYPE_STRUCTURED` constants (@Tigrov)
 - New #360: Realize `ColumnBuilder` class (@Tigrov)
