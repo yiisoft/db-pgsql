@@ -301,15 +301,13 @@ final class Schema extends AbstractPdoSchema
             ':tableName' => $resolvedName->getName(),
         ])->queryAll();
 
-        /** @psalm-var array[] $indexes */
         $indexes = array_map(array_change_key_case(...), $indexes);
         $indexes = DbArrayHelper::arrange($indexes, ['name']);
         $result = [];
 
         /**
-         * @psalm-var object|string|null $name
-         * @psalm-var array<
-         *   array-key,
+         * @var string $name
+         * @psalm-var list<
          *   array{
          *     name: string,
          *     column_name: string,
@@ -841,7 +839,6 @@ final class Schema extends AbstractPdoSchema
             ':tableName' => $resolvedName->getName(),
         ])->queryAll();
 
-        /** @psalm-var array[][] $constraints */
         $constraints = array_map(array_change_key_case(...), $constraints);
         $constraints = DbArrayHelper::arrange($constraints, ['type', 'name']);
 
@@ -852,10 +849,6 @@ final class Schema extends AbstractPdoSchema
             self::CHECKS => [],
         ];
 
-        /**
-         * @psalm-var string $type
-         * @psalm-var array $names
-         */
         foreach ($constraints as $type => $names) {
             /**
              * @psalm-var object|string|null $name
