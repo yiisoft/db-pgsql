@@ -584,14 +584,14 @@ final class QueryBuilderTest extends CommonQueryBuilderTest
 
         $count = $query
             ->from('array_and_json_types')
-            ->where(new JsonOverlapsCondition('json_col', $values))
+            ->setWhere(new JsonOverlapsCondition('json_col', $values))
             ->count();
 
         $this->assertSame($expectedCount, $count);
 
         $count = $query
             ->from('array_and_json_types')
-            ->where(new JsonOverlapsCondition('jsonb_col', $values))
+            ->setWhere(new JsonOverlapsCondition('jsonb_col', $values))
             ->count();
 
         $this->assertSame($expectedCount, $count);
@@ -614,14 +614,14 @@ final class QueryBuilderTest extends CommonQueryBuilderTest
 
         $count = $query
             ->from('array_and_json_types')
-            ->where(['json overlaps', 'json_col', $values])
+            ->setWhere(['json overlaps', 'json_col', $values])
             ->count();
 
         $this->assertSame($expectedCount, $count);
 
         $count = $query
             ->from('array_and_json_types')
-            ->where(['json overlaps', 'jsonb_col', $values])
+            ->setWhere(['json overlaps', 'jsonb_col', $values])
             ->count();
 
         $this->assertSame($expectedCount, $count);
