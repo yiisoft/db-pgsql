@@ -11,7 +11,7 @@
 - Enh #353: Update `bit` type according to main PR yiisoft/db#860 (@Tigrov) 
 - Enh #354: Refactor PHP type of `ColumnSchemaInterface` instances (@Tigrov)
 - Enh #356: Raise minimum PHP version to `^8.1` with minor refactoring (@Tigrov)
-- New #355, #368, #370: Implement `ColumnFactory` class (@Tigrov)
+- New #355, #368, #370, #399: Implement `ColumnFactory` class (@Tigrov)
 - Enh #359: Separate column type constants (@Tigrov)
 - Enh #359: Remove `Schema::TYPE_ARRAY` and `Schema::TYPE_STRUCTURED` constants (@Tigrov)
 - New #360: Realize `ColumnBuilder` class (@Tigrov)
@@ -37,6 +37,7 @@
 - Enh #393: Refactor according changes in `db` package (@Tigrov)
 - New #391: Add `caseSensitive` option to like condition (@vjik)
 - Enh #396: Remove `getCacheKey()` and `getCacheTag()` methods from `Schema` class (@Tigrov)
+- Enh #403, #404: Use `DbArrayHelper::arrange()` instead of `DbArrayHelper::index()` method (@Tigrov)
 
 ## 1.3.0 March 21, 2024
 

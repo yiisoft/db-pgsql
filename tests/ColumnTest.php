@@ -377,10 +377,11 @@ final class ColumnTest extends AbstractColumnTest
                         name: 'price_array2',
                         notNull: false,
                         columns: [
-                            'value' => new DoubleColumn(ColumnType::DECIMAL, dbType: 'numeric', name: 'value', notNull: false, scale: 2, size: 10),
-                            'currency_code' => new StringColumn(ColumnType::CHAR, dbType: 'bpchar', name: 'currency_code', notNull: false, size: 3),
+                            'value' => new DoubleColumn(ColumnType::DECIMAL, dbType: 'numeric', name: 'value', notNull: false, scale: 2, size: 10, defaultValue: null),
+                            'currency_code' => new StringColumn(ColumnType::CHAR, dbType: 'bpchar', name: 'currency_code', notNull: false, size: 3, defaultValue: null),
                         ],
                     ),
+                    defaultValue: null,
                 ),
             ),
             $priceArray2->dbTypecast([null, null]),
