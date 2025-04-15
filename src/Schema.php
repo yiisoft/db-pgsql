@@ -707,37 +707,37 @@ final class Schema extends AbstractPdoSchema
      *     name: string,
      *     len: int,
      *     precision: int,
-     * } $info
+     * } $metadata
      *
      * @psalm-suppress MoreSpecificImplementedParamType
      */
-    protected function loadResultColumn(array $info): ColumnInterface|null
+    protected function loadResultColumn(array $metadata): ColumnInterface|null
     {
-        if (empty($info['native_type'])) {
+        if (empty($metadata['native_type'])) {
             return null;
         }
 
-        $dbType = $info['native_type'];
+        $dbType = $metadata['native_type'];
 
         $columnInfo = ['fromResult' => true];
 
-        if (!empty($info['table'])) {
-            $columnInfo['table'] = $info['table'];
-            $columnInfo['name'] = $info['name'];
-        } elseif (!empty($info['name'])) {
-            $columnInfo['name'] = $info['name'];
+        if (!empty($metadata['table'])) {
+            $columnInfo['table'] = $metadata['table'];
+            $columnInfo['name'] = $metadata['name'];
+        } elseif (!empty($metadata['name'])) {
+            $columnInfo['name'] = $metadata['name'];
         }
 
-        if ($info['precision'] !== -1) {
+        if ($metadata['precision'] !== -1) {
             $columnInfo['size'] = match ($dbType) {
-                'varchar', 'bpchar' => $info['precision'] - 4,
-                'numeric' => (($info['precision'] - 4) >> 16) & 0xFFFF,
-                'interval' => ($info['precision'] & 0xFFFF) === 0xFFFF ? 6 : $info['precision'] & 0xFFFF,
-                default => $info['precision'],
+                'varchar', 'bpchar' => $metadata['precision'] - 4,
+                'numeric' => (($metadata['precision'] - 4) >> 16) & 0xFFFF,
+                'interval' => ($metadata['precision'] & 0xFFFF) === 0xFFFF ? 6 : $metadata['precision'] & 0xFFFF,
+                default => $metadata['precision'],
             };
 
             if ($dbType === 'numeric') {
-                $columnInfo['scale'] = ($info['precision'] - 4) & 0xFFFF;
+                $columnInfo['scale'] = ($metadata['precision'] - 4) & 0xFFFF;
             }
         }
 
@@ -747,7 +747,7 @@ final class Schema extends AbstractPdoSchema
             $dbType = substr($dbType, 1);
         }
 
-        if ($info['pgsql:oid'] > 16000) {
+        if ($metadata['pgsql:oid'] > 16000) {
             /** @var string[] $typeInfo */
             $typeInfo = $this->db->createCommand(
                 <<<SQL
@@ -770,7 +770,7 @@ final class Schema extends AbstractPdoSchema
                 LEFT JOIN pg_namespace AS ns ON ns.oid = COALESCE(t2.typnamespace, t.typnamespace)
                 WHERE t.oid = :oid
                 SQL,
-                [':oid' => $info['pgsql:oid']]
+                [':oid' => $metadata['pgsql:oid']]
             )->queryOne();
 
             $dbType = match ($typeInfo['schema']) {
