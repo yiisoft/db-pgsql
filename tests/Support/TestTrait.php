@@ -81,7 +81,7 @@ trait TestTrait
         $db->close();
     }
 
-    private function getDriver(): Driver
+    protected function getDriver(): Driver
     {
         $driver = new Driver($this->getDsn(), self::getUsername(), self::getPassword());
         $driver->charset('utf8');
