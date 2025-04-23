@@ -2,7 +2,7 @@
 
 ## 2.0.0 under development
 
-- Enh #336: Implement `SqlParser` and `ExpressionBuilder` driver classes (@Tigrov)
+- Enh #336, #405: Implement `SqlParser` and `ExpressionBuilder` driver classes (@Tigrov)
 - New #315: Implement `ColumnSchemaInterface` classes according to the data type of database table columns
   for type casting performance. Related with yiisoft/db#752 (@Tigrov)
 - Chg #348: Replace call of `SchemaInterface::getRawTableName()` to `QuoterInterface::getRawTableName()` (@Tigrov)
