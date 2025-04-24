@@ -33,4 +33,9 @@ final class QueryBuilder extends AbstractQueryBuilder
     {
         return "'\x" . bin2hex($binary) . "'::bytea";
     }
+
+    protected function createSqlParser(string $sql): SqlParser
+    {
+        return new SqlParser($sql);
+    }
 }
