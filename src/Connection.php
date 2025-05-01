@@ -51,13 +51,13 @@ final class Connection extends AbstractPdoConnection
         return $this->columnFactory ??= new ColumnFactory();
     }
 
-    public function getLastInsertID(?string $sequenceName = null): string
+    public function getLastInsertId(?string $sequenceName = null): string
     {
         if ($sequenceName === null) {
             throw new InvalidArgumentException('PostgreSQL not support lastInsertId without sequence name.');
         }
 
-        return parent::getLastInsertID($sequenceName);
+        return parent::getLastInsertId($sequenceName);
     }
 
     public function getQueryBuilder(): QueryBuilderInterface
