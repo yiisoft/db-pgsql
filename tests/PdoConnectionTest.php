@@ -41,7 +41,7 @@ final class PdoConnectionTest extends CommonPdoConnectionTest
             ]
         )->execute();
 
-        $this->assertSame('4', $db->getLastInsertID('public.customer_id_seq'));
+        $this->assertSame('4', $db->getLastInsertId('public.customer_id_seq'));
 
         $db->close();
     }
@@ -63,7 +63,7 @@ final class PdoConnectionTest extends CommonPdoConnectionTest
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('PostgreSQL not support lastInsertId without sequence name.');
 
-        $db->getLastInsertID();
+        $db->getLastInsertId();
 
         $db->close();
     }
