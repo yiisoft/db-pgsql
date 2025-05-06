@@ -374,6 +374,9 @@ final class QueryBuilderProvider extends \Yiisoft\Db\Tests\Provider\QueryBuilder
         $values['datetime()'][0] = 'timestamp(0)';
         $values['datetime(6)'][0] = 'timestamp(6)';
         $values['datetime(null)'][0] = 'timestamp';
+        $values['datetimeWithTimezone()'][0] = 'timestamptz(0)';
+        $values['datetimeWithTimezone(6)'][0] = 'timestamptz(6)';
+        $values['datetimeWithTimezone(null)'][0] = 'timestamptz';
         $values['array()'][0] = 'varchar[]';
         $values['structured()'][0] = 'jsonb';
         $values['json()'][0] = 'jsonb';

@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace Yiisoft\Db\Pgsql\Tests;
 
+use DateTimeImmutable;
+use DateTimeZone;
+use PHPUnit\Framework\Attributes\DataProviderExternal;
 use Throwable;
 use Yiisoft\Db\Constant\ColumnType;
 use Yiisoft\Db\Exception\Exception;
@@ -20,14 +23,17 @@ use Yiisoft\Db\Pgsql\Column\ColumnBuilder;
 use Yiisoft\Db\Pgsql\Column\IntegerColumn;
 use Yiisoft\Db\Pgsql\Column\StructuredColumn;
 use Yiisoft\Db\Pgsql\Connection;
+use Yiisoft\Db\Pgsql\Tests\Provider\ColumnProvider;
 use Yiisoft\Db\Pgsql\Tests\Support\TestTrait;
 use Yiisoft\Db\Query\Query;
 use Yiisoft\Db\Schema\Column\ColumnInterface;
 use Yiisoft\Db\Schema\Column\DoubleColumn;
 use Yiisoft\Db\Schema\Column\JsonColumn;
 use Yiisoft\Db\Schema\Column\StringColumn;
-use Yiisoft\Db\Tests\AbstractColumnTest;
+use Yiisoft\Db\Tests\Common\CommonColumnTest;
+use Yiisoft\Db\Tests\Support\Assert;
 
+use function str_repeat;
 use function stream_get_contents;
 
 /**
@@ -35,9 +41,11 @@ use function stream_get_contents;
  *
  * @psalm-suppress PropertyNotSetInConstructor
  */
-final class ColumnTest extends AbstractColumnTest
+final class ColumnTest extends CommonColumnTest
 {
     use TestTrait;
+
+    protected const COLUMN_BUILDER = ColumnBuilder::class;
 
     private function insertTypeValues(Connection $db): void
     {
@@ -49,6 +57,8 @@ final class ColumnTest extends AbstractColumnTest
                 'char_col3' => null,
                 'float_col' => 1.234,
                 'blob_col' => "\x10\x11\x12",
+                'timestamp_col' => '2023-07-11 14:50:23',
+                'timestamp_default' => new DateTimeImmutable('2023-07-11 14:50:23'),
                 'bool_col' => false,
                 'bit_col' => 0b0110_0100, // 100
                 'varbit_col' => 0b1_1100_1000, // 456
@@ -64,12 +74,14 @@ final class ColumnTest extends AbstractColumnTest
         )->execute();
     }
 
-    private function assertResultValues(array $result): void
+    private function assertTypecastedValues(array $result): void
     {
         $this->assertSame(1, $result['int_col']);
         $this->assertSame(str_repeat('x', 100), $result['char_col']);
         $this->assertSame(1.234, $result['float_col']);
         $this->assertSame("\x10\x11\x12", stream_get_contents($result['blob_col']));
+        $this->assertEquals(new DateTimeImmutable('2023-07-11 14:50:23', new DateTimeZone('UTC')), $result['timestamp_col']);
+        $this->assertEquals(new DateTimeImmutable('2023-07-11 14:50:23'), $result['timestamp_default']);
         $this->assertFalse($result['bool_col']);
         $this->assertSame(0b0110_0100, $result['bit_col']);
         $this->assertSame(0b1_1100_1000, $result['varbit_col']);
@@ -93,11 +105,11 @@ final class ColumnTest extends AbstractColumnTest
 
         $result = $query->one();
 
-        $this->assertResultValues($result);
+        $this->assertTypecastedValues($result);
 
         $result = $query->all();
 
-        $this->assertResultValues($result[0]);
+        $this->assertTypecastedValues($result[0]);
 
         $db->close();
     }
@@ -112,11 +124,11 @@ final class ColumnTest extends AbstractColumnTest
 
         $result = $command->queryOne();
 
-        $this->assertResultValues($result);
+        $this->assertTypecastedValues($result);
 
         $result = $command->queryAll();
 
-        $this->assertResultValues($result[0]);
+        $this->assertTypecastedValues($result[0]);
 
         $db->close();
     }
@@ -190,43 +202,19 @@ final class ColumnTest extends AbstractColumnTest
     {
         $db = $this->getConnection(true);
         $schema = $db->getSchema();
-        $tableSchema = $schema->getTableSchema('type');
+        $columns = $schema->getTableSchema('type')->getColumns();
 
         $this->insertTypeValues($db);
 
         $query = (new Query($db))->from('type')->one();
 
-        $intColPhpTypeCast = $tableSchema->getColumn('int_col')?->phpTypecast($query['int_col']);
-        $charColPhpTypeCast = $tableSchema->getColumn('char_col')?->phpTypecast($query['char_col']);
-        $floatColPhpTypeCast = $tableSchema->getColumn('float_col')?->phpTypecast($query['float_col']);
-        $blobColPhpTypeCast = $tableSchema->getColumn('blob_col')?->phpTypecast($query['blob_col']);
-        $boolColPhpTypeCast = $tableSchema->getColumn('bool_col')?->phpTypecast($query['bool_col']);
-        $bitColPhpTypeCast = $tableSchema->getColumn('bit_col')?->phpTypecast($query['bit_col']);
-        $varbitColPhpTypeCast = $tableSchema->getColumn('varbit_col')?->phpTypecast($query['varbit_col']);
-        $numericColPhpTypeCast = $tableSchema->getColumn('numeric_col')?->phpTypecast($query['numeric_col']);
-        $intArrayColPhpType = $tableSchema->getColumn('intarray_col')?->phpTypecast($query['intarray_col']);
-        $numericArrayColPhpTypeCast = $tableSchema->getColumn('numericarray_col')?->phpTypecast($query['numericarray_col']);
-        $varcharArrayColPhpTypeCast = $tableSchema->getColumn('varchararray_col')?->phpTypecast($query['varchararray_col']);
-        $textArray2ColPhpType = $tableSchema->getColumn('textarray2_col')?->phpTypecast($query['textarray2_col']);
-        $jsonColPhpType = $tableSchema->getColumn('json_col')?->phpTypecast($query['json_col']);
-        $jsonBColPhpType = $tableSchema->getColumn('jsonb_col')?->phpTypecast($query['jsonb_col']);
-        $jsonArrayColPhpType = $tableSchema->getColumn('jsonarray_col')?->phpTypecast($query['jsonarray_col']);
+        $result = [];
 
-        $this->assertSame(1, $intColPhpTypeCast);
-        $this->assertSame(str_repeat('x', 100), $charColPhpTypeCast);
-        $this->assertSame(1.234, $floatColPhpTypeCast);
-        $this->assertSame("\x10\x11\x12", stream_get_contents($blobColPhpTypeCast));
-        $this->assertFalse($boolColPhpTypeCast);
-        $this->assertSame(0b0110_0100, $bitColPhpTypeCast);
-        $this->assertSame(0b1_1100_1000, $varbitColPhpTypeCast);
-        $this->assertSame(33.22, $numericColPhpTypeCast);
-        $this->assertSame([1, -2, null, 42], $intArrayColPhpType);
-        $this->assertSame([null, 1.2, -2.2, null, null], $numericArrayColPhpTypeCast);
-        $this->assertSame(['', 'some text', '""', '\\\\', '[",","null",true,"false","f"]', null], $varcharArrayColPhpTypeCast);
-        $this->assertNull($textArray2ColPhpType);
-        $this->assertSame([['a' => 1, 'b' => null, 'c' => [1, 3, 5]]], $jsonColPhpType);
-        $this->assertSame(['1', '2', '3'], $jsonBColPhpType);
-        $this->assertSame([[[',', 'null', true, 'false', 'f']]], $jsonArrayColPhpType);
+        foreach ($columns as $columnName => $column) {
+            $result[$columnName] = $column->phpTypecast($query[$columnName]);
+        }
+
+        $this->assertTypecastedValues($result);
 
         $db->close();
     }
@@ -430,32 +418,48 @@ final class ColumnTest extends AbstractColumnTest
         $db->close();
     }
 
-    /** @dataProvider \Yiisoft\Db\Pgsql\Tests\Provider\ColumnProvider::predefinedTypes */
+    #[DataProviderExternal(ColumnProvider::class, 'predefinedTypes')]
     public function testPredefinedType(string $className, string $type, string $phpType)
     {
         parent::testPredefinedType($className, $type, $phpType);
     }
 
-    /** @dataProvider \Yiisoft\Db\Pgsql\Tests\Provider\ColumnProvider::dbTypecastColumns */
+    #[DataProviderExternal(ColumnProvider::class, 'dbTypecastColumns')]
     public function testDbTypecastColumns(ColumnInterface $column, array $values)
     {
         parent::testDbTypecastColumns($column, $values);
     }
 
-    /** @dataProvider \Yiisoft\Db\Pgsql\Tests\Provider\ColumnProvider::phpTypecastColumns */
+    #[DataProviderExternal(ColumnProvider::class, 'phpTypecastColumns')]
     public function testPhpTypecastColumns(ColumnInterface $column, array $values)
     {
         parent::testPhpTypecastColumns($column, $values);
     }
 
-    /** @dataProvider \Yiisoft\Db\Pgsql\Tests\Provider\ColumnProvider::phpTypecastArrayColumns */
+    #[DataProviderExternal(ColumnProvider::class, 'dbTypecastArrayColumns')]
+    public function testArrayColumnDbTypecast(ColumnInterface $column, array $values): void
+    {
+        $arrayCol = (new ArrayColumn())->column($column);
+
+        foreach ($values as [$dimension, $expected, $value]) {
+            $arrayCol->dimension($dimension);
+            $dbValue = $arrayCol->dbTypecast($value);
+
+            $this->assertInstanceOf(ArrayExpression::class, $dbValue);
+            $this->assertSame($arrayCol, $dbValue->getType());
+            $this->assertEquals($value, $dbValue->getValue());
+        }
+    }
+
+    #[DataProviderExternal(ColumnProvider::class, 'phpTypecastArrayColumns')]
     public function testPhpTypecastArrayColumn(ColumnInterface $column, array $values): void
     {
         $arrayCol = ColumnBuilder::array($column);
 
         foreach ($values as [$dimension, $expected, $value]) {
             $arrayCol->dimension($dimension);
-            $this->assertSame($expected, $arrayCol->phpTypecast($value));
+
+            Assert::arraysEquals($expected, $arrayCol->phpTypecast($value));
         }
     }
 
