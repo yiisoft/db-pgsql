@@ -319,7 +319,7 @@ final class QueryBuilderProvider extends \Yiisoft\Db\Tests\Provider\QueryBuilder
 
     public static function upsertWithReturningPks(): array
     {
-        $upsert = static::upsert();
+        $upsert = self::upsert();
 
         foreach ($upsert as &$data) {
             $data[3] .= ' RETURNING "id"';
