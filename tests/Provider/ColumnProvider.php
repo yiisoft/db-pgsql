@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Yiisoft\Db\Pgsql\Tests\Provider;
 
+use DateTimeImmutable;
+use DateTimeZone;
 use Yiisoft\Db\Expression\Expression;
 use Yiisoft\Db\Pgsql\Column\ArrayColumn;
 use Yiisoft\Db\Pgsql\Column\ArrayLazyColumn;
@@ -16,6 +18,7 @@ use Yiisoft\Db\Pgsql\Column\StructuredColumn;
 use Yiisoft\Db\Pgsql\Column\StructuredLazyColumn;
 use Yiisoft\Db\Pgsql\Data\LazyArray;
 use Yiisoft\Db\Pgsql\Data\StructuredLazyArray;
+use Yiisoft\Db\Schema\Column\DateTimeColumn;
 use Yiisoft\Db\Schema\Column\DoubleColumn;
 use Yiisoft\Db\Schema\Column\JsonColumn;
 use Yiisoft\Db\Schema\Column\StringColumn;
@@ -125,6 +128,8 @@ class ColumnProvider extends \Yiisoft\Db\Tests\Provider\ColumnProvider
 
     public static function phpTypecastArrayColumns()
     {
+        $utcTimezone = new DateTimeZone('UTC');
+
         return [
             // [column, values]
             [
@@ -168,6 +173,28 @@ class ColumnProvider extends \Yiisoft\Db\Tests\Provider\ColumnProvider
                 [
                     [1, ["\x10\x11", '', null], '{\x1011,"",}'],
                     [2, [["\x10\x11"], ['', null]], '{{\x1011},{"",}}'],
+                ],
+            ],
+            [
+                new DateTimeColumn(),
+                [
+                    [
+                        1,
+                        [
+                            new DateTimeImmutable('2025-04-19 14:11:35', $utcTimezone),
+                            new DateTimeImmutable('2025-04-19 00:00:00', $utcTimezone),
+                            null,
+                        ],
+                        '{2025-04-19 14:11:35,2025-04-19 00:00:00,}',
+                    ],
+                    [
+                        2,
+                        [
+                            [new DateTimeImmutable('2025-04-19 14:11:35', $utcTimezone)],
+                            [new DateTimeImmutable('2025-04-19 00:00:00', $utcTimezone), null],
+                        ],
+                        '{{2025-04-19 14:11:35},{2025-04-19 00:00:00,}}',
+                    ],
                 ],
             ],
             [

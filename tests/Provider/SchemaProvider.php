@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Yiisoft\Db\Pgsql\Tests\Provider;
 
+use DateTimeImmutable;
+use DateTimeZone;
 use Yiisoft\Db\Constant\ColumnType;
 use Yiisoft\Db\Expression\Expression;
 use Yiisoft\Db\Pgsql\Column\ArrayColumn;
@@ -11,6 +13,7 @@ use Yiisoft\Db\Pgsql\Column\BinaryColumn;
 use Yiisoft\Db\Pgsql\Column\BitColumn;
 use Yiisoft\Db\Pgsql\Column\BooleanColumn;
 use Yiisoft\Db\Pgsql\Column\IntegerColumn;
+use Yiisoft\Db\Schema\Column\DateTimeColumn;
 use Yiisoft\Db\Schema\Column\DoubleColumn;
 use Yiisoft\Db\Schema\Column\JsonColumn;
 use Yiisoft\Db\Schema\Column\StringColumn;
@@ -82,12 +85,18 @@ final class SchemaProvider extends \Yiisoft\Db\Tests\Provider\SchemaProvider
                         scale: 2,
                         defaultValue: 33.22,
                     ),
-                    'time' => new StringColumn(
-                        ColumnType::TIMESTAMP,
+                    'timestamp_col' => new DateTimeColumn(
                         dbType: 'timestamp',
                         notNull: true,
                         size: 6,
-                        defaultValue: '2002-01-01 00:00:00',
+                        defaultValue: new DateTimeImmutable('2002-01-01 00:00:00', new DateTimeZone('UTC')),
+                        shouldConvertTimezone: true,
+                    ),
+                    'timestamp_default' => new DateTimeColumn(
+                        dbType: 'timestamp',
+                        notNull: true,
+                        size: 6,
+                        defaultValue: new Expression('now()'),
                     ),
                     'bool_col' => new BooleanColumn(
                         dbType: 'bool',
@@ -96,13 +105,6 @@ final class SchemaProvider extends \Yiisoft\Db\Tests\Provider\SchemaProvider
                     'bool_col2' => new BooleanColumn(
                         dbType: 'bool',
                         defaultValue: true,
-                    ),
-                    'ts_default' => new StringColumn(
-                        ColumnType::TIMESTAMP,
-                        dbType: 'timestamp',
-                        notNull: true,
-                        size: 6,
-                        defaultValue: new Expression('now()'),
                     ),
                     'bit_col' => new BitColumn(
                         dbType: 'bit',
@@ -362,7 +364,7 @@ final class SchemaProvider extends \Yiisoft\Db\Tests\Provider\SchemaProvider
                 'len' => -1,
                 'precision' => 327686,
             ]],
-            [new StringColumn(ColumnType::TIMESTAMP, dbType: 'timestamp', name: 'time'), [
+            [new DateTimeColumn(dbType: 'timestamp', name: 'time'), [
                 'pgsql:oid' => 1114,
                 'pgsql:table_oid' => 40133105,
                 'table' => 'type',
@@ -448,7 +450,7 @@ final class SchemaProvider extends \Yiisoft\Db\Tests\Provider\SchemaProvider
                 'len' => 1,
                 'precision' => -1,
             ]],
-            [new StringColumn(ColumnType::TIMESTAMP, dbType: 'timestamptz', name: 'timestamp(3)', size: 3), [
+            [new DateTimeColumn(ColumnType::DATETIMETZ, dbType: 'timestamptz', name: 'timestamp(3)', size: 3), [
                 'pgsql:oid' => 1184,
                 'pgsql:table_oid' => 0,
                 'native_type' => 'timestamptz',

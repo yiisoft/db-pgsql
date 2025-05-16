@@ -68,7 +68,7 @@ final class SchemaTest extends CommonSchemaTest
 
         if (version_compare($db->getServerInfo()->getVersion(), '10', '>')) {
             if ($tableName === 'type') {
-                $columns['ts_default']->defaultValue(new Expression('CURRENT_TIMESTAMP'));
+                $columns['timestamp_default']->defaultValue(new Expression('CURRENT_TIMESTAMP'));
             }
         }
 
