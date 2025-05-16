@@ -12,6 +12,7 @@ use Yiisoft\Db\Pgsql\Column\BitColumn;
 use Yiisoft\Db\Pgsql\Column\BooleanColumn;
 use Yiisoft\Db\Pgsql\Column\IntegerColumn;
 use Yiisoft\Db\Pgsql\Column\StructuredColumn;
+use Yiisoft\Db\Schema\Column\DateTimeColumn;
 use Yiisoft\Db\Schema\Column\DoubleColumn;
 use Yiisoft\Db\Schema\Column\JsonColumn;
 use Yiisoft\Db\Schema\Column\StringColumn;
@@ -55,16 +56,16 @@ final class ColumnFactoryProvider extends \Yiisoft\Db\Tests\Provider\ColumnFacto
             ['varchar', ColumnType::STRING, StringColumn::class],
             ['text', ColumnType::TEXT, StringColumn::class],
             ['bytea', ColumnType::BINARY, BinaryColumn::class],
-            ['date', ColumnType::DATE, StringColumn::class],
-            ['time', ColumnType::TIME, StringColumn::class],
-            ['time without time zone', ColumnType::TIME, StringColumn::class],
-            ['time with time zone', ColumnType::TIME, StringColumn::class],
-            ['timetz', ColumnType::TIME, StringColumn::class],
-            ['timestamp', ColumnType::TIMESTAMP, StringColumn::class],
-            ['timestamp without time zone', ColumnType::TIMESTAMP, StringColumn::class],
-            ['timestamp with time zone', ColumnType::TIMESTAMP, StringColumn::class],
-            ['timestamptz', ColumnType::TIMESTAMP, StringColumn::class],
-            ['abstime', ColumnType::TIMESTAMP, StringColumn::class],
+            ['abstime', ColumnType::DATETIME, DateTimeColumn::class],
+            ['timestamp', ColumnType::DATETIME, DateTimeColumn::class],
+            ['timestamp without time zone', ColumnType::DATETIME, DateTimeColumn::class],
+            ['timestamp with time zone', ColumnType::DATETIMETZ, DateTimeColumn::class],
+            ['timestamptz', ColumnType::DATETIMETZ, DateTimeColumn::class],
+            ['time', ColumnType::TIME, DateTimeColumn::class],
+            ['time without time zone', ColumnType::TIME, DateTimeColumn::class],
+            ['time with time zone', ColumnType::TIMETZ, DateTimeColumn::class],
+            ['timetz', ColumnType::TIMETZ, DateTimeColumn::class],
+            ['date', ColumnType::DATE, DateTimeColumn::class],
             ['interval', ColumnType::STRING, StringColumn::class],
             ['box', ColumnType::STRING, StringColumn::class],
             ['circle', ColumnType::STRING, StringColumn::class],

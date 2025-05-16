@@ -153,10 +153,10 @@ CREATE TABLE "type" (
   float_col2 double precision DEFAULT '1.23',
   blob_col bytea DEFAULT 'a binary value',
   numeric_col decimal(5,2) DEFAULT '33.22',
-  time timestamp NOT NULL DEFAULT '2002-01-01 00:00:00',
+  timestamp_col timestamp NOT NULL DEFAULT '2002-01-01 00:00:00',
+  timestamp_default TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   bool_col boolean NOT NULL,
   bool_col2 boolean DEFAULT TRUE,
-  ts_default TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   bit_col BIT(8) NOT NULL DEFAULT B'10000010', -- 130
   varbit_col VARBIT NOT NULL DEFAULT '100'::bit, -- 4
   bigint_col BIGINT,
