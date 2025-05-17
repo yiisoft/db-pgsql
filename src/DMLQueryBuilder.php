@@ -17,18 +17,11 @@ use function implode;
  */
 final class DMLQueryBuilder extends AbstractDMLQueryBuilder
 {
-    public function insertWithReturningPks(string $table, QueryInterface|array $columns, array &$params = []): string
+    public function insertWithReturningPks(string $table, array|QueryInterface $columns, array &$params = []): string
     {
         $sql = $this->insert($table, $columns, $params);
-        $returnColumns = $this->schema->getTableSchema($table)?->getPrimaryKey();
 
-        if (!empty($returnColumns)) {
-            $returnColumns = array_map($this->quoter->quoteColumnName(...), $returnColumns);
-
-            $sql .= ' RETURNING ' . implode(', ', $returnColumns);
-        }
-
-        return $sql;
+        return $this->appendReturningPksClause($sql, $table);
     }
 
     public function resetSequence(string $table, int|string|null $value = null): string
@@ -60,9 +53,9 @@ final class DMLQueryBuilder extends AbstractDMLQueryBuilder
 
     public function upsert(
         string $table,
-        QueryInterface|array $insertColumns,
-        bool|array $updateColumns,
-        array &$params = []
+        array|QueryInterface $insertColumns,
+        array|bool $updateColumns = true,
+        array &$params = [],
     ): string {
         $insertSql = $this->insert($table, $insertColumns, $params);
 
@@ -92,5 +85,29 @@ final class DMLQueryBuilder extends AbstractDMLQueryBuilder
 
         return $insertSql
             . ' ON CONFLICT (' . implode(', ', $uniqueNames) . ') DO UPDATE SET ' . implode(', ', $updates);
+    }
+
+    public function upsertWithReturningPks(
+        string $table,
+        array|QueryInterface $insertColumns,
+        array|bool $updateColumns = true,
+        array &$params = [],
+    ): string {
+        $sql = $this->upsert($table, $insertColumns, $updateColumns, $params);
+
+        return $this->appendReturningPksClause($sql, $table);
+    }
+
+    private function appendReturningPksClause(string $sql, string $table): string
+    {
+        $returnColumns = $this->schema->getTableSchema($table)?->getPrimaryKey();
+
+        if (!empty($returnColumns)) {
+            $returnColumns = array_map($this->quoter->quoteColumnName(...), $returnColumns);
+
+            $sql .= ' RETURNING ' . implode(', ', $returnColumns);
+        }
+
+        return $sql;
     }
 }
