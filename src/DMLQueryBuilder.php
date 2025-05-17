@@ -21,7 +21,7 @@ final class DMLQueryBuilder extends AbstractDMLQueryBuilder
     {
         $sql = $this->insert($table, $columns, $params);
 
-        return $this->appendReturningClause($sql, $table);
+        return $this->appendReturningPksClause($sql, $table);
     }
 
     public function resetSequence(string $table, int|string|null $value = null): string
@@ -95,10 +95,10 @@ final class DMLQueryBuilder extends AbstractDMLQueryBuilder
     ): string {
         $sql = $this->upsert($table, $insertColumns, $updateColumns, $params);
 
-        return $this->appendReturningClause($sql, $table);
+        return $this->appendReturningPksClause($sql, $table);
     }
 
-    private function appendReturningClause(string $sql, string $table): string
+    private function appendReturningPksClause(string $sql, string $table): string
     {
         $returnColumns = $this->schema->getTableSchema($table)?->getPrimaryKey();
 
