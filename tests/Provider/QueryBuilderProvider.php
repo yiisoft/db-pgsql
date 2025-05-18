@@ -317,6 +317,36 @@ final class QueryBuilderProvider extends \Yiisoft\Db\Tests\Provider\QueryBuilder
         return $upsert;
     }
 
+    public static function upsertWithReturningPks(): array
+    {
+        $upsert = self::upsert();
+
+        foreach ($upsert as &$data) {
+            $data[3] .= ' RETURNING "id"';
+        }
+
+        $upsert['no columns to update'][3] = 'INSERT INTO "T_upsert_1" ("a") VALUES (:qp0) ON CONFLICT DO NOTHING RETURNING "a"';
+
+        return [
+            ...$upsert,
+            'composite primary key' => [
+                'notauto_pk',
+                ['id_1' => 1, 'id_2' => 2.5, 'type' => 'Test'],
+                true,
+                'INSERT INTO "notauto_pk" ("id_1", "id_2", "type") VALUES (:qp0, :qp1, :qp2)'
+                . ' ON CONFLICT ("id_1", "id_2") DO UPDATE SET "type"=EXCLUDED."type" RETURNING "id_1", "id_2"',
+                [':qp0' => 1, ':qp1' => 2.5, ':qp2' => 'Test'],
+            ],
+            'no primary key' => [
+                'type',
+                ['int_col' => 3, 'char_col' => 'a', 'float_col' => 1.2, 'bool_col' => true],
+                true,
+                'INSERT INTO "type" ("int_col", "char_col", "float_col", "bool_col") VALUES (:qp0, :qp1, :qp2, :qp3)',
+                [':qp0' => 3, ':qp1' => 'a', ':qp2' => 1.2, ':qp3' => true],
+            ],
+        ];
+    }
+
     public static function overlapsCondition(): array
     {
         $data = parent::overlapsCondition();
