@@ -16,10 +16,15 @@ trait TestTrait
     private string $dsn = '';
     private string $fixture = 'pgsql.sql';
 
-    /**
-     * @throws InvalidConfigException
-     * @throws Exception
-     */
+    public static function setUpBeforeClass(): void
+    {
+        $db = self::getDb();
+
+        DbHelper::loadFixture($db, __DIR__ . '/Fixture/pgsql.sql');
+
+        $db->close();
+    }
+
     protected function getConnection(bool $fixture = false): Connection
     {
         $db = new Connection($this->getDriver(), DbHelper::getSchemaCache());
@@ -70,15 +75,6 @@ trait TestTrait
     protected function setFixture(string $fixture): void
     {
         $this->fixture = $fixture;
-    }
-
-    public static function setUpBeforeClass(): void
-    {
-        $db = self::getDb();
-
-        DbHelper::loadFixture($db, __DIR__ . '/Fixture/pgsql.sql');
-
-        $db->close();
     }
 
     protected function getDriver(): Driver
