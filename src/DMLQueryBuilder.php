@@ -124,7 +124,7 @@ final class DMLQueryBuilder extends AbstractDMLQueryBuilder
             $quotedUniqueNames = array_map($this->quoter->quoteColumnName(...), $uniqueNames);
 
             $upsertSql = substr($upsertSql, 0, -10)
-                .'(' . implode(', ', $quotedUniqueNames) . ')'
+                . '(' . implode(', ', $quotedUniqueNames) . ')'
                 . " DO UPDATE SET $dummyColumn = $tableName.$dummyColumn";
         }
 
