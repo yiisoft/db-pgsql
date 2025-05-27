@@ -317,7 +317,7 @@ final class QueryBuilderProvider extends \Yiisoft\Db\Tests\Provider\QueryBuilder
         return $upsert;
     }
 
-    public static function upsertWithReturning(): array
+    public static function upsertReturning(): array
     {
         $upsert = self::upsert();
 

@@ -99,7 +99,7 @@ final class DMLQueryBuilder extends AbstractDMLQueryBuilder
             . ' DO UPDATE SET ' . implode(', ', $updates);
     }
 
-    public function upsertWithReturning(
+    public function upsertReturning(
         string $table,
         array|QueryInterface $insertColumns,
         array|bool $updateColumns = true,

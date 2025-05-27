@@ -437,8 +437,8 @@ final class QueryBuilderTest extends CommonQueryBuilderTest
         parent::testUpsert($table, $insertColumns, $updateColumns, $expectedSql, $expectedParams);
     }
 
-    #[DataProviderExternal(QueryBuilderProvider::class, 'upsertWithReturning')]
-    public function testUpsertWithReturning(
+    #[DataProviderExternal(QueryBuilderProvider::class, 'upsertReturning')]
+    public function testUpsertReturning(
         string $table,
         array|QueryInterface $insertColumns,
         array|bool $updateColumns,
@@ -446,7 +446,7 @@ final class QueryBuilderTest extends CommonQueryBuilderTest
         string $expectedSql,
         array $expectedParams
     ): void {
-        parent::testUpsertWithReturning($table, $insertColumns, $updateColumns, $returnColumns, $expectedSql, $expectedParams);
+        parent::testUpsertReturning($table, $insertColumns, $updateColumns, $returnColumns, $expectedSql, $expectedParams);
     }
 
     #[DataProviderExternal(QueryBuilderProvider::class, 'selectScalar')]
