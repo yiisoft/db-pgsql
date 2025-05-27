@@ -32,7 +32,7 @@ final class CommandProvider extends \Yiisoft\Db\Tests\Provider\CommandProvider
                         ['username' => 'silverfire', 'is_active' => true, 'langs' => ['Ukrainian', 'Russian', 'English']]
                     ),
                     1,
-                    1,
+                    1.0,
                     '',
                     false,
                 ],
@@ -52,7 +52,7 @@ final class CommandProvider extends \Yiisoft\Db\Tests\Provider\CommandProvider
 
         $batchInsert['binds params from arrayExpression'] = [
             '{{%type}}',
-            [[new ArrayExpression([1, null, 3], 'int'), 1, 1, '', false]],
+            [[new ArrayExpression([1, null, 3], 'int'), 1, 1.0, '', false]],
             ['intarray_col', 'int_col', 'float_col', 'char_col', 'bool_col'],
             'expected' => <<<SQL
             INSERT INTO "type" ("intarray_col", "int_col", "float_col", "char_col", "bool_col") VALUES (ARRAY[:qp0,:qp1,:qp2]::int[], :qp3, :qp4, :qp5, :qp6)
