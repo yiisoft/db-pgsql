@@ -20,6 +20,7 @@ use const PHP_INT_SIZE;
  * @psalm-type ColumnInfo = array{
  *     auto_increment?: bool|string,
  *     check?: string|null,
+ *     collation?: string|null,
  *     column?: ColumnInterface,
  *     columns?: array<string, ColumnInterface>,
  *     comment?: string|null,

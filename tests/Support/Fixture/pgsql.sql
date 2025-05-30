@@ -145,7 +145,7 @@ CREATE TABLE "type" (
   tinyint_col smallint DEFAULT '1',
   smallint_col smallint DEFAULT '1',
   char_col char(100) NOT NULL,
-  char_col2 varchar(100) DEFAULT 'some''thing',
+  char_col2 varchar(100) DEFAULT 'some''thing' COLLATE "en-US-x-icu",
   char_col3 text,
   char_col4 character varying DEFAULT E'first line\nsecond line',
   float_col double precision NOT NULL,

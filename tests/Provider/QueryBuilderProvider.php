@@ -443,6 +443,10 @@ final class QueryBuilderProvider extends \Yiisoft\Db\Tests\Provider\QueryBuilder
         $values['unsigned()'][0] = 'integer';
         $values['scale(2)'][0] = 'numeric(10,2)';
         $values['integer(8)->scale(2)'][0] = 'integer';
+        $values["collation('collation_name')"] = [
+            'varchar(255) COLLATE "en-US-x-icu"',
+            ColumnBuilder::string()->collation('en-US-x-icu')
+        ];
 
         $db = self::getDb();
         $serverVersion = self::getDb()->getServerInfo()->getVersion();

@@ -8,6 +8,7 @@ use Yiisoft\Db\Constant\ColumnType;
 use Yiisoft\Db\QueryBuilder\AbstractColumnDefinitionBuilder;
 use Yiisoft\Db\Schema\Column\AbstractArrayColumn;
 use Yiisoft\Db\Schema\Column\ColumnInterface;
+use Yiisoft\Db\Schema\Column\StringColumn;
 
 use function str_repeat;
 use function version_compare;
@@ -45,6 +46,7 @@ final class ColumnDefinitionBuilder extends AbstractColumnDefinitionBuilder
             . $this->buildUnique($column)
             . $this->buildDefault($column)
             . $this->buildCheck($column)
+            . $this->buildCollate($column)
             . $this->buildReferences($column)
             . $this->buildExtra($column);
     }
@@ -72,6 +74,15 @@ final class ColumnDefinitionBuilder extends AbstractColumnDefinitionBuilder
         }
 
         return parent::buildType($column);
+    }
+
+    protected function buildCollate(ColumnInterface $column): string
+    {
+        if (!$column instanceof StringColumn || empty($column->getCollation())) {
+            return '';
+        }
+
+        return ' COLLATE ' . $this->queryBuilder->getQuoter()->quoteSimpleColumnName($column->getCollation());
     }
 
     protected function getDbType(ColumnInterface $column): string
