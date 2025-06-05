@@ -224,14 +224,12 @@ final class Schema extends AbstractPdoSchema
          * > $index
          */
         foreach ($indexes as $name => $index) {
-            $ic = new IndexConstraint(
+            $result[] = new IndexConstraint(
                 $name,
                 array_column($index, 'column_name'),
                 $index[0]['index_is_unique'],
                 $index[0]['index_is_primary'],
             );
-
-            $result[] = $ic;
         }
 
         return $result;
@@ -342,7 +340,6 @@ final class Schema extends AbstractPdoSchema
         }
 
         /**
-         * @var int|string $foreingKeyName
          * @psalm-var array{tableName: string, columns: array} $constraint
          */
         foreach ($constraints as $foreingKeyName => $constraint) {
@@ -720,7 +717,7 @@ final class Schema extends AbstractPdoSchema
      * - uniques
      * - checks
      *
-     * @return CheckConstraint[]|ForeignKeyConstraint[]|IndexConstraint|IndexConstraint[]|null Constraints.
+     * @return CheckConstraint[]|ForeignKeyConstraint[]|IndexConstraint[]|IndexConstraint|null Constraints.
      */
     private function loadTableConstraints(string $tableName, string $returnType): array|IndexConstraint|null
     {
