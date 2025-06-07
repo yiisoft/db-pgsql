@@ -72,7 +72,10 @@ final class StructuredExpressionBuilder extends AbstractStructuredExpressionBuil
     private function buildPlaceholders(array $value, StructuredExpression $expression, array &$params): array
     {
         $type = $expression->getType();
-        $columns = $type instanceof AbstractStructuredColumn ? $type->getColumns() : [];
+        $queryBuilder = $this->queryBuilder;
+        $columns = $type instanceof AbstractStructuredColumn && $queryBuilder->isTypecastingRequired()
+            ? $type->getColumns()
+            : [];
 
         $placeholders = [];
 
@@ -82,11 +85,7 @@ final class StructuredExpressionBuilder extends AbstractStructuredExpressionBuil
                 $item = $columns[$columnName]->dbTypecast($item);
             }
 
-            if ($item instanceof ExpressionInterface) {
-                $placeholders[] = $this->queryBuilder->buildExpression($item, $params);
-            } else {
-                $placeholders[] = $this->queryBuilder->bindParam($item, $params);
-            }
+            $placeholders[] = $queryBuilder->buildValue($item, $params);
         }
 
         return $placeholders;

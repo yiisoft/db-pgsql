@@ -84,6 +84,8 @@ final class ArrayExpressionBuilder extends AbstractArrayExpressionBuilder
     private function buildNestedValue(iterable $value, string $dbType, ColumnInterface|null $column, int $dimension, array &$params): string
     {
         $placeholders = [];
+        $queryBuilder = $this->queryBuilder;
+        $isTypecastingRequired = $column !== null && $queryBuilder->isTypecastingRequired();
 
         if ($dimension > 1) {
             /** @var iterable|null $item */
@@ -93,20 +95,18 @@ final class ArrayExpressionBuilder extends AbstractArrayExpressionBuilder
                 } elseif ($item instanceof ExpressionInterface) {
                     $placeholders[] = $item instanceof QueryInterface
                         ? $this->buildNestedSubquery($item, $dbType, $dimension - 1, $params)
-                        : $this->queryBuilder->buildExpression($item, $params);
+                        : $queryBuilder->buildExpression($item, $params);
                 } else {
                     $placeholders[] = $this->buildNestedValue($item, $dbType, $column, $dimension - 1, $params);
                 }
             }
         } else {
-            $value = $this->dbTypecast($value, $column);
+            if ($isTypecastingRequired) {
+                $value = $this->dbTypecast($value, $column);
+            }
 
             foreach ($value as $item) {
-                if ($item instanceof ExpressionInterface) {
-                    $placeholders[] = $this->queryBuilder->buildExpression($item, $params);
-                } else {
-                    $placeholders[] = $this->queryBuilder->bindParam($item, $params);
-                }
+                $placeholders[] = $queryBuilder->buildValue($item, $params);
             }
         }
 
@@ -170,16 +170,12 @@ final class ArrayExpressionBuilder extends AbstractArrayExpressionBuilder
      * Converts array values for use in a db query.
      *
      * @param iterable $value The array or iterable object.
-     * @param ColumnInterface|null $column The column instance to typecast values.
+     * @param ColumnInterface $column The column instance to typecast values.
      *
      * @return iterable Converted values.
      */
-    private function dbTypecast(iterable $value, ColumnInterface|null $column): iterable
+    private function dbTypecast(iterable $value, ColumnInterface $column): iterable
     {
-        if ($column === null) {
-            return $value;
-        }
-
         if (!is_array($value)) {
             $value = iterator_to_array($value, false);
         }

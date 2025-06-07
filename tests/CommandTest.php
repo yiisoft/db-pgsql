@@ -5,9 +5,6 @@ declare(strict_types=1);
 namespace Yiisoft\Db\Pgsql\Tests;
 
 use PHPUnit\Framework\Attributes\DataProviderExternal;
-use Throwable;
-use Yiisoft\Db\Exception\Exception;
-use Yiisoft\Db\Exception\InvalidConfigException;
 use Yiisoft\Db\Exception\NotSupportedException;
 use Yiisoft\Db\Pgsql\Tests\Provider\CommandProvider;
 use Yiisoft\Db\Pgsql\Tests\Support\TestTrait;
@@ -17,8 +14,6 @@ use function serialize;
 
 /**
  * @group pgsql
- *
- * @psalm-suppress PropertyNotSetInConstructor
  */
 final class CommandTest extends CommonCommandTest
 {
@@ -26,10 +21,6 @@ final class CommandTest extends CommonCommandTest
 
     protected string $upsertTestCharCast = 'CAST([[address]] AS VARCHAR(255))';
 
-    /**
-     * @throws Exception
-     * @throws InvalidConfigException
-     */
     public function testAddDefaultValue(): void
     {
         $db = $this->getConnection();
@@ -46,11 +37,7 @@ final class CommandTest extends CommonCommandTest
         $db->close();
     }
 
-    /**
-     * @dataProvider \Yiisoft\Db\Pgsql\Tests\Provider\CommandProvider::batchInsert
-     *
-     * @throws Throwable
-     */
+    #[DataProviderExternal(CommandProvider::class, 'batchInsert')]
     public function testBatchInsert(
         string $table,
         iterable $values,
@@ -62,11 +49,6 @@ final class CommandTest extends CommonCommandTest
         parent::testBatchInsert($table, $values, $columns, $expected, $expectedParams, $insertedRow);
     }
 
-    /**
-     * @throws Exception
-     * @throws InvalidConfigException
-     * @throws Throwable
-     */
     public function testBooleanValuesInsert(): void
     {
         $db = $this->getConnection(true);
@@ -100,11 +82,6 @@ final class CommandTest extends CommonCommandTest
         $db->close();
     }
 
-    /**
-     * @throws Exception
-     * @throws InvalidConfigException
-     * @throws Throwable
-     */
     public function testBooleanValuesBatchInsert(): void
     {
         $db = $this->getConnection(true);
@@ -133,11 +110,6 @@ final class CommandTest extends CommonCommandTest
         $db->close();
     }
 
-    /**
-     * @throws Exception
-     * @throws InvalidConfigException
-     * @throws Throwable
-     */
     public function testDelete(): void
     {
         $db = $this->getConnection(true);
@@ -159,10 +131,6 @@ final class CommandTest extends CommonCommandTest
         $db->close();
     }
 
-    /**
-     * @throws Exception
-     * @throws InvalidConfigException
-     */
     public function testDropDefaultValue(): void
     {
         $db = $this->getConnection();
@@ -179,23 +147,13 @@ final class CommandTest extends CommonCommandTest
         $db->close();
     }
 
-    /**
-     * @dataProvider \Yiisoft\Db\Pgsql\Tests\Provider\CommandProvider::rawSql
-     *
-     * @throws Exception
-     * @throws InvalidConfigException
-     * @throws NotSupportedException
-     */
+    #[DataProviderExternal(CommandProvider::class, 'rawSql')]
     public function testGetRawSql(string $sql, array $params, string $expectedRawSql): void
     {
         parent::testGetRawSql($sql, $params, $expectedRawSql);
     }
 
     /**
-     * @throws Exception
-     * @throws InvalidConfigException
-     * @throws Throwable
-     *
      * {@link https://github.com/yiisoft/yii2/issues/11498}
      */
     public function testSaveSerializedObject(): void
@@ -223,12 +181,7 @@ final class CommandTest extends CommonCommandTest
         $db->close();
     }
 
-    /**
-     * @dataProvider \Yiisoft\Db\Pgsql\Tests\Provider\CommandProvider::update
-     *
-     * @throws Exception
-     * @throws Throwable
-     */
+    #[DataProviderExternal(CommandProvider::class, 'update')]
     public function testUpdate(
         string $table,
         array $columns,
@@ -240,12 +193,7 @@ final class CommandTest extends CommonCommandTest
         parent::testUpdate($table, $columns, $conditions, $params, $expectedValues, $expectedCount);
     }
 
-    /**
-     * @dataProvider \Yiisoft\Db\Pgsql\Tests\Provider\CommandProvider::upsert
-     *
-     * @throws Exception
-     * @throws Throwable
-     */
+    #[DataProviderExternal(CommandProvider::class, 'upsert')]
     public function testUpsert(array $firstData, array $secondData): void
     {
         parent::testUpsert($firstData, $secondData);

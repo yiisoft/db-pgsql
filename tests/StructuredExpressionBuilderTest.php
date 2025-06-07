@@ -18,6 +18,7 @@ use Yiisoft\Db\Pgsql\Tests\Support\TestTrait;
 use Yiisoft\Db\Query\Query;
 use Yiisoft\Db\Schema\Column\AbstractStructuredColumn;
 use Yiisoft\Db\Schema\Data\JsonLazyArray;
+use Yiisoft\Db\Tests\Support\Assert;
 
 /**
  * @group pgsql
@@ -34,77 +35,98 @@ final class StructuredExpressionBuilderTest extends TestCase
         ]);
 
         return [
-            [null, null, 'NULL', []],
-            [[null, null], null, 'ROW(:qp0,:qp1)', [':qp0' => null, ':qp1' => null]],
-            [['5', 'USD'], null, 'ROW(:qp0,:qp1)', [':qp0' => '5', ':qp1' => 'USD']],
-            [
+            'null' => [null, null, 'NULL', []],
+            'nulls' => [[null, null], null, 'ROW(NULL,NULL)', []],
+            'array w/o type' => [
+                ['5', 'USD'],
+                null,
+                'ROW(:qp0,:qp1)',
+                [
+                    ':qp0' => new Param('5', DataType::STRING),
+                    ':qp1' => new Param('USD', DataType::STRING),
+                ],
+            ],
+            'ArrayIterator' => [
                 new ArrayIterator(['5', 'USD']),
                 $column,
-                'ROW(:qp0,:qp1)::currency_money',
-                [':qp0' => 5, ':qp1' => 'USD'],
+                'ROW(5,:qp0)::currency_money',
+                [':qp0' => new Param('USD', DataType::STRING)],
             ],
-            [
+            'StructuredLazyArray' => [
                 new StructuredLazyArray('(5,USD)'),
                 $column,
                 ':qp0::currency_money',
                 [':qp0' => new Param('(5,USD)', DataType::STRING)],
             ],
-            [
+            'StructuredLazyArray external' => [
                 new \Yiisoft\Db\Schema\Data\StructuredLazyArray('["5","USD"]'),
                 $column,
-                'ROW(:qp0,:qp1)::currency_money',
-                [':qp0' => 5, ':qp1' => 'USD'],
+                'ROW(5,:qp0)::currency_money',
+                [':qp0' => new Param('USD', DataType::STRING)],
             ],
-            [
+            'LazyArray' => [
                 new LazyArray('{5,USD}'),
                 $column,
-                'ROW(:qp0,:qp1)::currency_money',
-                [':qp0' => 5, ':qp1' => 'USD'],
+                'ROW(5,:qp0)::currency_money',
+                [':qp0' => new Param('USD', DataType::STRING)],
             ],
-            [
+            'JsonLazyArray' => [
                 new JsonLazyArray('["5","USD"]'),
                 $column,
-                'ROW(:qp0,:qp1)::currency_money',
-                [':qp0' => 5, ':qp1' => 'USD'],
+                'ROW(5,:qp0)::currency_money',
+                [':qp0' => new Param('USD', DataType::STRING)],
             ],
-            [
+            'Query w/o type' => [
                 (new Query(self::getDb()))->select('price')->from('product')->where(['id' => 1]),
                 null,
                 '(SELECT "price" FROM "product" WHERE "id"=:qp0)',
                 [':qp0' => 1],
             ],
-            [
+            'Query' => [
                 (new Query(self::getDb()))->select('price')->from('product')->where(['id' => 1]),
                 'currency_money',
                 '(SELECT "price" FROM "product" WHERE "id"=:qp0)::currency_money',
                 [':qp0' => 1],
             ],
-            [
+            'ordered array' => [
                 ['value' => '5', 'currency_code' => 'USD'],
                 $column,
-                'ROW(:qp0,:qp1)::currency_money',
-                [':qp0' => 5, ':qp1' => 'USD'],
+                'ROW(5,:qp0)::currency_money',
+                [':qp0' => new Param('USD', DataType::STRING)],
             ],
-            [
+            'unordered array' => [
                 ['currency_code' => 'USD', 'value' => '5'],
                 $column,
-                'ROW(:qp0,:qp1)::currency_money',
-                [':qp0' => 5, ':qp1' => 'USD'],
+                'ROW(5,:qp0)::currency_money',
+                [':qp0' => new Param('USD', DataType::STRING)],
             ],
-            [['value' => '5'], $column, 'ROW(:qp0,:qp1)::currency_money', [':qp0' => 5, ':qp1' => 'USD']],
-            [['value' => '5'], null, 'ROW(:qp0)', [':qp0' => '5']],
-            [
+            'missing items' => [
+                ['value' => '5'],
+                $column,
+                'ROW(5,:qp0)::currency_money',
+                [':qp0' => new Param('USD', DataType::STRING)],
+            ],
+            'missing items w/o type' => [
+                ['value' => '5'],
+                null,
+                'ROW(:qp0)',
+                [':qp0' => new Param('5', DataType::STRING)],
+            ],
+            'extra items' => [
                 ['value' => '5', 'currency_code' => 'USD', 'extra' => 'value'],
                 $column,
-                'ROW(:qp0,:qp1)::currency_money',
-                [':qp0' => 5, ':qp1' => 'USD'],
+                'ROW(5,:qp0)::currency_money',
+                [':qp0' => new Param('USD', DataType::STRING)],
             ],
-            [(object) ['value' => '5', 'currency_code' => 'USD'],
+            'object' => [(object) ['value' => '5', 'currency_code' => 'USD'],
                 'currency_money',
                 'ROW(:qp0,:qp1)::currency_money',
-                [':qp0' => 5, ':qp1' => 'USD'],
+                [
+                    ':qp0' => new Param('5', DataType::STRING),
+                    ':qp1' => new Param('USD', DataType::STRING),
+                ],
             ],
-            ['(5,USD)', null, ':qp0', [':qp0' => new Param('(5,USD)', DataType::STRING)]],
+            'string' => ['(5,USD)', null, ':qp0', [':qp0' => new Param('(5,USD)', DataType::STRING)]],
         ];
     }
 
@@ -123,6 +145,6 @@ final class StructuredExpressionBuilderTest extends TestCase
         $expression = new StructuredExpression($value, $type);
 
         $this->assertSame($expected, $builder->build($expression, $params));
-        $this->assertEquals($expectedParams, $params);
+        Assert::arraysEquals($expectedParams, $params);
     }
 }

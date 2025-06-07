@@ -96,15 +96,15 @@ final class QueryBuilderProvider extends \Yiisoft\Db\Tests\Provider\QueryBuilder
             ],
 
             /* Checks to verity that operators work correctly */
-            [['@>', 'id', new ArrayExpression([1])], '"id" @> ARRAY[:qp0]', [':qp0' => 1]],
-            [['<@', 'id', new ArrayExpression([1])], '"id" <@ ARRAY[:qp0]', [':qp0' => 1]],
-            [['=', 'id',  new ArrayExpression([1])], '"id" = ARRAY[:qp0]', [':qp0' => 1]],
-            [['<>', 'id', new ArrayExpression([1])], '"id" <> ARRAY[:qp0]', [':qp0' => 1]],
-            [['>', 'id',  new ArrayExpression([1])], '"id" > ARRAY[:qp0]', [':qp0' => 1]],
-            [['<', 'id',  new ArrayExpression([1])], '"id" < ARRAY[:qp0]', [':qp0' => 1]],
-            [['>=', 'id', new ArrayExpression([1])], '"id" >= ARRAY[:qp0]', [':qp0' => 1]],
-            [['<=', 'id', new ArrayExpression([1])], '"id" <= ARRAY[:qp0]', [':qp0' => 1]],
-            [['&&', 'id', new ArrayExpression([1])], '"id" && ARRAY[:qp0]', [':qp0' => 1]],
+            [['@>', 'id', new ArrayExpression([1])], '"id" @> ARRAY[1]', []],
+            [['<@', 'id', new ArrayExpression([1])], '"id" <@ ARRAY[1]', []],
+            [['=', 'id',  new ArrayExpression([1])], '"id" = ARRAY[1]', []],
+            [['<>', 'id', new ArrayExpression([1])], '"id" <> ARRAY[1]', []],
+            [['>', 'id',  new ArrayExpression([1])], '"id" > ARRAY[1]', []],
+            [['<', 'id',  new ArrayExpression([1])], '"id" < ARRAY[1]', []],
+            [['>=', 'id', new ArrayExpression([1])], '"id" >= ARRAY[1]', []],
+            [['<=', 'id', new ArrayExpression([1])], '"id" <= ARRAY[1]', []],
+            [['&&', 'id', new ArrayExpression([1])], '"id" && ARRAY[1]', []],
         ];
     }
 
@@ -441,6 +441,26 @@ final class QueryBuilderProvider extends \Yiisoft\Db\Tests\Provider\QueryBuilder
         ];
     }
 
+    public static function buildValue(): array
+    {
+        $values = parent::buildValue();
+
+        $values['array'][1] = 'ARRAY[:qp0,:qp1,:qp2]';
+        $values['array'][2] = [
+            ':qp0' => new Param('a', DataType::STRING),
+            ':qp1' => new Param('b', DataType::STRING),
+            ':qp2' => new Param('c', DataType::STRING),
+        ];
+        $values['Iterator'][1] = 'ARRAY[:qp0,:qp1,:qp2]';
+        $values['Iterator'][2] = [
+            ':qp0' => new Param('a', DataType::STRING),
+            ':qp1' => new Param('b', DataType::STRING),
+            ':qp2' => new Param('c', DataType::STRING),
+        ];
+
+        return $values;
+    }
+
     public static function prepareParam(): array
     {
         $values = parent::prepareParam();
@@ -456,6 +476,8 @@ final class QueryBuilderProvider extends \Yiisoft\Db\Tests\Provider\QueryBuilder
 
         $values['binary'][0] = "'\\x737472696e67'::bytea";
         $values['paramBinary'][0] = "'\\x737472696e67'::bytea";
+        $values['array'][0] = "ARRAY['a','b','c']";
+        $values['Iterator'][0] = "ARRAY['a','b','c']";
 
         return $values;
     }

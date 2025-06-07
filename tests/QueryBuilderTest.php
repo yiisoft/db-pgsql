@@ -462,15 +462,15 @@ final class QueryBuilderTest extends CommonQueryBuilderTest
         $params = [];
         $sql = $qb->buildExpression(new ArrayOverlapsCondition('column', [1, 2, 3]), $params);
 
-        $this->assertSame('"column"::text[] && ARRAY[:qp0,:qp1,:qp2]::text[]', $sql);
-        $this->assertSame([':qp0' => 1, ':qp1' => 2, ':qp2' => 3], $params);
+        $this->assertSame('"column"::text[] && ARRAY[1,2,3]::text[]', $sql);
+        $this->assertSame([], $params);
 
         // Test column as Expression
         $params = [];
         $sql = $qb->buildExpression(new ArrayOverlapsCondition(new Expression('column'), [1, 2, 3]), $params);
 
-        $this->assertSame('column::text[] && ARRAY[:qp0,:qp1,:qp2]::text[]', $sql);
-        $this->assertSame([':qp0' => 1, ':qp1' => 2, ':qp2' => 3], $params);
+        $this->assertSame('column::text[] && ARRAY[1,2,3]::text[]', $sql);
+        $this->assertSame([], $params);
 
         $db->close();
     }
@@ -484,10 +484,10 @@ final class QueryBuilderTest extends CommonQueryBuilderTest
         $sql = $qb->buildExpression(new JsonOverlapsCondition('column', [1, 2, 3]), $params);
 
         $this->assertSame(
-            'ARRAY(SELECT jsonb_array_elements_text("column"::jsonb)) && ARRAY[:qp0,:qp1,:qp2]::text[]',
+            'ARRAY(SELECT jsonb_array_elements_text("column"::jsonb)) && ARRAY[1,2,3]::text[]',
             $sql
         );
-        $this->assertSame([':qp0' => 1, ':qp1' => 2, ':qp2' => 3], $params);
+        $this->assertSame([], $params);
 
         $db->close();
     }
@@ -556,6 +556,12 @@ final class QueryBuilderTest extends CommonQueryBuilderTest
     public function testBuildColumnDefinition(string $expected, ColumnInterface|string $column): void
     {
         parent::testBuildColumnDefinition($expected, $column);
+    }
+
+    #[DataProviderExternal(QueryBuilderProvider::class, 'buildValue')]
+    public function testBuildValue(mixed $value, string $expected, array $expectedParams): void
+    {
+        parent::testBuildValue($value, $expected, $expectedParams);
     }
 
     #[DataProviderExternal(QueryBuilderProvider::class, 'prepareParam')]
