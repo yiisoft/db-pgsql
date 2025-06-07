@@ -100,15 +100,15 @@ final class QueryBuilderProvider extends \Yiisoft\Db\Tests\Provider\QueryBuilder
             ],
 
             /* Checks to verity that operators work correctly */
-            [['@>', 'id', new ArrayExpression([1])], '"id" @> ARRAY[1]', []],
-            [['<@', 'id', new ArrayExpression([1])], '"id" <@ ARRAY[1]', []],
-            [['=', 'id',  new ArrayExpression([1])], '"id" = ARRAY[1]', []],
-            [['<>', 'id', new ArrayExpression([1])], '"id" <> ARRAY[1]', []],
-            [['>', 'id',  new ArrayExpression([1])], '"id" > ARRAY[1]', []],
-            [['<', 'id',  new ArrayExpression([1])], '"id" < ARRAY[1]', []],
-            [['>=', 'id', new ArrayExpression([1])], '"id" >= ARRAY[1]', []],
-            [['<=', 'id', new ArrayExpression([1])], '"id" <= ARRAY[1]', []],
-            [['&&', 'id', new ArrayExpression([1])], '"id" && ARRAY[1]', []],
+            [['@>', 'id', new ArrayExpression([1])], '"id" @> ARRAY[1]::int[]', []],
+            [['<@', 'id', new ArrayExpression([1])], '"id" <@ ARRAY[1]::int[]', []],
+            [['=', 'id',  new ArrayExpression([1])], '"id" = ARRAY[1]::int[]', []],
+            [['<>', 'id', new ArrayExpression([1])], '"id" <> ARRAY[1]::int[]', []],
+            [['>', 'id',  new ArrayExpression([1])], '"id" > ARRAY[1]::int[]', []],
+            [['<', 'id',  new ArrayExpression([1])], '"id" < ARRAY[1]::int[]', []],
+            [['>=', 'id', new ArrayExpression([1])], '"id" >= ARRAY[1]::int[]', []],
+            [['<=', 'id', new ArrayExpression([1])], '"id" <= ARRAY[1]::int[]', []],
+            [['&&', 'id', new ArrayExpression([1])], '"id" && ARRAY[1]::int[]', []],
         ];
     }
 
@@ -480,13 +480,13 @@ final class QueryBuilderProvider extends \Yiisoft\Db\Tests\Provider\QueryBuilder
     {
         $values = parent::buildValue();
 
-        $values['array'][1] = 'ARRAY[:qp0,:qp1,:qp2]';
+        $values['array'][1] = 'ARRAY[:qp0,:qp1,:qp2]::text[]';
         $values['array'][2] = [
             ':qp0' => new Param('a', DataType::STRING),
             ':qp1' => new Param('b', DataType::STRING),
             ':qp2' => new Param('c', DataType::STRING),
         ];
-        $values['Iterator'][1] = 'ARRAY[:qp0,:qp1,:qp2]';
+        $values['Iterator'][1] = 'ARRAY[:qp0,:qp1,:qp2]::text[]';
         $values['Iterator'][2] = [
             ':qp0' => new Param('a', DataType::STRING),
             ':qp1' => new Param('b', DataType::STRING),
@@ -514,8 +514,8 @@ final class QueryBuilderProvider extends \Yiisoft\Db\Tests\Provider\QueryBuilder
         $values['paramBinary'][0] = "'\\x737472696e67'::bytea";
         $values['paramResource'][0] = "'\\x737472696e67'::bytea";
         $values['ResourceStream'][0] = "'\\x737472696e67'::bytea";
-        $values['array'][0] = "ARRAY['a','b','c']";
-        $values['Iterator'][0] = "ARRAY['a','b','c']";
+        $values['array'][0] = "ARRAY['a','b','c']::text[]";
+        $values['Iterator'][0] = "ARRAY['a','b','c']::text[]";
 
         return $values;
     }
@@ -629,7 +629,7 @@ final class QueryBuilderProvider extends \Yiisoft\Db\Tests\Provider\QueryBuilder
             'ArrayMerge with 4 operands' => [
                 ArrayMerge::class,
                 ['ARRAY[1,2,3]', [5, 6, 7], $stringParam, self::getDb()->select(new ArrayExpression([9, 10]))],
-                'ARRAY(SELECT DISTINCT UNNEST(ARRAY[1,2,3] || ARRAY[5,6,7] || :qp0 || (SELECT ARRAY[9,10])))',
+                'ARRAY(SELECT DISTINCT UNNEST(ARRAY[1,2,3] || ARRAY[5,6,7]::int[] || :qp0 || (SELECT ARRAY[9,10]::int[])))',
                 [1, 2, 3, 4, 5, 6, 7, 9, 10],
                 [
                     ':qp0' => $stringParam,
