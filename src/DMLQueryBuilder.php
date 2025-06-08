@@ -11,6 +11,8 @@ use Yiisoft\Db\QueryBuilder\AbstractDMLQueryBuilder;
 
 use function array_map;
 use function implode;
+use function str_ends_with;
+use function substr;
 
 /**
  * Implements a DML (Data Manipulation Language) SQL statements for PostgreSQL Server.
@@ -19,9 +21,17 @@ final class DMLQueryBuilder extends AbstractDMLQueryBuilder
 {
     public function insertWithReturningPks(string $table, array|QueryInterface $columns, array &$params = []): string
     {
-        $sql = $this->insert($table, $columns, $params);
+        $insertSql = $this->insert($table, $columns, $params);
+        $tableSchema = $this->schema->getTableSchema($table);
+        $primaryKeys = $tableSchema?->getPrimaryKey() ?? [];
 
-        return $this->appendReturningPksClause($sql, $table);
+        if (empty($primaryKeys)) {
+            return $insertSql;
+        }
+
+        $primaryKeys = array_map($this->quoter->quoteColumnName(...), $primaryKeys);
+
+        return $insertSql . ' RETURNING ' . implode(', ', $primaryKeys);
     }
 
     public function resetSequence(string $table, int|string|null $value = null): string
@@ -81,33 +91,61 @@ final class DMLQueryBuilder extends AbstractDMLQueryBuilder
             }
         }
 
-        [$updates, $params] = $this->prepareUpdateSets($table, $updateColumns, $params);
+        $quotedUniqueNames = array_map($this->quoter->quoteColumnName(...), $uniqueNames);
+        $updates = $this->prepareUpdateSets($table, $updateColumns, $params);
 
         return $insertSql
-            . ' ON CONFLICT (' . implode(', ', $uniqueNames) . ') DO UPDATE SET ' . implode(', ', $updates);
+            . ' ON CONFLICT (' . implode(', ', $quotedUniqueNames) . ')'
+            . ' DO UPDATE SET ' . implode(', ', $updates);
     }
 
-    public function upsertWithReturningPks(
+    public function upsertReturning(
         string $table,
         array|QueryInterface $insertColumns,
         array|bool $updateColumns = true,
+        array|null $returnColumns = null,
         array &$params = [],
     ): string {
-        $sql = $this->upsert($table, $insertColumns, $updateColumns, $params);
+        $upsertSql = $this->upsert($table, $insertColumns, $updateColumns, $params);
 
-        return $this->appendReturningPksClause($sql, $table);
-    }
+        $returnColumns ??= $this->schema->getTableSchema($table)?->getColumnNames();
 
-    private function appendReturningPksClause(string $sql, string $table): string
-    {
-        $returnColumns = $this->schema->getTableSchema($table)?->getPrimaryKey();
-
-        if (!empty($returnColumns)) {
-            $returnColumns = array_map($this->quoter->quoteColumnName(...), $returnColumns);
-
-            $sql .= ' RETURNING ' . implode(', ', $returnColumns);
+        if (empty($returnColumns)) {
+            return $upsertSql;
         }
 
-        return $sql;
+        $returnColumns = array_map($this->quoter->quoteColumnName(...), $returnColumns);
+
+        if (str_ends_with($upsertSql, ' ON CONFLICT DO NOTHING')) {
+            $tableName = $this->quoter->quoteTableName($table);
+            $dummyColumn = $this->getDummyColumn($table);
+
+            $uniqueNames = $this->prepareUpsertColumns($table, $insertColumns, $updateColumns)[0];
+            $quotedUniqueNames = array_map($this->quoter->quoteColumnName(...), $uniqueNames);
+
+            $upsertSql = substr($upsertSql, 0, -10)
+                . '(' . implode(', ', $quotedUniqueNames) . ')'
+                . " DO UPDATE SET $dummyColumn = $tableName.$dummyColumn";
+        }
+
+        return $upsertSql . ' RETURNING ' . implode(', ', $returnColumns);
+    }
+
+    private function getDummyColumn(string $table): string
+    {
+        /** @psalm-suppress PossiblyNullReference */
+        $columns = $this->schema->getTableSchema($table)->getColumns();
+
+        foreach ($columns as $column) {
+            if ($column->isPrimaryKey() || $column->isUnique()) {
+                continue;
+            }
+
+            /** @psalm-suppress PossiblyNullArgument */
+            return $this->quoter->quoteColumnName($column->getName());
+        }
+
+        /** @psalm-suppress PossiblyNullArgument, PossiblyFalseReference */
+        return $this->quoter->quoteColumnName(end($columns)->getName());
     }
 }

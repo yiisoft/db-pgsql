@@ -16,7 +16,6 @@ final class CommandPDOProvider extends \Yiisoft\Db\Tests\Provider\CommandPDOProv
             'name' => 'user1',
             'address' => 'address1',
             'status' => 1,
-            'bool_status' => true,
             'profile_id' => 1,
         ];
 
