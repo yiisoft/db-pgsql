@@ -265,7 +265,7 @@ final class QueryBuilderProvider extends \Yiisoft\Db\Tests\Provider\QueryBuilder
             ],
             'values and expressions without update part' => [
                 1 => ['{{%T_upsert}}.[[email]]' => 'dynamic@example.com', '[[ts]]' => new Expression('extract(epoch from now()) * 1000')],
-                3 => 'INSERT INTO {{%T_upsert}} ("email", "ts") VALUES (:qp0, extract(epoch from now()) * 1000) ON CONFLICT DO NOTHING',
+                3 => 'INSERT INTO "T_upsert" ("email", "ts") VALUES (:qp0, extract(epoch from now()) * 1000) ON CONFLICT DO NOTHING',
             ],
             'query, values and expressions with update part' => [
                 1 => (new Query(self::getDb()))
@@ -287,13 +287,13 @@ final class QueryBuilderProvider extends \Yiisoft\Db\Tests\Provider\QueryBuilder
                             '[[ts]]' => new Expression('extract(epoch from now()) * 1000'),
                         ],
                     ),
-                3 => 'INSERT INTO {{%T_upsert}} ("email", [[ts]]) SELECT :phEmail AS "email", extract(epoch from now()) * 1000 AS [[ts]] ON CONFLICT DO NOTHING',
+                3 => 'INSERT INTO "T_upsert" ("email", [[ts]]) SELECT :phEmail AS "email", extract(epoch from now()) * 1000 AS [[ts]] ON CONFLICT DO NOTHING',
             ],
             'no columns to update' => [
                 3 => 'INSERT INTO "T_upsert_1" ("a") VALUES (:qp0) ON CONFLICT DO NOTHING',
             ],
             'no columns to update with unique' => [
-                3 => 'INSERT INTO {{%T_upsert}} ("email") VALUES (:qp0) ON CONFLICT DO NOTHING',
+                3 => 'INSERT INTO "T_upsert" ("email") VALUES (:qp0) ON CONFLICT DO NOTHING',
             ],
             'no unique columns in table - simple insert' => [
                 3 => 'INSERT INTO {{%animal}} ("type") VALUES (:qp0)',
@@ -317,15 +317,30 @@ final class QueryBuilderProvider extends \Yiisoft\Db\Tests\Provider\QueryBuilder
         return $upsert;
     }
 
-    public static function upsertWithReturningPks(): array
+    public static function upsertReturning(): array
     {
         $upsert = self::upsert();
 
-        foreach ($upsert as &$data) {
-            $data[3] .= ' RETURNING "id"';
+        $withoutUpdate = [
+            'regular values without update part',
+            'query without update part',
+            'values and expressions without update part',
+            'query, values and expressions without update part',
+            'no columns to update with unique',
+        ];
+
+        foreach ($upsert as $name => &$data) {
+            array_splice($data, 3, 0, [['id']]);
+            if (in_array($name, $withoutUpdate, true)) {
+                $data[4] = substr($data[4], 0, -10) . '("email") DO UPDATE SET "ts" = "T_upsert"."ts"';
+            }
+
+            $data[4] .= ' RETURNING "id"';
         }
 
-        $upsert['no columns to update'][3] = 'INSERT INTO "T_upsert_1" ("a") VALUES (:qp0) ON CONFLICT DO NOTHING RETURNING "a"';
+        $upsert['no columns to update'][3] = ['a'];
+        $upsert['no columns to update'][4] = 'INSERT INTO "T_upsert_1" ("a") VALUES (:qp0) ON CONFLICT ("a")'
+            . ' DO UPDATE SET "a" = "T_upsert_1"."a" RETURNING "a"';
 
         return [
             ...$upsert,
@@ -333,16 +348,29 @@ final class QueryBuilderProvider extends \Yiisoft\Db\Tests\Provider\QueryBuilder
                 'notauto_pk',
                 ['id_1' => 1, 'id_2' => 2.5, 'type' => 'Test'],
                 true,
+                ['id_1', 'id_2'],
                 'INSERT INTO "notauto_pk" ("id_1", "id_2", "type") VALUES (:qp0, :qp1, :qp2)'
                 . ' ON CONFLICT ("id_1", "id_2") DO UPDATE SET "type"=EXCLUDED."type" RETURNING "id_1", "id_2"',
                 [':qp0' => 1, ':qp1' => 2.5, ':qp2' => 'Test'],
             ],
-            'no primary key' => [
+            'no return columns' => [
                 'type',
                 ['int_col' => 3, 'char_col' => 'a', 'float_col' => 1.2, 'bool_col' => true],
                 true,
+                [],
                 'INSERT INTO "type" ("int_col", "char_col", "float_col", "bool_col") VALUES (:qp0, :qp1, :qp2, :qp3)',
                 [':qp0' => 3, ':qp1' => 'a', ':qp2' => 1.2, ':qp3' => true],
+            ],
+            'return all columns' => [
+                'T_upsert',
+                ['email' => 'test@example.com', 'address' => 'test address', 'status' => 1, 'profile_id' => 1],
+                true,
+                null,
+                'INSERT INTO "T_upsert" ("email", "address", "status", "profile_id") VALUES (:qp0, :qp1, :qp2, :qp3)'
+                . ' ON CONFLICT ("email") DO UPDATE SET'
+                . ' "address"=EXCLUDED."address", "status"=EXCLUDED."status", "profile_id"=EXCLUDED."profile_id"'
+                . ' RETURNING "id", "ts", "email", "recovery_email", "address", "status", "orders", "profile_id"',
+                [':qp0' => 'test@example.com', ':qp1' => 'test address', ':qp2' => 1, ':qp3' => 1],
             ],
         ];
     }
