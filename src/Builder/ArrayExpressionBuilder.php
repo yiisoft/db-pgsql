@@ -85,7 +85,7 @@ final class ArrayExpressionBuilder extends AbstractArrayExpressionBuilder
     {
         $placeholders = [];
         $queryBuilder = $this->queryBuilder;
-        $isTypecastingRequired = $column !== null && $queryBuilder->isTypecastingRequired();
+        $isTypecastingEnabled = $column !== null && $queryBuilder->isTypecastingEnabled();
 
         if ($dimension > 1) {
             /** @var iterable|null $item */
@@ -101,7 +101,7 @@ final class ArrayExpressionBuilder extends AbstractArrayExpressionBuilder
                 }
             }
         } else {
-            if ($isTypecastingRequired) {
+            if ($isTypecastingEnabled) {
                 $value = $this->dbTypecast($value, $column);
             }
 

@@ -72,7 +72,7 @@ final class StructuredExpressionBuilder extends AbstractStructuredExpressionBuil
     {
         $type = $expression->getType();
         $queryBuilder = $this->queryBuilder;
-        $columns = $type instanceof AbstractStructuredColumn && $queryBuilder->isTypecastingRequired()
+        $columns = $type instanceof AbstractStructuredColumn && $queryBuilder->isTypecastingEnabled()
             ? $type->getColumns()
             : [];
 
