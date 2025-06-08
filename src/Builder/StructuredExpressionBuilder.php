@@ -11,7 +11,6 @@ use Yiisoft\Db\Exception\InvalidArgumentException;
 use Yiisoft\Db\Exception\InvalidConfigException;
 use Yiisoft\Db\Exception\NotSupportedException;
 use Yiisoft\Db\Expression\AbstractStructuredExpressionBuilder;
-use Yiisoft\Db\Expression\ExpressionInterface;
 use Yiisoft\Db\Expression\StructuredExpression;
 use Yiisoft\Db\Pgsql\Data\StructuredLazyArray;
 use Yiisoft\Db\Query\QueryInterface;
