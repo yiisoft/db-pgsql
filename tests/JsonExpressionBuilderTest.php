@@ -70,14 +70,14 @@ final class JsonExpressionBuilderTest extends TestCase
         $builder = new JsonExpressionBuilder($qb);
         $expression = new JsonExpression(new ArrayExpression([1,2,3]));
 
-        $this->assertSame('array_to_json(ARRAY[:qp0,:qp1,:qp2])', $builder->build($expression, $params));
-        $this->assertSame([':qp0' => 1, ':qp1' => 2, ':qp2' => 3], $params);
+        $this->assertSame('array_to_json(ARRAY[1,2,3])', $builder->build($expression, $params));
+        $this->assertSame([], $params);
 
         $params = [];
         $expression = new JsonExpression(new ArrayExpression([1,2,3]), 'jsonb');
 
-        $this->assertSame('array_to_json(ARRAY[:qp0,:qp1,:qp2])::jsonb', $builder->build($expression, $params));
-        $this->assertSame([':qp0' => 1, ':qp1' => 2, ':qp2' => 3], $params);
+        $this->assertSame('array_to_json(ARRAY[1,2,3])::jsonb', $builder->build($expression, $params));
+        $this->assertSame([], $params);
     }
 
     public function testBuildNull(): void

@@ -7,10 +7,7 @@ namespace Yiisoft\Db\Pgsql\Tests;
 use DateTimeImmutable;
 use DateTimeZone;
 use PHPUnit\Framework\Attributes\DataProviderExternal;
-use Throwable;
 use Yiisoft\Db\Constant\ColumnType;
-use Yiisoft\Db\Exception\Exception;
-use Yiisoft\Db\Exception\InvalidConfigException;
 use Yiisoft\Db\Expression\ArrayExpression;
 use Yiisoft\Db\Expression\Expression;
 use Yiisoft\Db\Expression\JsonExpression;
@@ -38,8 +35,6 @@ use function stream_get_contents;
 
 /**
  * @group pgsql
- *
- * @psalm-suppress PropertyNotSetInConstructor
  */
 final class ColumnTest extends CommonColumnTest
 {
@@ -91,7 +86,7 @@ final class ColumnTest extends CommonColumnTest
         $this->assertSame(['', 'some text', '""', '\\\\', '[",","null",true,"false","f"]', null], $result['varchararray_col']);
         $this->assertNull($result['textarray2_col']);
         $this->assertSame([['a' => 1, 'b' => null, 'c' => [1, 3, 5]]], $result['json_col']);
-        $this->assertSame(['1', '2', '3'], $result['jsonb_col']);
+        $this->assertSame([1, 2, 3], $result['jsonb_col']);
         $this->assertSame([[[',', 'null', true, 'false', 'f']]], $result['jsonarray_col']);
     }
 
@@ -193,11 +188,6 @@ final class ColumnTest extends CommonColumnTest
         $db->close();
     }
 
-    /**
-     * @throws Exception
-     * @throws InvalidConfigException
-     * @throws Throwable
-     */
     public function testPhpTypeCast(): void
     {
         $db = $this->getConnection(true);
