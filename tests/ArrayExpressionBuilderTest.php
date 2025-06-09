@@ -23,6 +23,7 @@ use Yiisoft\Db\Query\Query;
 use Yiisoft\Db\Schema\Column\ColumnInterface;
 use Yiisoft\Db\Schema\Data\JsonLazyArray;
 use Yiisoft\Db\Schema\Data\LazyArrayInterface;
+use Yiisoft\Db\Tests\Support\Assert;
 
 /**
  * @group pgsql
@@ -34,41 +35,45 @@ final class ArrayExpressionBuilderTest extends TestCase
     public static function buildProvider(): array
     {
         return [
-            [null, null, 'NULL', []],
-            [[], null, 'ARRAY[]', []],
-            [[1, 2, 3], null, 'ARRAY[:qp0,:qp1,:qp2]', [':qp0' => 1, ':qp1' => 2, ':qp2' => 3]],
-            [
+            'null' => [null, null, 'NULL', []],
+            'empty' => [[], null, 'ARRAY[]', []],
+            'list' => [[1, 2, 3], null, 'ARRAY[1,2,3]', []],
+            'ArrayIterator' => [
                 new ArrayIterator(['a', 'b', 'c']),
                 'varchar',
                 'ARRAY[:qp0,:qp1,:qp2]::varchar[]',
-                [':qp0' => 'a', ':qp1' => 'b', ':qp2' => 'c'],
+                [
+                    ':qp0' => new Param('a', DataType::STRING),
+                    ':qp1' => new Param('b', DataType::STRING),
+                    ':qp2' => new Param('c', DataType::STRING),
+                ],
             ],
-            [
+            'LazyArray' => [
                 new LazyArray('{1,2,3}'),
                 'int[]',
                 ':qp0::int[]',
                 [':qp0' => new Param('{1,2,3}', DataType::STRING)],
             ],
-            [
+            'LazyArray external' => [
                 new \Yiisoft\Db\Schema\Data\LazyArray('[1,2,3]'),
                 ColumnBuilder::integer(),
-                'ARRAY[:qp0,:qp1,:qp2]::integer[]',
-                [':qp0' => 1, ':qp1' => 2, ':qp2' => 3],
+                'ARRAY[1,2,3]::integer[]',
+                [],
             ],
-            [
+            'StructuredLazyArray' => [
                 new StructuredLazyArray('(1,2,3)'),
                 'int',
-                'ARRAY[:qp0,:qp1,:qp2]::int[]',
-                [':qp0' => 1, ':qp1' => 2, ':qp2' => 3],
+                'ARRAY[1,2,3]::int[]',
+                [],
             ],
-            [
+            'JsonLazyArray' => [
                 new JsonLazyArray('[1,2,3]'),
                 ColumnBuilder::array(ColumnBuilder::integer()),
-                'ARRAY[:qp0,:qp1,:qp2]::integer[]',
-                [':qp0' => 1, ':qp1' => 2, ':qp2' => 3],
+                'ARRAY[1,2,3]::integer[]',
+                [],
             ],
-            [[new Expression('now()')], null, 'ARRAY[now()]', []],
-            [
+            'Expression' => [[new Expression('now()')], null, 'ARRAY[now()]', []],
+            'JsonExpression w/o type' => [
                 [new JsonExpression(['a' => null, 'b' => 123, 'c' => [4, 5]]), new JsonExpression([true])],
                 null,
                 'ARRAY[:qp0,:qp1]',
@@ -77,7 +82,7 @@ final class ArrayExpressionBuilderTest extends TestCase
                     ':qp1' => new Param('[true]', DataType::STRING),
                 ],
             ],
-            [
+            'JsonExpression' => [
                 [new JsonExpression(['a' => null, 'b' => 123, 'c' => [4, 5]]), new JsonExpression([true])],
                 'jsonb',
                 'ARRAY[:qp0,:qp1]::jsonb[]',
@@ -86,57 +91,51 @@ final class ArrayExpressionBuilderTest extends TestCase
                     ':qp1' => new Param('[true]', DataType::STRING),
                 ],
             ],
-            [
+            'StructuredExpression' => [
                 [
                     null,
                     new StructuredExpression(['value' => 11.11, 'currency_code' => 'USD']),
                     new StructuredExpression(['value' => null, 'currency_code' => null]),
                 ],
                 null,
-                'ARRAY[:qp0,ROW(:qp1,:qp2),ROW(:qp3,:qp4)]',
-                [':qp0' => null, ':qp1' => 11.11, ':qp2' => 'USD', ':qp3' => null, ':qp4' => null],
+                'ARRAY[NULL,ROW(11.11,:qp0),ROW(NULL,NULL)]',
+                [':qp0' => new Param('USD', DataType::STRING)],
             ],
-            [
+            'Query w/o type' => [
                 (new Query(self::getDb()))->select('id')->from('users')->where(['active' => 1]),
                 null,
                 'ARRAY(SELECT "id" FROM "users" WHERE "active"=:qp0)',
                 [':qp0' => 1],
             ],
-            [
+            'Query' => [
                 [(new Query(self::getDb()))->select('id')->from('users')->where(['active' => 1])],
                 'integer[][]',
                 'ARRAY[ARRAY(SELECT "id" FROM "users" WHERE "active"=:qp0)::integer[]]::integer[][]',
                 [':qp0' => 1],
             ],
-            [
+            'bool' => [
                 [[[true], [false, null]], [['t', 'f'], null], null],
                 'bool[][][]',
-                'ARRAY[ARRAY[ARRAY[:qp0]::bool[],ARRAY[:qp1,:qp2]::bool[]]::bool[][],ARRAY[ARRAY[:qp3,:qp4]::bool[],NULL]::bool[][],NULL]::bool[][][]',
-                [
-                    ':qp0' => true,
-                    ':qp1' => false,
-                    ':qp2' => null,
-                    ':qp3' => 't',
-                    ':qp4' => 'f',
-                ],
+                'ARRAY[ARRAY[ARRAY[TRUE]::bool[],ARRAY[FALSE,NULL]::bool[]]::bool[][],ARRAY[ARRAY[TRUE,TRUE]::bool[],NULL]::bool[][],NULL]::bool[][][]',
+                [],
             ],
-            [
+            'associative' => [
                 ['a' => '1', 'b' => null],
                 ColumnType::STRING,
-                'ARRAY[:qp0,:qp1]::varchar(255)[]',
-                [':qp0' => '1', ':qp1' => null],
+                'ARRAY[:qp0,NULL]::varchar(255)[]',
+                [':qp0' => new Param('1', DataType::STRING)],
             ],
-            [
+            'string' => [
                 '{1,2,3}',
                 'string[]',
                 ':qp0::varchar(255)[]',
                 [':qp0' => new Param('{1,2,3}', DataType::STRING)],
             ],
-            [
+            'null multi-level' => [
                 [[1, null], null],
                 'int[][]',
-                'ARRAY[ARRAY[:qp0,:qp1]::int[],NULL]::int[][]',
-                [':qp0' => '1', ':qp1' => null],
+                'ARRAY[ARRAY[1,NULL]::int[],NULL]::int[][]',
+                [],
             ],
         ];
     }
@@ -156,6 +155,6 @@ final class ArrayExpressionBuilderTest extends TestCase
         $expression = new ArrayExpression($value, $type);
 
         $this->assertSame($expected, $builder->build($expression, $params));
-        $this->assertEquals($expectedParams, $params);
+        Assert::arraysEquals($expectedParams, $params);
     }
 }

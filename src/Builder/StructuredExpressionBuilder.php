@@ -11,7 +11,6 @@ use Yiisoft\Db\Exception\InvalidArgumentException;
 use Yiisoft\Db\Exception\InvalidConfigException;
 use Yiisoft\Db\Exception\NotSupportedException;
 use Yiisoft\Db\Expression\AbstractStructuredExpressionBuilder;
-use Yiisoft\Db\Expression\ExpressionInterface;
 use Yiisoft\Db\Expression\StructuredExpression;
 use Yiisoft\Db\Pgsql\Data\StructuredLazyArray;
 use Yiisoft\Db\Query\QueryInterface;
@@ -72,7 +71,10 @@ final class StructuredExpressionBuilder extends AbstractStructuredExpressionBuil
     private function buildPlaceholders(array $value, StructuredExpression $expression, array &$params): array
     {
         $type = $expression->getType();
-        $columns = $type instanceof AbstractStructuredColumn ? $type->getColumns() : [];
+        $queryBuilder = $this->queryBuilder;
+        $columns = $type instanceof AbstractStructuredColumn && $queryBuilder->isTypecastingEnabled()
+            ? $type->getColumns()
+            : [];
 
         $placeholders = [];
 
@@ -82,11 +84,7 @@ final class StructuredExpressionBuilder extends AbstractStructuredExpressionBuil
                 $item = $columns[$columnName]->dbTypecast($item);
             }
 
-            if ($item instanceof ExpressionInterface) {
-                $placeholders[] = $this->queryBuilder->buildExpression($item, $params);
-            } else {
-                $placeholders[] = $this->queryBuilder->bindParam($item, $params);
-            }
+            $placeholders[] = $queryBuilder->buildValue($item, $params);
         }
 
         return $placeholders;

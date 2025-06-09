@@ -42,6 +42,8 @@
 - New #407: Use `DateTimeColumn` class for datetime column types (@Tigrov)
 - New #408: Implement `DMLQueryBuilder::upsertWithReturningPks()` method (@Tigrov)
 - Enh #411: Refactor constraints (@Tigrov)
+- New #408, #410: Implement `DMLQueryBuilder::upsertReturning()` method (@Tigrov)
+- Enh #412: Reduce binding parameters (@Tigrov)
 
 ## 1.3.0 March 21, 2024
 
