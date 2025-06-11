@@ -295,15 +295,15 @@ final class QueryBuilderTest extends CommonQueryBuilderTest
         parent::testInsert($table, $columns, $params, $expectedSQL, $expectedParams);
     }
 
-    #[DataProviderExternal(QueryBuilderProvider::class, 'insertWithReturningPks')]
-    public function testInsertWithReturningPks(
+    #[DataProviderExternal(QueryBuilderProvider::class, 'insertReturningPks')]
+    public function testInsertReturningPks(
         string $table,
         array|QueryInterface $columns,
         array $params,
         string $expectedSQL,
         array $expectedParams
     ): void {
-        parent::testInsertWithReturningPks($table, $columns, $params, $expectedSQL, $expectedParams);
+        parent::testInsertReturningPks($table, $columns, $params, $expectedSQL, $expectedParams);
     }
 
     public function testRenameTable(): void
