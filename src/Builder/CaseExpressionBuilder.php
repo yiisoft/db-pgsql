@@ -38,17 +38,17 @@ final class CaseExpressionBuilder extends \Yiisoft\Db\Expression\CaseExpressionB
 
         foreach ($whenClauses as $when) {
             $sql .= ' WHEN ' . $this->buildCondition($when->condition, $params) . $caseTypeHint;
-            $sql .= ' THEN ' . $queryBuilder->buildValue($when->result, $params);
+            $sql .= ' THEN ' . $this->buildResult($when->result, $params);
         }
 
         if ($expression->hasElse()) {
-            $sql .= ' ELSE ' . $queryBuilder->buildValue($expression->getElse(), $params);
+            $sql .= ' ELSE ' . $this->buildResult($expression->getElse(), $params);
         }
 
         return $sql . ' END';
     }
 
-    protected function buildTypeHint(string|ColumnInterface $type): string
+    private function buildTypeHint(string|ColumnInterface $type): string
     {
         if (is_string($type)) {
             return $type === '' ? '' : "::$type";

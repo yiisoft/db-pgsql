@@ -24,30 +24,23 @@ final class CaseExpressionBuilderTest extends AbstractCaseExpressionBuilderTest
             ...parent::buildProvider(),
             'without case and type hint' => [
                 (new CaseExpression())->caseType('int')
-                    ->addWhen(1, 'a'),
-                'CASE WHEN 1 THEN :qp0 END',
-                [
-                    ':qp0' => new Param('a', DataType::STRING),
-                ],
+                    ->addWhen(1, "'a'"),
+                "CASE WHEN 1 THEN 'a' END",
             ],
             'with case and type hint' => [
                 (new CaseExpression('expression', 'int'))
                     ->addWhen(1, 'a')
                     ->else('b'),
-                'CASE expression::int WHEN 1::int THEN :qp0 ELSE :qp1 END',
-                [
-                    ':qp0' => new Param('a', DataType::STRING),
-                    ':qp1' => new Param('b', DataType::STRING),
-                ],
+                'CASE expression::int WHEN 1::int THEN a ELSE b END',
             ],
             'with case and type hint with column' => [
                 (new CaseExpression('expression', new IntegerColumn()))
-                    ->addWhen(1, 'a')
-                    ->else('b'),
+                    ->addWhen(1, $paramA = new Param('a', DataType::STRING))
+                    ->else($paramB = new Param('b', DataType::STRING)),
                 'CASE expression::integer WHEN 1::integer THEN :qp0 ELSE :qp1 END',
                 [
-                    ':qp0' => new Param('a', DataType::STRING),
-                    ':qp1' => new Param('b', DataType::STRING),
+                    ':qp0' => $paramA,
+                    ':qp1' => $paramB,
                 ],
             ],
         ];
