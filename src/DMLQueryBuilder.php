@@ -75,24 +75,13 @@ final class DMLQueryBuilder extends AbstractDMLQueryBuilder
             return $insertSql;
         }
 
-        if ($updateColumns === false || $updateNames === []) {
+        if (empty($updateColumns) || $updateNames === []) {
             /** there are no columns to update */
             return "$insertSql ON CONFLICT DO NOTHING";
         }
 
-        if ($updateColumns === true) {
-            $updateColumns = [];
-
-            /** @psalm-var string[] $updateNames */
-            foreach ($updateNames as $name) {
-                $updateColumns[$name] = new Expression(
-                    'EXCLUDED.' . $this->quoter->quoteColumnName($name)
-                );
-            }
-        }
-
         $quotedUniqueNames = array_map($this->quoter->quoteColumnName(...), $uniqueNames);
-        $updates = $this->prepareUpdateSets($table, $updateColumns, $params);
+        $updates = $this->prepareUpsertSets($table, $updateColumns, $updateNames, $params);
 
         return $insertSql
             . ' ON CONFLICT (' . implode(', ', $quotedUniqueNames) . ')'

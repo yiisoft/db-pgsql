@@ -6,9 +6,11 @@ namespace Yiisoft\Db\Pgsql;
 
 use Yiisoft\Db\Expression\ArrayExpression;
 use Yiisoft\Db\Expression\CaseExpression;
+use Yiisoft\Db\Expression\Function\ArrayMerge;
 use Yiisoft\Db\Expression\JsonExpression;
 use Yiisoft\Db\Expression\StructuredExpression;
 use Yiisoft\Db\Pgsql\Builder\ArrayExpressionBuilder;
+use Yiisoft\Db\Pgsql\Builder\ArrayMergeBuilder;
 use Yiisoft\Db\Pgsql\Builder\ArrayOverlapsConditionBuilder;
 use Yiisoft\Db\Pgsql\Builder\CaseExpressionBuilder;
 use Yiisoft\Db\Pgsql\Builder\JsonOverlapsConditionBuilder;
@@ -53,6 +55,7 @@ final class DQLQueryBuilder extends AbstractDQLQueryBuilder
             JsonOverlapsCondition::class => JsonOverlapsConditionBuilder::class,
             StructuredExpression::class => StructuredExpressionBuilder::class,
             LikeCondition::class => LikeConditionBuilder::class,
+            ArrayMerge::class => ArrayMergeBuilder::class,
             CaseExpression::class => CaseExpressionBuilder::class,
         ];
     }
