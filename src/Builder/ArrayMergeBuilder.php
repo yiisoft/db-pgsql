@@ -7,6 +7,7 @@ namespace Yiisoft\Db\Pgsql\Builder;
 use Yiisoft\Db\Expression\Function\ArrayMerge;
 use Yiisoft\Db\Expression\Function\Builder\MultiOperandFunctionBuilder;
 use Yiisoft\Db\Expression\Function\MultiOperandFunction;
+use Yiisoft\Db\Schema\Column\AbstractArrayColumn;
 use Yiisoft\Db\Schema\Column\ColumnInterface;
 
 use function implode;
@@ -17,7 +18,7 @@ use function is_string;
  *
  * ```sql
  * ARRAY(SELECT DISTINCT UNNEST(operand1::int[] || operand2::int[]))::int[]
- * sql
+ * ```
  */
 final class ArrayMergeBuilder extends MultiOperandFunctionBuilder
 {
@@ -41,12 +42,18 @@ final class ArrayMergeBuilder extends MultiOperandFunctionBuilder
         return 'ARRAY(SELECT DISTINCT UNNEST(' . implode(' || ', $builtOperands) . "))$typeHint";
     }
 
-    protected function buildTypeHint(string|ColumnInterface $type): string
+    private function buildTypeHint(string|ColumnInterface $type): string
     {
         if (is_string($type)) {
             return $type === '' ? '' : "::$type";
         }
 
-        return '::' . $this->queryBuilder->getColumnDefinitionBuilder()->buildType($type);
+        $typeHint = '::' . $this->queryBuilder->getColumnDefinitionBuilder()->buildType($type);
+
+        if ($type instanceof AbstractArrayColumn) {
+            return $typeHint;
+        }
+
+        return $typeHint . '[]';
     }
 }
