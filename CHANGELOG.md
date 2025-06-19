@@ -2,6 +2,7 @@
 
 ## 2.0.0 under development
 
+- Enh #416: Delete `Db\InvalidArgumentException` and `Db\InvalidParamException`
 - Enh #336, #405: Implement and use `SqlParser` class (@Tigrov)
 - New #315: Implement `ColumnSchemaInterface` classes according to the data type of database table columns
   for type casting performance. Related with yiisoft/db#752 (@Tigrov)
