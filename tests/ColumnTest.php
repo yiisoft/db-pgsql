@@ -7,8 +7,8 @@ namespace Yiisoft\Db\Pgsql\Tests;
 use DateTimeImmutable;
 use DateTimeZone;
 use PHPUnit\Framework\Attributes\DataProviderExternal;
+use Yiisoft\Db\Connection\ConnectionInterface;
 use Yiisoft\Db\Constant\ColumnType;
-use Yiisoft\Db\Driver\Pdo\PdoConnectionInterface;
 use Yiisoft\Db\Expression\ArrayExpression;
 use Yiisoft\Db\Expression\Expression;
 use Yiisoft\Db\Expression\JsonExpression;
@@ -43,7 +43,7 @@ final class ColumnTest extends CommonColumnTest
 
     protected const COLUMN_BUILDER = ColumnBuilder::class;
 
-    protected function insertTypeValues(PdoConnectionInterface $db): void
+    protected function insertTypeValues(ConnectionInterface $db): void
     {
         $db->createCommand()->insert(
             'type',
