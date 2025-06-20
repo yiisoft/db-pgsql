@@ -199,12 +199,12 @@ final class CommandTest extends CommonCommandTest
         parent::testUpsert($firstData, $secondData);
     }
 
-    public function testinsertWithReturningPksUuid(): void
+    public function testInsertReturningPksUuid(): void
     {
         $db = $this->getConnection(true);
 
         $command = $db->createCommand();
-        $result = $command->insertWithReturningPks(
+        $result = $command->insertReturningPks(
             '{{%table_uuid}}',
             [
                 'col' => 'test',
