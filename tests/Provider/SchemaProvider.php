@@ -259,7 +259,7 @@ final class SchemaProvider extends \Yiisoft\Db\Tests\Provider\SchemaProvider
         $constraints = parent::constraints();
 
         $constraints['1: check'][2][0]->expression('CHECK ((("C_check")::text <> \'\'::text))');
-        $constraints['3: foreign key'][2][0]->foreignSchemaName('public');
+        $constraints['3: foreign key'][2][0]->foreignTableName('public.T_constraints_2');
         $constraints['3: index'][2] = [];
 
         return $constraints;
