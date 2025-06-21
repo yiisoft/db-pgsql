@@ -597,31 +597,31 @@ final class SchemaTest extends CommonSchemaTest
         $this->assertCount(5, $tableIndexes);
 
         $this->assertSame(['id'], $tableIndexes[0]->getColumnNames());
-        $this->assertTrue($tableIndexes[0]->isPrimary());
+        $this->assertTrue($tableIndexes[0]->isPrimaryKey());
         $this->assertTrue($tableIndexes[0]->isUnique());
 
         $this->assertSame(['one_unique'], $tableIndexes[1]->getColumnNames());
-        $this->assertFalse($tableIndexes[1]->isPrimary());
+        $this->assertFalse($tableIndexes[1]->isPrimaryKey());
         $this->assertTrue($tableIndexes[1]->isUnique());
 
         $this->assertSame(['two_unique_1', 'two_unique_2'], $tableIndexes[2]->getColumnNames());
-        $this->assertFalse($tableIndexes[2]->isPrimary());
+        $this->assertFalse($tableIndexes[2]->isPrimaryKey());
         $this->assertTrue($tableIndexes[2]->isUnique());
 
         $this->assertSame(['unique_index'], $tableIndexes[3]->getColumnNames());
-        $this->assertFalse($tableIndexes[3]->isPrimary());
+        $this->assertFalse($tableIndexes[3]->isPrimaryKey());
         $this->assertTrue($tableIndexes[3]->isUnique());
 
         $this->assertSame(['non_unique_index'], $tableIndexes[4]->getColumnNames());
-        $this->assertFalse($tableIndexes[4]->isPrimary());
+        $this->assertFalse($tableIndexes[4]->isPrimaryKey());
         $this->assertFalse($tableIndexes[4]->isUnique());
 
         $db->close();
     }
 
     #[DataProviderExternal(SchemaProvider::class, 'resultColumns')]
-    public function testGetResultColumn(ColumnInterface|null $expected, array $info): void
+    public function testGetResultColumn(ColumnInterface|null $expected, array $metadata): void
     {
-        parent::testGetResultColumn($expected, $info);
+        parent::testGetResultColumn($expected, $metadata);
     }
 }
