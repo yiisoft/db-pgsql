@@ -4,18 +4,12 @@ declare(strict_types=1);
 
 namespace Yiisoft\Db\Pgsql;
 
-use JsonException;
-use Throwable;
 use Yiisoft\Db\Constant\ColumnType;
 use Yiisoft\Db\Constant\ReferentialAction;
 use Yiisoft\Db\Constraint\CheckConstraint;
-use Yiisoft\Db\Constraint\Constraint;
-use Yiisoft\Db\Constraint\DefaultValueConstraint;
 use Yiisoft\Db\Constraint\ForeignKeyConstraint;
 use Yiisoft\Db\Constraint\IndexConstraint;
 use Yiisoft\Db\Driver\Pdo\AbstractPdoSchema;
-use Yiisoft\Db\Exception\Exception;
-use Yiisoft\Db\Exception\InvalidConfigException;
 use Yiisoft\Db\Exception\NotSupportedException;
 use Yiisoft\Db\Helper\DbArrayHelper;
 use Yiisoft\Db\Pgsql\Column\SequenceColumnInterface;
@@ -63,9 +57,9 @@ use function substr;
  *     name: string,
  *     column_name: string,
  *     type: string,
- *     foreign_table_schema: string|null,
- *     foreign_table_name: string|null,
- *     foreign_column_name: string|null,
+ *     foreign_table_schema: string,
+ *     foreign_table_name: string,
+ *     foreign_column_name: string,
  *     on_update: string,
  *     on_delete: string,
  *     check_expr: string
@@ -92,15 +86,6 @@ final class Schema extends AbstractPdoSchema
      */
     protected string|null $defaultSchema = 'public';
 
-    /**
-     * Resolves the table name and schema name (if any).
-     *
-     * @param string $name The table name.
-     *
-     * @return TableSchemaInterface With resolved table, schema, etc. names.
-     *
-     * @see TableSchemaInterface
-     */
     protected function resolveTableName(string $name): TableSchemaInterface
     {
         $resolvedName = new TableSchema();
@@ -117,18 +102,6 @@ final class Schema extends AbstractPdoSchema
         return $resolvedName;
     }
 
-    /**
-     * Returns all schema names in the database, including the default one but not system schemas.
-     *
-     * This method should be overridden by child classes to support this feature because the default implementation
-     * simply throws an exception.
-     *
-     * @throws Exception
-     * @throws InvalidConfigException
-     * @throws Throwable
-     *
-     * @return array All schemas name in the database, except system schemas.
-     */
     protected function findSchemaNames(): array
     {
         $sql = <<<SQL
@@ -138,14 +111,10 @@ final class Schema extends AbstractPdoSchema
         ORDER BY "ns"."nspname" ASC
         SQL;
 
+        /** @var string[] */
         return $this->db->createCommand($sql)->queryColumn();
     }
 
-    /**
-     * @throws Exception
-     * @throws InvalidConfigException
-     * @throws Throwable
-     */
     protected function findTableComment(TableSchemaInterface $tableSchema): void
     {
         $sql = <<<SQL
@@ -165,21 +134,6 @@ final class Schema extends AbstractPdoSchema
         $tableSchema->comment(is_string($comment) ? $comment : null);
     }
 
-    /**
-     * Returns all table names in the database.
-     *
-     * This method should be overridden by child classes to support this feature because the default implementation
-     * simply throws an exception.
-     *
-     * @param string $schema The schema of the tables.
-     * Defaults to empty string, meaning the current or default schema.
-     *
-     * @throws Exception
-     * @throws InvalidConfigException
-     * @throws Throwable
-     *
-     * @return array All tables name in the database. The names have NO schema name prefix.
-     */
     protected function findTableNames(string $schema = ''): array
     {
         if ($schema === '') {
@@ -194,20 +148,10 @@ final class Schema extends AbstractPdoSchema
         ORDER BY c.relname
         SQL;
 
+        /** @var string[] */
         return $this->db->createCommand($sql, [':schemaName' => $schema])->queryColumn();
     }
 
-    /**
-     * Loads the metadata for the specified table.
-     *
-     * @param string $name The table name.
-     *
-     * @throws Exception
-     * @throws InvalidConfigException
-     * @throws Throwable
-     *
-     * @return TableSchemaInterface|null DBMS-dependent table metadata, `null` if the table doesn't exist.
-     */
     protected function loadTableSchema(string $name): TableSchemaInterface|null
     {
         $table = $this->resolveTableName($name);
@@ -221,55 +165,18 @@ final class Schema extends AbstractPdoSchema
         return null;
     }
 
-    /**
-     * Loads a primary key for the given table.
-     *
-     * @param string $tableName The table name.
-     *
-     * @throws Exception
-     * @throws InvalidConfigException
-     * @throws Throwable
-     *
-     * @return Constraint|null Primary key for the given table, `null` if the table has no primary key.
-     */
-    protected function loadTablePrimaryKey(string $tableName): Constraint|null
+    protected function loadTablePrimaryKey(string $tableName): IndexConstraint|null
     {
-        $tablePrimaryKey = $this->loadTableConstraints($tableName, self::PRIMARY_KEY);
-
-        return $tablePrimaryKey instanceof Constraint ? $tablePrimaryKey : null;
+        /** @var IndexConstraint|null */
+        return $this->loadTableConstraints($tableName, self::PRIMARY_KEY);
     }
 
-    /**
-     * Loads all foreign keys for the given table.
-     *
-     * @param string $tableName The table name.
-     *
-     * @throws Exception
-     * @throws InvalidConfigException
-     * @throws Throwable
-     *
-     * @return array Foreign keys for the given table.
-     *
-     * @psaml-return array|ForeignKeyConstraint[]
-     */
     protected function loadTableForeignKeys(string $tableName): array
     {
-        $tableForeignKeys = $this->loadTableConstraints($tableName, self::FOREIGN_KEYS);
-
-        return is_array($tableForeignKeys) ? $tableForeignKeys : [];
+        /** @var ForeignKeyConstraint[] */
+        return $this->loadTableConstraints($tableName, self::FOREIGN_KEYS);
     }
 
-    /**
-     * Loads all indexes for the given table.
-     *
-     * @param string $tableName The table name.
-     *
-     * @throws Exception
-     * @throws InvalidConfigException
-     * @throws Throwable
-     *
-     * @return IndexConstraint[] Indexes for the given table.
-     */
     protected function loadTableIndexes(string $tableName): array
     {
         $sql = <<<SQL
@@ -317,77 +224,34 @@ final class Schema extends AbstractPdoSchema
          * > $index
          */
         foreach ($indexes as $name => $index) {
-            $ic = (new IndexConstraint())
-                ->name($name)
-                ->columnNames(array_column($index, 'column_name'))
-                ->primary($index[0]['index_is_primary'])
-                ->unique($index[0]['index_is_unique']);
-
-            $result[] = $ic;
+            $result[] = new IndexConstraint(
+                $name,
+                array_column($index, 'column_name'),
+                $index[0]['index_is_unique'],
+                $index[0]['index_is_primary'],
+            );
         }
 
         return $result;
     }
 
-    /**
-     * Loads all unique constraints for the given table.
-     *
-     * @param string $tableName The table name.
-     *
-     * @throws Exception
-     * @throws InvalidConfigException
-     * @throws Throwable
-     *
-     * @return array Unique constraints for the given table.
-     *
-     * @psalm-return array|Constraint[]
-     */
     protected function loadTableUniques(string $tableName): array
     {
-        $tableUniques = $this->loadTableConstraints($tableName, self::UNIQUES);
-
-        return is_array($tableUniques) ? $tableUniques : [];
+        /** @var IndexConstraint[] */
+        return $this->loadTableConstraints($tableName, self::UNIQUES);
     }
 
-    /**
-     * Loads all check constraints for the given table.
-     *
-     * @param string $tableName The table name.
-     *
-     * @throws Exception
-     * @throws InvalidConfigException
-     * @throws Throwable
-     *
-     * @return array Check constraints for the given table.
-     *
-     * @psaml-return array|CheckConstraint[]
-     */
     protected function loadTableChecks(string $tableName): array
     {
-        $tableChecks = $this->loadTableConstraints($tableName, self::CHECKS);
-
-        return is_array($tableChecks) ? $tableChecks : [];
+        /** @var CheckConstraint[] */
+        return $this->loadTableConstraints($tableName, self::CHECKS);
     }
 
-    /**
-     * Loads all default value constraints for the given table.
-     *
-     * @param string $tableName The table name.
-     *
-     * @throws NotSupportedException
-     *
-     * @return DefaultValueConstraint[] Default value constraints for the given table.
-     */
     protected function loadTableDefaultValues(string $tableName): array
     {
         throw new NotSupportedException(__METHOD__ . ' is not supported by PostgreSQL.');
     }
 
-    /**
-     * @throws Exception
-     * @throws InvalidConfigException
-     * @throws Throwable
-     */
     protected function findViewNames(string $schema = ''): array
     {
         if ($schema === '') {
@@ -402,6 +266,7 @@ final class Schema extends AbstractPdoSchema
         ORDER BY c.relname
         SQL;
 
+        /** @var string[] */
         return $this->db->createCommand($sql, [':schemaName' => $schema])->queryColumn();
     }
 
@@ -409,10 +274,6 @@ final class Schema extends AbstractPdoSchema
      * Collects the foreign key column details for the given table.
      *
      * @param TableSchemaInterface $table The table metadata
-     *
-     * @throws Exception
-     * @throws InvalidConfigException
-     * @throws Throwable
      */
     protected function findConstraints(TableSchemaInterface $table): void
     {
@@ -479,7 +340,6 @@ final class Schema extends AbstractPdoSchema
         }
 
         /**
-         * @psalm-var int|string $foreingKeyName.
          * @psalm-var array{tableName: string, columns: array} $constraint
          */
         foreach ($constraints as $foreingKeyName => $constraint) {
@@ -494,10 +354,6 @@ final class Schema extends AbstractPdoSchema
      * Gets information about given table unique indexes.
      *
      * @param TableSchemaInterface $table The table metadata.
-     *
-     * @throws Exception
-     * @throws InvalidConfigException
-     * @throws Throwable
      *
      * @return array With index and column names.
      */
@@ -525,26 +381,6 @@ final class Schema extends AbstractPdoSchema
         ])->queryAll();
     }
 
-    /**
-     * Returns all unique indexes for the given table.
-     *
-     * Each array element is of the following structure:
-     *
-     * ```php
-     * [
-     *     'IndexName1' => ['col1' [, ...]],
-     *     'IndexName2' => ['col2' [, ...]],
-     * ]
-     * ```
-     *
-     * @param TableSchemaInterface $table The table metadata
-     *
-     * @throws Exception
-     * @throws InvalidConfigException
-     * @throws Throwable
-     *
-     * @return array All unique indexes for the given table.
-     */
     public function findUniqueIndexes(TableSchemaInterface $table): array
     {
         $uniqueIndexes = [];
@@ -575,11 +411,6 @@ final class Schema extends AbstractPdoSchema
      * Collects the metadata of table columns.
      *
      * @param TableSchemaInterface $table The table metadata.
-     *
-     * @throws Exception
-     * @throws InvalidConfigException
-     * @throws JsonException
-     * @throws Throwable
      *
      * @return bool Whether the table exists in the database.
      */
@@ -886,15 +717,9 @@ final class Schema extends AbstractPdoSchema
      * - uniques
      * - checks
      *
-     * @throws Exception
-     * @throws InvalidConfigException
-     * @throws Throwable
-     *
-     * @return array|Constraint|null Constraints.
-     *
-     * @psalm-return CheckConstraint[]|Constraint[]|ForeignKeyConstraint[]|Constraint|null
+     * @return CheckConstraint[]|ForeignKeyConstraint[]|IndexConstraint|IndexConstraint[]|null Constraints.
      */
-    private function loadTableConstraints(string $tableName, string $returnType): array|Constraint|null
+    private function loadTableConstraints(string $tableName, string $returnType): array|IndexConstraint|null
     {
         $sql = <<<SQL
         SELECT
@@ -958,45 +783,36 @@ final class Schema extends AbstractPdoSchema
 
         foreach ($constraints as $type => $names) {
             /**
-             * @psalm-var object|string|null $name
+             * @var string $name
              * @psalm-var ConstraintArray $constraint
              */
             foreach ($names as $name => $constraint) {
-                switch ($type) {
-                    case 'p':
-                        $result[self::PRIMARY_KEY] = (new Constraint())
-                            ->name($name)
-                            ->columnNames(array_column($constraint, 'column_name'));
-                        break;
-                    case 'f':
-                        $onDelete = $actionTypes[$constraint[0]['on_delete']] ?? null;
-                        $onUpdate = $actionTypes[$constraint[0]['on_update']] ?? null;
-
-                        $result[self::FOREIGN_KEYS][] = (new ForeignKeyConstraint())
-                            ->name($name)
-                            ->columnNames(array_values(
-                                array_unique(array_column($constraint, 'column_name'))
-                            ))
-                            ->foreignSchemaName($constraint[0]['foreign_table_schema'])
-                            ->foreignTableName($constraint[0]['foreign_table_name'])
-                            ->foreignColumnNames(array_values(
-                                array_unique(array_column($constraint, 'foreign_column_name'))
-                            ))
-                            ->onDelete($onDelete)
-                            ->onUpdate($onUpdate);
-                        break;
-                    case 'u':
-                        $result[self::UNIQUES][] = (new Constraint())
-                            ->name($name)
-                            ->columnNames(array_column($constraint, 'column_name'));
-                        break;
-                    case 'c':
-                        $result[self::CHECKS][] = (new CheckConstraint())
-                            ->name($name)
-                            ->columnNames(array_column($constraint, 'column_name'))
-                            ->expression($constraint[0]['check_expr']);
-                        break;
-                }
+                match ($type) {
+                    'p' => $result[self::PRIMARY_KEY] = new IndexConstraint(
+                        $name,
+                        array_column($constraint, 'column_name'),
+                        true,
+                        true,
+                    ),
+                    'f' => $result[self::FOREIGN_KEYS][] = new ForeignKeyConstraint(
+                        $name,
+                        array_values(array_unique(array_column($constraint, 'column_name'))),
+                        $constraint[0]['foreign_table_schema'] . '.' . $constraint[0]['foreign_table_name'],
+                        array_values(array_unique(array_column($constraint, 'foreign_column_name'))),
+                        $actionTypes[$constraint[0]['on_update']] ?? null,
+                        $actionTypes[$constraint[0]['on_delete']] ?? null,
+                    ),
+                    'u' => $result[self::UNIQUES][] = new IndexConstraint(
+                        $name,
+                        array_column($constraint, 'column_name'),
+                        true,
+                    ),
+                    'c' => $result[self::CHECKS][] = new CheckConstraint(
+                        $name,
+                        array_column($constraint, 'column_name'),
+                        $constraint[0]['check_expr'],
+                    ),
+                };
             }
         }
 
