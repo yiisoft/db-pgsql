@@ -7,6 +7,7 @@ namespace Yiisoft\Db\Pgsql\Tests;
 use DateTimeImmutable;
 use DateTimeZone;
 use PHPUnit\Framework\Attributes\DataProviderExternal;
+use Yiisoft\Db\Connection\ConnectionInterface;
 use Yiisoft\Db\Constant\ColumnType;
 use Yiisoft\Db\Expression\ArrayExpression;
 use Yiisoft\Db\Expression\Expression;
@@ -19,7 +20,6 @@ use Yiisoft\Db\Pgsql\Column\BooleanColumn;
 use Yiisoft\Db\Pgsql\Column\ColumnBuilder;
 use Yiisoft\Db\Pgsql\Column\IntegerColumn;
 use Yiisoft\Db\Pgsql\Column\StructuredColumn;
-use Yiisoft\Db\Pgsql\Connection;
 use Yiisoft\Db\Pgsql\Tests\Provider\ColumnProvider;
 use Yiisoft\Db\Pgsql\Tests\Support\TestTrait;
 use Yiisoft\Db\Query\Query;
@@ -30,6 +30,7 @@ use Yiisoft\Db\Schema\Column\StringColumn;
 use Yiisoft\Db\Tests\Common\CommonColumnTest;
 use Yiisoft\Db\Tests\Support\Assert;
 
+use function iterator_to_array;
 use function str_repeat;
 use function stream_get_contents;
 
@@ -42,7 +43,7 @@ final class ColumnTest extends CommonColumnTest
 
     protected const COLUMN_BUILDER = ColumnBuilder::class;
 
-    private function insertTypeValues(Connection $db): void
+    protected function insertTypeValues(ConnectionInterface $db): void
     {
         $db->createCommand()->insert(
             'type',
@@ -69,7 +70,7 @@ final class ColumnTest extends CommonColumnTest
         )->execute();
     }
 
-    private function assertTypecastedValues(array $result): void
+    protected function assertTypecastedValues(array $result, bool $allTypecasted = false): void
     {
         $this->assertSame(1, $result['int_col']);
         $this->assertSame(str_repeat('x', 100), $result['char_col']);
@@ -88,44 +89,6 @@ final class ColumnTest extends CommonColumnTest
         $this->assertSame([['a' => 1, 'b' => null, 'c' => [1, 3, 5]]], $result['json_col']);
         $this->assertSame([1, 2, 3], $result['jsonb_col']);
         $this->assertSame([[[',', 'null', true, 'false', 'f']]], $result['jsonarray_col']);
-    }
-
-    public function testQueryWithTypecasting(): void
-    {
-        $db = $this->getConnection(true);
-
-        $this->insertTypeValues($db);
-
-        $query = (new Query($db))->from('type')->withTypecasting();
-
-        $result = $query->one();
-
-        $this->assertTypecastedValues($result);
-
-        $result = $query->all();
-
-        $this->assertTypecastedValues($result[0]);
-
-        $db->close();
-    }
-
-    public function testCommandWithPhpTypecasting(): void
-    {
-        $db = $this->getConnection(true);
-
-        $this->insertTypeValues($db);
-
-        $command = $db->createCommand('SELECT * FROM type')->withPhpTypecasting();
-
-        $result = $command->queryOne();
-
-        $this->assertTypecastedValues($result);
-
-        $result = $command->queryAll();
-
-        $this->assertTypecastedValues($result[0]);
-
-        $db->close();
     }
 
     public function testSelectWithPhpTypecasting(): void
@@ -173,6 +136,12 @@ final class ColumnTest extends CommonColumnTest
 
         $this->assertSame([$expected], $result);
 
+        $result = $db->createCommand($sql)
+            ->withPhpTypecasting()
+            ->query();
+
+        $this->assertSame([$expected], iterator_to_array($result));
+
         $result = $db->createCommand('SELECT 2.5')
             ->withPhpTypecasting()
             ->queryScalar();
@@ -184,27 +153,6 @@ final class ColumnTest extends CommonColumnTest
             ->queryColumn();
 
         $this->assertSame([2.5, 3.3], $result);
-
-        $db->close();
-    }
-
-    public function testPhpTypeCast(): void
-    {
-        $db = $this->getConnection(true);
-        $schema = $db->getSchema();
-        $columns = $schema->getTableSchema('type')->getColumns();
-
-        $this->insertTypeValues($db);
-
-        $query = (new Query($db))->from('type')->one();
-
-        $result = [];
-
-        foreach ($columns as $columnName => $column) {
-            $result[$columnName] = $column->phpTypecast($query[$columnName]);
-        }
-
-        $this->assertTypecastedValues($result);
 
         $db->close();
     }
@@ -269,21 +217,6 @@ final class ColumnTest extends CommonColumnTest
         );
 
         $db->close();
-    }
-
-    public function testNegativeDefaultValues()
-    {
-        $db = $this->getConnection(true);
-
-        $schema = $db->getSchema();
-        $tableSchema = $schema->getTableSchema('negative_default_values');
-
-        $this->assertSame(-123, $tableSchema->getColumn('tinyint_col')->getDefaultValue());
-        $this->assertSame(-123, $tableSchema->getColumn('smallint_col')->getDefaultValue());
-        $this->assertSame(-123, $tableSchema->getColumn('int_col')->getDefaultValue());
-        $this->assertSame(-123, $tableSchema->getColumn('bigint_col')->getDefaultValue());
-        $this->assertSame(-12345.6789, $tableSchema->getColumn('float_col')->getDefaultValue());
-        $this->assertSame(-33.22, $tableSchema->getColumn('numeric_col')->getDefaultValue());
     }
 
     public function testPrimaryKeyOfView()
