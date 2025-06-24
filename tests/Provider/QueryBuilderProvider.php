@@ -516,8 +516,31 @@ final class QueryBuilderProvider extends \Yiisoft\Db\Tests\Provider\QueryBuilder
 
     public static function caseExpressionBuilder(): array
     {
+        $data = parent::caseExpressionBuilder();
+
+        $db = self::getDb();
+        $serverVersion = $db->getServerInfo()->getVersion();
+        $db->close();
+
+        if (version_compare($serverVersion, '10', '<')) {
+            $data['without case expression'] = [
+                (new CaseExpression())
+                    ->addWhen(['=', 'column_name', 1], $paramA = new Param('a', DataType::STRING))
+                    ->addWhen(
+                        '"column_name" = 2',
+                        $db->select(new Expression(
+                            ':pv2::text',
+                            [':pv2' => $paramB = new Param('b', DataType::STRING)],
+                        )),
+                    ),
+                'CASE WHEN "column_name" = :qp0 THEN :qp1 WHEN "column_name" = 2 THEN (SELECT :pv2::text) END',
+                [':qp0' => 1, ':qp1' => $paramA, ':pv2' => $paramB],
+                'b',
+            ];
+        }
+
         return [
-            ...parent::caseExpressionBuilder(),
+            ...$data,
             'without case and type hint' => [
                 (new CaseExpression())->caseType('int')
                     ->addWhen(true, "'a'"),
