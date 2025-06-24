@@ -25,7 +25,6 @@ final class CaseExpressionBuilder extends \Yiisoft\Db\Expression\CaseExpressionB
         }
 
         $sql = 'CASE';
-        $queryBuilder = $this->queryBuilder;
 
         $case = $expression->getCase();
 

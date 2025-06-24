@@ -9,6 +9,7 @@ use Yiisoft\Db\Constant\DataType;
 use Yiisoft\Db\Constant\PseudoType;
 use Yiisoft\Db\Expression\ArrayExpression;
 use Yiisoft\Db\Expression\Expression;
+use Yiisoft\Db\Expression\Function\ArrayMerge;
 use Yiisoft\Db\Pgsql\Column\ColumnBuilder;
 use Yiisoft\Db\Pgsql\Tests\Support\TestTrait;
 use Yiisoft\Db\Query\Query;
@@ -510,5 +511,71 @@ final class QueryBuilderProvider extends \Yiisoft\Db\Tests\Provider\QueryBuilder
         $values['Iterator'][0] = "ARRAY['a','b','c']";
 
         return $values;
+    }
+
+    public static function multiOperandFunctionClasses(): array
+    {
+        return [
+            ...parent::multiOperandFunctionClasses(),
+            ArrayMerge::class => [ArrayMerge::class],
+        ];
+    }
+
+    public static function multiOperandFunctionBuilder(): array
+    {
+        $data = parent::multiOperandFunctionBuilder();
+
+        $stringParam = new Param('{3,4,5}', DataType::STRING);
+
+        return [
+            ...$data,
+            'ArrayMerge with 1 operand' => [
+                ArrayMerge::class,
+                ['ARRAY[1,2,3]'],
+                '(ARRAY[1,2,3])',
+                '{1,2,3}',
+            ],
+            'ArrayMerge with 2 operands' => [
+                ArrayMerge::class,
+                ['ARRAY[1,2,3]', $stringParam],
+                "ARRAY(SELECT DISTINCT UNNEST(ARRAY[1,2,3] || :qp0))",
+                '{1,3,5,4,2}',
+                [':qp0' => $stringParam],
+            ],
+            'ArrayMerge with 4 operands' => [
+                ArrayMerge::class,
+                ['ARRAY[1,2,3]', [5, 6, 7], $stringParam, static::getDb()->select(new ArrayExpression([9, 10]))],
+                "ARRAY(SELECT DISTINCT UNNEST(ARRAY[1,2,3] || ARRAY[5,6,7] || :qp0 || (SELECT ARRAY[9,10])))",
+                '{10,9,7,1,5,4,2,6,3}',
+                [
+                    ':qp0' => $stringParam,
+                ],
+            ],
+        ];
+    }
+
+    public static function upsertWithMultiOperandFunctions(): array
+    {
+        $data = parent::upsertWithMultiOperandFunctions();
+
+        $data[0][3] = 'INSERT INTO "test_upsert_with_functions"'
+            . ' ("id", "array_col", "greatest_col", "least_col", "longest_col", "shortest_col")'
+            . ' VALUES (:qp0, ARRAY[3,4,5], :qp1, :qp2, :qp3, :qp4) ON CONFLICT ("id") DO UPDATE SET'
+            . ' "array_col"=ARRAY(SELECT DISTINCT UNNEST("test_upsert_with_functions"."array_col"::int4[] || EXCLUDED."array_col"::int4[]))::int4[],'
+            . ' "greatest_col"=GREATEST("test_upsert_with_functions"."greatest_col", EXCLUDED."greatest_col"),'
+            . ' "least_col"=LEAST("test_upsert_with_functions"."least_col", EXCLUDED."least_col"),'
+            . ' "longest_col"=(SELECT value FROM (SELECT "test_upsert_with_functions"."longest_col" AS value UNION SELECT EXCLUDED."longest_col" AS value) AS t ORDER BY LENGTH(value) DESC LIMIT 1),'
+            . ' "shortest_col"=(SELECT value FROM (SELECT "test_upsert_with_functions"."shortest_col" AS value UNION SELECT EXCLUDED."shortest_col" AS value) AS t ORDER BY LENGTH(value) ASC LIMIT 1)';
+
+        $data[0][4]['array_col'] = '{1,5,4,2,3}';
+        $data[0][5] = [
+            ':qp0' => 1,
+            ':qp1' => 5,
+            ':qp2' => 5,
+            ':qp3' => 'short',
+            ':qp4' => 'short',
+        ];
+
+        return $data;
     }
 }
