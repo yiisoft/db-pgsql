@@ -25,19 +25,18 @@ final class CaseExpressionBuilder extends \Yiisoft\Db\Expression\CaseExpressionB
         }
 
         $sql = 'CASE';
-        $queryBuilder = $this->queryBuilder;
 
         $case = $expression->getCase();
 
         if ($case !== null) {
             $caseTypeHint = $this->buildTypeHint($expression->getCaseType());
-            $sql .= ' ' . $this->buildCondition($case, $params) . $caseTypeHint;
+            $sql .= ' ' . $this->buildConditionWithTypeHint($case, $caseTypeHint, $params);
         } else {
             $caseTypeHint = '';
         }
 
         foreach ($whenClauses as $when) {
-            $sql .= ' WHEN ' . $this->buildCondition($when->condition, $params) . $caseTypeHint;
+            $sql .= ' WHEN ' . $this->buildConditionWithTypeHint($when->condition, $caseTypeHint, $params);
             $sql .= ' THEN ' . $this->buildResult($when->result, $params);
         }
 
@@ -46,6 +45,16 @@ final class CaseExpressionBuilder extends \Yiisoft\Db\Expression\CaseExpressionB
         }
 
         return $sql . ' END';
+    }
+
+    private function buildConditionWithTypeHint(
+        array|bool|ExpressionInterface|float|int|string|null $condition,
+        string $typeHint,
+        array &$params,
+    ): string {
+        $builtCondition = $this->buildCondition($condition, $params);
+
+        return $typeHint !== '' ? "($builtCondition)$typeHint" : $builtCondition;
     }
 
     private function buildTypeHint(string|ColumnInterface $type): string
