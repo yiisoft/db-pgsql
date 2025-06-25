@@ -47,11 +47,8 @@ final class CaseExpressionBuilder extends \Yiisoft\Db\Expression\CaseExpressionB
         return $sql . ' END';
     }
 
-    private function buildConditionWithTypeHint(
-        array|bool|ExpressionInterface|float|int|string|null $condition,
-        string $typeHint,
-        array &$params,
-    ): string {
+    private function buildConditionWithTypeHint(mixed $condition, string $typeHint, array &$params): string
+    {
         $builtCondition = $this->buildCondition($condition, $params);
 
         return $typeHint !== '' ? "($builtCondition)$typeHint" : $builtCondition;
