@@ -8,6 +8,7 @@ use PHPUnit\Framework\Attributes\DataProviderExternal;
 use Yiisoft\Db\Driver\Pdo\PdoConnectionInterface;
 use Yiisoft\Db\Exception\IntegrityException;
 use Yiisoft\Db\Exception\NotSupportedException;
+use Yiisoft\Db\Expression\CaseExpression;
 use Yiisoft\Db\Expression\Expression;
 use Yiisoft\Db\Expression\ExpressionInterface;
 use Yiisoft\Db\Pgsql\Tests\Provider\QueryBuilderProvider;
@@ -575,5 +576,15 @@ final class QueryBuilderTest extends CommonQueryBuilderTest
     public function testPrepareValue(string $expected, mixed $value): void
     {
         parent::testPrepareValue($expected, $value);
+    }
+
+    #[DataProviderExternal(QueryBuilderProvider::class, 'caseExpressionBuilder')]
+    public function testCaseExpressionBuilder(
+        CaseExpression $case,
+        string $expectedSql,
+        array $expectedParams,
+        string|int $expectedResult,
+    ): void {
+        parent::testCaseExpressionBuilder($case, $expectedSql, $expectedParams, $expectedResult);
     }
 }

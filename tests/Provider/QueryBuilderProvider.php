@@ -8,8 +8,10 @@ use Yiisoft\Db\Command\Param;
 use Yiisoft\Db\Constant\DataType;
 use Yiisoft\Db\Constant\PseudoType;
 use Yiisoft\Db\Expression\ArrayExpression;
+use Yiisoft\Db\Expression\CaseExpression;
 use Yiisoft\Db\Expression\Expression;
 use Yiisoft\Db\Pgsql\Column\ColumnBuilder;
+use Yiisoft\Db\Pgsql\Column\IntegerColumn;
 use Yiisoft\Db\Pgsql\Tests\Support\TestTrait;
 use Yiisoft\Db\Query\Query;
 
@@ -510,5 +512,61 @@ final class QueryBuilderProvider extends \Yiisoft\Db\Tests\Provider\QueryBuilder
         $values['Iterator'][0] = "ARRAY['a','b','c']";
 
         return $values;
+    }
+
+    public static function caseExpressionBuilder(): array
+    {
+        $data = parent::caseExpressionBuilder();
+
+        $db = self::getDb();
+        $serverVersion = $db->getServerInfo()->getVersion();
+        $db->close();
+
+        if (version_compare($serverVersion, '10', '<')) {
+            $data['without case expression'] = [
+                (new CaseExpression())
+                    ->addWhen(['=', 'column_name', 1], $paramA = new Param('a', DataType::STRING))
+                    ->addWhen(
+                        '"column_name" = 2',
+                        $db->select(new Expression(
+                            ':pv2::text',
+                            [':pv2' => $paramB = new Param('b', DataType::STRING)],
+                        )),
+                    ),
+                'CASE WHEN "column_name" = :qp0 THEN :qp1 WHEN "column_name" = 2 THEN (SELECT :pv2::text) END',
+                [':qp0' => 1, ':qp1' => $paramA, ':pv2' => $paramB],
+                'b',
+            ];
+        }
+
+        return [
+            ...$data,
+            'without case and type hint' => [
+                (new CaseExpression())->caseType('int')
+                    ->addWhen(true, "'a'"),
+                "CASE WHEN TRUE THEN 'a' END",
+                [],
+                'a',
+            ],
+            'with case and type hint' => [
+                (new CaseExpression('1 + 1', 'int'))
+                    ->addWhen(1, "'a'")
+                    ->else("'b'"),
+                "CASE (1 + 1)::int WHEN (1)::int THEN 'a' ELSE 'b' END",
+                [],
+                'b',
+            ],
+            'with case and type hint with column' => [
+                (new CaseExpression('1 + 1', new IntegerColumn()))
+                    ->addWhen(1, $paramA = new Param('a', DataType::STRING))
+                    ->else($paramB = new Param('b', DataType::STRING)),
+                'CASE (1 + 1)::integer WHEN (1)::integer THEN :qp0 ELSE :qp1 END',
+                [
+                    ':qp0' => $paramA,
+                    ':qp1' => $paramB,
+                ],
+                'b',
+            ],
+        ];
     }
 }
