@@ -46,6 +46,7 @@
 - Enh #412: Reduce binding parameters (@Tigrov)
 - Chg #414: Rename `DMLQueryBuilder::insertWithReturningPks()` to `DMLQueryBuilder::insertReturningPks()` (@Tigrov)
 - Enh #415: Implement `CaseExpressionBuilder` class (@Tigrov)
+- Enh #420: Provide `yiisoft/db-implementation` virtual package (@vjik)
 
 ## 1.3.0 March 21, 2024
 
