@@ -23,6 +23,7 @@ final class ArrayOverlapsConditionBuilder extends AbstractOverlapsConditionBuild
      * Build SQL for {@see ArrayOverlapsCondition}.
      *
      * @param ArrayOverlapsCondition $expression The {@see ArrayOverlapsCondition} to be built.
+     * @psalm-suppress MoreSpecificImplementedParamType
      *
      * @throws Exception
      * @throws InvalidArgumentException

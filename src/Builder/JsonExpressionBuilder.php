@@ -34,6 +34,8 @@ final class JsonExpressionBuilder implements ExpressionBuilderInterface
      * @param JsonExpression $expression The expression to build.
      * @param array $params The binding parameters.
      *
+     * @psalm-suppress MoreSpecificImplementedParamType
+     *
      * @throws Exception
      * @throws InvalidArgumentException
      * @throws InvalidConfigException
