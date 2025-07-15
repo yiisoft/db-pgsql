@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Yiisoft\Db\Pgsql\Builder;
 
-use Yiisoft\Db\Expression\ExpressionInterface;
 use Yiisoft\Db\QueryBuilder\Condition\Interface\LikeConditionInterface;
 
 /**
@@ -12,11 +11,7 @@ use Yiisoft\Db\QueryBuilder\Condition\Interface\LikeConditionInterface;
  */
 final class LikeConditionBuilder extends \Yiisoft\Db\QueryBuilder\Condition\Builder\LikeConditionBuilder
 {
-    /**
-     * @param LikeConditionInterface $expression
-     * @psalm-suppress MoreSpecificImplementedParamType
-     */
-    protected function parseOperator(ExpressionInterface $expression): array
+    protected function parseOperator(LikeConditionInterface $expression): array
     {
         [$andor, $not, $operator] = parent::parseOperator($expression);
 
