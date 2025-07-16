@@ -18,6 +18,8 @@ use Yiisoft\Db\QueryBuilder\QueryBuilderInterface;
 
 /**
  * Builds expressions for {@see `Yiisoft\Db\Expression\JsonExpression`} for PostgreSQL Server.
+ *
+ * @implements ExpressionBuilderInterface<JsonExpression>
  */
 final class JsonExpressionBuilder implements ExpressionBuilderInterface
 {
@@ -33,8 +35,6 @@ final class JsonExpressionBuilder implements ExpressionBuilderInterface
      *
      * @param JsonExpression $expression The expression to build.
      * @param array $params The binding parameters.
-     *
-     * @psalm-suppress MoreSpecificImplementedParamType
      *
      * @throws Exception
      * @throws InvalidArgumentException
