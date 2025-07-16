@@ -7,12 +7,12 @@ namespace Yiisoft\Db\Pgsql;
 use Throwable;
 use Yiisoft\Db\Exception\NotSupportedException;
 use Yiisoft\Db\QueryBuilder\AbstractDDLQueryBuilder;
-use Yiisoft\Db\Schema\Builder\ColumnInterface;
+use Yiisoft\Db\Schema\Column\ColumnInterface;
 
 use function array_diff;
-use function array_unshift;
 use function explode;
 use function implode;
+use function is_string;
 use function preg_match;
 use function preg_replace;
 use function str_contains;
@@ -32,54 +32,46 @@ final class DDLQueryBuilder extends AbstractDDLQueryBuilder
         $columnName = $this->quoter->quoteColumnName($column);
         $tableName = $this->quoter->quoteTableName($table);
 
-        if ($type instanceof ColumnInterface) {
-            $type = $type->asString();
-        }
-
         /**
          * @link https://github.com/yiisoft/yii2/issues/4492
          * @link https://www.postgresql.org/docs/9.1/static/sql-altertable.html
          */
-        if (preg_match('/^(DROP|SET|RESET|USING)\s+/i', $type)) {
-            return "ALTER TABLE $tableName ALTER COLUMN $columnName $type";
-        }
-
-        $type = 'TYPE ' . $this->queryBuilder->getColumnType($type);
-        $multiAlterStatement = [];
-        $constraintPrefix = preg_replace('/[^a-z0-9_]/i', '', $table . '_' . $column);
-
-        if (preg_match('/\s+DEFAULT\s+(["\']?\w*["\']?)/i', $type, $matches)) {
-            $type = preg_replace('/\s+DEFAULT\s+(["\']?\w*["\']?)/i', '', $type);
-            $multiAlterStatement[] = "ALTER COLUMN $columnName SET DEFAULT $matches[1]";
-        }
-
-        $type = preg_replace('/\s+NOT\s+NULL/i', '', $type, -1, $count);
-
-        if ($count > 0) {
-            $multiAlterStatement[] = "ALTER COLUMN $columnName SET NOT NULL";
-        } else {
-            /** remove extra null if any */
-            $type = preg_replace('/\s+NULL/i', '', $type, -1, $count);
-            if ($count > 0) {
-                $multiAlterStatement[] = "ALTER COLUMN $columnName DROP NOT NULL";
+        if (is_string($type)) {
+            if (preg_match('/^(DROP|SET|RESET|USING)\s+/i', $type) === 1) {
+                return "ALTER TABLE $tableName ALTER COLUMN $columnName $type";
             }
+
+            $type = $this->queryBuilder->getColumnFactory()->fromDefinition($type);
         }
 
-        if (preg_match('/\s+CHECK\s+\((.+)\)/i', $type, $matches)) {
-            $type = preg_replace('/\s+CHECK\s+\((.+)\)/i', '', $type);
-            $multiAlterStatement[] = "ADD CONSTRAINT {$constraintPrefix}_check CHECK ($matches[1])";
+        $columnDefinitionBuilder = $this->queryBuilder->getColumnDefinitionBuilder();
+
+        $multiAlterStatement = ["ALTER COLUMN $columnName TYPE " . $columnDefinitionBuilder->buildAlter($type)];
+
+        if ($type->hasDefaultValue()) {
+            $defaultValue = $type->dbTypecast($type->getDefaultValue());
+            $defaultValue = $this->queryBuilder->prepareValue($defaultValue);
+
+            $multiAlterStatement[] = "ALTER COLUMN $columnName SET DEFAULT $defaultValue";
         }
 
-        $type = preg_replace('/\s+UNIQUE/i', '', $type, -1, $count);
+        match ($type->isNotNull()) {
+            true => $multiAlterStatement[] = "ALTER COLUMN $columnName SET NOT NULL",
+            false => $multiAlterStatement[] = "ALTER COLUMN $columnName DROP NOT NULL",
+            default => null,
+        };
 
-        if ($count > 0) {
+        $check = $type->getCheck();
+        if (!empty($check)) {
+            $constraintPrefix = preg_replace('/\W/', '', $table . '_' . $column);
+            $multiAlterStatement[] = "ADD CONSTRAINT {$constraintPrefix}_check CHECK ($check)";
+        }
+
+        if ($type->isUnique()) {
             $multiAlterStatement[] = "ADD UNIQUE ($columnName)";
         }
 
-        /** add what's left at the beginning */
-        array_unshift($multiAlterStatement, "ALTER COLUMN $columnName $type");
-
-        return 'ALTER TABLE ' . $tableName . ' ' . implode(', ', $multiAlterStatement);
+        return "ALTER TABLE $tableName " . implode(', ', $multiAlterStatement);
     }
 
     /**
@@ -129,6 +121,7 @@ final class DDLQueryBuilder extends AbstractDDLQueryBuilder
     {
         if (str_contains($table, '.') && !str_contains($name, '.')) {
             if (str_contains($table, '{{')) {
+                /** @var string $table */
                 $table = preg_replace('/{{(.*?)}}/', '\1', $table);
                 [$schema] = explode('.', $table);
                 if (!str_contains($schema, '%')) {

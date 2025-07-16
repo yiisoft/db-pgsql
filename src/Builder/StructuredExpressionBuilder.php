@@ -4,66 +4,63 @@ declare(strict_types=1);
 
 namespace Yiisoft\Db\Pgsql\Builder;
 
+use Yiisoft\Db\Command\Param;
+use Yiisoft\Db\Constant\DataType;
 use Yiisoft\Db\Exception\Exception;
-use Yiisoft\Db\Exception\InvalidArgumentException;
+use InvalidArgumentException;
 use Yiisoft\Db\Exception\InvalidConfigException;
 use Yiisoft\Db\Exception\NotSupportedException;
-use Yiisoft\Db\Expression\ExpressionBuilderInterface;
-use Yiisoft\Db\Expression\ExpressionInterface;
-use Yiisoft\Db\Pgsql\StructuredExpression;
+use Yiisoft\Db\Expression\AbstractStructuredExpressionBuilder;
+use Yiisoft\Db\Expression\StructuredExpression;
+use Yiisoft\Db\Pgsql\Data\StructuredLazyArray;
 use Yiisoft\Db\Query\QueryInterface;
-use Yiisoft\Db\QueryBuilder\QueryBuilderInterface;
+use Yiisoft\Db\Schema\Column\AbstractStructuredColumn;
+use Yiisoft\Db\Schema\Data\LazyArrayInterface;
 
 use function implode;
 
 /**
  * Builds expressions for {@see StructuredExpression} for PostgreSQL Server.
  */
-final class StructuredExpressionBuilder implements ExpressionBuilderInterface
+final class StructuredExpressionBuilder extends AbstractStructuredExpressionBuilder
 {
-    public function __construct(private QueryBuilderInterface $queryBuilder)
+    protected function buildStringValue(string $value, StructuredExpression $expression, array &$params): string
     {
+        $param = new Param($value, DataType::STRING);
+
+        return $this->queryBuilder->bindParam($param, $params) . $this->getTypeHint($expression);
     }
 
-    /**
-     * The method builds the raw SQL from the expression that won't be additionally escaped or quoted.
-     *
-     * @param StructuredExpression $expression The expression build.
-     * @param array $params The binding parameters.
-     *
-     * @throws Exception
-     * @throws InvalidArgumentException
-     * @throws InvalidConfigException
-     * @throws NotSupportedException
-     *
-     * @return string The raw SQL that won't be additionally escaped or quoted.
-     */
-    public function build(ExpressionInterface $expression, array &$params = []): string
+    protected function buildSubquery(QueryInterface $query, StructuredExpression $expression, array &$params): string
     {
-        $value = $expression->getValue();
+        [$sql, $params] = $this->queryBuilder->build($query, $params);
 
-        if (empty($value)) {
-            return 'NULL';
-        }
+        return "($sql)" . $this->getTypeHint($expression);
+    }
 
-        if ($value instanceof QueryInterface) {
-            [$sql, $params] = $this->queryBuilder->build($value, $params);
-            return "($sql)" . $this->getTypeHint($expression);
-        }
-
+    protected function buildValue(array|object $value, StructuredExpression $expression, array &$params): string
+    {
+        $value = $this->prepareValues($value, $expression);
         /** @psalm-var string[] $placeholders */
-        $placeholders = $this->buildPlaceholders($expression, $params);
+        $placeholders = $this->buildPlaceholders($value, $expression, $params);
 
-        if (empty($placeholders)) {
-            return 'NULL';
+        return 'ROW(' . implode(',', $placeholders) . ')' . $this->getTypeHint($expression);
+    }
+
+    protected function getLazyArrayValue(LazyArrayInterface $value): array|string
+    {
+        if ($value instanceof StructuredLazyArray) {
+            return $value->getRawValue();
         }
 
-        return 'ROW(' . implode(', ', $placeholders) . ')' . $this->getTypeHint($expression);
+        return $value->getValue();
     }
 
     /**
-     * Builds a placeholder array out of $expression values.
+     * Builds a placeholder array out of $expression value.
      *
+     * @param array $value The expression value.
+     * @param StructuredExpression $expression The structured expression.
      * @param array $params The binding parameters.
      *
      * @throws Exception
@@ -71,16 +68,15 @@ final class StructuredExpressionBuilder implements ExpressionBuilderInterface
      * @throws InvalidConfigException
      * @throws NotSupportedException
      */
-    private function buildPlaceholders(StructuredExpression $expression, array &$params): array
+    private function buildPlaceholders(array $value, StructuredExpression $expression, array &$params): array
     {
-        $value = $expression->getNormalizedValue();
-
-        if (!is_iterable($value)) {
-            return [];
-        }
+        $type = $expression->getType();
+        $queryBuilder = $this->queryBuilder;
+        $columns = $type instanceof AbstractStructuredColumn && $queryBuilder->isTypecastingEnabled()
+            ? $type->getColumns()
+            : [];
 
         $placeholders = [];
-        $columns = $expression->getColumns();
 
         /** @psalm-var int|string $columnName */
         foreach ($value as $columnName => $item) {
@@ -88,24 +84,24 @@ final class StructuredExpressionBuilder implements ExpressionBuilderInterface
                 $item = $columns[$columnName]->dbTypecast($item);
             }
 
-            if ($item instanceof ExpressionInterface) {
-                $placeholders[] = $this->queryBuilder->buildExpression($item, $params);
-            } else {
-                $placeholders[] = $this->queryBuilder->bindParam($item, $params);
-            }
+            $placeholders[] = $queryBuilder->buildValue($item, $params);
         }
 
         return $placeholders;
     }
 
     /**
-     * @return string The typecast expression based on {@see type}.
+     * Returns the type hint expression based on type.
      */
     private function getTypeHint(StructuredExpression $expression): string
     {
         $type = $expression->getType();
 
-        if ($type === null) {
+        if ($type instanceof AbstractStructuredColumn) {
+            $type = $type->getDbType();
+        }
+
+        if (empty($type)) {
             return '';
         }
 

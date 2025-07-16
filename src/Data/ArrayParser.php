@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Yiisoft\Db\Pgsql;
+namespace Yiisoft\Db\Pgsql\Data;
 
 use function in_array;
 
@@ -14,11 +14,15 @@ final class ArrayParser
     /**
      * Convert an array from PostgresSQL to PHP.
      *
-     * @param string|null $value String to convert.
+     * @param string $value String to parse.
+     *
+     * @return (array|string|null)[]|null Parsed value.
+     *
+     * @psalm-return list<array|string|null>|null
      */
-    public function parse(string|null $value): array|null
+    public function parse(string $value): array|null
     {
-        return $value !== null && $value[0] === '{'
+        return $value[0] === '{'
             ? $this->parseArray($value)
             : null;
     }
@@ -28,6 +32,10 @@ final class ArrayParser
      *
      * @param string $value String to parse.
      * @param int $i parse starting position.
+     *
+     * @return (array|string|null)[] Parsed value.
+     *
+     * @psalm-return list<array|string|null>
      */
     private function parseArray(string $value, int &$i = 0): array
     {

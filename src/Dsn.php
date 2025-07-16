@@ -14,11 +14,11 @@ use Yiisoft\Db\Connection\AbstractDsn;
 final class Dsn extends AbstractDsn
 {
     /**
-     * @psalm-param string[] $options
+     * @psalm-param array<string,string> $options
      */
     public function __construct(
-        string $driver,
-        string $host,
+        string $driver = 'pgsql',
+        string $host = '127.0.0.1',
         string|null $databaseName = 'postgres',
         string $port = '5432',
         array $options = []

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Yiisoft\Db\Pgsql;
+namespace Yiisoft\Db\Pgsql\Data;
 
 use function in_array;
 
@@ -12,9 +12,13 @@ use function in_array;
 final class StructuredParser
 {
     /**
-     * Converts structured (composite) type value from PostgreSQL to PHP array
+     * Converts structured (composite) type value from PostgreSQL to PHP array.
      *
-     * @param string $value String to convert.
+     * @param string $value Value to parse.
+     *
+     * @return (string|null)[]|null Parsed value.
+     *
+     * @psalm-return non-empty-list<null|string>|null
      */
     public function parse(string $value): array|null
     {
@@ -29,6 +33,10 @@ final class StructuredParser
      * Parses PostgreSQL composite type value encoded in string.
      *
      * @param string $value String to parse.
+     *
+     * @return (string|null)[] Parsed value.
+     *
+     * @psalm-return non-empty-list<null|string>
      */
     private function parseComposite(string $value): array
     {

@@ -1,75 +1,30 @@
 on:
   pull_request:
-    paths-ignore:
-      - 'docs/**'
-      - 'README.md'
-      - 'CHANGELOG.md'
-      - '.gitignore'
-      - '.gitattributes'
-      - 'infection.json.dist'
-      - 'phpunit.xml.dist'
-      - 'psalm.xml'
+    paths:
+      - 'src/**'
+      - '.github/workflows/composer-require-checker.yml'
+      - 'composer.json'
+      - 'composer-require-checker.json'
 
   push:
-    paths-ignore:
-      - 'docs/**'
-      - 'README.md'
-      - 'CHANGELOG.md'
-      - '.gitignore'
-      - '.gitattributes'
-      - 'infection.json.dist'
-      - 'phpunit.xml.dist'
-      - 'psalm.xml'
+    branches: ['master']
+    paths:
+      - 'src/**'
+      - '.github/workflows/composer-require-checker.yml'
+      - 'composer.json'
+      - 'composer-require-checker.json'
 
 name: Composer require checker
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   composer-require-checker:
-    name: PHP ${{ matrix.php }}
-
-    env:
-      COMPOSER_ROOT_VERSION: 1.0.0
-
-    runs-on: ${{ matrix.os }}
-
-    strategy:
-      matrix:
-        os:
-          - ubuntu-latest
-
-        php:
-          - 8.0
-          - 8.1
-          - 8.2
-
-    steps:
-      - name: Checkout.
-        uses: actions/checkout@v3
-
-      - name: Install PHP with extensions.
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: ${{ matrix.php }}
-          coverage: none
-          tools: composer:v2
-
-      - name: Update composer.
-        run: composer self-update
-
-      - name: Set environment variables pull request linux.
-        uses: yiisoft/actions/db/environment-linux@master
-
-      - name: Install db.
-        uses: yiisoft/actions/db/subpackage-install@master
-        with:
-          BRANCH_NAME: ${{ env.BRANCH_NAME }}
-          COMPOSER_ROOT_VERSION: ${{ env.COMPOSER_ROOT_VERSION }}
-          CURRENT_PACKAGE: db
-          FULL_BRANCH_NAME: ${{ env.FULL_BRANCH_NAME }}
-          WORK_PACKAGE_URL: ${{ env.WORK_PACKAGE_URL }}
-
-      - name: Install dependencies with composer.
-        run: composer update --no-interaction --no-progress --optimize-autoloader --ansi
-
-      - name: Check dependencies.
-        run: vendor/bin/composer-require-checker
+    uses: yiisoft/actions/.github/workflows/composer-require-checker.yml@master
+    with:
+      php: >-
+        ['8.1', '8.2', '8.3', '8.4']
+      required-packages: >-
+        ['db']

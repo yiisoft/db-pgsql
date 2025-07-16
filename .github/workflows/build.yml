@@ -1,25 +1,26 @@
 on:
   pull_request:
-    paths-ignore:
-      - 'docs/**'
-      - 'README.md'
-      - 'CHANGELOG.md'
-      - '.gitignore'
-      - '.gitattributes'
-      - 'infection.json.dist'
-      - 'psalm.xml'
+    paths:
+      - 'src/**'
+      - 'tests/**'
+      - '.github/workflows/build.yml'
+      - 'composer.json'
+      - 'phpunit.xml.dist'
 
   push:
-    paths-ignore:
-      - 'docs/**'
-      - 'README.md'
-      - 'CHANGELOG.md'
-      - '.gitignore'
-      - '.gitattributes'
-      - 'infection.json.dist'
-      - 'psalm.xml'
+    branches: ['master']
+    paths:
+      - 'src/**'
+      - 'tests/**'
+      - '.github/workflows/build.yml'
+      - 'composer.json'
+      - 'phpunit.xml.dist'
 
 name: build
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   tests:
@@ -29,17 +30,12 @@ jobs:
       COMPOSER_ROOT_VERSION: 1.0.0
       EXTENSIONS: pdo, pdo_pgsql
 
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-latest
 
     strategy:
       matrix:
-        os:
-          - ubuntu-latest
-
         php:
-          - 8.0
-          - 8.1
-          - 8.2
+          - 8.4
 
         pgsql:
           - 9
@@ -49,6 +45,16 @@ jobs:
           - 13
           - 14
           - 15
+          - 16
+          - 17
+
+        include:
+          - php: 8.1
+            pgsql: 17
+          - php: 8.2
+            pgsql: 17
+          - php: 8.3
+            pgsql: 17
 
     services:
       postgres:
@@ -63,7 +69,7 @@ jobs:
 
     steps:
       - name: Checkout.
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Install PHP with extensions.
         uses: shivammathur/setup-php@v2
@@ -72,31 +78,21 @@ jobs:
           extensions: ${{ env.EXTENSIONS }}
           ini-values: date.timezone='UTC'
           coverage: pcov
-          tools: composer:v2
 
       - name: Update composer.
         run: composer self-update
 
-      - name: Set environment variables pull request linux.
-        uses: yiisoft/actions/db/environment-linux@master
-
       - name: Install db.
-        uses: yiisoft/actions/db/subpackage-install@master
+        uses: yiisoft/actions/install-packages@master
         with:
-          BRANCH_NAME: ${{ env.BRANCH_NAME }}
-          COMPOSER_ROOT_VERSION: ${{ env.COMPOSER_ROOT_VERSION }}
-          CURRENT_PACKAGE: db
-          FULL_BRANCH_NAME: ${{ env.FULL_BRANCH_NAME }}
-          WORK_PACKAGE_URL: ${{ env.WORK_PACKAGE_URL }}
-
-      - name: Install dependencies with composer.
-        run: composer update --no-interaction --no-progress --optimize-autoloader --ansi
+          packages: >-
+            ['db']
 
       - name: Run tests with phpunit with code coverage.
-        run: vendor/bin/phpunit --coverage-clover=coverage.xml --colors=always
+        run: vendor/bin/phpunit --coverage-clover=coverage.xml --colors=always --display-warnings --display-deprecations
 
       - name: Upload coverage to Codecov.
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@v5
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: ./coverage.xml

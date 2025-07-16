@@ -13,31 +13,43 @@
     "homepage": "https://www.yiiframework.com/",
     "license": "BSD-3-Clause",
     "support": {
+        "issues": "https://github.com/yiisoft/db-pgsql/issues?state=open",
         "source": "https://github.com/yiisoft/db-pgsql",
-        "issues": "https://github.com/yiisoft/db-pgsql/issues",
         "forum": "https://www.yiiframework.com/forum/",
         "wiki": "https://www.yiiframework.com/wiki/",
-        "chat": "https://t.me/yii3en",
-        "irc": "irc://irc.freenode.net/yii"
+        "irc": "ircs://irc.libera.chat:6697/yii",
+        "chat": "https://t.me/yii3en"
     },
+    "funding": [
+        {
+            "type": "opencollective",
+            "url": "https://opencollective.com/yiisoft"
+        },
+        {
+            "type": "github",
+            "url": "https://github.com/sponsors/yiisoft"
+        }
+    ],
     "require": {
-        "php": "^8.0",
-        "ext-json": "*",
+        "php": "8.1 - 8.4",
         "ext-pdo": "*",
         "ext-pdo_pgsql": "*",
-        "yiisoft/db": "^1.2",
-        "yiisoft/json": "^1.0"
+        "yiisoft/db": "dev-master"
     },
     "require-dev": {
-        "maglnet/composer-require-checker": "^4.2",
-        "phpunit/phpunit": "^9.5|^10.0",
-        "rector/rector": "^1.0",
-        "roave/infection-static-analysis-plugin": "^1.16",
-        "spatie/phpunit-watcher": "^1.23",
-        "vimeo/psalm": "^4.30|^5.20",
+        "maglnet/composer-require-checker": "^4.7.1",
+        "phpunit/phpunit": "^10.5.45",
+        "rector/rector": "^2.0.10",
+        "roave/infection-static-analysis-plugin": "^1.35",
+        "spatie/phpunit-watcher": "^1.24",
+        "vimeo/psalm": "^5.26.1 || ^6.8.8",
+        "vlucas/phpdotenv": "^5.6.1",
         "yiisoft/aliases": "^2.0",
-        "yiisoft/cache-file": "^3.1",
-        "yiisoft/var-dumper": "^1.5"
+        "yiisoft/cache-file": "^3.2",
+        "yiisoft/var-dumper": "^1.7"
+    },
+    "provide": {
+        "yiisoft/db-implementation": "1.0.0"
     },
     "autoload": {
         "psr-4": {
@@ -48,7 +60,8 @@
         "psr-4": {
             "Yiisoft\\Db\\Pgsql\\Tests\\": "tests",
             "Yiisoft\\Db\\Tests\\": "vendor/yiisoft/db/tests"
-        }
+        },
+        "files": ["tests/bootstrap.php"]
     },
     "config": {
         "sort-packages": true,

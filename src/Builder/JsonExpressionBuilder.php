@@ -6,24 +6,28 @@ namespace Yiisoft\Db\Pgsql\Builder;
 
 use JsonException;
 use Yiisoft\Db\Exception\Exception;
-use Yiisoft\Db\Exception\InvalidArgumentException;
+use InvalidArgumentException;
 use Yiisoft\Db\Exception\InvalidConfigException;
 use Yiisoft\Db\Exception\NotSupportedException;
 use Yiisoft\Db\Expression\ArrayExpression;
 use Yiisoft\Db\Expression\ExpressionBuilderInterface;
 use Yiisoft\Db\Expression\ExpressionInterface;
 use Yiisoft\Db\Expression\JsonExpression;
+use Yiisoft\Db\Expression\JsonExpressionBuilder as BaseJsonExpressionBuilder;
 use Yiisoft\Db\QueryBuilder\QueryBuilderInterface;
-use Yiisoft\Db\Query\QueryInterface;
-use Yiisoft\Json\Json;
 
 /**
  * Builds expressions for {@see `Yiisoft\Db\Expression\JsonExpression`} for PostgreSQL Server.
+ *
+ * @implements ExpressionBuilderInterface<JsonExpression>
  */
 final class JsonExpressionBuilder implements ExpressionBuilderInterface
 {
-    public function __construct(private QueryBuilderInterface $queryBuilder)
+    private BaseJsonExpressionBuilder $baseExpressionBuilder;
+
+    public function __construct(QueryBuilderInterface $queryBuilder)
     {
+        $this->baseExpressionBuilder = new BaseJsonExpressionBuilder($queryBuilder);
     }
 
     /**
@@ -42,21 +46,13 @@ final class JsonExpressionBuilder implements ExpressionBuilderInterface
      */
     public function build(ExpressionInterface $expression, array &$params = []): string
     {
-        /** @psalm-var mixed $value */
-        $value = $expression->getValue();
+        $statement = $this->baseExpressionBuilder->build($expression, $params);
 
-        if ($value instanceof QueryInterface) {
-            [$sql, $params] = $this->queryBuilder->build($value, $params);
-            return "($sql)" . $this->getTypeHint($expression);
+        if ($expression->getValue() instanceof ArrayExpression) {
+            $statement = 'array_to_json(' . $statement . ')';
         }
 
-        if ($value instanceof ArrayExpression) {
-            $placeholder = 'array_to_json(' . $this->queryBuilder->buildExpression($value, $params) . ')';
-        } else {
-            $placeholder = $this->queryBuilder->bindParam(Json::encode($value), $params);
-        }
-
-        return $placeholder . $this->getTypeHint($expression);
+        return $statement . $this->getTypeHint($expression);
     }
 
     /**

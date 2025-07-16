@@ -1,4 +1,4 @@
-# Testing
+# Internals
 
 ## Github actions
 
@@ -8,9 +8,9 @@ All our packages have github actions by default, so you can test your [contribut
 
 ## Docker
 
-For greater ease it is recommended to use docker containers. 
+For greater ease it is recommended to use docker containers.
 
-You can use the [docker-compose.yml](https://docs.docker.com/compose/compose-file/) file with PostgreSQL 15
+You can use the [docker-compose.yml](../docker-compose.yml) file with PostgreSQL 15
 that is in the root of the package:
 
 ```shell
@@ -24,25 +24,23 @@ docker run --rm --name yiisoft-db-pgsql-db -e POSTGRES_PASSWORD=root -e POSTGRES
 ```
 
 If you're running Docker on Linux (in WSL also), you can create [tmpfs volume](https://docs.docker.com/storage/tmpfs/)
-that persist database in the host memory and significantly speeds up the execution time of tests. Use `docker run` 
+that persist database in the host memory and significantly speeds up the execution time of tests. Use `docker run`
 command argument for it:
 
-```
+```shell
 --mount type=tmpfs,destination=/var/lib/postgresql/data
 ```
 
 DB must be accessible by address `127.0.0.1`. If you use PHP via docker container, run PHP container in network of DB
 container. Use `docker run` command argument for it:
 
-```
- --network container:yiisoft-db-pgsql-db
+```shell
+--network container:yiisoft-db-pgsql-db
 ```
 
 ## Unit testing
 
-The package is tested with [PHPUnit](https://phpunit.de/).
-
-The following steps are required to run the tests:
+The package is tested with [PHPUnit](https://phpunit.de/). To run tests:
 
 1. Run the docker container for the dbms.
 2. Install the dependencies of the project with composer.
@@ -52,7 +50,7 @@ The following steps are required to run the tests:
 vendor/bin/phpunit
 ```
 
-### Mutation testing
+## Mutation testing
 
 The package tests are checked with [Infection](https://infection.github.io/) mutation framework with
 [Infection Static Analysis Plugin](https://github.com/Roave/infection-static-analysis-plugin). To run it:
@@ -69,20 +67,19 @@ The code is statically analyzed with [Psalm](https://psalm.dev/). To run static 
 ./vendor/bin/psalm
 ```
 
-## Rector
+## Code style
 
-Use [Rector](https://github.com/rectorphp/rector) to make codebase follow some specific rules or 
-use either newest or any specific version of PHP: 
+Use [Rector](https://github.com/rectorphp/rector) to make codebase follow some specific rules or
+use either newest or any specific version of PHP:
 
 ```shell
 ./vendor/bin/rector
 ```
 
-## Composer require checker
+## Dependencies
 
-This package uses [composer-require-checker](https://github.com/maglnet/ComposerRequireChecker) to check if all dependencies are correctly defined in `composer.json`.
-
-To run the checker, execute the following command:
+This package uses [composer-require-checker](https://github.com/maglnet/ComposerRequireChecker) to check if
+all dependencies are correctly defined in `composer.json`. To run the checker, execute the following command:
 
 ```shell
 ./vendor/bin/composer-require-checker

@@ -6,7 +6,7 @@ namespace Yiisoft\Db\Pgsql\Tests;
 
 use Throwable;
 use Yiisoft\Db\Exception\Exception;
-use Yiisoft\Db\Exception\InvalidArgumentException;
+use InvalidArgumentException;
 use Yiisoft\Db\Exception\InvalidCallException;
 use Yiisoft\Db\Exception\InvalidConfigException;
 use Yiisoft\Db\Pgsql\Tests\Support\TestTrait;
@@ -41,7 +41,7 @@ final class PdoConnectionTest extends CommonPdoConnectionTest
             ]
         )->execute();
 
-        $this->assertSame('4', $db->getLastInsertID('public.customer_id_seq'));
+        $this->assertSame('4', $db->getLastInsertId('public.customer_id_seq'));
 
         $db->close();
     }
@@ -63,7 +63,7 @@ final class PdoConnectionTest extends CommonPdoConnectionTest
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('PostgreSQL not support lastInsertId without sequence name.');
 
-        $db->getLastInsertID();
+        $db->getLastInsertId();
 
         $db->close();
     }

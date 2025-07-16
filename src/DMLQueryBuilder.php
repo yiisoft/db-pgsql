@@ -4,37 +4,37 @@ declare(strict_types=1);
 
 namespace Yiisoft\Db\Pgsql;
 
-use Yiisoft\Db\Exception\InvalidArgumentException;
+use InvalidArgumentException;
 use Yiisoft\Db\Expression\Expression;
 use Yiisoft\Db\Query\QueryInterface;
 use Yiisoft\Db\QueryBuilder\AbstractDMLQueryBuilder;
 
 use function array_map;
 use function implode;
+use function str_ends_with;
+use function substr;
 
 /**
  * Implements a DML (Data Manipulation Language) SQL statements for PostgreSQL Server.
  */
 final class DMLQueryBuilder extends AbstractDMLQueryBuilder
 {
-    public function insertWithReturningPks(string $table, QueryInterface|array $columns, array &$params = []): string
+    public function insertReturningPks(string $table, array|QueryInterface $columns, array &$params = []): string
     {
-        $sql = $this->insert($table, $columns, $params);
-        $returnColumns = $this->schema->getTableSchema($table)?->getPrimaryKey();
+        $insertSql = $this->insert($table, $columns, $params);
+        $tableSchema = $this->schema->getTableSchema($table);
+        $primaryKeys = $tableSchema?->getPrimaryKey() ?? [];
 
-        if (!empty($returnColumns)) {
-            $returnColumns = array_map(
-                [$this->quoter, 'quoteColumnName'],
-                $returnColumns,
-            );
-
-            $sql .= ' RETURNING ' . implode(', ', $returnColumns);
+        if (empty($primaryKeys)) {
+            return $insertSql;
         }
 
-        return $sql;
+        $primaryKeys = array_map($this->quoter->quoteColumnName(...), $primaryKeys);
+
+        return $insertSql . ' RETURNING ' . implode(', ', $primaryKeys);
     }
 
-    public function resetSequence(string $table, null|int|string $value = null): string
+    public function resetSequence(string $table, int|string|null $value = null): string
     {
         $tableSchema = $this->schema->getTableSchema($table);
 
@@ -63,9 +63,9 @@ final class DMLQueryBuilder extends AbstractDMLQueryBuilder
 
     public function upsert(
         string $table,
-        QueryInterface|array $insertColumns,
-        bool|array $updateColumns,
-        array &$params = []
+        array|QueryInterface $insertColumns,
+        array|bool $updateColumns = true,
+        array &$params = [],
     ): string {
         $insertSql = $this->insert($table, $insertColumns, $params);
 
@@ -91,9 +91,61 @@ final class DMLQueryBuilder extends AbstractDMLQueryBuilder
             }
         }
 
-        [$updates, $params] = $this->prepareUpdateSets($table, $updateColumns, $params);
+        $quotedUniqueNames = array_map($this->quoter->quoteColumnName(...), $uniqueNames);
+        $updates = $this->prepareUpdateSets($table, $updateColumns, $params);
 
         return $insertSql
-            . ' ON CONFLICT (' . implode(', ', $uniqueNames) . ') DO UPDATE SET ' . implode(', ', $updates);
+            . ' ON CONFLICT (' . implode(', ', $quotedUniqueNames) . ')'
+            . ' DO UPDATE SET ' . implode(', ', $updates);
+    }
+
+    public function upsertReturning(
+        string $table,
+        array|QueryInterface $insertColumns,
+        array|bool $updateColumns = true,
+        array|null $returnColumns = null,
+        array &$params = [],
+    ): string {
+        $upsertSql = $this->upsert($table, $insertColumns, $updateColumns, $params);
+
+        $returnColumns ??= $this->schema->getTableSchema($table)?->getColumnNames();
+
+        if (empty($returnColumns)) {
+            return $upsertSql;
+        }
+
+        $returnColumns = array_map($this->quoter->quoteColumnName(...), $returnColumns);
+
+        if (str_ends_with($upsertSql, ' ON CONFLICT DO NOTHING')) {
+            $tableName = $this->quoter->quoteTableName($table);
+            $dummyColumn = $this->getDummyColumn($table);
+
+            $uniqueNames = $this->prepareUpsertColumns($table, $insertColumns, $updateColumns)[0];
+            $quotedUniqueNames = array_map($this->quoter->quoteColumnName(...), $uniqueNames);
+
+            $upsertSql = substr($upsertSql, 0, -10)
+                . '(' . implode(', ', $quotedUniqueNames) . ')'
+                . " DO UPDATE SET $dummyColumn = $tableName.$dummyColumn";
+        }
+
+        return $upsertSql . ' RETURNING ' . implode(', ', $returnColumns);
+    }
+
+    private function getDummyColumn(string $table): string
+    {
+        /** @psalm-suppress PossiblyNullReference */
+        $columns = $this->schema->getTableSchema($table)->getColumns();
+
+        foreach ($columns as $column) {
+            if ($column->isPrimaryKey() || $column->isUnique()) {
+                continue;
+            }
+
+            /** @psalm-suppress PossiblyNullArgument */
+            return $this->quoter->quoteColumnName($column->getName());
+        }
+
+        /** @psalm-suppress PossiblyNullArgument, PossiblyFalseReference */
+        return $this->quoter->quoteColumnName(end($columns)->getName());
     }
 }

@@ -4,17 +4,19 @@ declare(strict_types=1);
 
 namespace Yiisoft\Db\Pgsql\Tests\Provider;
 
+use Yiisoft\Db\Command\Param;
+use Yiisoft\Db\Constant\DataType;
+use Yiisoft\Db\Constant\PseudoType;
 use Yiisoft\Db\Expression\ArrayExpression;
+use Yiisoft\Db\Expression\CaseExpression;
 use Yiisoft\Db\Expression\Expression;
-use Yiisoft\Db\Expression\JsonExpression;
-use Yiisoft\Db\Pgsql\StructuredExpression;
-use Yiisoft\Db\Pgsql\Tests\Support\ColumnSchemaBuilder;
+use Yiisoft\Db\Pgsql\Column\ColumnBuilder;
+use Yiisoft\Db\Pgsql\Column\IntegerColumn;
 use Yiisoft\Db\Pgsql\Tests\Support\TestTrait;
 use Yiisoft\Db\Query\Query;
-use Yiisoft\Db\Schema\SchemaInterface;
-use Yiisoft\Db\Tests\Support\TraversableObject;
 
 use function array_replace;
+use function version_compare;
 
 final class QueryBuilderProvider extends \Yiisoft\Db\Tests\Provider\QueryBuilderProvider
 {
@@ -22,295 +24,90 @@ final class QueryBuilderProvider extends \Yiisoft\Db\Tests\Provider\QueryBuilder
 
     protected static string $driverName = 'pgsql';
 
+    public static function alterColumn(): array
+    {
+        return [
+            ['SET NOT null', 'ALTER TABLE "foo1" ALTER COLUMN "bar" SET NOT null'],
+            ['drop default', 'ALTER TABLE "foo1" ALTER COLUMN "bar" drop default'],
+            ['reset xyz', 'ALTER TABLE "foo1" ALTER COLUMN "bar" reset xyz'],
+            ['string', 'ALTER TABLE "foo1" ALTER COLUMN "bar" TYPE varchar(255)'],
+            ['varchar(255)', 'ALTER TABLE "foo1" ALTER COLUMN "bar" TYPE varchar(255)'],
+            ['string NOT NULL', 'ALTER TABLE "foo1" ALTER COLUMN "bar" TYPE varchar(255), ALTER COLUMN "bar" SET NOT NULL'],
+            ['string NULL', 'ALTER TABLE "foo1" ALTER COLUMN "bar" TYPE varchar(255), ALTER COLUMN "bar" DROP NOT NULL'],
+            ['string DEFAULT NULL', 'ALTER TABLE "foo1" ALTER COLUMN "bar" TYPE varchar(255), ALTER COLUMN "bar" SET DEFAULT NULL'],
+            ["string DEFAULT ''", 'ALTER TABLE "foo1" ALTER COLUMN "bar" TYPE varchar(255), ALTER COLUMN "bar" SET DEFAULT \'\''],
+            ['timestamp(0) DEFAULT now()', 'ALTER TABLE "foo1" ALTER COLUMN "bar" TYPE timestamp(0), ALTER COLUMN "bar" SET DEFAULT now()'],
+            ['string CHECK (char_length(bar) > 5)', 'ALTER TABLE "foo1" ALTER COLUMN "bar" TYPE varchar(255), ADD CONSTRAINT foo1_bar_check CHECK (char_length(bar) > 5)'],
+            ['string(30) UNIQUE', 'ALTER TABLE "foo1" ALTER COLUMN "bar" TYPE varchar(30), ADD UNIQUE ("bar")'],
+            ['varchar(255) USING bar::varchar', 'ALTER TABLE "foo1" ALTER COLUMN "bar" TYPE varchar(255) USING bar::varchar'],
+            ['varchar(255) using cast("bar" as varchar)', 'ALTER TABLE "foo1" ALTER COLUMN "bar" TYPE varchar(255) using cast("bar" as varchar)'],
+            [ColumnBuilder::string(), 'ALTER TABLE "foo1" ALTER COLUMN "bar" TYPE varchar(255)'],
+            [ColumnBuilder::string()->notNull(), 'ALTER TABLE "foo1" ALTER COLUMN "bar" TYPE varchar(255), ALTER COLUMN "bar" SET NOT NULL'],
+            [ColumnBuilder::string()->null(), 'ALTER TABLE "foo1" ALTER COLUMN "bar" TYPE varchar(255), ALTER COLUMN "bar" DROP NOT NULL'],
+            [ColumnBuilder::string()->defaultValue(null), 'ALTER TABLE "foo1" ALTER COLUMN "bar" TYPE varchar(255), ALTER COLUMN "bar" SET DEFAULT NULL'],
+            [ColumnBuilder::string()->defaultValue(''), 'ALTER TABLE "foo1" ALTER COLUMN "bar" TYPE varchar(255), ALTER COLUMN "bar" SET DEFAULT \'\''],
+            [ColumnBuilder::string()->null()->defaultValue('xxx'), 'ALTER TABLE "foo1" ALTER COLUMN "bar" TYPE varchar(255), ALTER COLUMN "bar" SET DEFAULT \'xxx\', ALTER COLUMN "bar" DROP NOT NULL'],
+            [ColumnBuilder::timestamp()->defaultValue(new Expression('now()')), 'ALTER TABLE "foo1" ALTER COLUMN "bar" TYPE timestamp(0), ALTER COLUMN "bar" SET DEFAULT now()'],
+            [ColumnBuilder::string()->check('char_length(bar) > 5'), 'ALTER TABLE "foo1" ALTER COLUMN "bar" TYPE varchar(255), ADD CONSTRAINT foo1_bar_check CHECK (char_length(bar) > 5)'],
+            [ColumnBuilder::string(30)->unique(), 'ALTER TABLE "foo1" ALTER COLUMN "bar" TYPE varchar(30), ADD UNIQUE ("bar")'],
+            [ColumnBuilder::string()->extra('USING bar::varchar'), 'ALTER TABLE "foo1" ALTER COLUMN "bar" TYPE varchar(255) USING bar::varchar'],
+            [ColumnBuilder::string()->extra('using cast("bar" as varchar)'), 'ALTER TABLE "foo1" ALTER COLUMN "bar" TYPE varchar(255) using cast("bar" as varchar)'],
+        ];
+    }
+
     public static function buildCondition(): array
     {
-        $buildCondition = parent::buildCondition();
+        return [
+            ...parent::buildCondition(),
+            /**
+            * adding conditions for ILIKE i.e. case insensitive LIKE.
+            *
+            * {@see https://www.postgresql.org/docs/8.3/static/functions-matching.html#FUNCTIONS-LIKE}
+            */
+            /* empty values */
+            [['ilike', 'name', []], '0=1', []],
+            [['not ilike', 'name', []], '', []],
+            [['or ilike', 'name', []], '0=1', []],
+            [['or not ilike', 'name', []], '', []],
 
-        $priceColumns = [
-            'value' => ColumnSchemaBuilder::numeric(name: 'value', precision: 10, scale: 2),
-            'currency_code' => ColumnSchemaBuilder::char(name: 'currency_code', size: 3),
-        ];
+            /* simple ilike */
+            [['ilike', 'name', 'heyho'], '"name" ILIKE :qp0', [':qp0' => new Param('%heyho%', DataType::STRING)]],
+            [['not ilike', 'name', 'heyho'], '"name" NOT ILIKE :qp0', [':qp0' => new Param('%heyho%', DataType::STRING)]],
+            [['or ilike', 'name', 'heyho'], '"name" ILIKE :qp0', [':qp0' => new Param('%heyho%', DataType::STRING)]],
+            [['or not ilike', 'name', 'heyho'], '"name" NOT ILIKE :qp0', [':qp0' => new Param('%heyho%', DataType::STRING)]],
 
-        return array_merge(
-            $buildCondition,
+            /* ilike for many values */
             [
-                /**
-                * adding conditions for ILIKE i.e. case insensitive LIKE.
-                *
-                * {@see https://www.postgresql.org/docs/8.3/static/functions-matching.html#FUNCTIONS-LIKE}
-                */
-                /* empty values */
-                [['ilike', 'name', []], '0=1', []],
-                [['not ilike', 'name', []], '', []],
-                [['or ilike', 'name', []], '0=1', []],
-                [['or not ilike', 'name', []], '', []],
+                ['ilike', 'name', ['heyho', 'abc']],
+                '"name" ILIKE :qp0 AND "name" ILIKE :qp1',
+                [':qp0' => new Param('%heyho%', DataType::STRING), ':qp1' => new Param('%abc%', DataType::STRING)],
+            ],
+            [
+                ['not ilike', 'name', ['heyho', 'abc']],
+                '"name" NOT ILIKE :qp0 AND "name" NOT ILIKE :qp1',
+                [':qp0' => new Param('%heyho%', DataType::STRING), ':qp1' => new Param('%abc%', DataType::STRING)],
+            ],
+            [
+                ['or ilike', 'name', ['heyho', 'abc']],
+                '"name" ILIKE :qp0 OR "name" ILIKE :qp1', [':qp0' => new Param('%heyho%', DataType::STRING), ':qp1' => new Param('%abc%', DataType::STRING)],
+            ],
+            [
+                ['or not ilike', 'name', ['heyho', 'abc']],
+                '"name" NOT ILIKE :qp0 OR "name" NOT ILIKE :qp1',
+                [':qp0' => new Param('%heyho%', DataType::STRING), ':qp1' => new Param('%abc%', DataType::STRING)],
+            ],
 
-                /* simple ilike */
-                [['ilike', 'name', 'heyho'], '"name" ILIKE :qp0', [':qp0' => '%heyho%']],
-                [['not ilike', 'name', 'heyho'], '"name" NOT ILIKE :qp0', [':qp0' => '%heyho%']],
-                [['or ilike', 'name', 'heyho'], '"name" ILIKE :qp0', [':qp0' => '%heyho%']],
-                [['or not ilike', 'name', 'heyho'], '"name" NOT ILIKE :qp0', [':qp0' => '%heyho%']],
-
-                /* ilike for many values */
-                [
-                    ['ilike', 'name', ['heyho', 'abc']],
-                    '"name" ILIKE :qp0 AND "name" ILIKE :qp1',
-                    [':qp0' => '%heyho%', ':qp1' => '%abc%'],
-                ],
-                [
-                    ['not ilike', 'name', ['heyho', 'abc']],
-                    '"name" NOT ILIKE :qp0 AND "name" NOT ILIKE :qp1',
-                    [':qp0' => '%heyho%', ':qp1' => '%abc%'],
-                ],
-                [
-                    ['or ilike', 'name', ['heyho', 'abc']],
-                    '"name" ILIKE :qp0 OR "name" ILIKE :qp1', [':qp0' => '%heyho%', ':qp1' => '%abc%'],
-                ],
-                [
-                    ['or not ilike', 'name', ['heyho', 'abc']],
-                    '"name" NOT ILIKE :qp0 OR "name" NOT ILIKE :qp1',
-                    [':qp0' => '%heyho%', ':qp1' => '%abc%'],
-                ],
-
-                /* array condition corner cases */
-                [['@>', 'id', new ArrayExpression([1])], '"id" @> ARRAY[:qp0]', [':qp0' => 1]],
-                'scalar can not be converted to array #1' => [['@>', 'id', new ArrayExpression(1)], '"id" @> ARRAY[]', []],
-                [
-                    'scalar can not be converted to array #2' => [
-                        '@>', 'id', new ArrayExpression(false),
-                    ],
-                    '"id" @> ARRAY[]',
-                    [],
-                ],
-                [
-                    ['&&', 'price', new ArrayExpression([12, 14], 'float')],
-                    '"price" && ARRAY[:qp0, :qp1]::float[]',
-                    [':qp0' => 12, ':qp1' => 14],
-                ],
-                [
-                    ['@>', 'id', new ArrayExpression([2, 3])],
-                    '"id" @> ARRAY[:qp0, :qp1]',
-                    [':qp0' => 2, ':qp1' => 3],
-                ],
-                'array of arrays' => [
-                    ['@>', 'id', new ArrayExpression([[1,2], [3,4]], 'float', 2)],
-                    '"id" @> ARRAY[ARRAY[:qp0, :qp1]::float[], ARRAY[:qp2, :qp3]::float[]\\]::float[][]',
-                    [':qp0' => 1, ':qp1' => 2, ':qp2' => 3, ':qp3' => 4],
-                ],
-                [['@>', 'id', new ArrayExpression([])], '"id" @> ARRAY[]', []],
-                'array can contain nulls' => [
-                    ['@>', 'id', new ArrayExpression([null])], '"id" @> ARRAY[:qp0]', [':qp0' => null],
-                ],
-                'traversable objects are supported' => [
-                    ['@>', 'id', new ArrayExpression(new TraversableObject([1, 2, 3]))],
-                    '[[id]] @> ARRAY[:qp0, :qp1, :qp2]',
-                    [':qp0' => 1, ':qp1' => 2, ':qp2' => 3],
-                ],
-                [['@>', 'time', new ArrayExpression([new Expression('now()')])], '[[time]] @> ARRAY[now()]', []],
-                [
-                    [
-                        '@>',
-                        'id',
-                        new ArrayExpression(
-                            (new Query(self::getDb()))->select('id')->from('users')->where(['active' => 1])
-                        ),
-                    ],
-                    '[[id]] @> ARRAY(SELECT [[id]] FROM [[users]] WHERE [[active]]=:qp0)',
-                    [':qp0' => 1],
-                ],
-                [
-                    [
-                        '@>',
-                        'id',
-                        new ArrayExpression(
-                            [
-                                (new Query(self::getDb()))->select('id')->from('users')->where(['active' => 1]),
-                            ],
-                            'integer'
-                        ),
-                    ],
-                    '[[id]] @> ARRAY[ARRAY(SELECT [[id]] FROM [[users]] WHERE [[active]]=:qp0)::integer[]]::integer[]',
-                    [':qp0' => 1],
-                ],
-
-                /* json conditions */
-                [
-                    ['=', 'jsoncol', new JsonExpression(['lang' => 'uk', 'country' => 'UA'])],
-                    '[[jsoncol]] = :qp0',
-                    [':qp0' => '{"lang":"uk","country":"UA"}'],
-                ],
-                [
-                    ['=', 'jsoncol', new JsonExpression([false])],
-                    '[[jsoncol]] = :qp0', [':qp0' => '[false]'],
-                ],
-                [
-                    ['=', 'prices', new JsonExpression(['seeds' => 15, 'apples' => 25], 'jsonb')],
-                    '[[prices]] = :qp0::jsonb', [':qp0' => '{"seeds":15,"apples":25}'],
-                ],
-                'nested json' => [
-                    [
-                        '=',
-                        'data',
-                        new JsonExpression(
-                            [
-                                'user' => ['login' => 'silverfire', 'password' => 'c4ny0ur34d17?'],
-                                'props' => ['mood' => 'good'],
-                            ]
-                        ),
-                    ],
-                    '"data" = :qp0',
-                    [':qp0' => '{"user":{"login":"silverfire","password":"c4ny0ur34d17?"},"props":{"mood":"good"}}'],
-                ],
-                'null value' => [['=', 'jsoncol', new JsonExpression(null)], '"jsoncol" = :qp0', [':qp0' => 'null']],
-                'null as array value' => [
-                    ['=', 'jsoncol', new JsonExpression([null])], '"jsoncol" = :qp0', [':qp0' => '[null]'],
-                ],
-                'null as object value' => [
-                    ['=', 'jsoncol', new JsonExpression(['nil' => null])], '"jsoncol" = :qp0', [':qp0' => '{"nil":null}'],
-                ],
-                'query' => [
-                    [
-                        '=',
-                        'jsoncol',
-                        new JsonExpression(
-                            (new Query(self::getDb()))->select('params')->from('user')->where(['id' => 1])
-                        ),
-                    ],
-                    '[[jsoncol]] = (SELECT [[params]] FROM [[user]] WHERE [[id]]=:qp0)',
-                    [':qp0' => 1],
-                ],
-                'query with type' => [
-                    [
-                        '=',
-                        'jsoncol',
-                        new JsonExpression(
-                            (new Query(self::getDb()))->select('params')->from('user')->where(['id' => 1]),
-                            'jsonb'
-                        ),
-                    ],
-                    '[[jsoncol]] = (SELECT [[params]] FROM [[user]] WHERE [[id]]=:qp0)::jsonb',
-                    [':qp0' => 1],
-                ],
-                'array of json expressions' => [
-                    [
-                        '=',
-                        'colname',
-                        new ArrayExpression(
-                            [new JsonExpression(['a' => null, 'b' => 123, 'c' => [4, 5]]), new JsonExpression([true])]
-                        ),
-                    ],
-                    '"colname" = ARRAY[:qp0, :qp1]',
-                    [':qp0' => '{"a":null,"b":123,"c":[4,5]}', ':qp1' => '[true]'],
-                ],
-                'Items in ArrayExpression of type json should be casted to Json' => [
-                    ['=', 'colname', new ArrayExpression([['a' => null, 'b' => 123, 'c' => [4, 5]], [true]], SchemaInterface::TYPE_JSON)],
-                    '"colname" = ARRAY[:qp0, :qp1]::json[]',
-                    [':qp0' => '{"a":null,"b":123,"c":[4,5]}', ':qp1' => '[true]'],
-                ],
-                'Two dimension array of text' => [
-                    [
-                        '=',
-                        'colname',
-                        new ArrayExpression([['text1', 'text2'], ['text3', 'text4'], [null, 'text5']], 'text', 2),
-                    ],
-                    '"colname" = ARRAY[ARRAY[:qp0, :qp1]::text[], ARRAY[:qp2, :qp3]::text[], ARRAY[:qp4, :qp5]::text[]]::text[][]',
-                    [
-                        ':qp0' => 'text1',
-                        ':qp1' => 'text2',
-                        ':qp2' => 'text3',
-                        ':qp3' => 'text4',
-                        ':qp4' => null,
-                        ':qp5' => 'text5',
-                    ],
-                ],
-                'Three dimension array of booleans' => [
-                    [
-                        '=',
-                        'colname',
-                        new ArrayExpression([[[true], [false, null]], [[false], [true], [false]], [['t', 'f']]], 'bool', 3),
-                    ],
-                    '"colname" = ARRAY[ARRAY[ARRAY[:qp0]::bool[], ARRAY[:qp1, :qp2]::bool[]]::bool[][], ARRAY[ARRAY[:qp3]::bool[], ARRAY[:qp4]::bool[], ARRAY[:qp5]::bool[]]::bool[][], ARRAY[ARRAY[:qp6, :qp7]::bool[]]::bool[][]]::bool[][][]',
-                    [
-                        ':qp0' => true,
-                        ':qp1' => false,
-                        ':qp2' => null,
-                        ':qp3' => false,
-                        ':qp4' => true,
-                        ':qp5' => false,
-                        ':qp6' => 't',
-                        ':qp7' => 'f',
-                    ],
-                ],
-
-                /* Checks to verity that operators work correctly */
-                [['@>', 'id', new ArrayExpression([1])], '"id" @> ARRAY[:qp0]', [':qp0' => 1]],
-                [['<@', 'id', new ArrayExpression([1])], '"id" <@ ARRAY[:qp0]', [':qp0' => 1]],
-                [['=', 'id',  new ArrayExpression([1])], '"id" = ARRAY[:qp0]', [':qp0' => 1]],
-                [['<>', 'id', new ArrayExpression([1])], '"id" <> ARRAY[:qp0]', [':qp0' => 1]],
-                [['>', 'id',  new ArrayExpression([1])], '"id" > ARRAY[:qp0]', [':qp0' => 1]],
-                [['<', 'id',  new ArrayExpression([1])], '"id" < ARRAY[:qp0]', [':qp0' => 1]],
-                [['>=', 'id', new ArrayExpression([1])], '"id" >= ARRAY[:qp0]', [':qp0' => 1]],
-                [['<=', 'id', new ArrayExpression([1])], '"id" <= ARRAY[:qp0]', [':qp0' => 1]],
-                [['&&', 'id', new ArrayExpression([1])], '"id" && ARRAY[:qp0]', [':qp0' => 1]],
-
-                /* structured conditions */
-                'structured without type' => [
-                    ['=', 'price_col', new StructuredExpression(['value' => 10, 'currency_code' => 'USD'])],
-                    '[[price_col]] = ROW(:qp0, :qp1)',
-                    [':qp0' => 10, ':qp1' => 'USD'],
-                ],
-                'structured with type' => [
-                    ['=', 'price_col', new StructuredExpression(['value' => 10, 'currency_code' => 'USD'], 'currency_money_structured')],
-                    '[[price_col]] = ROW(:qp0, :qp1)::currency_money_structured',
-                    [':qp0' => 10, ':qp1' => 'USD'],
-                ],
-                'structured with columns' => [
-                    ['=', 'price_col', new StructuredExpression(['value' => 10, 'currency_code' => 'USD'], 'currency_money_structured', $priceColumns)],
-                    '[[price_col]] = ROW(:qp0, :qp1)::currency_money_structured',
-                    [':qp0' => 10.0, ':qp1' => 'USD'],
-                ],
-                'scalar can not be converted to structured' => [['=', 'price_col', new StructuredExpression(1)], '"price_col" = NULL', []],
-                'array of structured' => [
-                    ['=', 'price_array', new ArrayExpression(
-                        [
-                            null,
-                            new StructuredExpression(['value' => 11.11, 'currency_code' => 'USD']),
-                            new StructuredExpression(['value' => null, 'currency_code' => null]),
-                        ]
-                    )],
-                    '"price_array" = ARRAY[:qp0, ROW(:qp1, :qp2), ROW(:qp3, :qp4)]',
-                    [':qp0' => null, ':qp1' => 11.11, ':qp2' => 'USD', ':qp3' => null, ':qp4' => null],
-                ],
-                'structured null value' => [['=', 'price_col', new StructuredExpression(null)], '"price_col" = NULL', []],
-                'structured null values' => [
-                    ['=', 'price_col', new StructuredExpression([null, null])], '"price_col" = ROW(:qp0, :qp1)', [':qp0' => null, ':qp1' => null],
-                ],
-                'structured query' => [
-                    ['=', 'price_col', new StructuredExpression(
-                        (new Query(self::getDb()))->select('price')->from('product')->where(['id' => 1])
-                    )],
-                    '[[price_col]] = (SELECT [[price]] FROM [[product]] WHERE [[id]]=:qp0)',
-                    [':qp0' => 1],
-                ],
-                'structured query with type' => [
-                    [
-                        '=',
-                        'price_col',
-                        new StructuredExpression(
-                            (new Query(self::getDb()))->select('price')->from('product')->where(['id' => 1]),
-                            'currency_money_structured'
-                        ),
-                    ],
-                    '[[price_col]] = (SELECT [[price]] FROM [[product]] WHERE [[id]]=:qp0)::currency_money_structured',
-                    [':qp0' => 1],
-                ],
-                'traversable objects are supported in structured' => [
-                    ['=', 'price_col', new StructuredExpression(new TraversableObject([10, 'USD']))],
-                    '[[price_col]] = ROW(:qp0, :qp1)',
-                    [':qp0' => 10, ':qp1' => 'USD'],
-                ],
-            ]
-        );
+            /* Checks to verity that operators work correctly */
+            [['@>', 'id', new ArrayExpression([1])], '"id" @> ARRAY[1]', []],
+            [['<@', 'id', new ArrayExpression([1])], '"id" <@ ARRAY[1]', []],
+            [['=', 'id',  new ArrayExpression([1])], '"id" = ARRAY[1]', []],
+            [['<>', 'id', new ArrayExpression([1])], '"id" <> ARRAY[1]', []],
+            [['>', 'id',  new ArrayExpression([1])], '"id" > ARRAY[1]', []],
+            [['<', 'id',  new ArrayExpression([1])], '"id" < ARRAY[1]', []],
+            [['>=', 'id', new ArrayExpression([1])], '"id" >= ARRAY[1]', []],
+            [['<=', 'id', new ArrayExpression([1])], '"id" <= ARRAY[1]', []],
+            [['&&', 'id', new ArrayExpression([1])], '"id" && ARRAY[1]', []],
+        ];
     }
 
     public static function insert(): array
@@ -324,7 +121,7 @@ final class QueryBuilderProvider extends \Yiisoft\Db\Tests\Provider\QueryBuilder
         return $insert;
     }
 
-    public static function insertWithReturningPks(): array
+    public static function insertReturningPks(): array
     {
         return [
             'regular-values' => [
@@ -470,7 +267,7 @@ final class QueryBuilderProvider extends \Yiisoft\Db\Tests\Provider\QueryBuilder
             ],
             'values and expressions without update part' => [
                 1 => ['{{%T_upsert}}.[[email]]' => 'dynamic@example.com', '[[ts]]' => new Expression('extract(epoch from now()) * 1000')],
-                3 => 'INSERT INTO {{%T_upsert}} ("email", "ts") VALUES (:qp0, extract(epoch from now()) * 1000) ON CONFLICT DO NOTHING',
+                3 => 'INSERT INTO "T_upsert" ("email", "ts") VALUES (:qp0, extract(epoch from now()) * 1000) ON CONFLICT DO NOTHING',
             ],
             'query, values and expressions with update part' => [
                 1 => (new Query(self::getDb()))
@@ -492,13 +289,13 @@ final class QueryBuilderProvider extends \Yiisoft\Db\Tests\Provider\QueryBuilder
                             '[[ts]]' => new Expression('extract(epoch from now()) * 1000'),
                         ],
                     ),
-                3 => 'INSERT INTO {{%T_upsert}} ("email", [[ts]]) SELECT :phEmail AS "email", extract(epoch from now()) * 1000 AS [[ts]] ON CONFLICT DO NOTHING',
+                3 => 'INSERT INTO "T_upsert" ("email", [[ts]]) SELECT :phEmail AS "email", extract(epoch from now()) * 1000 AS [[ts]] ON CONFLICT DO NOTHING',
             ],
             'no columns to update' => [
                 3 => 'INSERT INTO "T_upsert_1" ("a") VALUES (:qp0) ON CONFLICT DO NOTHING',
             ],
             'no columns to update with unique' => [
-                3 => 'INSERT INTO {{%T_upsert}} ("email") VALUES (:qp0) ON CONFLICT DO NOTHING',
+                3 => 'INSERT INTO "T_upsert" ("email") VALUES (:qp0) ON CONFLICT DO NOTHING',
             ],
             'no unique columns in table - simple insert' => [
                 3 => 'INSERT INTO {{%animal}} ("type") VALUES (:qp0)',
@@ -520,5 +317,256 @@ final class QueryBuilderProvider extends \Yiisoft\Db\Tests\Provider\QueryBuilder
         ];
 
         return $upsert;
+    }
+
+    public static function upsertReturning(): array
+    {
+        $upsert = self::upsert();
+
+        $withoutUpdate = [
+            'regular values without update part',
+            'query without update part',
+            'values and expressions without update part',
+            'query, values and expressions without update part',
+            'no columns to update with unique',
+        ];
+
+        foreach ($upsert as $name => &$data) {
+            array_splice($data, 3, 0, [['id']]);
+            if (in_array($name, $withoutUpdate, true)) {
+                $data[4] = substr($data[4], 0, -10) . '("email") DO UPDATE SET "ts" = "T_upsert"."ts"';
+            }
+
+            $data[4] .= ' RETURNING "id"';
+        }
+
+        $upsert['no columns to update'][3] = ['a'];
+        $upsert['no columns to update'][4] = 'INSERT INTO "T_upsert_1" ("a") VALUES (:qp0) ON CONFLICT ("a")'
+            . ' DO UPDATE SET "a" = "T_upsert_1"."a" RETURNING "a"';
+
+        return [
+            ...$upsert,
+            'composite primary key' => [
+                'notauto_pk',
+                ['id_1' => 1, 'id_2' => 2.5, 'type' => 'Test'],
+                true,
+                ['id_1', 'id_2'],
+                'INSERT INTO "notauto_pk" ("id_1", "id_2", "type") VALUES (:qp0, :qp1, :qp2)'
+                . ' ON CONFLICT ("id_1", "id_2") DO UPDATE SET "type"=EXCLUDED."type" RETURNING "id_1", "id_2"',
+                [':qp0' => 1, ':qp1' => 2.5, ':qp2' => 'Test'],
+            ],
+            'no return columns' => [
+                'type',
+                ['int_col' => 3, 'char_col' => 'a', 'float_col' => 1.2, 'bool_col' => true],
+                true,
+                [],
+                'INSERT INTO "type" ("int_col", "char_col", "float_col", "bool_col") VALUES (:qp0, :qp1, :qp2, :qp3)',
+                [':qp0' => 3, ':qp1' => 'a', ':qp2' => 1.2, ':qp3' => true],
+            ],
+            'return all columns' => [
+                'T_upsert',
+                ['email' => 'test@example.com', 'address' => 'test address', 'status' => 1, 'profile_id' => 1],
+                true,
+                null,
+                'INSERT INTO "T_upsert" ("email", "address", "status", "profile_id") VALUES (:qp0, :qp1, :qp2, :qp3)'
+                . ' ON CONFLICT ("email") DO UPDATE SET'
+                . ' "address"=EXCLUDED."address", "status"=EXCLUDED."status", "profile_id"=EXCLUDED."profile_id"'
+                . ' RETURNING "id", "ts", "email", "recovery_email", "address", "status", "orders", "profile_id"',
+                [':qp0' => 'test@example.com', ':qp1' => 'test address', ':qp2' => 1, ':qp3' => 1],
+            ],
+        ];
+    }
+
+    public static function overlapsCondition(): array
+    {
+        $data = parent::overlapsCondition();
+
+        $data['null'][1] = 0;
+        $data['expression'][0] = new Expression("'{0,1,2,7}'");
+        $data['query expression'][0] = (new Query(self::getDb()))->select(new ArrayExpression([0,1,2,7]));
+        $data[] = [new Expression('ARRAY[0,1,2,7]'), 1];
+        $data[] = [new ArrayExpression([0,1,2,7]), 1];
+
+        return $data;
+    }
+
+    public static function buildColumnDefinition(): array
+    {
+        $values = parent::buildColumnDefinition();
+
+        $values[PseudoType::PK][0] = 'serial PRIMARY KEY';
+        $values[PseudoType::UPK][0] = 'serial PRIMARY KEY';
+        $values[PseudoType::BIGPK][0] = 'bigserial PRIMARY KEY';
+        $values[PseudoType::UBIGPK][0] = 'bigserial PRIMARY KEY';
+        $values[PseudoType::UUID_PK][0] = 'uuid PRIMARY KEY DEFAULT gen_random_uuid()';
+        $values[PseudoType::UUID_PK_SEQ][0] = 'uuid PRIMARY KEY DEFAULT gen_random_uuid()';
+        $values['primaryKey()'][0] = 'serial PRIMARY KEY';
+        $values['smallPrimaryKey()'][0] = 'smallserial PRIMARY KEY';
+        $values['bigPrimaryKey()'][0] = 'bigserial PRIMARY KEY';
+        $values['uuidPrimaryKey()'][0] = 'uuid PRIMARY KEY DEFAULT gen_random_uuid()';
+        $values['bit()'][0] = 'varbit';
+        $values['bit(1)'][0] = 'varbit(1)';
+        $values['bit(8)'][0] = 'varbit(8)';
+        $values['bit(64)'][0] = 'varbit(64)';
+        $values['tinyint()'][0] = 'smallint';
+        $values['tinyint(2)'][0] = 'smallint';
+        $values['smallint(4)'][0] = 'smallint';
+        $values['integer(8)'][0] = 'integer';
+        $values['bigint(15)'][0] = 'bigint';
+        $values['float()'][0] = 'real';
+        $values['float(10)'][0] = 'real';
+        $values['float(10,2)'][0] = 'real';
+        $values['double()'][0] = 'double precision';
+        $values['double(10)'][0] = 'double precision';
+        $values['double(10,2)'][0] = 'double precision';
+        $values['decimal()'][0] = 'numeric(10,0)';
+        $values['decimal(5)'][0] = 'numeric(5,0)';
+        $values['decimal(5,2)'][0] = 'numeric(5,2)';
+        $values['decimal(null)'][0] = 'numeric';
+        $values['money()'][0] = 'money';
+        $values['money(10)'][0] = 'money';
+        $values['money(10,2)'][0] = 'money';
+        $values['money(null)'][0] = 'money';
+        $values['text(1000)'][0] = 'text';
+        $values['binary()'][0] = 'bytea';
+        $values['binary(1000)'][0] = 'bytea';
+        $values['uuid()'][0] = 'uuid';
+        $values['datetime()'][0] = 'timestamp(0)';
+        $values['datetime(6)'][0] = 'timestamp(6)';
+        $values['datetime(null)'][0] = 'timestamp';
+        $values['datetimeWithTimezone()'][0] = 'timestamptz(0)';
+        $values['datetimeWithTimezone(6)'][0] = 'timestamptz(6)';
+        $values['datetimeWithTimezone(null)'][0] = 'timestamptz';
+        $values['array()'][0] = 'varchar[]';
+        $values['structured()'][0] = 'jsonb';
+        $values['json()'][0] = 'jsonb';
+        $values['json(100)'][0] = 'jsonb';
+        $values['unsigned()'][0] = 'integer';
+        $values['scale(2)'][0] = 'numeric(10,2)';
+        $values['integer(8)->scale(2)'][0] = 'integer';
+
+        $db = self::getDb();
+        $serverVersion = self::getDb()->getServerInfo()->getVersion();
+        $db->close();
+
+        if (version_compare($serverVersion, '13', '<')) {
+            $uuidExpression = "uuid_in(overlay(overlay(md5(now()::text || random()::text) placing '4' from 13) placing"
+                . ' to_hex(floor(4 * random() + 8)::int)::text from 17)::cstring)';
+
+            $values[PseudoType::UUID_PK][0] = "uuid PRIMARY KEY DEFAULT $uuidExpression";
+            $values[PseudoType::UUID_PK_SEQ][0] = "uuid PRIMARY KEY DEFAULT $uuidExpression";
+            $values['uuidPrimaryKey()'][0] = "uuid PRIMARY KEY DEFAULT $uuidExpression";
+        }
+
+        return [
+            ...$values,
+            ['text[]', ColumnBuilder::array()->dbType('text[]')],
+            ['int[]', 'int[]'],
+            ['character varying(255)', 'character varying(255)'],
+            ['character varying(255)[][]', 'character varying(255)[][]'],
+            ['timestamp(5)', 'timestamp (5) without time zone'],
+            ['timestamptz', 'timestamp with time zone'],
+            ['time(3)', 'time(3) without time zone'],
+            ['timetz(0)', 'time(0) with time zone'],
+        ];
+    }
+
+    public static function buildValue(): array
+    {
+        $values = parent::buildValue();
+
+        $values['array'][1] = 'ARRAY[:qp0,:qp1,:qp2]';
+        $values['array'][2] = [
+            ':qp0' => new Param('a', DataType::STRING),
+            ':qp1' => new Param('b', DataType::STRING),
+            ':qp2' => new Param('c', DataType::STRING),
+        ];
+        $values['Iterator'][1] = 'ARRAY[:qp0,:qp1,:qp2]';
+        $values['Iterator'][2] = [
+            ':qp0' => new Param('a', DataType::STRING),
+            ':qp1' => new Param('b', DataType::STRING),
+            ':qp2' => new Param('c', DataType::STRING),
+        ];
+
+        return $values;
+    }
+
+    public static function prepareParam(): array
+    {
+        $values = parent::prepareParam();
+
+        $values['binary'][0] = "'\\x737472696e67'::bytea";
+        $values['resource'][0] = "'\\x737472696e67'::bytea";
+
+        return $values;
+    }
+
+    public static function prepareValue(): array
+    {
+        $values = parent::prepareValue();
+
+        $values['binary'][0] = "'\\x737472696e67'::bytea";
+        $values['paramBinary'][0] = "'\\x737472696e67'::bytea";
+        $values['paramResource'][0] = "'\\x737472696e67'::bytea";
+        $values['array'][0] = "ARRAY['a','b','c']";
+        $values['Iterator'][0] = "ARRAY['a','b','c']";
+
+        return $values;
+    }
+
+    public static function caseExpressionBuilder(): array
+    {
+        $data = parent::caseExpressionBuilder();
+
+        $db = self::getDb();
+        $serverVersion = $db->getServerInfo()->getVersion();
+        $db->close();
+
+        if (version_compare($serverVersion, '10', '<')) {
+            $data['without case expression'] = [
+                (new CaseExpression())
+                    ->addWhen(['=', 'column_name', 1], $paramA = new Param('a', DataType::STRING))
+                    ->addWhen(
+                        '"column_name" = 2',
+                        $db->select(new Expression(
+                            ':pv2::text',
+                            [':pv2' => $paramB = new Param('b', DataType::STRING)],
+                        )),
+                    ),
+                'CASE WHEN "column_name" = :qp0 THEN :qp1 WHEN "column_name" = 2 THEN (SELECT :pv2::text) END',
+                [':qp0' => 1, ':qp1' => $paramA, ':pv2' => $paramB],
+                'b',
+            ];
+        }
+
+        return [
+            ...$data,
+            'without case and type hint' => [
+                (new CaseExpression())->caseType('int')
+                    ->addWhen(true, "'a'"),
+                "CASE WHEN TRUE THEN 'a' END",
+                [],
+                'a',
+            ],
+            'with case and type hint' => [
+                (new CaseExpression('1 + 1', 'int'))
+                    ->addWhen(1, "'a'")
+                    ->else("'b'"),
+                "CASE (1 + 1)::int WHEN (1)::int THEN 'a' ELSE 'b' END",
+                [],
+                'b',
+            ],
+            'with case and type hint with column' => [
+                (new CaseExpression('1 + 1', new IntegerColumn()))
+                    ->addWhen(1, $paramA = new Param('a', DataType::STRING))
+                    ->else($paramB = new Param('b', DataType::STRING)),
+                'CASE (1 + 1)::integer WHEN (1)::integer THEN :qp0 ELSE :qp1 END',
+                [
+                    ':qp0' => $paramA,
+                    ':qp1' => $paramB,
+                ],
+                'b',
+            ],
+        ];
     }
 }

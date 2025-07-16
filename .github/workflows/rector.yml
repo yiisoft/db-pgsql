@@ -1,15 +1,17 @@
 on:
-  pull_request:
-    paths-ignore:
-      - 'docs/**'
-      - 'README.md'
-      - 'CHANGELOG.md'
-      - '.gitignore'
-      - '.gitattributes'
-      - 'infection.json.dist'
-      - 'psalm.xml'
+  pull_request_target:
+    paths:
+      - 'src/**'
+      - 'tests/**'
+      - '.github/workflows/rector.yml'
+      - 'composer.json'
+      - 'rector.php'
 
-name: rector
+name: Rector
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   rector:
@@ -17,7 +19,8 @@ jobs:
     secrets:
       token: ${{ secrets.YIISOFT_GITHUB_TOKEN }}
     with:
-      os: >-
-        ['ubuntu-latest']
+      repository: ${{ github.event.pull_request.head.repo.full_name }}
       php: >-
-        ['8.3']
+        ['8.4']
+      required-packages: >-
+        ['db']

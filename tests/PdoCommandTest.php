@@ -42,7 +42,7 @@ final class PdoCommandTest extends CommonPdoCommandTest
         $db = $this->getConnection(true);
 
         $arrValue = [1, 2, 3, 4];
-        $insertedData = $db->createCommand()->insertWithReturningPks('{{%table_with_array_col}}', ['array_col' => $arrValue]);
+        $insertedData = $db->createCommand()->insertReturningPks('{{%table_with_array_col}}', ['array_col' => $arrValue]);
 
         $this->assertGreaterThan(0, $insertedData['id']);
 
@@ -50,9 +50,11 @@ final class PdoCommandTest extends CommonPdoCommandTest
 
         $this->assertEquals('{1,2,3,4}', $selectData['array_col']);
 
-        $columnSchema = $db->getTableSchema('{{%table_with_array_col}}')->getColumn('array_col');
+        $column = $db->getTableSchema('{{%table_with_array_col}}')->getColumn('array_col');
 
-        $this->assertSame($arrValue, $columnSchema->phpTypecast($selectData['array_col']));
+        $this->assertSame($arrValue, $column->phpTypecast($selectData['array_col']));
+
+        $db->close();
     }
 
     public function testCommandLogging(): void
@@ -88,8 +90,8 @@ final class PdoCommandTest extends CommonPdoCommandTest
         $command->execute();
 
         $sql = 'INSERT INTO "customer" ("name", "email") VALUES (\'test\', \'email@email\') RETURNING "id"';
-        $command->setLogger($this->createQueryLogger($sql, ['Yiisoft\Db\Driver\Pdo\AbstractPdoCommand::insertWithReturningPks']));
-        $command->insertWithReturningPks('{{%customer}}', ['name' => 'test', 'email' => 'email@email']);
+        $command->setLogger($this->createQueryLogger($sql, ['Yiisoft\Db\Driver\Pdo\AbstractPdoCommand::insertReturningPks']));
+        $command->insertReturningPks('{{%customer}}', ['name' => 'test', 'email' => 'email@email']);
 
         $db->close();
     }
