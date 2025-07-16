@@ -16,6 +16,8 @@ use Yiisoft\Db\QueryBuilder\Condition\Builder\AbstractOverlapsConditionBuilder;
 
 /**
  * Builds expressions for {@see ArrayOverlapsCondition} for PostgreSQL Server.
+ *
+ * @extends AbstractOverlapsConditionBuilder<ArrayOverlapsCondition>
  */
 final class ArrayOverlapsConditionBuilder extends AbstractOverlapsConditionBuilder
 {
