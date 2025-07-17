@@ -79,14 +79,14 @@ final class StructuredExpressionBuilderTest extends TestCase
             'Query w/o type' => [
                 (new Query(self::getDb()))->select('price')->from('product')->where(['id' => 1]),
                 null,
-                '(SELECT "price" FROM "product" WHERE "id"=:qp0)',
-                [':qp0' => 1],
+                '(SELECT "price" FROM "product" WHERE "id"=1)',
+                [],
             ],
             'Query' => [
                 (new Query(self::getDb()))->select('price')->from('product')->where(['id' => 1]),
                 'currency_money',
-                '(SELECT "price" FROM "product" WHERE "id"=:qp0)::currency_money',
-                [':qp0' => 1],
+                '(SELECT "price" FROM "product" WHERE "id"=1)::currency_money',
+                [],
             ],
             'ordered array' => [
                 ['value' => '5', 'currency_code' => 'USD'],
