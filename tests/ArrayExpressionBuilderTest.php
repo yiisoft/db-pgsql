@@ -104,14 +104,14 @@ final class ArrayExpressionBuilderTest extends TestCase
             'Query w/o type' => [
                 (new Query(self::getDb()))->select('id')->from('users')->where(['active' => 1]),
                 null,
-                'ARRAY(SELECT "id" FROM "users" WHERE "active"=:qp0)',
-                [':qp0' => 1],
+                'ARRAY(SELECT "id" FROM "users" WHERE "active"=1)',
+                [],
             ],
             'Query' => [
                 [(new Query(self::getDb()))->select('id')->from('users')->where(['active' => 1])],
                 'integer[][]',
-                'ARRAY[ARRAY(SELECT "id" FROM "users" WHERE "active"=:qp0)::integer[]]::integer[][]',
-                [':qp0' => 1],
+                'ARRAY[ARRAY(SELECT "id" FROM "users" WHERE "active"=1)::integer[]]::integer[][]',
+                [],
             ],
             'bool' => [
                 [[[true], [false, null]], [['t', 'f'], null], null],

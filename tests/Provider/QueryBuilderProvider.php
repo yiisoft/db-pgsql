@@ -195,14 +195,13 @@ final class QueryBuilderProvider extends \Yiisoft\Db\Tests\Provider\QueryBuilder
                     ),
                 [':phBar' => 'bar'],
                 <<<SQL
-                INSERT INTO "customer" ("email", "name", "address", "is_active", "related_id") SELECT "email", "name", "address", "is_active", "related_id" FROM "customer" WHERE ("email"=:qp1) AND ("name"=:qp2) AND ("address"=:qp3) AND ("is_active"=:qp4) AND ("related_id" IS NULL) AND ("col"=CONCAT(:phFoo, :phBar)) RETURNING "id"
+                INSERT INTO "customer" ("email", "name", "address", "is_active", "related_id") SELECT "email", "name", "address", "is_active", "related_id" FROM "customer" WHERE ("email"=:qp1) AND ("name"=:qp2) AND ("address"=:qp3) AND ("is_active"=FALSE) AND ("related_id" IS NULL) AND ("col"=CONCAT(:phFoo, :phBar)) RETURNING "id"
                 SQL,
                 [
                     ':phBar' => 'bar',
-                    ':qp1' => 'test@example.com',
-                    ':qp2' => 'sergeymakinen',
-                    ':qp3' => '{{city}}',
-                    ':qp4' => false,
+                    ':qp1' => new Param('test@example.com', DataType::STRING),
+                    ':qp2' => new Param('sergeymakinen', DataType::STRING),
+                    ':qp3' => new Param('{{city}}', DataType::STRING),
                     ':phFoo' => 'foo',
                 ],
             ],
