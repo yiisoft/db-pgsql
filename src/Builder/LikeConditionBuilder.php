@@ -9,13 +9,13 @@ use Yiisoft\Db\QueryBuilder\Condition\LikeCondition;
 /**
  * Build an object of {@see LikeCondition} into SQL expressions for PostgreSQL Server.
  */
-final class LikeConditionBuilder extends \Yiisoft\Db\QueryBuilder\Condition\Builder\LikeConditionBuilder
+final class LikeConditionBuilder extends \Yiisoft\Db\QueryBuilder\Condition\LikeConditionBuilder
 {
     protected function parseOperator(LikeCondition $expression): array
     {
         [$andor, $not, $operator] = parent::parseOperator($expression);
 
-        $operator = match ($expression->getCaseSensitive()) {
+        $operator = match ($expression->caseSensitive) {
             true => 'LIKE',
             false => 'ILIKE',
             default => $operator,
