@@ -16,9 +16,9 @@ use Yiisoft\Db\Pgsql\Builder\LikeConditionBuilder;
 use Yiisoft\Db\Pgsql\Builder\StructuredExpressionBuilder;
 use Yiisoft\Db\Pgsql\Builder\JsonExpressionBuilder;
 use Yiisoft\Db\QueryBuilder\AbstractDQLQueryBuilder;
+use Yiisoft\Db\QueryBuilder\Condition\LikeCondition;
 use Yiisoft\Db\QueryBuilder\Condition\ArrayOverlapsCondition;
 use Yiisoft\Db\QueryBuilder\Condition\JsonOverlapsCondition;
-use Yiisoft\Db\QueryBuilder\Condition\LikeCondition;
 
 /**
  * Implements a DQL (Data Query Language) SQL statements for PostgreSQL Server.
