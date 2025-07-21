@@ -9,7 +9,7 @@ use Yiisoft\Db\QueryBuilder\Condition\LikeCondition;
 /**
  * Build an object of {@see LikeCondition} into SQL expressions for PostgreSQL Server.
  */
-final class LikeConditionBuilder extends \Yiisoft\Db\QueryBuilder\Condition\LikeConditionBuilder
+final class LikeConditionBuilder extends \Yiisoft\Db\QueryBuilder\Condition\Builder\LikeConditionBuilder
 {
     protected function parseOperator(LikeCondition $expression): array
     {
