@@ -7,7 +7,9 @@ namespace Yiisoft\Db\Pgsql;
 use Yiisoft\Db\Connection\AbstractDsn;
 
 /**
- * Implement a Data Source Name (DSN) for a PostgreSQL Server.
+ * Represents a Data Source Name (DSN) for a PostgreSQL Server that's used to configure a {@see Driver} instance.
+ *
+ * To get DSN in string format, use the `(string)` type casting operator.
  *
  * @link https://www.php.net/manual/en/ref.pdo-pgsql.connection.php
  */
@@ -19,11 +21,11 @@ final class Dsn extends AbstractDsn
     public function __construct(
         string $driver = 'pgsql',
         string $host = '127.0.0.1',
-        string|null $databaseName = 'postgres',
+        string $databaseName = 'postgres',
         string $port = '5432',
-        array $options = []
+        array $options = [],
     ) {
-        if (empty($databaseName)) {
+        if ($databaseName === '') {
             $databaseName = 'postgres';
         }
 

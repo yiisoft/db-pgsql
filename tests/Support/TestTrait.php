@@ -36,11 +36,11 @@ trait TestTrait
 
     protected static function getDb(): Connection
     {
-        $dsn = (new Dsn(
+        $dsn = (string) new Dsn(
             host: self::getHost(),
             databaseName: self::getDatabaseName(),
             port: self::getPort(),
-        ))->asString();
+        );
         $driver = new Driver($dsn, self::getUsername(), self::getPassword());
         $driver->charset('utf8');
 
@@ -50,11 +50,11 @@ trait TestTrait
     protected function getDsn(): string
     {
         if ($this->dsn === '') {
-            $this->dsn = (new Dsn(
+            $this->dsn = (string) new Dsn(
                 host: self::getHost(),
                 databaseName: self::getDatabaseName(),
                 port: self::getPort(),
-            ))->asString();
+            );
         }
 
         return $this->dsn;

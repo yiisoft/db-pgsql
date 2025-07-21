@@ -9,56 +9,42 @@ use Yiisoft\Db\Pgsql\Dsn;
 
 /**
  * @group pgsql
- *
- * @psalm-suppress PropertyNotSetInConstructor
  */
 final class DsnTest extends TestCase
 {
-    public function testAsString(): void
+    public function testConstruct(): void
     {
-        $this->assertSame(
-            'pgsql:host=localhost;dbname=yiitest;port=5432',
-            (new Dsn('pgsql', 'localhost', 'yiitest'))->asString(),
-        );
+        $dsn = new Dsn('pgsql', 'localhost', 'yiitest', '5433', ['sslmode' => 'disable']);
+
+        $this->assertSame('pgsql', $dsn->driver);
+        $this->assertSame('localhost', $dsn->host);
+        $this->assertSame('yiitest', $dsn->databaseName);
+        $this->assertSame('5433', $dsn->port);
+        $this->assertSame(['sslmode' => 'disable'], $dsn->options);
+        $this->assertSame('pgsql:host=localhost;dbname=yiitest;port=5433;sslmode=disable', (string) $dsn);
     }
 
-    public function testAsStringWithDatabaseName(): void
+    public function testConstructDefaults(): void
     {
-        $this->assertSame(
-            'pgsql:host=localhost;dbname=postgres;port=5432',
-            (new Dsn('pgsql', 'localhost'))->asString(),
-        );
+        $dsn = new Dsn();
+
+        $this->assertSame('pgsql', $dsn->driver);
+        $this->assertSame('127.0.0.1', $dsn->host);
+        $this->assertSame('postgres', $dsn->databaseName);
+        $this->assertSame('5432', $dsn->port);
+        $this->assertSame([], $dsn->options);
+        $this->assertSame('pgsql:host=127.0.0.1;dbname=postgres;port=5432', (string) $dsn);
     }
 
-    public function testAsStringWithDatabaseNameWithEmptyString(): void
+    public function testConstructWithEmptyPort(): void
     {
-        $this->assertSame(
-            'pgsql:host=localhost;dbname=postgres;port=5432',
-            (new Dsn('pgsql', 'localhost', ''))->asString(),
-        );
-    }
+        $dsn = new Dsn('pgsql', 'localhost', '', '');
 
-    public function testAsStringWithDatabaseNameWithNull(): void
-    {
-        $this->assertSame(
-            'pgsql:host=localhost;dbname=postgres;port=5432',
-            (new Dsn('pgsql', 'localhost', null))->asString(),
-        );
-    }
-
-    public function testAsStringWithOptions(): void
-    {
-        $this->assertSame(
-            'pgsql:host=localhost;dbname=yiitest;port=5433;charset=utf8',
-            (new Dsn('pgsql', 'localhost', 'yiitest', '5433', ['charset' => 'utf8']))->asString(),
-        );
-    }
-
-    public function testAsStringWithPort(): void
-    {
-        $this->assertSame(
-            'pgsql:host=localhost;dbname=yiitest;port=5433',
-            (new Dsn('pgsql', 'localhost', 'yiitest', '5433'))->asString(),
-        );
+        $this->assertSame('pgsql', $dsn->driver);
+        $this->assertSame('localhost', $dsn->host);
+        $this->assertSame('postgres', $dsn->databaseName);
+        $this->assertSame('', $dsn->port);
+        $this->assertSame([], $dsn->options);
+        $this->assertSame('pgsql:host=localhost;dbname=postgres', (string) $dsn);
     }
 }
