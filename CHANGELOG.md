@@ -41,7 +41,7 @@
 - Enh #403, #404: Use `DbArrayHelper::arrange()` instead of `DbArrayHelper::index()` method (@Tigrov)
 - New #397: Realize `Schema::loadResultColumn()` method (@Tigrov)
 - New #407: Use `DateTimeColumn` class for datetime column types (@Tigrov)
-- Enh #411: Refactor constraints (@Tigrov)
+- Enh #411, #426: Refactor constraints (@Tigrov)
 - New #408, #410: Implement `DMLQueryBuilder::upsertReturning()` method (@Tigrov)
 - Enh #412: Reduce binding parameters (@Tigrov)
 - Chg #414: Rename `DMLQueryBuilder::insertWithReturningPks()` to `DMLQueryBuilder::insertReturningPks()` (@Tigrov)
