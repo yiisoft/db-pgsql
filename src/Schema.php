@@ -6,9 +6,9 @@ namespace Yiisoft\Db\Pgsql;
 
 use Yiisoft\Db\Constant\ColumnType;
 use Yiisoft\Db\Constant\ReferentialAction;
-use Yiisoft\Db\Constraint\CheckConstraint;
-use Yiisoft\Db\Constraint\ForeignKeyConstraint;
-use Yiisoft\Db\Constraint\IndexConstraint;
+use Yiisoft\Db\Constraint\Check;
+use Yiisoft\Db\Constraint\ForeignKey;
+use Yiisoft\Db\Constraint\Index;
 use Yiisoft\Db\Driver\Pdo\AbstractPdoSchema;
 use Yiisoft\Db\Exception\NotSupportedException;
 use Yiisoft\Db\Helper\DbArrayHelper;
@@ -165,15 +165,15 @@ final class Schema extends AbstractPdoSchema
         return null;
     }
 
-    protected function loadTablePrimaryKey(string $tableName): IndexConstraint|null
+    protected function loadTablePrimaryKey(string $tableName): Index|null
     {
-        /** @var IndexConstraint|null */
+        /** @var Index|null */
         return $this->loadTableConstraints($tableName, self::PRIMARY_KEY);
     }
 
     protected function loadTableForeignKeys(string $tableName): array
     {
-        /** @var ForeignKeyConstraint[] */
+        /** @var ForeignKey[] */
         return $this->loadTableConstraints($tableName, self::FOREIGN_KEYS);
     }
 
@@ -183,8 +183,8 @@ final class Schema extends AbstractPdoSchema
         SELECT
             "ic"."relname" AS "name",
             "ia"."attname" AS "column_name",
-            "i"."indisunique" AS "index_is_unique",
-            "i"."indisprimary" AS "index_is_primary"
+            "i"."indisunique" AS "is_unique",
+            "i"."indisprimary" AS "is_primary_key"
         FROM "pg_class" AS "tc"
         INNER JOIN "pg_namespace" AS "tcns"
             ON "tcns"."oid" = "tc"."relnamespace"
@@ -218,17 +218,17 @@ final class Schema extends AbstractPdoSchema
          *   array{
          *     name: string,
          *     column_name: string,
-         *     index_is_unique: bool,
-         *     index_is_primary: bool
+         *     is_unique: bool,
+         *     is_primary_key: bool
          *   }
          * > $index
          */
         foreach ($indexes as $name => $index) {
-            $result[] = new IndexConstraint(
+            $result[] = new Index(
                 $name,
                 array_column($index, 'column_name'),
-                $index[0]['index_is_unique'],
-                $index[0]['index_is_primary'],
+                $index[0]['is_unique'],
+                $index[0]['is_primary_key'],
             );
         }
 
@@ -237,13 +237,13 @@ final class Schema extends AbstractPdoSchema
 
     protected function loadTableUniques(string $tableName): array
     {
-        /** @var IndexConstraint[] */
+        /** @var Index[] */
         return $this->loadTableConstraints($tableName, self::UNIQUES);
     }
 
     protected function loadTableChecks(string $tableName): array
     {
-        /** @var CheckConstraint[] */
+        /** @var Check[] */
         return $this->loadTableConstraints($tableName, self::CHECKS);
     }
 
@@ -717,9 +717,9 @@ final class Schema extends AbstractPdoSchema
      * - uniques
      * - checks
      *
-     * @return CheckConstraint[]|ForeignKeyConstraint[]|IndexConstraint|IndexConstraint[]|null Constraints.
+     * @return Check[]|ForeignKey[]|Index|Index[]|null Constraints.
      */
-    private function loadTableConstraints(string $tableName, string $returnType): array|IndexConstraint|null
+    private function loadTableConstraints(string $tableName, string $returnType): array|Index|null
     {
         $sql = <<<SQL
         SELECT
@@ -788,26 +788,27 @@ final class Schema extends AbstractPdoSchema
              */
             foreach ($names as $name => $constraint) {
                 match ($type) {
-                    'p' => $result[self::PRIMARY_KEY] = new IndexConstraint(
+                    'p' => $result[self::PRIMARY_KEY] = new Index(
                         $name,
                         array_column($constraint, 'column_name'),
                         true,
                         true,
                     ),
-                    'f' => $result[self::FOREIGN_KEYS][] = new ForeignKeyConstraint(
+                    'f' => $result[self::FOREIGN_KEYS][] = new ForeignKey(
                         $name,
                         array_values(array_unique(array_column($constraint, 'column_name'))),
-                        $constraint[0]['foreign_table_schema'] . '.' . $constraint[0]['foreign_table_name'],
+                        $constraint[0]['foreign_table_schema'],
+                        $constraint[0]['foreign_table_name'],
                         array_values(array_unique(array_column($constraint, 'foreign_column_name'))),
-                        $actionTypes[$constraint[0]['on_update']] ?? null,
                         $actionTypes[$constraint[0]['on_delete']] ?? null,
+                        $actionTypes[$constraint[0]['on_update']] ?? null,
                     ),
-                    'u' => $result[self::UNIQUES][] = new IndexConstraint(
+                    'u' => $result[self::UNIQUES][] = new Index(
                         $name,
                         array_column($constraint, 'column_name'),
                         true,
                     ),
-                    'c' => $result[self::CHECKS][] = new CheckConstraint(
+                    'c' => $result[self::CHECKS][] = new Check(
                         $name,
                         array_column($constraint, 'column_name'),
                         $constraint[0]['check_expr'],

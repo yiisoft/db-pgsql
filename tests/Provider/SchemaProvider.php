@@ -17,6 +17,7 @@ use Yiisoft\Db\Schema\Column\DateTimeColumn;
 use Yiisoft\Db\Schema\Column\DoubleColumn;
 use Yiisoft\Db\Schema\Column\JsonColumn;
 use Yiisoft\Db\Schema\Column\StringColumn;
+use Yiisoft\Db\Tests\Support\Assert;
 
 final class SchemaProvider extends \Yiisoft\Db\Tests\Provider\SchemaProvider
 {
@@ -258,8 +259,9 @@ final class SchemaProvider extends \Yiisoft\Db\Tests\Provider\SchemaProvider
     {
         $constraints = parent::constraints();
 
-        $constraints['1: check'][2][0]->expression('CHECK ((("C_check")::text <> \'\'::text))');
-        $constraints['3: foreign key'][2][0]->foreignTableName('public.T_constraints_2');
+        Assert::setPropertyValue($constraints['1: check'][2][0], 'expression', 'CHECK ((("C_check")::text <> \'\'::text))');
+        Assert::setPropertyValue($constraints['3: foreign key'][2][0], 'foreignSchemaName', 'public');
+        Assert::setPropertyValue($constraints['3: foreign key'][2][0], 'foreignTableName', 'T_constraints_2');
         $constraints['3: index'][2] = [];
 
         return $constraints;

@@ -9,7 +9,7 @@ use PHPUnit\Framework\Attributes\DataProviderExternal;
 use Throwable;
 use Yiisoft\Db\Command\CommandInterface;
 use Yiisoft\Db\Connection\ConnectionInterface;
-use Yiisoft\Db\Constraint\IndexConstraint;
+use Yiisoft\Db\Constraint\Index;
 use Yiisoft\Db\Driver\Pdo\PdoConnectionInterface;
 use Yiisoft\Db\Exception\Exception;
 use Yiisoft\Db\Exception\InvalidConfigException;
@@ -591,30 +591,19 @@ final class SchemaTest extends CommonSchemaTest
         $db = $this->getConnection(true);
         $schema = $db->getSchema();
 
-        /** @var IndexConstraint[] $tableIndexes */
+        /** @var Index[] $tableIndexes */
         $tableIndexes = $schema->getTableIndexes('table_index');
 
-        $this->assertCount(5, $tableIndexes);
-
-        $this->assertSame(['id'], $tableIndexes[0]->getColumnNames());
-        $this->assertTrue($tableIndexes[0]->isPrimaryKey());
-        $this->assertTrue($tableIndexes[0]->isUnique());
-
-        $this->assertSame(['one_unique'], $tableIndexes[1]->getColumnNames());
-        $this->assertFalse($tableIndexes[1]->isPrimaryKey());
-        $this->assertTrue($tableIndexes[1]->isUnique());
-
-        $this->assertSame(['two_unique_1', 'two_unique_2'], $tableIndexes[2]->getColumnNames());
-        $this->assertFalse($tableIndexes[2]->isPrimaryKey());
-        $this->assertTrue($tableIndexes[2]->isUnique());
-
-        $this->assertSame(['unique_index'], $tableIndexes[3]->getColumnNames());
-        $this->assertFalse($tableIndexes[3]->isPrimaryKey());
-        $this->assertTrue($tableIndexes[3]->isUnique());
-
-        $this->assertSame(['non_unique_index'], $tableIndexes[4]->getColumnNames());
-        $this->assertFalse($tableIndexes[4]->isPrimaryKey());
-        $this->assertFalse($tableIndexes[4]->isUnique());
+        $this->assertEquals(
+            [
+                new Index('table_index_pkey', ['id'], true, true),
+                new Index('table_index_one_unique_key', ['one_unique'], true),
+                new Index('table_index_two_unique_1_two_unique_2_key', ['two_unique_1', 'two_unique_2'], true),
+                new Index('table_index_unique_index_non_unique_index_idx', ['unique_index'], true),
+                new Index('table_index_non_unique_index_unique_index_idx', ['non_unique_index']),
+            ],
+            $tableIndexes
+        );
 
         $db->close();
     }
