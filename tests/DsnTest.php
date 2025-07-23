@@ -36,15 +36,27 @@ final class DsnTest extends TestCase
         $this->assertSame('pgsql:host=127.0.0.1;dbname=postgres;port=5432', (string) $dsn);
     }
 
-    public function testConstructWithEmptyPort(): void
+    public function testConstructWithEmptyDatabase(): void
     {
-        $dsn = new Dsn('pgsql', 'localhost', '', '');
+        $dsn = new Dsn(databaseName: '');
 
         $this->assertSame('pgsql', $dsn->driver);
-        $this->assertSame('localhost', $dsn->host);
+        $this->assertSame('127.0.0.1', $dsn->host);
+        $this->assertSame('', $dsn->databaseName);
+        $this->assertSame('5432', $dsn->port);
+        $this->assertSame([], $dsn->options);
+        $this->assertSame('pgsql:host=127.0.0.1;port=5432', (string) $dsn);
+    }
+
+    public function testConstructWithEmptyPort(): void
+    {
+        $dsn = new Dsn(port: '');
+
+        $this->assertSame('pgsql', $dsn->driver);
+        $this->assertSame('127.0.0.1', $dsn->host);
         $this->assertSame('postgres', $dsn->databaseName);
         $this->assertSame('', $dsn->port);
         $this->assertSame([], $dsn->options);
-        $this->assertSame('pgsql:host=localhost;dbname=postgres', (string) $dsn);
+        $this->assertSame('pgsql:host=127.0.0.1;dbname=postgres', (string) $dsn);
     }
 }
