@@ -15,8 +15,8 @@ use Yiisoft\Db\Pgsql\Tests\Provider\QueryBuilderProvider;
 use Yiisoft\Db\Pgsql\Tests\Support\TestTrait;
 use Yiisoft\Db\Query\Query;
 use Yiisoft\Db\Query\QueryInterface;
-use Yiisoft\Db\QueryBuilder\Condition\ArrayOverlapsCondition;
-use Yiisoft\Db\QueryBuilder\Condition\JsonOverlapsCondition;
+use Yiisoft\Db\QueryBuilder\Condition\ArrayOverlaps;
+use Yiisoft\Db\QueryBuilder\Condition\JsonOverlaps;
 use Yiisoft\Db\Schema\Column\ColumnInterface;
 use Yiisoft\Db\Tests\Common\CommonQueryBuilderTest;
 
@@ -456,20 +456,20 @@ final class QueryBuilderTest extends CommonQueryBuilderTest
         parent::testSelectScalar($columns, $expected);
     }
 
-    public function testArrayOverlapsConditionBuilder(): void
+    public function testArrayOverlapsBuilder(): void
     {
         $db = $this->getConnection();
         $qb = $db->getQueryBuilder();
 
         $params = [];
-        $sql = $qb->buildExpression(new ArrayOverlapsCondition('column', [1, 2, 3]), $params);
+        $sql = $qb->buildExpression(new ArrayOverlaps('column', [1, 2, 3]), $params);
 
         $this->assertSame('"column"::text[] && ARRAY[1,2,3]::text[]', $sql);
         $this->assertSame([], $params);
 
         // Test column as Expression
         $params = [];
-        $sql = $qb->buildExpression(new ArrayOverlapsCondition(new Expression('column'), [1, 2, 3]), $params);
+        $sql = $qb->buildExpression(new ArrayOverlaps(new Expression('column'), [1, 2, 3]), $params);
 
         $this->assertSame('column::text[] && ARRAY[1,2,3]::text[]', $sql);
         $this->assertSame([], $params);
@@ -477,13 +477,13 @@ final class QueryBuilderTest extends CommonQueryBuilderTest
         $db->close();
     }
 
-    public function testJsonOverlapsConditionBuilder(): void
+    public function testJsonOverlapsBuilder(): void
     {
         $db = $this->getConnection();
         $qb = $db->getQueryBuilder();
 
         $params = [];
-        $sql = $qb->buildExpression(new JsonOverlapsCondition('column', [1, 2, 3]), $params);
+        $sql = $qb->buildExpression(new JsonOverlaps('column', [1, 2, 3]), $params);
 
         $this->assertSame(
             'ARRAY(SELECT jsonb_array_elements_text("column"::jsonb)) && ARRAY[1,2,3]::text[]',
@@ -502,21 +502,21 @@ final class QueryBuilderTest extends CommonQueryBuilderTest
 
         $count = $query
             ->from('array_and_json_types')
-            ->where(new ArrayOverlapsCondition('intarray_col', $values))
+            ->where(new ArrayOverlaps('intarray_col', $values))
             ->count();
 
         $this->assertSame($expectedCount, $count);
 
         $count = $query
             ->from('array_and_json_types')
-            ->setWhere(new JsonOverlapsCondition('json_col', $values))
+            ->setWhere(new JsonOverlaps('json_col', $values))
             ->count();
 
         $this->assertSame($expectedCount, $count);
 
         $count = $query
             ->from('array_and_json_types')
-            ->setWhere(new JsonOverlapsCondition('jsonb_col', $values))
+            ->setWhere(new JsonOverlaps('jsonb_col', $values))
             ->count();
 
         $this->assertSame($expectedCount, $count);
