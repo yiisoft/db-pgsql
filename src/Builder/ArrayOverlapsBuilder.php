@@ -12,15 +12,15 @@ use Yiisoft\Db\Expression\ArrayExpression;
 use Yiisoft\Db\Expression\ExpressionBuilderInterface;
 use Yiisoft\Db\Expression\ExpressionInterface;
 use Yiisoft\Db\Expression\JsonExpression;
-use Yiisoft\Db\QueryBuilder\Condition\JsonOverlapsCondition;
+use Yiisoft\Db\QueryBuilder\Condition\ArrayOverlaps;
 use Yiisoft\Db\QueryBuilder\QueryBuilderInterface;
 
 /**
- * Builds expressions for {@see JsonOverlapsCondition} for PostgreSQL Server.
+ * Builds expressions for {@see ArrayOverlaps} for PostgreSQL Server.
  *
- * @implements ExpressionBuilderInterface<JsonOverlapsCondition>
+ * @implements ExpressionBuilderInterface<ArrayOverlaps>
  */
-final class JsonOverlapsConditionBuilder implements ExpressionBuilderInterface
+final class ArrayOverlapsBuilder implements ExpressionBuilderInterface
 {
     public function __construct(
         private readonly QueryBuilderInterface $queryBuilder,
@@ -28,9 +28,9 @@ final class JsonOverlapsConditionBuilder implements ExpressionBuilderInterface
     }
 
     /**
-     * Build SQL for {@see JsonOverlapsCondition}.
+     * Build SQL for {@see ArrayOverlaps}.
      *
-     * @param JsonOverlapsCondition $expression The {@see JsonOverlapsCondition} to be built.
+     * @param ArrayOverlaps $expression The {@see ArrayOverlaps} to be built.
      *
      * @throws Exception
      * @throws InvalidArgumentException
@@ -53,6 +53,6 @@ final class JsonOverlapsConditionBuilder implements ExpressionBuilderInterface
 
         $values = $this->queryBuilder->buildExpression($values, $params);
 
-        return "ARRAY(SELECT jsonb_array_elements_text($column::jsonb)) && $values::text[]";
+        return "$column::text[] && $values::text[]";
     }
 }

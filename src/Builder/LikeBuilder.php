@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Yiisoft\Db\Pgsql\Builder;
 
-use Yiisoft\Db\QueryBuilder\Condition\LikeCondition;
+use Yiisoft\Db\QueryBuilder\Condition\Like;
 
 /**
- * Build an object of {@see LikeCondition} into SQL expressions for PostgreSQL Server.
+ * Build an object of {@see Like} into SQL expressions for PostgreSQL Server.
  */
-final class LikeConditionBuilder extends \Yiisoft\Db\QueryBuilder\Condition\Builder\LikeConditionBuilder
+final class LikeBuilder extends \Yiisoft\Db\QueryBuilder\Condition\Builder\LikeBuilder
 {
-    protected function parseOperator(LikeCondition $expression): array
+    protected function parseOperator(Like $expression): array
     {
         [$andor, $not, $operator] = parent::parseOperator($expression);
 
