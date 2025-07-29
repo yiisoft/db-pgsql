@@ -100,7 +100,7 @@ final class QueryBuilderProvider extends \Yiisoft\Db\Tests\Provider\QueryBuilder
             /* Checks to verity that operators work correctly */
             [['@>', 'id', new ArrayExpression([1])], '"id" @> ARRAY[1]', []],
             [['<@', 'id', new ArrayExpression([1])], '"id" <@ ARRAY[1]', []],
-            [['=', 'id',  new ArrayExpression([1])], '"id" = ARRAY[1]', []],
+            [['=', 'id',  new ArrayExpression([1])], '"id"=ARRAY[1]', []],
             [['<>', 'id', new ArrayExpression([1])], '"id" <> ARRAY[1]', []],
             [['>', 'id',  new ArrayExpression([1])], '"id" > ARRAY[1]', []],
             [['<', 'id',  new ArrayExpression([1])], '"id" < ARRAY[1]', []],
