@@ -9,16 +9,16 @@ use Yiisoft\Db\Expression\CaseExpression;
 use Yiisoft\Db\Expression\JsonExpression;
 use Yiisoft\Db\Expression\StructuredExpression;
 use Yiisoft\Db\Pgsql\Builder\ArrayExpressionBuilder;
-use Yiisoft\Db\Pgsql\Builder\ArrayOverlapsConditionBuilder;
+use Yiisoft\Db\Pgsql\Builder\ArrayOverlapsBuilder;
 use Yiisoft\Db\Pgsql\Builder\CaseExpressionBuilder;
-use Yiisoft\Db\Pgsql\Builder\JsonOverlapsConditionBuilder;
-use Yiisoft\Db\Pgsql\Builder\LikeConditionBuilder;
+use Yiisoft\Db\Pgsql\Builder\JsonOverlapsBuilder;
+use Yiisoft\Db\Pgsql\Builder\LikeBuilder;
 use Yiisoft\Db\Pgsql\Builder\StructuredExpressionBuilder;
 use Yiisoft\Db\Pgsql\Builder\JsonExpressionBuilder;
 use Yiisoft\Db\QueryBuilder\AbstractDQLQueryBuilder;
-use Yiisoft\Db\QueryBuilder\Condition\LikeCondition;
-use Yiisoft\Db\QueryBuilder\Condition\ArrayOverlapsCondition;
-use Yiisoft\Db\QueryBuilder\Condition\JsonOverlapsCondition;
+use Yiisoft\Db\QueryBuilder\Condition\Like;
+use Yiisoft\Db\QueryBuilder\Condition\ArrayOverlaps;
+use Yiisoft\Db\QueryBuilder\Condition\JsonOverlaps;
 
 /**
  * Implements a DQL (Data Query Language) SQL statements for PostgreSQL Server.
@@ -36,10 +36,10 @@ final class DQLQueryBuilder extends AbstractDQLQueryBuilder
     {
         return [
             ...parent::defaultConditionClasses(),
-            'ILIKE' => LikeCondition::class,
-            'NOT ILIKE' => LikeCondition::class,
-            'OR ILIKE' => LikeCondition::class,
-            'OR NOT ILIKE' => LikeCondition::class,
+            'ILIKE' => Like::class,
+            'NOT ILIKE' => Like::class,
+            'OR ILIKE' => Like::class,
+            'OR NOT ILIKE' => Like::class,
         ];
     }
 
@@ -48,11 +48,11 @@ final class DQLQueryBuilder extends AbstractDQLQueryBuilder
         return [
             ...parent::defaultExpressionBuilders(),
             ArrayExpression::class => ArrayExpressionBuilder::class,
-            ArrayOverlapsCondition::class => ArrayOverlapsConditionBuilder::class,
+            ArrayOverlaps::class => ArrayOverlapsBuilder::class,
             JsonExpression::class => JsonExpressionBuilder::class,
-            JsonOverlapsCondition::class => JsonOverlapsConditionBuilder::class,
+            JsonOverlaps::class => JsonOverlapsBuilder::class,
             StructuredExpression::class => StructuredExpressionBuilder::class,
-            LikeCondition::class => LikeConditionBuilder::class,
+            Like::class => LikeBuilder::class,
             CaseExpression::class => CaseExpressionBuilder::class,
         ];
     }
