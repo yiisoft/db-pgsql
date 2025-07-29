@@ -100,7 +100,7 @@ final class QueryBuilderProvider extends \Yiisoft\Db\Tests\Provider\QueryBuilder
             /* Checks to verity that operators work correctly */
             [['@>', 'id', new ArrayExpression([1])], '"id" @> ARRAY[1]', []],
             [['<@', 'id', new ArrayExpression([1])], '"id" <@ ARRAY[1]', []],
-            [['=', 'id',  new ArrayExpression([1])], '"id"=ARRAY[1]', []],
+            [['=', 'id',  new ArrayExpression([1])], '"id" = ARRAY[1]', []],
             [['<>', 'id', new ArrayExpression([1])], '"id" <> ARRAY[1]', []],
             [['>', 'id',  new ArrayExpression([1])], '"id" > ARRAY[1]', []],
             [['<', 'id',  new ArrayExpression([1])], '"id" < ARRAY[1]', []],
@@ -532,7 +532,7 @@ final class QueryBuilderProvider extends \Yiisoft\Db\Tests\Provider\QueryBuilder
                             [':pv2' => $paramB = new Param('b', DataType::STRING)],
                         )),
                     ),
-                'CASE WHEN "column_name"=1 THEN :qp0 WHEN "column_name" = 2 THEN (SELECT :pv2::text) END',
+                'CASE WHEN "column_name" = 1 THEN :qp0 WHEN "column_name" = 2 THEN (SELECT :pv2::text) END',
                 [':qp0' => $paramA, ':pv2' => $paramB],
                 'b',
             ];
