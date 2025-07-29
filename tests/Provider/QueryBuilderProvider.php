@@ -532,8 +532,8 @@ final class QueryBuilderProvider extends \Yiisoft\Db\Tests\Provider\QueryBuilder
                             [':pv2' => $paramB = new Param('b', DataType::STRING)],
                         )),
                     ),
-                'CASE WHEN "column_name" = :qp0 THEN :qp1 WHEN "column_name" = 2 THEN (SELECT :pv2::text) END',
-                [':qp0' => 1, ':qp1' => $paramA, ':pv2' => $paramB],
+                'CASE WHEN "column_name"=1 THEN :qp0 WHEN "column_name" = 2 THEN (SELECT :pv2::text) END',
+                [':qp0' => $paramA, ':pv2' => $paramB],
                 'b',
             ];
         }
