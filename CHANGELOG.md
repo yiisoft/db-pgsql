@@ -35,7 +35,7 @@
 - Chg #388: Change supported PHP versions to `8.1 - 8.4` (@Tigrov)
 - Enh #388: Minor refactoring (@Tigrov)
 - Chg #390: Remove `yiisoft/json` dependency (@Tigrov)
-- Enh #393: Refactor according changes in `db` package (@Tigrov)
+- Enh #393, #430: Refactor according changes in `db` package (@Tigrov)
 - New #391: Add `caseSensitive` option to like condition (@vjik)
 - Enh #396: Remove `getCacheKey()` and `getCacheTag()` methods from `Schema` class (@Tigrov)
 - Enh #403, #404: Use `DbArrayHelper::arrange()` instead of `DbArrayHelper::index()` method (@Tigrov)
