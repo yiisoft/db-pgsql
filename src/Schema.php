@@ -545,7 +545,7 @@ final class Schema extends AbstractPdoSchema
             $defaultValue = null;
             $columnInfo['sequenceName'] = $matches[1];
         } elseif ($info['sequence_name'] !== null) {
-            $columnInfo['sequenceName'] = $this->clarifyFullName($info['sequence_name']);
+            $columnInfo['sequenceName'] = $this->clearFullName($info['sequence_name']);
         }
 
         $columnInfo['defaultValueRaw'] = $defaultValue;
