@@ -4,19 +4,16 @@ declare(strict_types=1);
 
 namespace Yiisoft\Db\Pgsql\Tests;
 
-use JsonException;
 use PHPUnit\Framework\Attributes\DataProviderExternal;
-use Throwable;
 use Yiisoft\Db\Command\CommandInterface;
 use Yiisoft\Db\Connection\ConnectionInterface;
 use Yiisoft\Db\Constraint\Index;
 use Yiisoft\Db\Driver\Pdo\PdoConnectionInterface;
-use Yiisoft\Db\Exception\Exception;
-use Yiisoft\Db\Exception\InvalidConfigException;
 use Yiisoft\Db\Exception\NotSupportedException;
 use Yiisoft\Db\Expression\Expression;
 use Yiisoft\Db\Pgsql\Schema;
 use Yiisoft\Db\Pgsql\Tests\Provider\SchemaProvider;
+use Yiisoft\Db\Pgsql\Tests\Provider\StructuredTypeProvider;
 use Yiisoft\Db\Pgsql\Tests\Support\TestTrait;
 use Yiisoft\Db\Schema\Column\ColumnInterface;
 use Yiisoft\Db\Schema\SchemaInterface;
@@ -26,17 +23,11 @@ use Yiisoft\Db\Tests\Support\DbHelper;
 
 /**
  * @group pgsql
- *
- * @psalm-suppress PropertyNotSetInConstructor
  */
 final class SchemaTest extends CommonSchemaTest
 {
     use TestTrait;
 
-    /**
-     * @throws Exception
-     * @throws InvalidConfigException
-     */
     public function testBooleanDefaultValues(): void
     {
         $db = $this->getConnection(true);
@@ -57,11 +48,7 @@ final class SchemaTest extends CommonSchemaTest
         $db->close();
     }
 
-    /**
-     * @dataProvider \Yiisoft\Db\Pgsql\Tests\Provider\SchemaProvider::columns
-     *
-     * @throws Exception
-     */
+    #[DataProviderExternal(SchemaProvider::class, 'columns')]
     public function testColumns(array $columns, string $tableName): void
     {
         $db = $this->getConnection();
@@ -77,11 +64,6 @@ final class SchemaTest extends CommonSchemaTest
         $db->close();
     }
 
-    /**
-     * @throws Exception
-     * @throws InvalidConfigException
-     * @throws Throwable
-     */
     public function testColumnTypeMapNoExist(): void
     {
         $db = $this->getConnection();
@@ -104,10 +86,6 @@ final class SchemaTest extends CommonSchemaTest
         $db->close();
     }
 
-    /**
-     * @throws Exception
-     * @throws InvalidConfigException
-     */
     public function testGeneratedValues(): void
     {
         $this->fixture = 'pgsql12.sql';
@@ -130,10 +108,6 @@ final class SchemaTest extends CommonSchemaTest
         $db->close();
     }
 
-    /**
-     * @throws Exception
-     * @throws InvalidConfigException
-     */
     public function testGetDefaultSchema(): void
     {
         $db = $this->getConnection();
@@ -145,10 +119,6 @@ final class SchemaTest extends CommonSchemaTest
         $db->close();
     }
 
-    /**
-     * @throws Exception
-     * @throws InvalidConfigException
-     */
     public function testGetSchemaDefaultValues(): void
     {
         $db = $this->getConnection();
@@ -161,11 +131,6 @@ final class SchemaTest extends CommonSchemaTest
         $db->getSchema()->getSchemaDefaultValues();
     }
 
-    /**
-     * @throws Exception
-     * @throws InvalidConfigException
-     * @throws NotSupportedException
-     */
     public function testGetSchemaNames(): void
     {
         $db = $this->getConnection(true);
@@ -183,11 +148,6 @@ final class SchemaTest extends CommonSchemaTest
         $db->close();
     }
 
-    /**
-     * @throws Exception
-     * @throws InvalidConfigException
-     * @throws NotSupportedException
-     */
     public function testGetTableSchemasNotSchemaDefault(): void
     {
         $db = $this->getConnection(true);
@@ -206,9 +166,6 @@ final class SchemaTest extends CommonSchemaTest
 
     /**
      * @link https://github.com/yiisoft/yii2/issues/12483
-     *
-     * @throws Exception
-     * @throws Throwable
      */
     public function testParenthesisDefaultValue(): void
     {
@@ -244,10 +201,6 @@ final class SchemaTest extends CommonSchemaTest
         $db->close();
     }
 
-    /**
-     * @throws Exception
-     * @throws InvalidConfigException
-     */
     public function testPartitionedTable(): void
     {
         $this->fixture = 'pgsql10.sql';
@@ -265,11 +218,6 @@ final class SchemaTest extends CommonSchemaTest
         $db->close();
     }
 
-    /**
-     * @throws Exception
-     * @throws InvalidConfigException
-     * @throws Throwable
-     */
     public function testSequenceName(): void
     {
         $db = $this->getConnection(true);
@@ -306,11 +254,7 @@ final class SchemaTest extends CommonSchemaTest
         $db->close();
     }
 
-    /**
-     * @dataProvider \Yiisoft\Db\Pgsql\Tests\Provider\SchemaProvider::tableSchemaCacheWithTablePrefixes
-     *
-     * @throws Exception
-     */
+    #[DataProviderExternal(SchemaProvider::class, 'tableSchemaCacheWithTablePrefixes')]
     public function testTableSchemaCacheWithTablePrefixes(
         string $tablePrefix,
         string $tableName,
@@ -351,47 +295,26 @@ final class SchemaTest extends CommonSchemaTest
         $db->close();
     }
 
-    /**
-     * @dataProvider \Yiisoft\Db\Pgsql\Tests\Provider\SchemaProvider::constraints
-     * @dataProvider \Yiisoft\Db\Pgsql\Tests\Provider\SchemaProvider::constraintsOfView
-     *
-     * @throws Exception
-     * @throws JsonException
-     */
+    #[DataProviderExternal(SchemaProvider::class, 'constraints')]
+    #[DataProviderExternal(SchemaProvider::class, 'constraintsOfView')]
     public function testTableSchemaConstraints(string $tableName, string $type, mixed $expected): void
     {
         parent::testTableSchemaConstraints($tableName, $type, $expected);
     }
 
-    /**
-     * @dataProvider \Yiisoft\Db\Pgsql\Tests\Provider\SchemaProvider::constraints
-     *
-     * @throws Exception
-     * @throws InvalidConfigException
-     * @throws JsonException
-     * @throws NotSupportedException
-     */
+    #[DataProviderExternal(SchemaProvider::class, 'constraints')]
     public function testTableSchemaConstraintsWithPdoLowercase(string $tableName, string $type, mixed $expected): void
     {
         parent::testTableSchemaConstraintsWithPdoLowercase($tableName, $type, $expected);
     }
 
-    /**
-     * @dataProvider \Yiisoft\Db\Pgsql\Tests\Provider\SchemaProvider::constraints
-     *
-     * @throws Exception
-     * @throws JsonException
-     */
+    #[DataProviderExternal(SchemaProvider::class, 'constraints')]
     public function testTableSchemaConstraintsWithPdoUppercase(string $tableName, string $type, mixed $expected): void
     {
         parent::testTableSchemaConstraintsWithPdoUppercase($tableName, $type, $expected);
     }
 
-    /**
-     * @dataProvider \Yiisoft\Db\Pgsql\Tests\Provider\SchemaProvider::tableSchemaWithDbSchemes
-     *
-     * @throws Exception
-     */
+    #[DataProviderExternal(SchemaProvider::class, 'tableSchemaWithDbSchemes')]
     public function testTableSchemaWithDbSchemes(
         string $tableName,
         string $expectedTableName,
@@ -426,9 +349,6 @@ final class SchemaTest extends CommonSchemaTest
 
     /**
      * @link https://github.com/yiisoft/yii2/issues/14192
-     *
-     * @throws Exception
-     * @throws Throwable
      */
     public function testTimestampNullDefaultValue(): void
     {
@@ -574,7 +494,7 @@ final class SchemaTest extends CommonSchemaTest
         $db->close();
     }
 
-    /** @dataProvider \Yiisoft\Db\Pgsql\Tests\Provider\StructuredTypeProvider::columns */
+    #[DataProviderExternal(StructuredTypeProvider::class, 'columns')]
     public function testStructuredTypeColumn(array $columns, string $tableName): void
     {
         $this->assertTableColumns($columns, $tableName);
@@ -591,16 +511,15 @@ final class SchemaTest extends CommonSchemaTest
         $db = $this->getConnection(true);
         $schema = $db->getSchema();
 
-        /** @var Index[] $tableIndexes */
         $tableIndexes = $schema->getTableIndexes('table_index');
 
         $this->assertEquals(
             [
-                new Index('table_index_pkey', ['id'], true, true),
-                new Index('table_index_one_unique_key', ['one_unique'], true),
-                new Index('table_index_two_unique_1_two_unique_2_key', ['two_unique_1', 'two_unique_2'], true),
-                new Index('table_index_unique_index_non_unique_index_idx', ['unique_index'], true),
-                new Index('table_index_non_unique_index_unique_index_idx', ['non_unique_index']),
+                'table_index_pkey' => new Index('table_index_pkey', ['id'], true, true),
+                'table_index_one_unique_key' => new Index('table_index_one_unique_key', ['one_unique'], true),
+                'table_index_two_unique_1_two_unique_2_key' => new Index('table_index_two_unique_1_two_unique_2_key', ['two_unique_1', 'two_unique_2'], true),
+                'table_index_unique_index_non_unique_index_idx' => new Index('table_index_unique_index_non_unique_index_idx', ['unique_index'], true),
+                'table_index_non_unique_index_unique_index_idx' => new Index('table_index_non_unique_index_unique_index_idx', ['non_unique_index']),
             ],
             $tableIndexes
         );

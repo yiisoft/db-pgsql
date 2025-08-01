@@ -127,7 +127,7 @@ CREATE TABLE "composite_fk" (
   order_id integer NOT NULL,
   item_id integer NOT NULL,
   PRIMARY KEY (id),
-  CONSTRAINT FK_composite_fk_order_item FOREIGN KEY (order_id, item_id) REFERENCES "order_item" (order_id, item_id) ON DELETE CASCADE
+  CONSTRAINT "FK_composite_fk_order_item" FOREIGN KEY (order_id, item_id) REFERENCES "order_item" (order_id, item_id) ON DELETE CASCADE
 );
 
 CREATE TABLE "null_values" (
