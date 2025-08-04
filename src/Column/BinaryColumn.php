@@ -17,6 +17,7 @@ final class BinaryColumn extends BaseBinaryColumn
     public function phpTypecast(mixed $value): StringableStream|string|null
     {
         if (is_string($value) && str_starts_with($value, '\x')) {
+            /** @var string */
             return hex2bin(substr($value, 2));
         }
 
