@@ -86,7 +86,7 @@ final class DDLQueryBuilder extends AbstractDDLQueryBuilder
         $tableNames = [];
         $viewNames = [];
 
-        if ($schema !== null) {
+        if ($schema !== '') {
             $tableNames = $table ? [$table] : $schemaInstance->getTableNames($schema);
             $viewNames = $schemaInstance->getViewNames($schema);
         }

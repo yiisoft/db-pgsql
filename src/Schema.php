@@ -14,6 +14,8 @@ use Yiisoft\Db\Exception\NotSupportedException;
 use Yiisoft\Db\Helper\DbArrayHelper;
 use Yiisoft\Db\Pgsql\Column\SequenceColumnInterface;
 use Yiisoft\Db\Schema\Column\ColumnInterface;
+use Yiisoft\Db\Schema\SchemaInterface;
+use Yiisoft\Db\Schema\TableSchema;
 use Yiisoft\Db\Schema\TableSchemaInterface;
 
 use function array_change_key_case;
@@ -22,11 +24,9 @@ use function array_map;
 use function array_unique;
 use function array_values;
 use function explode;
-use function in_array;
 use function is_string;
 use function preg_match;
 use function str_replace;
-use function str_starts_with;
 use function substr;
 
 /**
@@ -36,7 +36,7 @@ use function substr;
  *   column_name: string,
  *   data_type: string,
  *   type_type: string|null,
- *   type_scheme: string|null,
+ *   type_scheme: string,
  *   character_maximum_length: int|string,
  *   column_comment: string|null,
  *   is_nullable: bool|string,
@@ -81,26 +81,19 @@ use function substr;
  */
 final class Schema extends AbstractPdoSchema
 {
-    /**
-     * @var string|null The default schema used for the current session.
-     */
-    protected string|null $defaultSchema = 'public';
-
-    protected function resolveTableName(string $name): TableSchemaInterface
+    protected function findConstraints(TableSchemaInterface $table): void
     {
-        $resolvedName = new TableSchema();
+        $tableName = $this->resolveFullName($table->getName(), $table->getSchemaName());
 
-        $parts = $this->db->getQuoter()->getTableNameParts($name);
-        $resolvedName->name($parts['name']);
-        $resolvedName->schemaName($parts['schemaName'] ?? $this->defaultSchema);
-
-        $resolvedName->fullName(
-            $resolvedName->getSchemaName() !== $this->defaultSchema ?
-            implode('.', $parts) : $resolvedName->getName()
-        );
-
-        return $resolvedName;
+        $table->checks(...$this->getTableMetadata($tableName, SchemaInterface::CHECKS));
+        $table->foreignKeys(...$this->getTableMetadata($tableName, SchemaInterface::FOREIGN_KEYS));
+        $table->indexes(...$this->getTableMetadata($tableName, SchemaInterface::INDEXES));
     }
+
+    /**
+     * @var string The default schema used for the current session.
+     */
+    protected string $defaultSchema = 'public';
 
     protected function findSchemaNames(): array
     {
@@ -127,7 +120,7 @@ final class Schema extends AbstractPdoSchema
         SQL;
 
         $comment = $this->db->createCommand($sql, [
-            ':schemaName' => $tableSchema->getSchemaName(),
+            ':schemaName' => $tableSchema->getSchemaName() ?: $this->defaultSchema,
             ':tableName' => $tableSchema->getName(),
         ])->queryScalar();
 
@@ -154,21 +147,15 @@ final class Schema extends AbstractPdoSchema
 
     protected function loadTableSchema(string $name): TableSchemaInterface|null
     {
-        $table = $this->resolveTableName($name);
-        $this->findTableComment($table);
+        $table = new TableSchema(...$this->db->getQuoter()->getTableNameParts($name));
 
         if ($this->findColumns($table)) {
+            $this->findTableComment($table);
             $this->findConstraints($table);
             return $table;
         }
 
         return null;
-    }
-
-    protected function loadTablePrimaryKey(string $tableName): Index|null
-    {
-        /** @var Index|null */
-        return $this->loadTableConstraints($tableName, self::PRIMARY_KEY);
     }
 
     protected function loadTableForeignKeys(string $tableName): array
@@ -224,7 +211,7 @@ final class Schema extends AbstractPdoSchema
          * > $index
          */
         foreach ($indexes as $name => $index) {
-            $result[] = new Index(
+            $result[$name] = new Index(
                 $name,
                 array_column($index, 'column_name'),
                 $index[0]['is_unique'],
@@ -233,12 +220,6 @@ final class Schema extends AbstractPdoSchema
         }
 
         return $result;
-    }
-
-    protected function loadTableUniques(string $tableName): array
-    {
-        /** @var Index[] */
-        return $this->loadTableConstraints($tableName, self::UNIQUES);
     }
 
     protected function loadTableChecks(string $tableName): array
@@ -268,143 +249,6 @@ final class Schema extends AbstractPdoSchema
 
         /** @var string[] */
         return $this->db->createCommand($sql, [':schemaName' => $schema])->queryColumn();
-    }
-
-    /**
-     * Collects the foreign key column details for the given table.
-     *
-     * @param TableSchemaInterface $table The table metadata
-     */
-    protected function findConstraints(TableSchemaInterface $table): void
-    {
-        /**
-         * We need to extract the constraints de hard way since:
-         * {@see https://www.postgresql.org/message-id/26677.1086673982@sss.pgh.pa.us}
-         */
-
-        $sql = <<<SQL
-        SELECT
-            ct.conname as constraint_name,
-            a.attname as column_name,
-            fc.relname as foreign_table_name,
-            fns.nspname as foreign_table_schema,
-            fa.attname as foreign_column_name
-            FROM
-            (SELECT ct.conname, ct.conrelid, ct.confrelid, ct.conkey, ct.contype, ct.confkey,
-                generate_subscripts(ct.conkey, 1) AS s
-                FROM pg_constraint ct
-            ) AS ct
-            inner join pg_class c on c.oid=ct.conrelid
-            inner join pg_namespace ns on c.relnamespace=ns.oid
-            inner join pg_attribute a on a.attrelid=ct.conrelid and a.attnum = ct.conkey[ct.s]
-            left join pg_class fc on fc.oid=ct.confrelid
-            left join pg_namespace fns on fc.relnamespace=fns.oid
-            left join pg_attribute fa on fa.attrelid=ct.confrelid and fa.attnum = ct.confkey[ct.s]
-        WHERE
-            ct.contype='f'
-            and c.relname=:tableName
-            and ns.nspname=:schemaName
-        ORDER BY
-            fns.nspname, fc.relname, a.attnum
-        SQL;
-
-        /** @psalm-var array{array{tableName: string, columns: array}} $constraints */
-        $constraints = [];
-
-        /** @psalm-var array<FindConstraintArray> $rows */
-        $rows = $this->db->createCommand($sql, [
-            ':schemaName' => $table->getSchemaName(),
-            ':tableName' => $table->getName(),
-        ])->queryAll();
-
-        foreach ($rows as $constraint) {
-            /** @psalm-var FindConstraintArray $constraint */
-            $constraint = array_change_key_case($constraint);
-
-            if ($constraint['foreign_table_schema'] !== $this->defaultSchema) {
-                $foreignTable = $constraint['foreign_table_schema'] . '.' . $constraint['foreign_table_name'];
-            } else {
-                $foreignTable = $constraint['foreign_table_name'];
-            }
-
-            $name = $constraint['constraint_name'];
-
-            if (!isset($constraints[$name])) {
-                $constraints[$name] = [
-                    'tableName' => $foreignTable,
-                    'columns' => [],
-                ];
-            }
-
-            $constraints[$name]['columns'][$constraint['column_name']] = $constraint['foreign_column_name'];
-        }
-
-        /**
-         * @psalm-var array{tableName: string, columns: array} $constraint
-         */
-        foreach ($constraints as $foreingKeyName => $constraint) {
-            $table->foreignKey(
-                (string) $foreingKeyName,
-                [$constraint['tableName'], ...$constraint['columns']]
-            );
-        }
-    }
-
-    /**
-     * Gets information about given table unique indexes.
-     *
-     * @param TableSchemaInterface $table The table metadata.
-     *
-     * @return array With index and column names.
-     */
-    protected function getUniqueIndexInformation(TableSchemaInterface $table): array
-    {
-        $sql = <<<'SQL'
-        SELECT
-            i.relname as indexname,
-            pg_get_indexdef(idx.indexrelid, k + 1, TRUE) AS columnname
-        FROM (
-            SELECT *, generate_subscripts(indkey, 1) AS k
-            FROM pg_index
-        ) idx
-        INNER JOIN pg_class i ON i.oid = idx.indexrelid
-        INNER JOIN pg_class c ON c.oid = idx.indrelid
-        INNER JOIN pg_namespace ns ON c.relnamespace = ns.oid
-        WHERE idx.indisprimary = FALSE AND idx.indisunique = TRUE
-        AND c.relname = :tableName AND ns.nspname = :schemaName
-        ORDER BY i.relname, k
-        SQL;
-
-        return $this->db->createCommand($sql, [
-            ':schemaName' => $table->getSchemaName(),
-            ':tableName' => $table->getName(),
-        ])->queryAll();
-    }
-
-    public function findUniqueIndexes(TableSchemaInterface $table): array
-    {
-        $uniqueIndexes = [];
-
-        /** @psalm-var array{indexname: string, columnname: string} $row */
-        foreach ($this->getUniqueIndexInformation($table) as $row) {
-            /** @psalm-var array{indexname: string, columnname: string} $row */
-            $row = array_change_key_case($row);
-
-            $column = $row['columnname'];
-
-            if (str_starts_with($column, '"') && str_ends_with($column, '"')) {
-                /**
-                 * postgres will quote names that aren't lowercase-only.
-                 *
-                 * {@see https://github.com/yiisoft/yii2/issues/10613}
-                 */
-                $column = substr($column, 1, -1);
-            }
-
-            $uniqueIndexes[$row['indexname']][] = $column;
-        }
-
-        return $uniqueIndexes;
     }
 
     /**
@@ -492,7 +336,7 @@ final class Schema extends AbstractPdoSchema
             a.attnum;
         SQL;
 
-        $schemaName = $table->getSchemaName();
+        $schemaName = $table->getSchemaName() ?: $this->defaultSchema;
         $tableName = $table->getName();
 
         $columns = $this->db->createCommand($sql, [
@@ -516,16 +360,26 @@ final class Schema extends AbstractPdoSchema
 
             $table->column($info['column_name'], $column);
 
-            if ($column->isPrimaryKey()) {
-                $table->primaryKey($info['column_name']);
-
-                if ($column instanceof SequenceColumnInterface && $table->getSequenceName() === null) {
-                    $table->sequenceName($column->getSequenceName());
-                }
+            if ($column instanceof SequenceColumnInterface
+                && $column->isPrimaryKey()
+                && $table->getSequenceName() === null
+            ) {
+                $table->sequenceName($column->getSequenceName());
             }
         }
 
         return true;
+    }
+
+    protected function resolveFullName(string $name, string $schemaName = ''): string
+    {
+        $quoter = $this->db->getQuoter();
+        $rawName = $quoter->getRawTableName($name);
+
+        return match ($schemaName) {
+            '', 'pg_catalog', $this->defaultSchema => $rawName,
+            default => $quoter->getRawTableName($schemaName) . ".$rawName",
+        };
     }
 
     /**
@@ -604,13 +458,10 @@ final class Schema extends AbstractPdoSchema
                 [':oid' => $metadata['pgsql:oid']]
             )->queryOne();
 
-            $dbType = match ($typeInfo['schema']) {
-                $this->defaultSchema, 'pg_catalog' => $typeInfo['schema'] . '.' . $typeInfo['typname'],
-                default => $typeInfo['typname'],
-            };
+            $dbType = $this->resolveFullName($typeInfo['typname'], $typeInfo['schema']);
 
             if ($typeInfo['typtype'] === 'c') {
-                $structured = $this->resolveTableName($dbType);
+                $structured = new TableSchema($typeInfo['typname'], $typeInfo['schema']);
 
                 if ($this->findColumns($structured)) {
                     $columnInfo['columns'] = $structured->getColumns();
@@ -645,11 +496,7 @@ final class Schema extends AbstractPdoSchema
     private function loadColumn(array $info): ColumnInterface
     {
         $columnFactory = $this->db->getColumnFactory();
-        $dbType = $info['data_type'];
-
-        if (!in_array($info['type_scheme'], [$this->defaultSchema, 'pg_catalog'], true)) {
-            $dbType = $info['type_scheme'] . '.' . $dbType;
-        }
+        $dbType = $this->resolveFullName($info['data_type'], $info['type_scheme']);
 
         $columnInfo = [
             'autoIncrement' => (bool) $info['is_autoinc'],
@@ -669,7 +516,7 @@ final class Schema extends AbstractPdoSchema
         ];
 
         if ($info['type_type'] === 'c') {
-            $structured = $this->resolveTableName($dbType);
+            $structured = new TableSchema($info['data_type'], $info['type_scheme']);
 
             if ($this->findColumns($structured)) {
                 $columnInfo['columns'] = $structured->getColumns();
@@ -698,7 +545,7 @@ final class Schema extends AbstractPdoSchema
             $defaultValue = null;
             $columnInfo['sequenceName'] = $matches[1];
         } elseif ($info['sequence_name'] !== null) {
-            $columnInfo['sequenceName'] = $this->resolveTableName($info['sequence_name'])->getFullName();
+            $columnInfo['sequenceName'] = $this->clearFullName($info['sequence_name']);
         }
 
         $columnInfo['defaultValueRaw'] = $defaultValue;
@@ -712,14 +559,12 @@ final class Schema extends AbstractPdoSchema
      *
      * @param string $tableName The table name.
      * @param string $returnType The return type:
-     * - primaryKey
      * - foreignKeys
-     * - uniques
      * - checks
      *
-     * @return Check[]|ForeignKey[]|Index|Index[]|null Constraints.
+     * @return Check[]|ForeignKey[] Constraints.
      */
-    private function loadTableConstraints(string $tableName, string $returnType): array|Index|null
+    private function loadTableConstraints(string $tableName, string $returnType): array
     {
         $sql = <<<SQL
         SELECT
@@ -752,7 +597,7 @@ final class Schema extends AbstractPdoSchema
             ON "ftcns"."oid" = "ftc"."relnamespace"
         LEFT JOIN "pg_attribute" "fa"
             ON "fa"."attrelid" = "c"."confrelid" AND "fa"."attnum" = ANY ("c"."confkey")
-        WHERE "tcns"."nspname" = :schemaName AND "tc"."relname" = :tableName
+        WHERE "tcns"."nspname" = :schemaName AND "tc"."relname" = :tableName AND "c"."contype" IN ('c', 'f')
         ORDER BY "a"."attnum" ASC, "fa"."attnum" ASC
         SQL;
 
@@ -775,26 +620,18 @@ final class Schema extends AbstractPdoSchema
         $constraints = DbArrayHelper::arrange($constraints, ['type', 'name']);
 
         $result = [
-            self::PRIMARY_KEY => null,
             self::FOREIGN_KEYS => [],
-            self::UNIQUES => [],
             self::CHECKS => [],
         ];
 
+        /**
+         * @var string $type
+         * @psalm-var array<string, ConstraintArray> $names
+         */
         foreach ($constraints as $type => $names) {
-            /**
-             * @var string $name
-             * @psalm-var ConstraintArray $constraint
-             */
             foreach ($names as $name => $constraint) {
                 match ($type) {
-                    'p' => $result[self::PRIMARY_KEY] = new Index(
-                        $name,
-                        array_column($constraint, 'column_name'),
-                        true,
-                        true,
-                    ),
-                    'f' => $result[self::FOREIGN_KEYS][] = new ForeignKey(
+                    'f' => $result[self::FOREIGN_KEYS][$name] = new ForeignKey(
                         $name,
                         array_values(array_unique(array_column($constraint, 'column_name'))),
                         $constraint[0]['foreign_table_schema'],
@@ -803,12 +640,7 @@ final class Schema extends AbstractPdoSchema
                         $actionTypes[$constraint[0]['on_delete']] ?? null,
                         $actionTypes[$constraint[0]['on_update']] ?? null,
                     ),
-                    'u' => $result[self::UNIQUES][] = new Index(
-                        $name,
-                        array_column($constraint, 'column_name'),
-                        true,
-                    ),
-                    'c' => $result[self::CHECKS][] = new Check(
+                    'c' => $result[self::CHECKS][$name] = new Check(
                         $name,
                         array_column($constraint, 'column_name'),
                         $constraint[0]['check_expr'],
