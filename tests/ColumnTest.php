@@ -32,7 +32,6 @@ use Yiisoft\Db\Tests\Support\Assert;
 
 use function iterator_to_array;
 use function str_repeat;
-use function stream_get_contents;
 
 /**
  * @group pgsql
