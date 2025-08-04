@@ -4,7 +4,7 @@
 
 - Chg #416: Use `\InvalidArgumentException` instead of `Yiisoft\Db\Exception\InvalidArgumentException` (@DikoIbragimov)
 - Enh #336, #405: Implement and use `SqlParser` class (@Tigrov)
-- New #315: Implement `ColumnSchemaInterface` classes according to the data type of database table columns
+- New #315, #1013: Implement `ColumnInterface` classes according to the data type of database table columns
   for type casting performance. Related with yiisoft/db#752 (@Tigrov)
 - Chg #348: Replace call of `SchemaInterface::getRawTableName()` to `QuoterInterface::getRawTableName()` (@Tigrov)
 - Enh #349: Add method chaining for column classes (@Tigrov)
