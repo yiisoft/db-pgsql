@@ -32,7 +32,6 @@ use Yiisoft\Db\Tests\Support\Assert;
 
 use function iterator_to_array;
 use function str_repeat;
-use function stream_get_contents;
 
 /**
  * @group pgsql
@@ -75,7 +74,7 @@ final class ColumnTest extends CommonColumnTest
         $this->assertSame(1, $result['int_col']);
         $this->assertSame(str_repeat('x', 100), $result['char_col']);
         $this->assertSame(1.234, $result['float_col']);
-        $this->assertSame("\x10\x11\x12", stream_get_contents($result['blob_col']));
+        $this->assertSame("\x10\x11\x12", (string) $result['blob_col']);
         $this->assertEquals(new DateTimeImmutable('2023-07-11 14:50:23', new DateTimeZone('UTC')), $result['timestamp_col']);
         $this->assertEquals(new DateTimeImmutable('2023-07-11 14:50:23'), $result['timestamp_default']);
         $this->assertFalse($result['bool_col']);
