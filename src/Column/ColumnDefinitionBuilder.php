@@ -82,7 +82,7 @@ final class ColumnDefinitionBuilder extends AbstractColumnDefinitionBuilder
             return '';
         }
 
-        return ' COLLATE ' . $this->queryBuilder->getQuoter()->quoteSimpleColumnName($column->getCollation());
+        return ' COLLATE ' . $this->queryBuilder->getQuoter()->quoteColumnName($column->getCollation());
     }
 
     protected function getDbType(ColumnInterface $column): string
