@@ -7,8 +7,8 @@ namespace Yiisoft\Db\Pgsql\Column;
 use Yiisoft\Db\Constant\ColumnType;
 use Yiisoft\Db\QueryBuilder\AbstractColumnDefinitionBuilder;
 use Yiisoft\Db\Schema\Column\AbstractArrayColumn;
+use Yiisoft\Db\Schema\Column\CollatableColumnInterface;
 use Yiisoft\Db\Schema\Column\ColumnInterface;
-use Yiisoft\Db\Schema\Column\StringColumn;
 
 use function str_repeat;
 use function version_compare;
@@ -78,10 +78,11 @@ final class ColumnDefinitionBuilder extends AbstractColumnDefinitionBuilder
 
     protected function buildCollate(ColumnInterface $column): string
     {
-        if (!$column instanceof StringColumn || empty($column->getCollation())) {
+        if (!$column instanceof CollatableColumnInterface || empty($column->getCollation())) {
             return '';
         }
 
+        /** @psalm-suppress PossiblyNullArgument */
         return ' COLLATE ' . $this->queryBuilder->getQuoter()->quoteColumnName($column->getCollation());
     }
 
