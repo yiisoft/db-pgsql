@@ -58,7 +58,7 @@ final class SchemaProvider extends \Yiisoft\Db\Tests\Provider\SchemaProvider
                         dbType: 'varchar',
                         size: 100,
                         defaultValue: 'some\'thing',
-                        collation: 'en-US-x-icu',
+                        collation: 'C',
                     ),
                     'char_col3' => new StringColumn(
                         ColumnType::TEXT,

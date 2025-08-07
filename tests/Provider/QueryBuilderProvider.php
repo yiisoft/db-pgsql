@@ -444,8 +444,8 @@ final class QueryBuilderProvider extends \Yiisoft\Db\Tests\Provider\QueryBuilder
         $values['scale(2)'][0] = 'numeric(10,2)';
         $values['integer(8)->scale(2)'][0] = 'integer';
         $values["collation('collation_name')"] = [
-            'varchar(255) COLLATE "en-US-x-icu"',
-            ColumnBuilder::string()->collation('en-US-x-icu'),
+            'varchar(255) COLLATE "C"',
+            ColumnBuilder::string()->collation('C'),
         ];
 
         $db = self::getDb();
