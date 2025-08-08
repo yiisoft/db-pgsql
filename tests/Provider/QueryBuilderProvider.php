@@ -14,6 +14,7 @@ use Yiisoft\Db\Pgsql\Column\ColumnBuilder;
 use Yiisoft\Db\Pgsql\Column\IntegerColumn;
 use Yiisoft\Db\Pgsql\Tests\Support\TestTrait;
 use Yiisoft\Db\Query\Query;
+use Yiisoft\Db\QueryBuilder\Condition\LikeConjunction;
 
 use function array_replace;
 use function version_compare;
@@ -67,14 +68,14 @@ final class QueryBuilderProvider extends \Yiisoft\Db\Tests\Provider\QueryBuilder
             /* empty values */
             [['ilike', 'name', []], '0=1', []],
             [['not ilike', 'name', []], '', []],
-            [['or ilike', 'name', []], '0=1', []],
-            [['or not ilike', 'name', []], '', []],
+            [['ilike', 'name', [], 'conjunction' => LikeConjunction::Or], '0=1', []],
+            [['not ilike', 'name', [], 'conjunction' => LikeConjunction::Or], '', []],
 
             /* simple ilike */
             [['ilike', 'name', 'heyho'], '"name" ILIKE :qp0', [':qp0' => new Param('%heyho%', DataType::STRING)]],
             [['not ilike', 'name', 'heyho'], '"name" NOT ILIKE :qp0', [':qp0' => new Param('%heyho%', DataType::STRING)]],
-            [['or ilike', 'name', 'heyho'], '"name" ILIKE :qp0', [':qp0' => new Param('%heyho%', DataType::STRING)]],
-            [['or not ilike', 'name', 'heyho'], '"name" NOT ILIKE :qp0', [':qp0' => new Param('%heyho%', DataType::STRING)]],
+            [['ilike', 'name', 'heyho', 'conjunction' => LikeConjunction::Or], '"name" ILIKE :qp0', [':qp0' => new Param('%heyho%', DataType::STRING)]],
+            [['not ilike', 'name', 'heyho', 'conjunction' => LikeConjunction::Or], '"name" NOT ILIKE :qp0', [':qp0' => new Param('%heyho%', DataType::STRING)]],
 
             /* ilike for many values */
             [
@@ -88,11 +89,11 @@ final class QueryBuilderProvider extends \Yiisoft\Db\Tests\Provider\QueryBuilder
                 [':qp0' => new Param('%heyho%', DataType::STRING), ':qp1' => new Param('%abc%', DataType::STRING)],
             ],
             [
-                ['or ilike', 'name', ['heyho', 'abc']],
+                ['ilike', 'name', ['heyho', 'abc'], 'conjunction' => LikeConjunction::Or],
                 '"name" ILIKE :qp0 OR "name" ILIKE :qp1', [':qp0' => new Param('%heyho%', DataType::STRING), ':qp1' => new Param('%abc%', DataType::STRING)],
             ],
             [
-                ['or not ilike', 'name', ['heyho', 'abc']],
+                ['not ilike', 'name', ['heyho', 'abc'], 'conjunction' => LikeConjunction::Or],
                 '"name" NOT ILIKE :qp0 OR "name" NOT ILIKE :qp1',
                 [':qp0' => new Param('%heyho%', DataType::STRING), ':qp1' => new Param('%abc%', DataType::STRING)],
             ],
