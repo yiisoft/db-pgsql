@@ -11,11 +11,11 @@ use Yiisoft\Db\QueryBuilder\Condition\Like;
  */
 final class LikeBuilder extends \Yiisoft\Db\QueryBuilder\Condition\Builder\LikeBuilder
 {
-    protected function parseOperator(Like $expression): array
+    protected function parseOperator(Like $condition): array
     {
-        [$not, $operator] = parent::parseOperator($expression);
+        [$not, $operator] = parent::parseOperator($condition);
 
-        $operator = match ($expression->caseSensitive) {
+        $operator = match ($condition->caseSensitive) {
             true => 'LIKE',
             false => 'ILIKE',
             default => $operator,
