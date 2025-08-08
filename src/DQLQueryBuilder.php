@@ -38,8 +38,6 @@ final class DQLQueryBuilder extends AbstractDQLQueryBuilder
             ...parent::defaultConditionClasses(),
             'ILIKE' => Like::class,
             'NOT ILIKE' => Like::class,
-            'OR ILIKE' => Like::class,
-            'OR NOT ILIKE' => Like::class,
         ];
     }
 
