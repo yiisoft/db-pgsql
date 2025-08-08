@@ -13,7 +13,7 @@ final class LikeBuilder extends \Yiisoft\Db\QueryBuilder\Condition\Builder\LikeB
 {
     protected function parseOperator(Like $expression): array
     {
-        [$andor, $not, $operator] = parent::parseOperator($expression);
+        [$not, $operator] = parent::parseOperator($expression);
 
         $operator = match ($expression->caseSensitive) {
             true => 'LIKE',
@@ -21,6 +21,6 @@ final class LikeBuilder extends \Yiisoft\Db\QueryBuilder\Condition\Builder\LikeB
             default => $operator,
         };
 
-        return [$andor, $not, $operator];
+        return [$not, $operator];
     }
 }
