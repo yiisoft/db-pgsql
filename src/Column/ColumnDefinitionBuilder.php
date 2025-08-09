@@ -7,6 +7,7 @@ namespace Yiisoft\Db\Pgsql\Column;
 use Yiisoft\Db\Constant\ColumnType;
 use Yiisoft\Db\QueryBuilder\AbstractColumnDefinitionBuilder;
 use Yiisoft\Db\Schema\Column\AbstractArrayColumn;
+use Yiisoft\Db\Schema\Column\CollatableColumnInterface;
 use Yiisoft\Db\Schema\Column\ColumnInterface;
 
 use function str_repeat;
@@ -45,6 +46,7 @@ final class ColumnDefinitionBuilder extends AbstractColumnDefinitionBuilder
             . $this->buildUnique($column)
             . $this->buildDefault($column)
             . $this->buildCheck($column)
+            . $this->buildCollate($column)
             . $this->buildReferences($column)
             . $this->buildExtra($column);
     }
@@ -72,6 +74,16 @@ final class ColumnDefinitionBuilder extends AbstractColumnDefinitionBuilder
         }
 
         return parent::buildType($column);
+    }
+
+    protected function buildCollate(ColumnInterface $column): string
+    {
+        if (!$column instanceof CollatableColumnInterface || empty($column->getCollation())) {
+            return '';
+        }
+
+        /** @psalm-suppress PossiblyNullArgument */
+        return ' COLLATE ' . $this->queryBuilder->getQuoter()->quoteColumnName($column->getCollation());
     }
 
     protected function getDbType(ColumnInterface $column): string

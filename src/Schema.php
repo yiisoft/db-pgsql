@@ -48,6 +48,8 @@ use function substr;
  *   scale: int|string|null,
  *   contype: string|null,
  *   dimension: int|string,
+ *   collation: string|null,
+ *   collation_schema: string,
  *   schema: string,
  *   table: string
  * }
@@ -308,7 +310,9 @@ final class Schema extends AbstractPdoSchema
                 a.atttypmod
             ) AS scale,
             ct.contype,
-            COALESCE(NULLIF(a.attndims, 0), NULLIF(t.typndims, 0), (t.typcategory='A')::int) AS dimension
+            COALESCE(NULLIF(a.attndims, 0), NULLIF(t.typndims, 0), (t.typcategory='A')::int) AS dimension,
+            co.collname AS collation,
+            nco.nspname AS collation_schema
         FROM
             pg_class c
             LEFT JOIN pg_attribute a ON a.attrelid = c.oid
@@ -328,6 +332,8 @@ final class Schema extends AbstractPdoSchema
                         || ct.conrelid || ' :resorigcol (?:'
                         || replace(substr(ct.conkey::text, 2, length(ct.conkey::text) - 2), ',', '|') || ') .*')
                 )
+            LEFT JOIN (pg_collation co JOIN pg_namespace nco ON co.collnamespace = nco.oid)
+                ON a.attcollation = co.oid AND (nco.nspname != 'pg_catalog' OR co.collname != 'default')
         WHERE
             a.attnum > 0 AND t.typname != '' AND NOT a.attisdropped
             AND c.relname = :tableName
@@ -497,9 +503,13 @@ final class Schema extends AbstractPdoSchema
     {
         $columnFactory = $this->db->getColumnFactory();
         $dbType = $this->resolveFullName($info['data_type'], $info['type_scheme']);
+        $collation = !empty($info['collation'])
+            ? $this->resolveFullName($info['collation'], $info['collation_schema'])
+            : null;
 
         $columnInfo = [
             'autoIncrement' => (bool) $info['is_autoinc'],
+            'collation' => $collation,
             'comment' => $info['column_comment'],
             'dbType' => $dbType,
             'enumValues' => $info['enum_values'] !== null

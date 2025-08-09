@@ -49,6 +49,7 @@
 - Enh #420: Provide `yiisoft/db-implementation` virtual package (@vjik)
 - Enh #424, #425, #428: Adapt to conditions refactoring in `yiisoft/db` package (@vjik)
 - Enh #431: Remove `TableSchema` class and refactor `Schema` class (@Tigrov)
+- Enh #433: Support column's collation (@Tigrov)
 
 ## 1.3.0 March 21, 2024
 
