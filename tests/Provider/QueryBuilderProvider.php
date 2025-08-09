@@ -66,34 +66,34 @@ final class QueryBuilderProvider extends \Yiisoft\Db\Tests\Provider\QueryBuilder
             * {@see https://www.postgresql.org/docs/8.3/static/functions-matching.html#FUNCTIONS-LIKE}
             */
             /* empty values */
-            [['ilike', 'name', []], '0=1', []],
-            [['not ilike', 'name', []], '', []],
-            [['ilike', 'name', [], 'conjunction' => LikeConjunction::Or], '0=1', []],
-            [['not ilike', 'name', [], 'conjunction' => LikeConjunction::Or], '', []],
+            [['like', 'name', [], 'caseSensitive' => false], '0=1', []],
+            [['not like', 'name', [], 'caseSensitive' => false], '', []],
+            [['like', 'name', [], 'conjunction' => LikeConjunction::Or, 'caseSensitive' => false], '0=1', []],
+            [['not like', 'name', [], 'conjunction' => LikeConjunction::Or, 'caseSensitive' => false], '', []],
 
             /* simple ilike */
-            [['ilike', 'name', 'heyho'], '"name" ILIKE :qp0', [':qp0' => new Param('%heyho%', DataType::STRING)]],
-            [['not ilike', 'name', 'heyho'], '"name" NOT ILIKE :qp0', [':qp0' => new Param('%heyho%', DataType::STRING)]],
-            [['ilike', 'name', 'heyho', 'conjunction' => LikeConjunction::Or], '"name" ILIKE :qp0', [':qp0' => new Param('%heyho%', DataType::STRING)]],
-            [['not ilike', 'name', 'heyho', 'conjunction' => LikeConjunction::Or], '"name" NOT ILIKE :qp0', [':qp0' => new Param('%heyho%', DataType::STRING)]],
+            [['like', 'name', 'heyho', 'caseSensitive' => false], '"name" ILIKE :qp0', [':qp0' => new Param('%heyho%', DataType::STRING)]],
+            [['not like', 'name', 'heyho', 'caseSensitive' => false], '"name" NOT ILIKE :qp0', [':qp0' => new Param('%heyho%', DataType::STRING)]],
+            [['like', 'name', 'heyho', 'conjunction' => LikeConjunction::Or, 'caseSensitive' => false], '"name" ILIKE :qp0', [':qp0' => new Param('%heyho%', DataType::STRING)]],
+            [['not like', 'name', 'heyho', 'conjunction' => LikeConjunction::Or, 'caseSensitive' => false], '"name" NOT ILIKE :qp0', [':qp0' => new Param('%heyho%', DataType::STRING)]],
 
             /* ilike for many values */
             [
-                ['ilike', 'name', ['heyho', 'abc']],
+                ['like', 'name', ['heyho', 'abc'], 'caseSensitive' => false],
                 '"name" ILIKE :qp0 AND "name" ILIKE :qp1',
                 [':qp0' => new Param('%heyho%', DataType::STRING), ':qp1' => new Param('%abc%', DataType::STRING)],
             ],
             [
-                ['not ilike', 'name', ['heyho', 'abc']],
+                ['not like', 'name', ['heyho', 'abc'], 'caseSensitive' => false],
                 '"name" NOT ILIKE :qp0 AND "name" NOT ILIKE :qp1',
                 [':qp0' => new Param('%heyho%', DataType::STRING), ':qp1' => new Param('%abc%', DataType::STRING)],
             ],
             [
-                ['ilike', 'name', ['heyho', 'abc'], 'conjunction' => LikeConjunction::Or],
+                ['like', 'name', ['heyho', 'abc'], 'conjunction' => LikeConjunction::Or, 'caseSensitive' => false],
                 '"name" ILIKE :qp0 OR "name" ILIKE :qp1', [':qp0' => new Param('%heyho%', DataType::STRING), ':qp1' => new Param('%abc%', DataType::STRING)],
             ],
             [
-                ['not ilike', 'name', ['heyho', 'abc'], 'conjunction' => LikeConjunction::Or],
+                ['not like', 'name', ['heyho', 'abc'], 'conjunction' => LikeConjunction::Or, 'caseSensitive' => false],
                 '"name" NOT ILIKE :qp0 OR "name" NOT ILIKE :qp1',
                 [':qp0' => new Param('%heyho%', DataType::STRING), ':qp1' => new Param('%abc%', DataType::STRING)],
             ],
