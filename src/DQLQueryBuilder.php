@@ -15,10 +15,13 @@ use Yiisoft\Db\Pgsql\Builder\JsonOverlapsBuilder;
 use Yiisoft\Db\Pgsql\Builder\LikeBuilder;
 use Yiisoft\Db\Pgsql\Builder\StructuredExpressionBuilder;
 use Yiisoft\Db\Pgsql\Builder\JsonExpressionBuilder;
+use Yiisoft\Db\Pgsql\Condition\ILike;
+use Yiisoft\Db\Pgsql\Condition\NotILike;
 use Yiisoft\Db\QueryBuilder\AbstractDQLQueryBuilder;
 use Yiisoft\Db\QueryBuilder\Condition\Like;
 use Yiisoft\Db\QueryBuilder\Condition\ArrayOverlaps;
 use Yiisoft\Db\QueryBuilder\Condition\JsonOverlaps;
+use Yiisoft\Db\QueryBuilder\Condition\NotLike;
 
 /**
  * Implements a DQL (Data Query Language) SQL statements for PostgreSQL Server.
@@ -36,8 +39,8 @@ final class DQLQueryBuilder extends AbstractDQLQueryBuilder
     {
         return [
             ...parent::defaultConditionClasses(),
-            'ILIKE' => Like::class,
-            'NOT ILIKE' => Like::class,
+            'ILIKE' => ILike::class,
+            'NOT ILIKE' => NotILike::class,
         ];
     }
 
@@ -51,6 +54,9 @@ final class DQLQueryBuilder extends AbstractDQLQueryBuilder
             JsonOverlaps::class => JsonOverlapsBuilder::class,
             StructuredExpression::class => StructuredExpressionBuilder::class,
             Like::class => LikeBuilder::class,
+            NotLike::class => LikeBuilder::class,
+            ILike::class => LikeBuilder::class,
+            NotILike::class => LikeBuilder::class,
             CaseExpression::class => CaseExpressionBuilder::class,
         ];
     }
