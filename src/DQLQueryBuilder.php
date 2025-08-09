@@ -15,8 +15,6 @@ use Yiisoft\Db\Pgsql\Builder\JsonOverlapsBuilder;
 use Yiisoft\Db\Pgsql\Builder\LikeBuilder;
 use Yiisoft\Db\Pgsql\Builder\StructuredExpressionBuilder;
 use Yiisoft\Db\Pgsql\Builder\JsonExpressionBuilder;
-use Yiisoft\Db\Pgsql\Condition\ILike;
-use Yiisoft\Db\Pgsql\Condition\NotILike;
 use Yiisoft\Db\QueryBuilder\AbstractDQLQueryBuilder;
 use Yiisoft\Db\QueryBuilder\Condition\Like;
 use Yiisoft\Db\QueryBuilder\Condition\ArrayOverlaps;
@@ -28,22 +26,6 @@ use Yiisoft\Db\QueryBuilder\Condition\NotLike;
  */
 final class DQLQueryBuilder extends AbstractDQLQueryBuilder
 {
-    /**
-     * Has an array of default condition classes.
-     *
-     * Extend this method if you want to change default condition classes for the query builder.
-     *
-     * {@see conditionClasses} docs for details.
-     */
-    protected function defaultConditionClasses(): array
-    {
-        return [
-            ...parent::defaultConditionClasses(),
-            'ILIKE' => ILike::class,
-            'NOT ILIKE' => NotILike::class,
-        ];
-    }
-
     protected function defaultExpressionBuilders(): array
     {
         return [
@@ -55,8 +37,6 @@ final class DQLQueryBuilder extends AbstractDQLQueryBuilder
             StructuredExpression::class => StructuredExpressionBuilder::class,
             Like::class => LikeBuilder::class,
             NotLike::class => LikeBuilder::class,
-            ILike::class => LikeBuilder::class,
-            NotILike::class => LikeBuilder::class,
             CaseExpression::class => CaseExpressionBuilder::class,
         ];
     }
