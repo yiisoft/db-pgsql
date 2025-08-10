@@ -9,6 +9,9 @@ use Yiisoft\Db\Pgsql\Driver;
 use Yiisoft\Db\Pgsql\Dsn;
 use Yiisoft\Db\Tests\Support\DbHelper;
 
+use function preg_replace;
+use function str_replace;
+
 trait TestTrait
 {
     private string $dsn = '';
@@ -63,6 +66,11 @@ trait TestTrait
     protected static function getDriverName(): string
     {
         return 'pgsql';
+    }
+
+    protected static function replaceQuotes(string $sql): string
+    {
+        return str_replace(['\\[', '\\]'], ['[', ']'], preg_replace('/(\[\[)|((?<!(\[))]])/', '"', $sql));
     }
 
     protected function setDsn(string $dsn): void
