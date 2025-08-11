@@ -19,28 +19,13 @@ use Yiisoft\Db\QueryBuilder\AbstractDQLQueryBuilder;
 use Yiisoft\Db\QueryBuilder\Condition\Like;
 use Yiisoft\Db\QueryBuilder\Condition\ArrayOverlaps;
 use Yiisoft\Db\QueryBuilder\Condition\JsonOverlaps;
+use Yiisoft\Db\QueryBuilder\Condition\NotLike;
 
 /**
  * Implements a DQL (Data Query Language) SQL statements for PostgreSQL Server.
  */
 final class DQLQueryBuilder extends AbstractDQLQueryBuilder
 {
-    /**
-     * Has an array of default condition classes.
-     *
-     * Extend this method if you want to change default condition classes for the query builder.
-     *
-     * {@see conditionClasses} docs for details.
-     */
-    protected function defaultConditionClasses(): array
-    {
-        return [
-            ...parent::defaultConditionClasses(),
-            'ILIKE' => Like::class,
-            'NOT ILIKE' => Like::class,
-        ];
-    }
-
     protected function defaultExpressionBuilders(): array
     {
         return [
@@ -51,6 +36,7 @@ final class DQLQueryBuilder extends AbstractDQLQueryBuilder
             JsonOverlaps::class => JsonOverlapsBuilder::class,
             StructuredExpression::class => StructuredExpressionBuilder::class,
             Like::class => LikeBuilder::class,
+            NotLike::class => LikeBuilder::class,
             CaseExpression::class => CaseExpressionBuilder::class,
         ];
     }
