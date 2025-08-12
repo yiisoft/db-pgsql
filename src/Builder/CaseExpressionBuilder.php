@@ -14,7 +14,7 @@ use function is_string;
 /**
  * Builds expressions for {@see CaseExpression}.
  */
-final class CaseExpressionBuilder extends \Yiisoft\Db\Expression\CaseExpressionBuilder
+final class CaseExpressionBuilder extends \Yiisoft\Db\Expression\Builder\CaseExpressionBuilder
 {
     public function build(ExpressionInterface $expression, array &$params = []): string
     {

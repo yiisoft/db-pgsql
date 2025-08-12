@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Yiisoft\Db\Pgsql\Builder;
 
-use Yiisoft\Db\Command\Param;
 use Yiisoft\Db\Constant\DataType;
 use Yiisoft\Db\Exception\Exception;
 use InvalidArgumentException;
 use Yiisoft\Db\Exception\InvalidConfigException;
 use Yiisoft\Db\Exception\NotSupportedException;
-use Yiisoft\Db\Expression\AbstractStructuredExpressionBuilder;
+use Yiisoft\Db\Expression\Builder\AbstractStructuredExpressionBuilder;
+use Yiisoft\Db\Expression\Param;
 use Yiisoft\Db\Expression\StructuredExpression;
 use Yiisoft\Db\Pgsql\Data\StructuredLazyArray;
 use Yiisoft\Db\Query\QueryInterface;
