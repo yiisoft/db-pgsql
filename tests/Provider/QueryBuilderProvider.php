@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Yiisoft\Db\Pgsql\Tests\Provider;
 
-use Yiisoft\Db\Command\Param;
 use Yiisoft\Db\Constant\DataType;
 use Yiisoft\Db\Constant\PseudoType;
 use Yiisoft\Db\Expression\ArrayExpression;
 use Yiisoft\Db\Expression\CaseExpression;
 use Yiisoft\Db\Expression\Expression;
+use Yiisoft\Db\Expression\Param;
 use Yiisoft\Db\Pgsql\Column\ColumnBuilder;
 use Yiisoft\Db\Pgsql\Column\IntegerColumn;
 use Yiisoft\Db\Pgsql\Tests\Support\TestTrait;

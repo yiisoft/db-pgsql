@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Yiisoft\Db\Pgsql\Builder;
 
-use Yiisoft\Db\Command\Param;
 use Yiisoft\Db\Constant\ColumnType;
 use Yiisoft\Db\Constant\DataType;
-use Yiisoft\Db\Expression\AbstractArrayExpressionBuilder;
 use Yiisoft\Db\Expression\ArrayExpression;
+use Yiisoft\Db\Expression\Builder\AbstractArrayExpressionBuilder;
 use Yiisoft\Db\Expression\ExpressionInterface;
+use Yiisoft\Db\Expression\Param;
 use Yiisoft\Db\Pgsql\Data\LazyArray;
 use Yiisoft\Db\Query\QueryInterface;
 use Yiisoft\Db\Schema\Column\AbstractArrayColumn;
