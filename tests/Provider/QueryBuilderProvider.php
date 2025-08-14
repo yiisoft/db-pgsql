@@ -9,6 +9,7 @@ use Yiisoft\Db\Constant\PseudoType;
 use Yiisoft\Db\Expression\ArrayExpression;
 use Yiisoft\Db\Expression\CaseExpression;
 use Yiisoft\Db\Expression\Expression;
+use Yiisoft\Db\Expression\Function\ArrayMerge;
 use Yiisoft\Db\Expression\Param;
 use Yiisoft\Db\Pgsql\Column\ColumnBuilder;
 use Yiisoft\Db\Pgsql\Column\IntegerColumn;
@@ -571,6 +572,47 @@ final class QueryBuilderProvider extends \Yiisoft\Db\Tests\Provider\QueryBuilder
                     ':qp1' => $paramB,
                 ],
                 'b',
+            ],
+        ];
+    }
+
+    public static function multiOperandFunctionClasses(): array
+    {
+        return [
+            ...parent::multiOperandFunctionClasses(),
+            ArrayMerge::class => [ArrayMerge::class],
+        ];
+    }
+
+    public static function multiOperandFunctionBuilder(): array
+    {
+        $data = parent::multiOperandFunctionBuilder();
+
+        $stringParam = new Param('{3,4,5}', DataType::STRING);
+
+        return [
+            ...$data,
+            'ArrayMerge with 1 operand' => [
+                ArrayMerge::class,
+                ['ARRAY[1,2,3]'],
+                '(ARRAY[1,2,3])',
+                '{1,2,3}',
+            ],
+            'ArrayMerge with 2 operands' => [
+                ArrayMerge::class,
+                ['ARRAY[1,2,3]', $stringParam],
+                'ARRAY(SELECT DISTINCT UNNEST(ARRAY[1,2,3] || :qp0))',
+                '{1,3,5,4,2}',
+                [':qp0' => $stringParam],
+            ],
+            'ArrayMerge with 4 operands' => [
+                ArrayMerge::class,
+                ['ARRAY[1,2,3]', [5, 6, 7], $stringParam, self::getDb()->select(new ArrayExpression([9, 10]))],
+                'ARRAY(SELECT DISTINCT UNNEST(ARRAY[1,2,3] || ARRAY[5,6,7] || :qp0 || (SELECT ARRAY[9,10])))',
+                '{10,9,7,1,5,4,2,6,3}',
+                [
+                    ':qp0' => $stringParam,
+                ],
             ],
         ];
     }
