@@ -596,18 +596,30 @@ final class QueryBuilderTest extends CommonQueryBuilderTest
     }
 
     #[DataProviderExternal(QueryBuilderProvider::class, 'lengthBuilder')]
-    public function testLengthBuilder(string|ExpressionInterface $operand, string $expectedSql, int $expectedResult, array $expectedParams = []): void
-    {
+    public function testLengthBuilder(
+        string|ExpressionInterface $operand,
+        string $expectedSql,
+        int $expectedResult,
+        array $expectedParams = [],
+    ): void {
+        parent::testLengthBuilder($operand, $expectedSql, $expectedResult, $expectedParams);
     }
 
     #[DataProviderExternal(QueryBuilderProvider::class, 'multiOperandFunctionBuilder')]
-    public function testMultiOperandFunctionBuilder(string $class, array $operands, string $expectedSql, string|int $expectedResult, array $expectedParams = []): void
-    {
+    public function testMultiOperandFunctionBuilder(
+        string $class,
+        array $operands,
+        string $expectedSql,
+        string|int $expectedResult,
+        array $expectedParams = [],
+    ): void {
+        parent::testMultiOperandFunctionBuilder($class, $operands, $expectedSql, $expectedResult, $expectedParams);
     }
 
     #[DataProviderExternal(QueryBuilderProvider::class, 'multiOperandFunctionClasses')]
     public function testMultiOperandFunctionBuilderWithoutOperands(string $class): void
     {
+        parent::testMultiOperandFunctionBuilderWithoutOperands($class);
     }
 
     #[TestWith(['int[]', '::int[]', '{10,9,7,1,5,4,2,6,3}'])]

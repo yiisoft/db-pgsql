@@ -586,7 +586,7 @@ final class QueryBuilderProvider extends \Yiisoft\Db\Tests\Provider\QueryBuilder
 
     public static function multiOperandFunctionBuilder(): array
     {
-        $data = null;
+        $data = parent::multiOperandFunctionBuilder();
 
         $stringParam = new Param('{3,4,5}', DataType::STRING);
 
