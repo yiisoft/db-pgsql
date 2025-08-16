@@ -596,20 +596,20 @@ final class QueryBuilderProvider extends \Yiisoft\Db\Tests\Provider\QueryBuilder
                 ArrayMerge::class,
                 ['ARRAY[1,2,3]'],
                 '(ARRAY[1,2,3])',
-                '{1,2,3}',
+                [1, 2, 3],
             ],
             'ArrayMerge with 2 operands' => [
                 ArrayMerge::class,
                 ['ARRAY[1,2,3]', $stringParam],
                 'ARRAY(SELECT DISTINCT UNNEST(ARRAY[1,2,3] || :qp0))',
-                '{1,3,5,4,2}',
+                [1, 2, 3, 4, 5],
                 [':qp0' => $stringParam],
             ],
             'ArrayMerge with 4 operands' => [
                 ArrayMerge::class,
                 ['ARRAY[1,2,3]', [5, 6, 7], $stringParam, self::getDb()->select(new ArrayExpression([9, 10]))],
                 'ARRAY(SELECT DISTINCT UNNEST(ARRAY[1,2,3] || ARRAY[5,6,7] || :qp0 || (SELECT ARRAY[9,10])))',
-                '{10,9,7,1,5,4,2,6,3}',
+                [1, 2, 3, 4, 5, 6, 7, 9, 10],
                 [
                     ':qp0' => $stringParam,
                 ],
