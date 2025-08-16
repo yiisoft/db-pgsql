@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace Yiisoft\Db\Pgsql\Tests;
 
-use Yiisoft\Db\Pgsql\Column\ColumnBuilder;
+use PHPUnit\Framework\Attributes\DataProviderExternal;
+use Yiisoft\Db\Pgsql\Tests\Provider\ColumnBuilderProvider;
 use Yiisoft\Db\Pgsql\Tests\Support\TestTrait;
 use Yiisoft\Db\Tests\AbstractColumnBuilderTest;
 
@@ -15,14 +16,7 @@ final class ColumnBuilderTest extends AbstractColumnBuilderTest
 {
     use TestTrait;
 
-    public function getColumnBuilderClass(): string
-    {
-        return ColumnBuilder::class;
-    }
-
-    /**
-     * @dataProvider \Yiisoft\Db\Pgsql\Tests\Provider\ColumnBuilderProvider::buildingMethods
-     */
+    #[DataProviderExternal(ColumnBuilderProvider::class, 'buildingMethods')]
     public function testBuildingMethods(
         string $buildingMethod,
         array $args,
