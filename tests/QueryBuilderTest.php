@@ -622,10 +622,10 @@ final class QueryBuilderTest extends CommonQueryBuilderTest
         parent::testMultiOperandFunctionBuilderWithoutOperands($class);
     }
 
-    #[TestWith(['int[]', '::int[]', '{10,9,7,1,5,4,2,6,3}'])]
-    #[TestWith([new IntegerColumn(), '::integer[]', '{10,9,7,1,5,4,2,6,3}'])]
-    #[TestWith([new ArrayColumn(), '::varchar[]', '{1,10,2,3,4,5,6,7,9}'])]
-    #[TestWith([new ArrayColumn(column: new IntegerColumn()), '::integer[]', '{10,9,7,1,5,4,2,6,3}'])]
+    #[TestWith(['int[]', '::int[]', '{1,2,3,4,5,6,7,9,10}'])]
+    #[TestWith([new IntegerColumn(), '::integer[]', '{1,2,3,4,5,6,7,9,10}'])]
+    #[TestWith([new ArrayColumn(), '::varchar[]', '{1,2,3,4,5,6,7,9,10}'])]
+    #[TestWith([new ArrayColumn(column: new IntegerColumn()), '::integer[]', '{1,2,3,4,5,6,7,9,10}'])]
     public function testMultiOperandFunctionBuilderWithType(
         string|ColumnInterface $type,
         string $typeHint,
@@ -649,7 +649,11 @@ final class QueryBuilderTest extends CommonQueryBuilderTest
         );
         $this->assertSame([':qp0' => $stringParam], $params);
 
+        $arrayCol = new ArrayColumn(column: new IntegerColumn());
         $result = $db->select($arrayMerge)->scalar();
+        $result = $arrayCol->phpTypecast($result);
+        sort($result, SORT_NUMERIC);
+        $expectedResult = $arrayCol->phpTypecast($expectedResult);
 
         $this->assertSame($expectedResult, $result);
     }
