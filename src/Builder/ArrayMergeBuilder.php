@@ -19,6 +19,8 @@ use function is_string;
  * ```sql
  * ARRAY(SELECT DISTINCT UNNEST(operand1::int[] || operand2::int[]))::int[]
  * ```
+ *
+ * @extends MultiOperandFunctionBuilder<ArrayMerge>
  */
 final class ArrayMergeBuilder extends MultiOperandFunctionBuilder
 {
