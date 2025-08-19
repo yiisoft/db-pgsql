@@ -589,8 +589,8 @@ final class QueryBuilderProvider extends \Yiisoft\Db\Tests\Provider\QueryBuilder
         return [
             ...parent::lengthBuilder(),
             'query' => [
-                static::getDb()->select(new Expression("'four'::text")),
-                static::replaceQuotes("LENGTH((SELECT 'four'::text))"),
+                self::getDb()->select(new Expression("'four'::text")),
+                self::replaceQuotes("LENGTH((SELECT 'four'::text))"),
                 4,
             ],
         ];
@@ -600,16 +600,16 @@ final class QueryBuilderProvider extends \Yiisoft\Db\Tests\Provider\QueryBuilder
     {
         $data = parent::multiOperandFunctionBuilder();
 
-        $stringQuery = static::getDb()->select(new Expression("'longest'::text"));
+        $stringQuery = self::getDb()->select(new Expression("'longest'::text"));
         $stringQuerySql = "(SELECT 'longest'::text)";
         $stringParam = new Param('{3,4,5}', DataType::STRING);
 
         $data['Longest with 3 operands'][1][1] = $stringQuery;
         $data['Longest with 3 operands'][2] = "(SELECT value FROM (SELECT 'short' AS value UNION SELECT $stringQuerySql"
-            . " AS value UNION SELECT :qp0 AS value) AS t ORDER BY LENGTH(value) DESC LIMIT 1)";
+            . ' AS value UNION SELECT :qp0 AS value) AS t ORDER BY LENGTH(value) DESC LIMIT 1)';
         $data['Shortest with 3 operands'][1][1] = $stringQuery;
         $data['Shortest with 3 operands'][2] = "(SELECT value FROM (SELECT 'short' AS value UNION SELECT $stringQuerySql"
-            . " AS value UNION SELECT :qp0 AS value) AS t ORDER BY LENGTH(value) ASC LIMIT 1)";
+            . ' AS value UNION SELECT :qp0 AS value) AS t ORDER BY LENGTH(value) ASC LIMIT 1)';
 
         return [
             ...$data,
