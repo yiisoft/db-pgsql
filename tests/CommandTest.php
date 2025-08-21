@@ -6,6 +6,7 @@ namespace Yiisoft\Db\Pgsql\Tests;
 
 use PHPUnit\Framework\Attributes\DataProviderExternal;
 use Yiisoft\Db\Exception\NotSupportedException;
+use Yiisoft\Db\Expression\ExpressionInterface;
 use Yiisoft\Db\Pgsql\Tests\Provider\CommandProvider;
 use Yiisoft\Db\Pgsql\Tests\Support\TestTrait;
 use Yiisoft\Db\Tests\Common\CommonCommandTest;
@@ -185,12 +186,12 @@ final class CommandTest extends CommonCommandTest
     public function testUpdate(
         string $table,
         array $columns,
-        array|string $conditions,
-        array $params,
+        array|ExpressionInterface|string $conditions,
+        array|ExpressionInterface|string|null $from,
         array $expectedValues,
         int $expectedCount,
     ): void {
-        parent::testUpdate($table, $columns, $conditions, $params, $expectedValues, $expectedCount);
+        parent::testUpdate($table, $columns, $conditions, $from, $expectedValues, $expectedCount);
     }
 
     #[DataProviderExternal(CommandProvider::class, 'upsert')]
