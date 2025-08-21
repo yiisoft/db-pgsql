@@ -18,5 +18,6 @@
   <issueHandlers>
     <MixedAssignment errorLevel="suppress" />
     <RiskyTruthyFalsyComparison errorLevel="suppress" />
+    <MoreSpecificImplementedParamType errorLevel="suppress" />
   </issueHandlers>
 </psalm>

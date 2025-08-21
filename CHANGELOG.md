@@ -51,6 +51,7 @@
 - Enh #431: Remove `TableSchema` class and refactor `Schema` class (@Tigrov)
 - Enh #433: Support column's collation (@Tigrov)
 - New #440: Add `Connection::getColumnBuilderClass()` method (@Tigrov)
+- New #439: Implement `ArrayMergeBuilder` class (@Tigrov)
 
 ## 1.3.0 March 21, 2024
 

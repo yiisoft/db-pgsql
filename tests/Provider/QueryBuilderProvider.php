@@ -9,6 +9,7 @@ use Yiisoft\Db\Constant\PseudoType;
 use Yiisoft\Db\Expression\ArrayExpression;
 use Yiisoft\Db\Expression\CaseExpression;
 use Yiisoft\Db\Expression\Expression;
+use Yiisoft\Db\Expression\Function\ArrayMerge;
 use Yiisoft\Db\Expression\Param;
 use Yiisoft\Db\Pgsql\Column\ColumnBuilder;
 use Yiisoft\Db\Pgsql\Column\IntegerColumn;
@@ -571,6 +572,68 @@ final class QueryBuilderProvider extends \Yiisoft\Db\Tests\Provider\QueryBuilder
                     ':qp1' => $paramB,
                 ],
                 'b',
+            ],
+        ];
+    }
+
+    public static function multiOperandFunctionClasses(): array
+    {
+        return [
+            ...parent::multiOperandFunctionClasses(),
+            ArrayMerge::class => [ArrayMerge::class],
+        ];
+    }
+
+    public static function lengthBuilder(): array
+    {
+        return [
+            ...parent::lengthBuilder(),
+            'query' => [
+                self::getDb()->select(new Expression("'four'::text")),
+                self::replaceQuotes("LENGTH((SELECT 'four'::text))"),
+                4,
+            ],
+        ];
+    }
+
+    public static function multiOperandFunctionBuilder(): array
+    {
+        $data = parent::multiOperandFunctionBuilder();
+
+        $stringQuery = self::getDb()->select(new Expression("'longest'::text"));
+        $stringQuerySql = "(SELECT 'longest'::text)";
+        $stringParam = new Param('{3,4,5}', DataType::STRING);
+
+        $data['Longest with 3 operands'][1][1] = $stringQuery;
+        $data['Longest with 3 operands'][2] = "(SELECT value FROM (SELECT 'short' AS value UNION SELECT $stringQuerySql"
+            . ' AS value UNION SELECT :qp0 AS value) AS t ORDER BY LENGTH(value) DESC LIMIT 1)';
+        $data['Shortest with 3 operands'][1][1] = $stringQuery;
+        $data['Shortest with 3 operands'][2] = "(SELECT value FROM (SELECT 'short' AS value UNION SELECT $stringQuerySql"
+            . ' AS value UNION SELECT :qp0 AS value) AS t ORDER BY LENGTH(value) ASC LIMIT 1)';
+
+        return [
+            ...$data,
+            'ArrayMerge with 1 operand' => [
+                ArrayMerge::class,
+                ['ARRAY[1,2,3]'],
+                '(ARRAY[1,2,3])',
+                [1, 2, 3],
+            ],
+            'ArrayMerge with 2 operands' => [
+                ArrayMerge::class,
+                ['ARRAY[1,2,3]', $stringParam],
+                'ARRAY(SELECT DISTINCT UNNEST(ARRAY[1,2,3] || :qp0))',
+                [1, 2, 3, 4, 5],
+                [':qp0' => $stringParam],
+            ],
+            'ArrayMerge with 4 operands' => [
+                ArrayMerge::class,
+                ['ARRAY[1,2,3]', [5, 6, 7], $stringParam, self::getDb()->select(new ArrayExpression([9, 10]))],
+                'ARRAY(SELECT DISTINCT UNNEST(ARRAY[1,2,3] || ARRAY[5,6,7] || :qp0 || (SELECT ARRAY[9,10])))',
+                [1, 2, 3, 4, 5, 6, 7, 9, 10],
+                [
+                    ':qp0' => $stringParam,
+                ],
             ],
         ];
     }
