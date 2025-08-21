@@ -5,12 +5,19 @@ declare(strict_types=1);
 namespace Yiisoft\Db\Pgsql\Tests;
 
 use PHPUnit\Framework\Attributes\DataProviderExternal;
+use PHPUnit\Framework\Attributes\TestWith;
+use Yiisoft\Db\Constant\DataType;
 use Yiisoft\Db\Driver\Pdo\PdoConnectionInterface;
 use Yiisoft\Db\Exception\IntegrityException;
 use Yiisoft\Db\Exception\NotSupportedException;
+use Yiisoft\Db\Expression\ArrayExpression;
 use Yiisoft\Db\Expression\CaseExpression;
 use Yiisoft\Db\Expression\Expression;
 use Yiisoft\Db\Expression\ExpressionInterface;
+use Yiisoft\Db\Expression\Function\ArrayMerge;
+use Yiisoft\Db\Expression\Param;
+use Yiisoft\Db\Pgsql\Column\ArrayColumn;
+use Yiisoft\Db\Pgsql\Column\IntegerColumn;
 use Yiisoft\Db\Pgsql\Tests\Provider\QueryBuilderProvider;
 use Yiisoft\Db\Pgsql\Tests\Support\TestTrait;
 use Yiisoft\Db\Query\Query;
@@ -587,5 +594,68 @@ final class QueryBuilderTest extends CommonQueryBuilderTest
         string|int $expectedResult,
     ): void {
         parent::testCaseExpressionBuilder($case, $expectedSql, $expectedParams, $expectedResult);
+    }
+
+    #[DataProviderExternal(QueryBuilderProvider::class, 'lengthBuilder')]
+    public function testLengthBuilder(
+        string|ExpressionInterface $operand,
+        string $expectedSql,
+        int $expectedResult,
+        array $expectedParams = [],
+    ): void {
+        parent::testLengthBuilder($operand, $expectedSql, $expectedResult, $expectedParams);
+    }
+
+    #[DataProviderExternal(QueryBuilderProvider::class, 'multiOperandFunctionBuilder')]
+    public function testMultiOperandFunctionBuilder(
+        string $class,
+        array $operands,
+        string $expectedSql,
+        array|string|int $expectedResult,
+        array $expectedParams = [],
+    ): void {
+        parent::testMultiOperandFunctionBuilder($class, $operands, $expectedSql, $expectedResult, $expectedParams);
+    }
+
+    #[DataProviderExternal(QueryBuilderProvider::class, 'multiOperandFunctionClasses')]
+    public function testMultiOperandFunctionBuilderWithoutOperands(string $class): void
+    {
+        parent::testMultiOperandFunctionBuilderWithoutOperands($class);
+    }
+
+    #[TestWith(['int[]', '::int[]', '{1,2,3,4,5,6,7,9,10}'])]
+    #[TestWith([new IntegerColumn(), '::integer[]', '{1,2,3,4,5,6,7,9,10}'])]
+    #[TestWith([new ArrayColumn(), '::varchar[]', '{1,2,3,4,5,6,7,9,10}'])]
+    #[TestWith([new ArrayColumn(column: new IntegerColumn()), '::integer[]', '{1,2,3,4,5,6,7,9,10}'])]
+    public function testMultiOperandFunctionBuilderWithType(
+        string|ColumnInterface $type,
+        string $typeHint,
+        string $expectedResult,
+    ): void {
+        $db = $this->getConnection();
+        $qb = $db->getQueryBuilder();
+
+        $stringParam = new Param('{3,4,5}', DataType::STRING);
+        $arrayMerge = (new ArrayMerge(
+            'ARRAY[1,2,3]',
+            [5, 6, 7],
+            $stringParam,
+            self::getDb()->select(new ArrayExpression([9, 10])),
+        ))->type($type);
+        $params = [];
+
+        $this->assertSame(
+            "ARRAY(SELECT DISTINCT UNNEST(ARRAY[1,2,3]$typeHint || ARRAY[5,6,7]$typeHint || :qp0$typeHint || (SELECT ARRAY[9,10])$typeHint))$typeHint",
+            $qb->buildExpression($arrayMerge, $params)
+        );
+        $this->assertSame([':qp0' => $stringParam], $params);
+
+        $arrayCol = new ArrayColumn(column: new IntegerColumn());
+        $result = $db->select($arrayMerge)->scalar();
+        $result = $arrayCol->phpTypecast($result);
+        sort($result, SORT_NUMERIC);
+        $expectedResult = $arrayCol->phpTypecast($expectedResult);
+
+        $this->assertSame($expectedResult, $result);
     }
 }
