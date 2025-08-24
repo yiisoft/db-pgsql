@@ -471,14 +471,14 @@ final class QueryBuilderTest extends CommonQueryBuilderTest
         $params = [];
         $sql = $qb->buildExpression(new ArrayOverlaps('column', [1, 2, 3]), $params);
 
-        $this->assertSame('"column"::text[] && ARRAY[1,2,3]::text[]', $sql);
+        $this->assertSame('"column"::int[] && ARRAY[1,2,3]::int[]', $sql);
         $this->assertSame([], $params);
 
         // Test column as Expression
         $params = [];
         $sql = $qb->buildExpression(new ArrayOverlaps(new Expression('column'), [1, 2, 3]), $params);
 
-        $this->assertSame('column::text[] && ARRAY[1,2,3]::text[]', $sql);
+        $this->assertSame('column::int[] && ARRAY[1,2,3]::int[]', $sql);
         $this->assertSame([], $params);
 
         $db->close();
@@ -493,7 +493,7 @@ final class QueryBuilderTest extends CommonQueryBuilderTest
         $sql = $qb->buildExpression(new JsonOverlaps('column', [1, 2, 3]), $params);
 
         $this->assertSame(
-            'ARRAY(SELECT jsonb_array_elements_text("column"::jsonb)) && ARRAY[1,2,3]::text[]',
+            'ARRAY(SELECT jsonb_array_elements_text("column"::jsonb))::int[] && ARRAY[1,2,3]::int[]',
             $sql
         );
         $this->assertSame([], $params);
@@ -644,7 +644,7 @@ final class QueryBuilderTest extends CommonQueryBuilderTest
         $params = [];
 
         $this->assertSame(
-            "ARRAY(SELECT DISTINCT UNNEST(ARRAY[1,2,3]$typeHint || ARRAY[5,6,7]$typeHint || :qp0$typeHint || (SELECT ARRAY[9,10])$typeHint))$typeHint",
+            "ARRAY(SELECT DISTINCT UNNEST(ARRAY[1,2,3]$typeHint || ARRAY[5,6,7]::int[]$typeHint || :qp0$typeHint || (SELECT ARRAY[9,10]::int[])$typeHint))$typeHint",
             $qb->buildExpression($arrayMerge, $params)
         );
         $this->assertSame([':qp0' => $stringParam], $params);

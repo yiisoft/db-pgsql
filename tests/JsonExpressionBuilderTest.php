@@ -70,13 +70,13 @@ final class JsonExpressionBuilderTest extends TestCase
         $builder = new JsonExpressionBuilder($qb);
         $expression = new JsonExpression(new ArrayExpression([1,2,3]));
 
-        $this->assertSame('array_to_json(ARRAY[1,2,3])', $builder->build($expression, $params));
+        $this->assertSame('array_to_json(ARRAY[1,2,3]::int[])', $builder->build($expression, $params));
         $this->assertSame([], $params);
 
         $params = [];
         $expression = new JsonExpression(new ArrayExpression([1,2,3]), 'jsonb');
 
-        $this->assertSame('array_to_json(ARRAY[1,2,3])::jsonb', $builder->build($expression, $params));
+        $this->assertSame('array_to_json(ARRAY[1,2,3]::int[])::jsonb', $builder->build($expression, $params));
         $this->assertSame([], $params);
     }
 

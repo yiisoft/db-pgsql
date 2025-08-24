@@ -53,6 +53,7 @@
 - New #440: Add `Connection::getColumnBuilderClass()` method (@Tigrov)
 - New #439: Implement `ArrayMergeBuilder` class (@Tigrov)
 - Enh #442: Refactor `DMLQueryBuilder::upsert()` method (@Tigrov)
+- Enh #444: Improve `ArrayExpressionBuilder` and `JsonExpressionBuilder` classes (@Tigrov)
 
 ## 1.3.0 March 21, 2024
 

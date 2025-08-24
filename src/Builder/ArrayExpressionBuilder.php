@@ -6,6 +6,7 @@ namespace Yiisoft\Db\Pgsql\Builder;
 
 use Yiisoft\Db\Constant\ColumnType;
 use Yiisoft\Db\Constant\DataType;
+use Yiisoft\Db\Constant\GettypeResult;
 use Yiisoft\Db\Expression\ArrayExpression;
 use Yiisoft\Db\Expression\Builder\AbstractArrayExpressionBuilder;
 use Yiisoft\Db\Expression\ExpressionInterface;
@@ -17,6 +18,7 @@ use Yiisoft\Db\Schema\Column\ColumnInterface;
 use Yiisoft\Db\Schema\Data\LazyArrayInterface;
 
 use function array_map;
+use function gettype;
 use function implode;
 use function is_array;
 use function iterator_to_array;
@@ -67,21 +69,21 @@ final class ArrayExpressionBuilder extends AbstractArrayExpressionBuilder
     /**
      * @param string[] $placeholders
      */
-    private function buildNestedArray(array $placeholders, string $dbType, int $dimension): string
+    private function buildNestedArray(array $placeholders, string|null $dbType, int $dimension): string
     {
         $typeHint = $this->getTypeHint($dbType, $dimension);
 
         return 'ARRAY[' . implode(',', $placeholders) . ']' . $typeHint;
     }
 
-    private function buildNestedSubquery(QueryInterface $query, string $dbType, int $dimension, array &$params): string
+    private function buildNestedSubquery(QueryInterface $query, string|null $dbType, int $dimension, array &$params): string
     {
         [$sql, $params] = $this->queryBuilder->build($query, $params);
 
         return "ARRAY($sql)" . $this->getTypeHint($dbType, $dimension);
     }
 
-    private function buildNestedValue(iterable $value, string $dbType, ColumnInterface|null $column, int $dimension, array &$params): string
+    private function buildNestedValue(iterable $value, string|null &$dbType, ColumnInterface|null $column, int $dimension, array &$params): string
     {
         $placeholders = [];
         $queryBuilder = $this->queryBuilder;
@@ -107,6 +109,16 @@ final class ArrayExpressionBuilder extends AbstractArrayExpressionBuilder
 
             foreach ($value as $item) {
                 $placeholders[] = $queryBuilder->buildValue($item, $params);
+
+                $dbType ??= match (gettype($item)) {
+                    GettypeResult::ARRAY => 'jsonb',
+                    GettypeResult::BOOLEAN => 'bool',
+                    GettypeResult::INTEGER => 'int',
+                    GettypeResult::RESOURCE => 'bytea',
+                    GettypeResult::STRING => 'text',
+                    GettypeResult::DOUBLE => '',
+                    default => null,
+                };
             }
         }
 
@@ -145,10 +157,10 @@ final class ArrayExpressionBuilder extends AbstractArrayExpressionBuilder
             ->fromType(ColumnType::ARRAY, $info);
     }
 
-    private function getColumnDbType(AbstractArrayColumn|null $column): string
+    private function getColumnDbType(AbstractArrayColumn|null $column): string|null
     {
         if ($column === null) {
-            return '';
+            return null;
         }
 
         return rtrim($this->queryBuilder->getColumnDefinitionBuilder()->buildType($column), '[]');
@@ -157,7 +169,7 @@ final class ArrayExpressionBuilder extends AbstractArrayExpressionBuilder
     /**
      * Return the type hint expression based on type and dimension.
      */
-    private function getTypeHint(string $dbType, int $dimension): string
+    private function getTypeHint(string|null $dbType, int $dimension): string
     {
         if (empty($dbType)) {
             return '';
