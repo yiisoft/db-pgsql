@@ -236,7 +236,7 @@ final class QueryBuilderProvider extends \Yiisoft\Db\Tests\Provider\QueryBuilder
                 2 => ['address' => 'foo {{city}}', 'status' => 2, 'orders' => new Expression('"T_upsert"."orders" + 1')],
                 3 => 'INSERT INTO "T_upsert" ("email", "address", "status", "profile_id") ' .
                     'VALUES (:qp0, :qp1, :qp2, :qp3) ON CONFLICT ("email") ' .
-                    'DO UPDATE SET "address"=:qp4, "status"=:qp5, "orders"="T_upsert"."orders" + 1',
+                    'DO UPDATE SET "address"=:qp4, "status"=2, "orders"="T_upsert"."orders" + 1',
             ],
             'regular values without update part' => [
                 3 => 'INSERT INTO "T_upsert" ("email", "address", "status", "profile_id") ' .
@@ -249,7 +249,7 @@ final class QueryBuilderProvider extends \Yiisoft\Db\Tests\Provider\QueryBuilder
             'query with update part' => [
                 2 => ['address' => 'foo {{city}}', 'status' => 2, 'orders' => new Expression('"T_upsert"."orders" + 1')],
                 3 => 'INSERT INTO "T_upsert" ("email", "status") SELECT "email", 2 AS "status" FROM "customer" ' .
-                    'WHERE "name" = :qp0 LIMIT 1 ON CONFLICT ("email") DO UPDATE SET "address"=:qp1, "status"=:qp2, "orders"="T_upsert"."orders" + 1',
+                    'WHERE "name" = :qp0 LIMIT 1 ON CONFLICT ("email") DO UPDATE SET "address"=:qp1, "status"=2, "orders"="T_upsert"."orders" + 1',
             ],
             'query without update part' => [
                 3 => 'INSERT INTO "T_upsert" ("email", "status") SELECT "email", 2 AS "status" FROM "customer" ' .
@@ -280,7 +280,7 @@ final class QueryBuilderProvider extends \Yiisoft\Db\Tests\Provider\QueryBuilder
                     ),
                 2 => ['ts' => 0, '[[orders]]' => new Expression('EXCLUDED.orders + 1')],
                 3 => 'INSERT INTO {{%T_upsert}} ("email", [[ts]]) SELECT :phEmail AS "email", extract(epoch from now()) * 1000 AS [[ts]] ' .
-                    'ON CONFLICT ("email") DO UPDATE SET "ts"=:qp1, "orders"=EXCLUDED.orders + 1',
+                    'ON CONFLICT ("email") DO UPDATE SET "ts"=0, "orders"=EXCLUDED.orders + 1',
             ],
             'query, values and expressions without update part' => [
                 1 => (new Query(self::getDb()))
