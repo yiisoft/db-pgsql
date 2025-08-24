@@ -137,14 +137,12 @@ final class QueryBuilderProvider extends \Yiisoft\Db\Tests\Provider\QueryBuilder
                 ],
                 [],
                 <<<SQL
-                INSERT INTO "customer" ("email", "name", "address", "is_active", "related_id") VALUES (:qp0, :qp1, :qp2, :qp3, :qp4) RETURNING "id"
+                INSERT INTO "customer" ("email", "name", "address", "is_active", "related_id") VALUES (:qp0, :qp1, :qp2, FALSE, NULL) RETURNING "id"
                 SQL,
                 [
-                    ':qp0' => 'test@example.com',
-                    ':qp1' => 'silverfire',
-                    ':qp2' => 'Kyiv {{city}}, Ukraine',
-                    ':qp3' => false,
-                    ':qp4' => null,
+                    ':qp0' => new Param('test@example.com', DataType::STRING),
+                    ':qp1' => new Param('silverfire', DataType::STRING),
+                    ':qp2' => new Param('Kyiv {{city}}, Ukraine', DataType::STRING),
                 ],
             ],
             'params-and-expressions' => [
@@ -152,9 +150,9 @@ final class QueryBuilderProvider extends \Yiisoft\Db\Tests\Provider\QueryBuilder
                 ['{{%type}}.[[related_id]]' => null, '[[time]]' => new Expression('now()')],
                 [],
                 <<<SQL
-                INSERT INTO {{%type}} ("related_id", "time") VALUES (:qp0, now())
+                INSERT INTO {{%type}} ("related_id", "time") VALUES (NULL, now())
                 SQL,
-                [':qp0' => null],
+                [],
             ],
             'carry passed params' => [
                 'customer',
@@ -168,15 +166,13 @@ final class QueryBuilderProvider extends \Yiisoft\Db\Tests\Provider\QueryBuilder
                 ],
                 [':phBar' => 'bar'],
                 <<<SQL
-                INSERT INTO "customer" ("email", "name", "address", "is_active", "related_id", "col") VALUES (:qp1, :qp2, :qp3, :qp4, :qp5, CONCAT(:phFoo, :phBar)) RETURNING "id"
+                INSERT INTO "customer" ("email", "name", "address", "is_active", "related_id", "col") VALUES (:qp1, :qp2, :qp3, FALSE, NULL, CONCAT(:phFoo, :phBar)) RETURNING "id"
                 SQL,
                 [
                     ':phBar' => 'bar',
-                    ':qp1' => 'test@example.com',
-                    ':qp2' => 'sergeymakinen',
-                    ':qp3' => '{{city}}',
-                    ':qp4' => false,
-                    ':qp5' => null,
+                    ':qp1' => new Param('test@example.com', DataType::STRING),
+                    ':qp2' => new Param('sergeymakinen', DataType::STRING),
+                    ':qp3' => new Param('{{city}}', DataType::STRING),
                     ':phFoo' => 'foo',
                 ],
             ],
@@ -212,9 +208,9 @@ final class QueryBuilderProvider extends \Yiisoft\Db\Tests\Provider\QueryBuilder
                 ['order_id' => 1, 'item_id' => 1, 'quantity' => 1, 'subtotal' => 1.0],
                 [],
                 <<<SQL
-                INSERT INTO {{%order_item}} ("order_id", "item_id", "quantity", "subtotal") VALUES (:qp0, :qp1, :qp2, :qp3) RETURNING "order_id", "item_id"
+                INSERT INTO {{%order_item}} ("order_id", "item_id", "quantity", "subtotal") VALUES (1, 1, 1, 1) RETURNING "order_id", "item_id"
                 SQL,
-                [':qp0' => 1, ':qp1' => 1, ':qp2' => 1, ':qp3' => 1.0,],
+                [],
             ],
         ];
     }
@@ -224,23 +220,23 @@ final class QueryBuilderProvider extends \Yiisoft\Db\Tests\Provider\QueryBuilder
         $concreteData = [
             'regular values' => [
                 3 => 'INSERT INTO "T_upsert" ("email", "address", "status", "profile_id") ' .
-                    'VALUES (:qp0, :qp1, :qp2, :qp3) ON CONFLICT ("email") ' .
+                    'VALUES (:qp0, :qp1, 1, NULL) ON CONFLICT ("email") ' .
                     'DO UPDATE SET "address"=EXCLUDED."address", "status"=EXCLUDED."status", "profile_id"=EXCLUDED."profile_id"',
             ],
             'regular values with unique at not the first position' => [
                 3 => 'INSERT INTO "T_upsert" ("address", "email", "status", "profile_id") ' .
-                    'VALUES (:qp0, :qp1, :qp2, :qp3) ON CONFLICT ("email") ' .
+                    'VALUES (:qp0, :qp1, 1, NULL) ON CONFLICT ("email") ' .
                     'DO UPDATE SET "address"=EXCLUDED."address", "status"=EXCLUDED."status", "profile_id"=EXCLUDED."profile_id"',
             ],
             'regular values with update part' => [
                 2 => ['address' => 'foo {{city}}', 'status' => 2, 'orders' => new Expression('"T_upsert"."orders" + 1')],
                 3 => 'INSERT INTO "T_upsert" ("email", "address", "status", "profile_id") ' .
-                    'VALUES (:qp0, :qp1, :qp2, :qp3) ON CONFLICT ("email") ' .
-                    'DO UPDATE SET "address"=:qp4, "status"=2, "orders"="T_upsert"."orders" + 1',
+                    'VALUES (:qp0, :qp1, 1, NULL) ON CONFLICT ("email") ' .
+                    'DO UPDATE SET "address"=:qp2, "status"=2, "orders"="T_upsert"."orders" + 1',
             ],
             'regular values without update part' => [
                 3 => 'INSERT INTO "T_upsert" ("email", "address", "status", "profile_id") ' .
-                    'VALUES (:qp0, :qp1, :qp2, :qp3) ON CONFLICT DO NOTHING',
+                    'VALUES (:qp0, :qp1, 1, NULL) ON CONFLICT DO NOTHING',
             ],
             'query' => [
                 3 => 'INSERT INTO "T_upsert" ("email", "status") SELECT "email", 2 AS "status" FROM "customer" ' .
@@ -293,7 +289,7 @@ final class QueryBuilderProvider extends \Yiisoft\Db\Tests\Provider\QueryBuilder
                 3 => 'INSERT INTO "T_upsert" ("email", [[ts]]) SELECT :phEmail AS "email", extract(epoch from now()) * 1000 AS [[ts]] ON CONFLICT DO NOTHING',
             ],
             'no columns to update' => [
-                3 => 'INSERT INTO "T_upsert_1" ("a") VALUES (:qp0) ON CONFLICT DO NOTHING',
+                3 => 'INSERT INTO "T_upsert_1" ("a") VALUES (1) ON CONFLICT DO NOTHING',
             ],
             'no columns to update with unique' => [
                 3 => 'INSERT INTO "T_upsert" ("email") VALUES (:qp0) ON CONFLICT DO NOTHING',
@@ -313,8 +309,8 @@ final class QueryBuilderProvider extends \Yiisoft\Db\Tests\Provider\QueryBuilder
             'animal_view',
             ['id' => 3, 'type' => 'yiiunit\data\ar\Mouse'],
             true,
-            'INSERT INTO "animal_view" ("id", "type") VALUES (:qp0, :qp1) ON CONFLICT ("id") DO UPDATE SET "type"=EXCLUDED."type"',
-            [':qp0' => 3, ':qp1' => 'yiiunit\data\ar\Mouse'],
+            'INSERT INTO "animal_view" ("id", "type") VALUES (3, :qp0) ON CONFLICT ("id") DO UPDATE SET "type"=EXCLUDED."type"',
+            [':qp0' => new Param('yiiunit\data\ar\Mouse', DataType::STRING)],
         ];
 
         return $upsert;
@@ -342,7 +338,7 @@ final class QueryBuilderProvider extends \Yiisoft\Db\Tests\Provider\QueryBuilder
         }
 
         $upsert['no columns to update'][3] = ['a'];
-        $upsert['no columns to update'][4] = 'INSERT INTO "T_upsert_1" ("a") VALUES (:qp0) ON CONFLICT ("a")'
+        $upsert['no columns to update'][4] = 'INSERT INTO "T_upsert_1" ("a") VALUES (1) ON CONFLICT ("a")'
             . ' DO UPDATE SET "a" = "T_upsert_1"."a" RETURNING "a"';
 
         return [
@@ -352,28 +348,31 @@ final class QueryBuilderProvider extends \Yiisoft\Db\Tests\Provider\QueryBuilder
                 ['id_1' => 1, 'id_2' => 2.5, 'type' => 'Test'],
                 true,
                 ['id_1', 'id_2'],
-                'INSERT INTO "notauto_pk" ("id_1", "id_2", "type") VALUES (:qp0, :qp1, :qp2)'
+                'INSERT INTO "notauto_pk" ("id_1", "id_2", "type") VALUES (1, 2.5, :qp0)'
                 . ' ON CONFLICT ("id_1", "id_2") DO UPDATE SET "type"=EXCLUDED."type" RETURNING "id_1", "id_2"',
-                [':qp0' => 1, ':qp1' => 2.5, ':qp2' => 'Test'],
+                [':qp0' => new Param('Test', DataType::STRING)],
             ],
             'no return columns' => [
                 'type',
                 ['int_col' => 3, 'char_col' => 'a', 'float_col' => 1.2, 'bool_col' => true],
                 true,
                 [],
-                'INSERT INTO "type" ("int_col", "char_col", "float_col", "bool_col") VALUES (:qp0, :qp1, :qp2, :qp3)',
-                [':qp0' => 3, ':qp1' => 'a', ':qp2' => 1.2, ':qp3' => true],
+                'INSERT INTO "type" ("int_col", "char_col", "float_col", "bool_col") VALUES (3, :qp0, 1.2, TRUE)',
+                [':qp0' => new Param('a', DataType::STRING)],
             ],
             'return all columns' => [
                 'T_upsert',
                 ['email' => 'test@example.com', 'address' => 'test address', 'status' => 1, 'profile_id' => 1],
                 true,
                 null,
-                'INSERT INTO "T_upsert" ("email", "address", "status", "profile_id") VALUES (:qp0, :qp1, :qp2, :qp3)'
+                'INSERT INTO "T_upsert" ("email", "address", "status", "profile_id") VALUES (:qp0, :qp1, 1, 1)'
                 . ' ON CONFLICT ("email") DO UPDATE SET'
                 . ' "address"=EXCLUDED."address", "status"=EXCLUDED."status", "profile_id"=EXCLUDED."profile_id"'
                 . ' RETURNING "id", "ts", "email", "recovery_email", "address", "status", "orders", "profile_id"',
-                [':qp0' => 'test@example.com', ':qp1' => 'test address', ':qp2' => 1, ':qp3' => 1],
+                [
+                    ':qp0' => new Param('test@example.com', DataType::STRING),
+                    ':qp1' => new Param('test address', DataType::STRING),
+                ],
             ],
         ];
     }
