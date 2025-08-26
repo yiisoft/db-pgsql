@@ -644,13 +644,13 @@ final class QueryBuilderProvider extends \Yiisoft\Db\Tests\Provider\QueryBuilder
         $data[0][3] = 'INSERT INTO "test_upsert_with_functions"'
             . ' ("id", "array_col", "greatest_col", "least_col", "longest_col", "shortest_col")'
             . ' VALUES (1, ARRAY[3,4,5]::int[], 5, 5, :qp0, :qp1) ON CONFLICT ("id") DO UPDATE SET'
-            . ' "array_col"=ARRAY(SELECT DISTINCT UNNEST("test_upsert_with_functions"."array_col"::int4[] || EXCLUDED."array_col"::int4[]))::int4[],'
+            . ' "array_col"=ARRAY(SELECT DISTINCT UNNEST("test_upsert_with_functions"."array_col"::int4[] || EXCLUDED."array_col"::int4[]) ORDER BY 1)::int4[],'
             . ' "greatest_col"=GREATEST("test_upsert_with_functions"."greatest_col", EXCLUDED."greatest_col"),'
             . ' "least_col"=LEAST("test_upsert_with_functions"."least_col", EXCLUDED."least_col"),'
             . ' "longest_col"=(SELECT value FROM (SELECT "test_upsert_with_functions"."longest_col" AS value UNION SELECT EXCLUDED."longest_col" AS value) AS t ORDER BY LENGTH(value) DESC LIMIT 1),'
             . ' "shortest_col"=(SELECT value FROM (SELECT "test_upsert_with_functions"."shortest_col" AS value UNION SELECT EXCLUDED."shortest_col" AS value) AS t ORDER BY LENGTH(value) ASC LIMIT 1)';
 
-        $data[0][4]['array_col'] = '{1,5,4,2,3}';
+        $data[0][4]['array_col'] = '{1,2,3,4,5}';
         $data[0][5] = [
             ':qp0' => new Param('short', DataType::STRING),
             ':qp1' => new Param('short', DataType::STRING),
