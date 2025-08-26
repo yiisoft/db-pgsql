@@ -41,7 +41,9 @@ final class ArrayMergeBuilder extends MultiOperandFunctionBuilder
             $builtOperands[] = $this->buildOperand($operand, $params) . $typeHint;
         }
 
-        return 'ARRAY(SELECT DISTINCT UNNEST(' . implode(' || ', $builtOperands) . "))$typeHint";
+        $orderBy = $expression->getOrdered() ? ' ORDER BY 1' : '';
+
+        return 'ARRAY(SELECT DISTINCT UNNEST(' . implode(' || ', $builtOperands) . ")$orderBy)$typeHint";
     }
 
     private function buildTypeHint(string|ColumnInterface $type): string
