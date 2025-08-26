@@ -624,9 +624,9 @@ final class QueryBuilderTest extends CommonQueryBuilderTest
 
     #[TestWith(['int[]', '::int[]', '{1,2,3,4,5,6,7,9,10}'])]
     #[TestWith([new IntegerColumn(), '::integer[]', '{1,2,3,4,5,6,7,9,10}'])]
-    #[TestWith([new ArrayColumn(), '::varchar[]', '{1,2,3,4,5,6,7,9,10}'])]
+    #[TestWith([new ArrayColumn(), '::varchar[]', '{1,10,2,3,4,5,6,7,9}'])]
     #[TestWith([new ArrayColumn(column: new IntegerColumn()), '::integer[]', '{1,2,3,4,5,6,7,9,10}'])]
-    public function testMultiOperandFunctionBuilderWithType(
+    public function testArrayMergeWithTypeWithOrdering(
         string|ColumnInterface $type,
         string $typeHint,
         string $expectedResult,
@@ -634,26 +634,22 @@ final class QueryBuilderTest extends CommonQueryBuilderTest
         $db = $this->getConnection();
         $qb = $db->getQueryBuilder();
 
-        $stringParam = new Param('{3,4,5}', DataType::STRING);
+        $stringParam = new Param('{4,3,5}', DataType::STRING);
         $arrayMerge = (new ArrayMerge(
-            'ARRAY[1,2,3]',
-            [5, 6, 7],
+            'ARRAY[2,1,3]',
+            [6, 5, 7],
             $stringParam,
-            self::getDb()->select(new ArrayExpression([9, 10])),
-        ))->type($type);
+            self::getDb()->select(new ArrayExpression([10, 9])),
+        ))->type($type)->ordered();
         $params = [];
 
         $this->assertSame(
-            "ARRAY(SELECT DISTINCT UNNEST(ARRAY[1,2,3]$typeHint || ARRAY[5,6,7]::int[]$typeHint || :qp0$typeHint || (SELECT ARRAY[9,10]::int[])$typeHint))$typeHint",
+            "ARRAY(SELECT DISTINCT UNNEST(ARRAY[2,1,3]$typeHint || ARRAY[6,5,7]::int[]$typeHint || :qp0$typeHint || (SELECT ARRAY[10,9]::int[])$typeHint) ORDER BY 1)$typeHint",
             $qb->buildExpression($arrayMerge, $params)
         );
         $this->assertSame([':qp0' => $stringParam], $params);
 
-        $arrayCol = new ArrayColumn(column: new IntegerColumn());
         $result = $db->select($arrayMerge)->scalar();
-        $result = $arrayCol->phpTypecast($result);
-        sort($result, SORT_NUMERIC);
-        $expectedResult = $arrayCol->phpTypecast($expectedResult);
 
         $this->assertSame($expectedResult, $result);
     }

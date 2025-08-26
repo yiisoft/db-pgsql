@@ -51,7 +51,7 @@
 - Enh #431: Remove `TableSchema` class and refactor `Schema` class (@Tigrov)
 - Enh #433: Support column's collation (@Tigrov)
 - New #440: Add `Connection::getColumnBuilderClass()` method (@Tigrov)
-- New #439: Implement `ArrayMergeBuilder` class (@Tigrov)
+- New #439, #446: Implement `ArrayMergeBuilder` class (@Tigrov)
 - Enh #442: Refactor `DMLQueryBuilder::upsert()` method (@Tigrov)
 - Enh #444: Improve `ArrayExpressionBuilder` and `JsonExpressionBuilder` classes (@Tigrov)
 
