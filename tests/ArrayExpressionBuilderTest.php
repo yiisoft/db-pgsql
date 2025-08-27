@@ -37,7 +37,36 @@ final class ArrayExpressionBuilderTest extends TestCase
         return [
             'null' => [null, null, 'NULL', []],
             'empty' => [[], null, 'ARRAY[]', []],
-            'list' => [[1, 2, 3], null, 'ARRAY[1,2,3]', []],
+            'array w/o type' => [
+                [[true], [1], ['a'], null],
+                null,
+                'ARRAY[ARRAY[TRUE]::bool[],ARRAY[1]::int[],ARRAY[:qp0]::text[],NULL]::jsonb[]',
+                [
+                    ':qp0' => new Param('a', DataType::STRING),
+                ],
+            ],
+            'bool w/o type' => [[true, false, null], null, 'ARRAY[TRUE,FALSE,NULL]::bool[]'],
+            'int w/o type' => [[1, 2, 3], null, 'ARRAY[1,2,3]::int[]'],
+            'float w/o type' => [[1.2, 2.0, null], null, 'ARRAY[1.2,2,NULL]'],
+            'string w/o type' => [
+                ['a', 'b', 'c'],
+                null,
+                'ARRAY[:qp0,:qp1,:qp2]::text[]',
+                [
+                    ':qp0' => new Param('a', DataType::STRING),
+                    ':qp1' => new Param('b', DataType::STRING),
+                    ':qp2' => new Param('c', DataType::STRING),
+                ],
+            ],
+            'resource w/o type' => [
+                [$resource = fopen('php://memory', 'rb'), null],
+                null,
+                'ARRAY[:qp0,NULL]::bytea[]',
+                [
+                    ':qp0' => new Param($resource, DataType::LOB),
+                ],
+            ],
+            'ArrayIterator w/o type' => [new ArrayIterator([1, 2, 3]), null, 'ARRAY[1,2,3]::int[]'],
             'ArrayIterator' => [
                 new ArrayIterator(['a', 'b', 'c']),
                 'varchar',
@@ -58,21 +87,18 @@ final class ArrayExpressionBuilderTest extends TestCase
                 new \Yiisoft\Db\Schema\Data\LazyArray('[1,2,3]'),
                 ColumnBuilder::integer(),
                 'ARRAY[1,2,3]::integer[]',
-                [],
             ],
             'StructuredLazyArray' => [
                 new StructuredLazyArray('(1,2,3)'),
                 'int',
                 'ARRAY[1,2,3]::int[]',
-                [],
             ],
             'JsonLazyArray' => [
                 new JsonLazyArray('[1,2,3]'),
                 ColumnBuilder::array(ColumnBuilder::integer()),
                 'ARRAY[1,2,3]::integer[]',
-                [],
             ],
-            'Expression' => [[new Expression('now()')], null, 'ARRAY[now()]', []],
+            'Expression' => [[new Expression('now()')], null, 'ARRAY[now()]'],
             'JsonExpression w/o type' => [
                 [new JsonExpression(['a' => null, 'b' => 123, 'c' => [4, 5]]), new JsonExpression([true])],
                 null,
@@ -105,19 +131,16 @@ final class ArrayExpressionBuilderTest extends TestCase
                 (new Query(self::getDb()))->select('id')->from('users')->where(['active' => 1]),
                 null,
                 'ARRAY(SELECT "id" FROM "users" WHERE "active" = 1)',
-                [],
             ],
             'Query' => [
                 [(new Query(self::getDb()))->select('id')->from('users')->where(['active' => 1])],
                 'integer[][]',
                 'ARRAY[ARRAY(SELECT "id" FROM "users" WHERE "active" = 1)::integer[]]::integer[][]',
-                [],
             ],
             'bool' => [
                 [[[true], [false, null]], [['t', 'f'], null], null],
                 'bool[][][]',
                 'ARRAY[ARRAY[ARRAY[TRUE]::bool[],ARRAY[FALSE,NULL]::bool[]]::bool[][],ARRAY[ARRAY[TRUE,TRUE]::bool[],NULL]::bool[][],NULL]::bool[][][]',
-                [],
             ],
             'associative' => [
                 ['a' => '1', 'b' => null],
@@ -135,7 +158,6 @@ final class ArrayExpressionBuilderTest extends TestCase
                 [[1, null], null],
                 'int[][]',
                 'ARRAY[ARRAY[1,NULL]::int[],NULL]::int[][]',
-                [],
             ],
         ];
     }
@@ -145,7 +167,7 @@ final class ArrayExpressionBuilderTest extends TestCase
         iterable|LazyArrayInterface|Query|string|null $value,
         ColumnInterface|string|null $type,
         string $expected,
-        array $expectedParams
+        array $expectedParams = [],
     ): void {
         $db = $this->getConnection();
         $qb = $db->getQueryBuilder();

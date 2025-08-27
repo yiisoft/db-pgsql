@@ -430,7 +430,7 @@ final class QueryBuilderTest extends CommonQueryBuilderTest
         array|ExpressionInterface|string|null $from,
         array $params,
         string $expectedSql,
-        array $expectedParams,
+        array $expectedParams = [],
     ): void {
         parent::testUpdate($table, $columns, $condition, $from, $params, $expectedSql, $expectedParams);
     }
@@ -472,14 +472,14 @@ final class QueryBuilderTest extends CommonQueryBuilderTest
         $params = [];
         $sql = $qb->buildExpression(new ArrayOverlaps('column', [1, 2, 3]), $params);
 
-        $this->assertSame('"column"::text[] && ARRAY[1,2,3]::text[]', $sql);
+        $this->assertSame('"column"::int[] && ARRAY[1,2,3]::int[]', $sql);
         $this->assertSame([], $params);
 
         // Test column as Expression
         $params = [];
         $sql = $qb->buildExpression(new ArrayOverlaps(new Expression('column'), [1, 2, 3]), $params);
 
-        $this->assertSame('column::text[] && ARRAY[1,2,3]::text[]', $sql);
+        $this->assertSame('column::int[] && ARRAY[1,2,3]::int[]', $sql);
         $this->assertSame([], $params);
 
         $db->close();
@@ -494,7 +494,7 @@ final class QueryBuilderTest extends CommonQueryBuilderTest
         $sql = $qb->buildExpression(new JsonOverlaps('column', [1, 2, 3]), $params);
 
         $this->assertSame(
-            'ARRAY(SELECT jsonb_array_elements_text("column"::jsonb)) && ARRAY[1,2,3]::text[]',
+            'ARRAY(SELECT jsonb_array_elements_text("column"::jsonb))::int[] && ARRAY[1,2,3]::int[]',
             $sql
         );
         $this->assertSame([], $params);
@@ -625,9 +625,9 @@ final class QueryBuilderTest extends CommonQueryBuilderTest
 
     #[TestWith(['int[]', '::int[]', '{1,2,3,4,5,6,7,9,10}'])]
     #[TestWith([new IntegerColumn(), '::integer[]', '{1,2,3,4,5,6,7,9,10}'])]
-    #[TestWith([new ArrayColumn(), '::varchar[]', '{1,2,3,4,5,6,7,9,10}'])]
+    #[TestWith([new ArrayColumn(), '::varchar[]', '{1,10,2,3,4,5,6,7,9}'])]
     #[TestWith([new ArrayColumn(column: new IntegerColumn()), '::integer[]', '{1,2,3,4,5,6,7,9,10}'])]
-    public function testMultiOperandFunctionBuilderWithType(
+    public function testArrayMergeWithTypeWithOrdering(
         string|ColumnInterface $type,
         string $typeHint,
         string $expectedResult,
@@ -635,27 +635,35 @@ final class QueryBuilderTest extends CommonQueryBuilderTest
         $db = $this->getConnection();
         $qb = $db->getQueryBuilder();
 
-        $stringParam = new Param('{3,4,5}', DataType::STRING);
+        $stringParam = new Param('{4,3,5}', DataType::STRING);
         $arrayMerge = (new ArrayMerge(
-            'ARRAY[1,2,3]',
-            [5, 6, 7],
+            'ARRAY[2,1,3]',
+            [6, 5, 7],
             $stringParam,
-            self::getDb()->select(new ArrayExpression([9, 10])),
-        ))->type($type);
+            self::getDb()->select(new ArrayExpression([10, 9])),
+        ))->type($type)->ordered();
         $params = [];
 
         $this->assertSame(
-            "ARRAY(SELECT DISTINCT UNNEST(ARRAY[1,2,3]$typeHint || ARRAY[5,6,7]$typeHint || :qp0$typeHint || (SELECT ARRAY[9,10])$typeHint))$typeHint",
+            "ARRAY(SELECT DISTINCT UNNEST(ARRAY[2,1,3]$typeHint || ARRAY[6,5,7]::int[]$typeHint || :qp0$typeHint || (SELECT ARRAY[10,9]::int[])$typeHint) ORDER BY 1)$typeHint",
             $qb->buildExpression($arrayMerge, $params)
         );
         $this->assertSame([':qp0' => $stringParam], $params);
 
-        $arrayCol = new ArrayColumn(column: new IntegerColumn());
         $result = $db->select($arrayMerge)->scalar();
-        $result = $arrayCol->phpTypecast($result);
-        sort($result, SORT_NUMERIC);
-        $expectedResult = $arrayCol->phpTypecast($expectedResult);
 
         $this->assertSame($expectedResult, $result);
+    }
+
+    #[DataProviderExternal(QueryBuilderProvider::class, 'upsertWithMultiOperandFunctions')]
+    public function testUpsertWithMultiOperandFunctions(
+        array $initValues,
+        array $insertValues,
+        array $updateValues,
+        string $expectedSql,
+        array $expectedResult,
+        array $expectedParams = [],
+    ): void {
+        parent::testUpsertWithMultiOperandFunctions($initValues, $insertValues, $updateValues, $expectedSql, $expectedResult, $expectedParams);
     }
 }
