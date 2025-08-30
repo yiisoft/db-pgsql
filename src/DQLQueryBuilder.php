@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Yiisoft\Db\Pgsql;
 
-use Yiisoft\Db\Expression\ArrayExpression;
-use Yiisoft\Db\Expression\CaseExpression;
+use Yiisoft\Db\Expression\Value\ArrayExpression;
+use Yiisoft\Db\Expression\Statement\CaseExpression;
 use Yiisoft\Db\Expression\Function\ArrayMerge;
-use Yiisoft\Db\Expression\JsonExpression;
-use Yiisoft\Db\Expression\StructuredExpression;
+use Yiisoft\Db\Expression\Value\JsonExpression;
+use Yiisoft\Db\Expression\Value\StructuredExpression;
 use Yiisoft\Db\Pgsql\Builder\ArrayExpressionBuilder;
 use Yiisoft\Db\Pgsql\Builder\ArrayMergeBuilder;
 use Yiisoft\Db\Pgsql\Builder\ArrayOverlapsBuilder;

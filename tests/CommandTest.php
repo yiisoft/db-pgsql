@@ -5,11 +5,16 @@ declare(strict_types=1);
 namespace Yiisoft\Db\Pgsql\Tests;
 
 use PHPUnit\Framework\Attributes\DataProviderExternal;
+use Yiisoft\Db\Constant\ColumnType;
 use Yiisoft\Db\Exception\NotSupportedException;
+use Yiisoft\Db\Pgsql\Column\ColumnBuilder;
+use Yiisoft\Db\Pgsql\Column\ColumnFactory;
+use Yiisoft\Db\Pgsql\Connection;
 use Yiisoft\Db\Pgsql\Tests\Provider\CommandProvider;
 use Yiisoft\Db\Pgsql\Tests\Support\TestTrait;
 use Yiisoft\Db\Tests\Common\CommonCommandTest;
 
+use Yiisoft\Db\Tests\Support\DbHelper;
 use function serialize;
 
 /**
