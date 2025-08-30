@@ -17,7 +17,7 @@ use Yiisoft\Db\Expression\Value\Builder\JsonExpressionBuilder as BaseJsonExpress
 use Yiisoft\Db\QueryBuilder\QueryBuilderInterface;
 
 /**
- * Builds expressions for {@see `Yiisoft\Db\Expression\JsonExpression`} for PostgreSQL Server.
+ * Builds expressions for {@see `Yiisoft\Db\Expression\Value\JsonExpression`} for PostgreSQL Server.
  *
  * @implements ExpressionBuilderInterface<JsonExpression>
  */
