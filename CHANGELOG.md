@@ -54,6 +54,7 @@
 - New #439, #446: Implement `ArrayMergeBuilder` class (@Tigrov)
 - Enh #442: Refactor `DMLQueryBuilder::upsert()` method (@Tigrov)
 - Enh #444: Improve `ArrayExpressionBuilder` and `JsonExpressionBuilder` classes (@Tigrov)
+- Chg #447: Update expression namespaces according to changes in `yiisoft/db` package (@Tigrov)
 
 ## 1.3.0 March 21, 2024
 

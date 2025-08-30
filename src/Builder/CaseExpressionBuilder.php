@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Yiisoft\Db\Pgsql\Builder;
 
 use InvalidArgumentException;
-use Yiisoft\Db\Expression\CaseExpression;
+use Yiisoft\Db\Expression\Statement\CaseExpression;
 use Yiisoft\Db\Expression\ExpressionInterface;
 use Yiisoft\Db\Schema\Column\ColumnInterface;
 
@@ -14,7 +14,7 @@ use function is_string;
 /**
  * Builds expressions for {@see CaseExpression}.
  */
-final class CaseExpressionBuilder extends \Yiisoft\Db\Expression\Builder\CaseExpressionBuilder
+final class CaseExpressionBuilder extends \Yiisoft\Db\Expression\Statement\Builder\CaseExpressionBuilder
 {
     public function build(ExpressionInterface $expression, array &$params = []): string
     {

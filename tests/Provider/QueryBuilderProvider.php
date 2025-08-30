@@ -6,11 +6,11 @@ namespace Yiisoft\Db\Pgsql\Tests\Provider;
 
 use Yiisoft\Db\Constant\DataType;
 use Yiisoft\Db\Constant\PseudoType;
-use Yiisoft\Db\Expression\ArrayExpression;
-use Yiisoft\Db\Expression\CaseExpression;
+use Yiisoft\Db\Expression\Value\ArrayExpression;
+use Yiisoft\Db\Expression\Statement\CaseExpression;
 use Yiisoft\Db\Expression\Expression;
 use Yiisoft\Db\Expression\Function\ArrayMerge;
-use Yiisoft\Db\Expression\Param;
+use Yiisoft\Db\Expression\Value\Param;
 use Yiisoft\Db\Pgsql\Column\ColumnBuilder;
 use Yiisoft\Db\Pgsql\Column\IntegerColumn;
 use Yiisoft\Db\Pgsql\Tests\Support\TestTrait;
