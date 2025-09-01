@@ -5,10 +5,6 @@ declare(strict_types=1);
 namespace Yiisoft\Db\Pgsql\Builder;
 
 use Yiisoft\Db\Constant\DataType;
-use Yiisoft\Db\Exception\Exception;
-use InvalidArgumentException;
-use Yiisoft\Db\Exception\InvalidConfigException;
-use Yiisoft\Db\Exception\NotSupportedException;
 use Yiisoft\Db\Expression\Value\Builder\AbstractStructuredValueBuilder;
 use Yiisoft\Db\Expression\Value\Param;
 use Yiisoft\Db\Expression\Value\StructuredValue;
