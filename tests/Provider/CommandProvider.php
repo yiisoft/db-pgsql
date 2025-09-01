@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Yiisoft\Db\Pgsql\Tests\Provider;
 
-use Yiisoft\Db\Expression\Value\ArrayExpression;
-use Yiisoft\Db\Expression\Value\JsonExpression;
+use Yiisoft\Db\Expression\Value\ArrayValue;
+use Yiisoft\Db\Expression\Value\JsonValue;
 use Yiisoft\Db\Pgsql\Column\ColumnBuilder;
 use Yiisoft\Db\Pgsql\IndexMethod;
 use Yiisoft\Db\Pgsql\Tests\Support\TestTrait;
@@ -24,11 +24,11 @@ final class CommandProvider extends \Yiisoft\Db\Tests\Provider\CommandProvider
             'INSERT INTO "type" ("int_col", "char_col", "float_col", "bool_col", "json_col")'
             . ' VALUES (1, :qp0, 0, TRUE, :qp1::json), (2, :qp2, -1, FALSE, :qp3)';
 
-        $batchInsert['binds params from jsonExpression'] = [
+        $batchInsert['binds params from jsonValue'] = [
             '{{%type}}',
             [
                 [
-                    new JsonExpression(
+                    new JsonValue(
                         ['username' => 'silverfire', 'is_active' => true, 'langs' => ['Ukrainian', 'Russian', 'English']]
                     ),
                     1,
@@ -47,9 +47,9 @@ final class CommandProvider extends \Yiisoft\Db\Tests\Provider\CommandProvider
             ],
         ];
 
-        $batchInsert['binds params from arrayExpression'] = [
+        $batchInsert['binds params from arrayValue'] = [
             '{{%type}}',
-            [[new ArrayExpression([1, null, 3], 'int'), 1, 1.0, '', false]],
+            [[new ArrayValue([1, null, 3], 'int'), 1, 1.0, '', false]],
             ['intarray_col', 'int_col', 'float_col', 'char_col', 'bool_col'],
             'expected' => <<<SQL
             INSERT INTO "type" ("intarray_col", "int_col", "float_col", "char_col", "bool_col") VALUES (ARRAY[1,NULL,3]::int[], 1, 1, :qp0, FALSE)
@@ -67,9 +67,9 @@ final class CommandProvider extends \Yiisoft\Db\Tests\Provider\CommandProvider
             'expectedParams' => [':qp0' => ''],
         ];
 
-        $batchInsert['binds params from jsonbExpression'] = [
+        $batchInsert['binds params from jsonbValue'] = [
             '{{%type}}',
-            [[new JsonExpression(['a' => true]), 1, 1.1, '', false]],
+            [[new JsonValue(['a' => true]), 1, 1.1, '', false]],
             ['jsonb_col', 'int_col', 'float_col', 'char_col', 'bool_col'],
             'expected' => <<<SQL
             INSERT INTO "type" ("jsonb_col", "int_col", "float_col", "char_col", "bool_col") VALUES (:qp0, 1, 1.1, :qp1, FALSE)

@@ -7,7 +7,7 @@ namespace Yiisoft\Db\Pgsql\Tests\Provider;
 use Yiisoft\Db\Constant\DataType;
 use Yiisoft\Db\Constant\PseudoType;
 use Yiisoft\Db\Expression\Statement\When;
-use Yiisoft\Db\Expression\Value\ArrayExpression;
+use Yiisoft\Db\Expression\Value\ArrayValue;
 use Yiisoft\Db\Expression\Statement\CaseX;
 use Yiisoft\Db\Expression\Expression;
 use Yiisoft\Db\Expression\Function\ArrayMerge;
@@ -102,15 +102,15 @@ final class QueryBuilderProvider extends \Yiisoft\Db\Tests\Provider\QueryBuilder
             ],
 
             /* Checks to verity that operators work correctly */
-            [['@>', 'id', new ArrayExpression([1])], '"id" @> ARRAY[1]::int[]', []],
-            [['<@', 'id', new ArrayExpression([1])], '"id" <@ ARRAY[1]::int[]', []],
-            [['=', 'id',  new ArrayExpression([1])], '"id" = ARRAY[1]::int[]', []],
-            [['<>', 'id', new ArrayExpression([1])], '"id" <> ARRAY[1]::int[]', []],
-            [['>', 'id',  new ArrayExpression([1])], '"id" > ARRAY[1]::int[]', []],
-            [['<', 'id',  new ArrayExpression([1])], '"id" < ARRAY[1]::int[]', []],
-            [['>=', 'id', new ArrayExpression([1])], '"id" >= ARRAY[1]::int[]', []],
-            [['<=', 'id', new ArrayExpression([1])], '"id" <= ARRAY[1]::int[]', []],
-            [['&&', 'id', new ArrayExpression([1])], '"id" && ARRAY[1]::int[]', []],
+            [['@>', 'id', new ArrayValue([1])], '"id" @> ARRAY[1]::int[]', []],
+            [['<@', 'id', new ArrayValue([1])], '"id" <@ ARRAY[1]::int[]', []],
+            [['=', 'id',  new ArrayValue([1])], '"id" = ARRAY[1]::int[]', []],
+            [['<>', 'id', new ArrayValue([1])], '"id" <> ARRAY[1]::int[]', []],
+            [['>', 'id',  new ArrayValue([1])], '"id" > ARRAY[1]::int[]', []],
+            [['<', 'id',  new ArrayValue([1])], '"id" < ARRAY[1]::int[]', []],
+            [['>=', 'id', new ArrayValue([1])], '"id" >= ARRAY[1]::int[]', []],
+            [['<=', 'id', new ArrayValue([1])], '"id" <= ARRAY[1]::int[]', []],
+            [['&&', 'id', new ArrayValue([1])], '"id" && ARRAY[1]::int[]', []],
         ];
     }
 
@@ -385,9 +385,9 @@ final class QueryBuilderProvider extends \Yiisoft\Db\Tests\Provider\QueryBuilder
 
         $data['null'][1] = 0;
         $data['expression'][0] = new Expression("'{0,1,2,7}'");
-        $data['query expression'][0] = (new Query(self::getDb()))->select(new ArrayExpression([0,1,2,7]));
+        $data['query expression'][0] = (new Query(self::getDb()))->select(new ArrayValue([0,1,2,7]));
         $data[] = [new Expression('ARRAY[0,1,2,7]'), 1];
-        $data[] = [new ArrayExpression([0,1,2,7]), 1];
+        $data[] = [new ArrayValue([0,1,2,7]), 1];
 
         return $data;
     }
@@ -641,7 +641,7 @@ final class QueryBuilderProvider extends \Yiisoft\Db\Tests\Provider\QueryBuilder
             ],
             'ArrayMerge with 4 operands' => [
                 ArrayMerge::class,
-                ['ARRAY[1,2,3]', [5, 6, 7], $stringParam, self::getDb()->select(new ArrayExpression([9, 10]))],
+                ['ARRAY[1,2,3]', [5, 6, 7], $stringParam, self::getDb()->select(new ArrayValue([9, 10]))],
                 'ARRAY(SELECT DISTINCT UNNEST(ARRAY[1,2,3] || ARRAY[5,6,7]::int[] || :qp0 || (SELECT ARRAY[9,10]::int[])))',
                 [1, 2, 3, 4, 5, 6, 7, 9, 10],
                 [
