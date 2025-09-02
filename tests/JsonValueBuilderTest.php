@@ -8,10 +8,10 @@ use ArrayIterator;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Yiisoft\Db\Constant\DataType;
-use Yiisoft\Db\Expression\Value\ArrayExpression;
-use Yiisoft\Db\Expression\Value\JsonExpression;
+use Yiisoft\Db\Expression\Value\ArrayValue;
+use Yiisoft\Db\Expression\Value\JsonValue;
 use Yiisoft\Db\Expression\Value\Param;
-use Yiisoft\Db\Pgsql\Builder\JsonExpressionBuilder;
+use Yiisoft\Db\Pgsql\Builder\JsonValueBuilder;
 use Yiisoft\Db\Pgsql\Column\IntegerColumn;
 use Yiisoft\Db\Pgsql\Data\LazyArray;
 use Yiisoft\Db\Pgsql\Data\StructuredLazyArray;
@@ -22,7 +22,7 @@ use Yiisoft\Db\Schema\Data\JsonLazyArray;
 /**
  * @group pgsql
  */
-final class JsonExpressionBuilderTest extends TestCase
+final class JsonValueBuilderTest extends TestCase
 {
     use TestTrait;
 
@@ -54,27 +54,27 @@ final class JsonExpressionBuilderTest extends TestCase
         $qb = $db->getQueryBuilder();
 
         $params = [];
-        $builder = new JsonExpressionBuilder($qb);
-        $expression = new JsonExpression($value);
+        $builder = new JsonValueBuilder($qb);
+        $expression = new JsonValue($value);
 
         $this->assertSame(':qp0', $builder->build($expression, $params));
         $this->assertEquals([':qp0' => new Param($expected, DataType::STRING)], $params);
     }
 
-    public function testBuildArrayExpression(): void
+    public function testBuildArrayValue(): void
     {
         $db = $this->getConnection();
         $qb = $db->getQueryBuilder();
 
         $params = [];
-        $builder = new JsonExpressionBuilder($qb);
-        $expression = new JsonExpression(new ArrayExpression([1,2,3]));
+        $builder = new JsonValueBuilder($qb);
+        $expression = new JsonValue(new ArrayValue([1,2,3]));
 
         $this->assertSame('array_to_json(ARRAY[1,2,3]::int[])', $builder->build($expression, $params));
         $this->assertSame([], $params);
 
         $params = [];
-        $expression = new JsonExpression(new ArrayExpression([1,2,3]), 'jsonb');
+        $expression = new JsonValue(new ArrayValue([1,2,3]), 'jsonb');
 
         $this->assertSame('array_to_json(ARRAY[1,2,3]::int[])::jsonb', $builder->build($expression, $params));
         $this->assertSame([], $params);
@@ -86,8 +86,8 @@ final class JsonExpressionBuilderTest extends TestCase
         $qb = $db->getQueryBuilder();
 
         $params = [];
-        $builder = new JsonExpressionBuilder($qb);
-        $expression = new JsonExpression(null);
+        $builder = new JsonValueBuilder($qb);
+        $expression = new JsonValue(null);
 
         $this->assertSame('NULL', $builder->build($expression, $params));
         $this->assertSame([], $params);
@@ -99,13 +99,13 @@ final class JsonExpressionBuilderTest extends TestCase
         $qb = $db->getQueryBuilder();
 
         $params = [];
-        $builder = new JsonExpressionBuilder($qb);
-        $expression = new JsonExpression((new Query($db))->select('json_field')->from('json_table'));
+        $builder = new JsonValueBuilder($qb);
+        $expression = new JsonValue((new Query($db))->select('json_field')->from('json_table'));
 
         $this->assertSame('(SELECT "json_field" FROM "json_table")', $builder->build($expression, $params));
         $this->assertSame([], $params);
 
-        $expression = new JsonExpression((new Query($db))->select('json_field')->from('json_table'), 'jsonb');
+        $expression = new JsonValue((new Query($db))->select('json_field')->from('json_table'), 'jsonb');
 
         $this->assertSame('(SELECT "json_field" FROM "json_table")::jsonb', $builder->build($expression, $params));
         $this->assertSame([], $params);
@@ -117,8 +117,8 @@ final class JsonExpressionBuilderTest extends TestCase
         $qb = $db->getQueryBuilder();
 
         $params = [];
-        $builder = new JsonExpressionBuilder($qb);
-        $expression = new JsonExpression([1, 2, 3], 'jsonb');
+        $builder = new JsonValueBuilder($qb);
+        $expression = new JsonValue([1, 2, 3], 'jsonb');
 
         $this->assertSame(':qp0::jsonb', $builder->build($expression, $params));
         $this->assertEquals([':qp0' => new Param('[1,2,3]', DataType::STRING)], $params);

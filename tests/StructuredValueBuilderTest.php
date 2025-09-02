@@ -9,8 +9,8 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Yiisoft\Db\Constant\DataType;
 use Yiisoft\Db\Expression\Value\Param;
-use Yiisoft\Db\Expression\Value\StructuredExpression;
-use Yiisoft\Db\Pgsql\Builder\StructuredExpressionBuilder;
+use Yiisoft\Db\Expression\Value\StructuredValue;
+use Yiisoft\Db\Pgsql\Builder\StructuredValueBuilder;
 use Yiisoft\Db\Pgsql\Column\ColumnBuilder;
 use Yiisoft\Db\Pgsql\Data\LazyArray;
 use Yiisoft\Db\Pgsql\Data\StructuredLazyArray;
@@ -23,7 +23,7 @@ use Yiisoft\Db\Tests\Support\Assert;
 /**
  * @group pgsql
  */
-final class StructuredExpressionBuilderTest extends TestCase
+final class StructuredValueBuilderTest extends TestCase
 {
     use TestTrait;
 
@@ -141,8 +141,8 @@ final class StructuredExpressionBuilderTest extends TestCase
         $qb = $db->getQueryBuilder();
 
         $params = [];
-        $builder = new StructuredExpressionBuilder($qb);
-        $expression = new StructuredExpression($value, $type);
+        $builder = new StructuredValueBuilder($qb);
+        $expression = new StructuredValue($value, $type);
 
         $this->assertSame($expected, $builder->build($expression, $params));
         Assert::arraysEquals($expectedParams, $params);

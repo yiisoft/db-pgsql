@@ -9,12 +9,12 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Yiisoft\Db\Constant\ColumnType;
 use Yiisoft\Db\Constant\DataType;
-use Yiisoft\Db\Expression\Value\ArrayExpression;
+use Yiisoft\Db\Expression\Value\ArrayValue;
 use Yiisoft\Db\Expression\Expression;
-use Yiisoft\Db\Expression\Value\JsonExpression;
+use Yiisoft\Db\Expression\Value\JsonValue;
 use Yiisoft\Db\Expression\Value\Param;
-use Yiisoft\Db\Expression\Value\StructuredExpression;
-use Yiisoft\Db\Pgsql\Builder\ArrayExpressionBuilder;
+use Yiisoft\Db\Expression\Value\StructuredValue;
+use Yiisoft\Db\Pgsql\Builder\ArrayValueBuilder;
 use Yiisoft\Db\Pgsql\Column\ColumnBuilder;
 use Yiisoft\Db\Pgsql\Data\LazyArray;
 use Yiisoft\Db\Pgsql\Data\StructuredLazyArray;
@@ -28,7 +28,7 @@ use Yiisoft\Db\Tests\Support\Assert;
 /**
  * @group pgsql
  */
-final class ArrayExpressionBuilderTest extends TestCase
+final class ArrayValueBuilderTest extends TestCase
 {
     use TestTrait;
 
@@ -99,8 +99,8 @@ final class ArrayExpressionBuilderTest extends TestCase
                 'ARRAY[1,2,3]::integer[]',
             ],
             'Expression' => [[new Expression('now()')], null, 'ARRAY[now()]'],
-            'JsonExpression w/o type' => [
-                [new JsonExpression(['a' => null, 'b' => 123, 'c' => [4, 5]]), new JsonExpression([true])],
+            'JsonValue w/o type' => [
+                [new JsonValue(['a' => null, 'b' => 123, 'c' => [4, 5]]), new JsonValue([true])],
                 null,
                 'ARRAY[:qp0,:qp1]',
                 [
@@ -108,8 +108,8 @@ final class ArrayExpressionBuilderTest extends TestCase
                     ':qp1' => new Param('[true]', DataType::STRING),
                 ],
             ],
-            'JsonExpression' => [
-                [new JsonExpression(['a' => null, 'b' => 123, 'c' => [4, 5]]), new JsonExpression([true])],
+            'JsonValue' => [
+                [new JsonValue(['a' => null, 'b' => 123, 'c' => [4, 5]]), new JsonValue([true])],
                 'jsonb',
                 'ARRAY[:qp0,:qp1]::jsonb[]',
                 [
@@ -117,11 +117,11 @@ final class ArrayExpressionBuilderTest extends TestCase
                     ':qp1' => new Param('[true]', DataType::STRING),
                 ],
             ],
-            'StructuredExpression' => [
+            'StructuredValue' => [
                 [
                     null,
-                    new StructuredExpression(['value' => 11.11, 'currency_code' => 'USD']),
-                    new StructuredExpression(['value' => null, 'currency_code' => null]),
+                    new StructuredValue(['value' => 11.11, 'currency_code' => 'USD']),
+                    new StructuredValue(['value' => null, 'currency_code' => null]),
                 ],
                 null,
                 'ARRAY[NULL,ROW(11.11,:qp0),ROW(NULL,NULL)]',
@@ -173,8 +173,8 @@ final class ArrayExpressionBuilderTest extends TestCase
         $qb = $db->getQueryBuilder();
 
         $params = [];
-        $builder = new ArrayExpressionBuilder($qb);
-        $expression = new ArrayExpression($value, $type);
+        $builder = new ArrayValueBuilder($qb);
+        $expression = new ArrayValue($value, $type);
 
         $this->assertSame($expected, $builder->build($expression, $params));
         Assert::arraysEquals($expectedParams, $params);
