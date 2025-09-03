@@ -8,7 +8,7 @@
   for type casting performance. Related with yiisoft/db#752 (@Tigrov)
 - Chg #348: Replace call of `SchemaInterface::getRawTableName()` to `QuoterInterface::getRawTableName()` (@Tigrov)
 - Enh #349: Add method chaining for column classes (@Tigrov)
-- New #350: Add array overlaps and JSON overlaps condition builders (@Tigrov)
+- New #350, #449: Add array overlaps and JSON overlaps condition builders (@Tigrov)
 - Enh #353: Update `bit` type according to main PR yiisoft/db#860 (@Tigrov) 
 - Enh #354: Refactor PHP type of `ColumnSchemaInterface` instances (@Tigrov)
 - Enh #356: Raise minimum PHP version to `^8.1` with minor refactoring (@Tigrov)
@@ -31,7 +31,7 @@
 - Enh #382: Replace `DbArrayHelper::getColumn()` with `array_column()` (@Tigrov)
 - New #384: Add `IndexMethod` class (@Tigrov)
 - Bug #387: Explicitly mark nullable parameters (@vjik)
-- Enh #386: Refactor array, structured and JSON expression builders (@Tigrov)
+- Enh #386, #449: Refactor array, structured and JSON expression builders (@Tigrov)
 - Chg #388: Change supported PHP versions to `8.1 - 8.4` (@Tigrov)
 - Enh #388: Minor refactoring (@Tigrov)
 - Chg #390: Remove `yiisoft/json` dependency (@Tigrov)
@@ -45,7 +45,7 @@
 - New #408, #410: Implement `DMLQueryBuilder::upsertReturning()` method (@Tigrov)
 - Enh #412: Reduce binding parameters (@Tigrov)
 - Chg #414: Rename `DMLQueryBuilder::insertWithReturningPks()` to `DMLQueryBuilder::insertReturningPks()` (@Tigrov)
-- Enh #415: Implement `CaseExpressionBuilder` class (@Tigrov)
+- Enh #415, #448: Implement `CaseExpressionBuilder` class (@Tigrov)
 - Enh #420: Provide `yiisoft/db-implementation` virtual package (@vjik)
 - Enh #424, #425, #428: Adapt to conditions refactoring in `yiisoft/db` package (@vjik)
 - Enh #431: Remove `TableSchema` class and refactor `Schema` class (@Tigrov)
@@ -54,6 +54,7 @@
 - New #439, #446: Implement `ArrayMergeBuilder` class (@Tigrov)
 - Enh #442: Refactor `DMLQueryBuilder::upsert()` method (@Tigrov)
 - Enh #444: Improve `ArrayExpressionBuilder` and `JsonExpressionBuilder` classes (@Tigrov)
+- Chg #447: Update expression namespaces according to changes in `yiisoft/db` package (@Tigrov)
 
 ## 1.3.0 March 21, 2024
 

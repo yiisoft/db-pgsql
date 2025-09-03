@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Yiisoft\Db\Pgsql\Builder;
 
-use Yiisoft\Db\Expression\ArrayExpression;
-use Yiisoft\Db\Expression\Builder\ExpressionBuilderInterface;
+use Yiisoft\Db\Expression\Value\ArrayValue;
+use Yiisoft\Db\Expression\ExpressionBuilderInterface;
 use Yiisoft\Db\Expression\ExpressionInterface;
-use Yiisoft\Db\Expression\JsonExpression;
+use Yiisoft\Db\Expression\Value\JsonValue;
 use Yiisoft\Db\QueryBuilder\Condition\JsonOverlaps;
 use Yiisoft\Db\QueryBuilder\QueryBuilderInterface;
 
@@ -37,11 +37,11 @@ final class JsonOverlapsBuilder implements ExpressionBuilderInterface
             : $this->queryBuilder->getQuoter()->quoteColumnName($expression->column);
         $values = $expression->values;
 
-        if ($values instanceof JsonExpression) {
+        if ($values instanceof JsonValue) {
             /** @psalm-suppress MixedArgument */
-            $values = new ArrayExpression($values->getValue());
+            $values = new ArrayValue($values->value);
         } elseif (!$values instanceof ExpressionInterface) {
-            $values = new ArrayExpression($values);
+            $values = new ArrayValue($values);
         }
 
         $values = $this->queryBuilder->buildExpression($values, $params);

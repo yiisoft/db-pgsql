@@ -6,11 +6,13 @@ namespace Yiisoft\Db\Pgsql\Tests\Provider;
 
 use Yiisoft\Db\Constant\DataType;
 use Yiisoft\Db\Constant\PseudoType;
-use Yiisoft\Db\Expression\ArrayExpression;
-use Yiisoft\Db\Expression\CaseExpression;
+use Yiisoft\Db\Expression\Statement\When;
+use Yiisoft\Db\Expression\Value\ArrayValue;
+use Yiisoft\Db\Expression\Statement\CaseX;
 use Yiisoft\Db\Expression\Expression;
 use Yiisoft\Db\Expression\Function\ArrayMerge;
-use Yiisoft\Db\Expression\Param;
+use Yiisoft\Db\Expression\Value\Param;
+use Yiisoft\Db\Expression\Value\Value;
 use Yiisoft\Db\Pgsql\Column\ColumnBuilder;
 use Yiisoft\Db\Pgsql\Column\IntegerColumn;
 use Yiisoft\Db\Pgsql\Tests\Support\TestTrait;
@@ -100,15 +102,15 @@ final class QueryBuilderProvider extends \Yiisoft\Db\Tests\Provider\QueryBuilder
             ],
 
             /* Checks to verity that operators work correctly */
-            [['@>', 'id', new ArrayExpression([1])], '"id" @> ARRAY[1]::int[]', []],
-            [['<@', 'id', new ArrayExpression([1])], '"id" <@ ARRAY[1]::int[]', []],
-            [['=', 'id',  new ArrayExpression([1])], '"id" = ARRAY[1]::int[]', []],
-            [['<>', 'id', new ArrayExpression([1])], '"id" <> ARRAY[1]::int[]', []],
-            [['>', 'id',  new ArrayExpression([1])], '"id" > ARRAY[1]::int[]', []],
-            [['<', 'id',  new ArrayExpression([1])], '"id" < ARRAY[1]::int[]', []],
-            [['>=', 'id', new ArrayExpression([1])], '"id" >= ARRAY[1]::int[]', []],
-            [['<=', 'id', new ArrayExpression([1])], '"id" <= ARRAY[1]::int[]', []],
-            [['&&', 'id', new ArrayExpression([1])], '"id" && ARRAY[1]::int[]', []],
+            [['@>', 'id', new ArrayValue([1])], '"id" @> ARRAY[1]::int[]', []],
+            [['<@', 'id', new ArrayValue([1])], '"id" <@ ARRAY[1]::int[]', []],
+            [['=', 'id',  new ArrayValue([1])], '"id" = ARRAY[1]::int[]', []],
+            [['<>', 'id', new ArrayValue([1])], '"id" <> ARRAY[1]::int[]', []],
+            [['>', 'id',  new ArrayValue([1])], '"id" > ARRAY[1]::int[]', []],
+            [['<', 'id',  new ArrayValue([1])], '"id" < ARRAY[1]::int[]', []],
+            [['>=', 'id', new ArrayValue([1])], '"id" >= ARRAY[1]::int[]', []],
+            [['<=', 'id', new ArrayValue([1])], '"id" <= ARRAY[1]::int[]', []],
+            [['&&', 'id', new ArrayValue([1])], '"id" && ARRAY[1]::int[]', []],
         ];
     }
 
@@ -383,9 +385,9 @@ final class QueryBuilderProvider extends \Yiisoft\Db\Tests\Provider\QueryBuilder
 
         $data['null'][1] = 0;
         $data['expression'][0] = new Expression("'{0,1,2,7}'");
-        $data['query expression'][0] = (new Query(self::getDb()))->select(new ArrayExpression([0,1,2,7]));
+        $data['query expression'][0] = (new Query(self::getDb()))->select(new ArrayValue([0,1,2,7]));
         $data[] = [new Expression('ARRAY[0,1,2,7]'), 1];
-        $data[] = [new ArrayExpression([0,1,2,7]), 1];
+        $data[] = [new ArrayValue([0,1,2,7]), 1];
 
         return $data;
     }
@@ -519,9 +521,9 @@ final class QueryBuilderProvider extends \Yiisoft\Db\Tests\Provider\QueryBuilder
         return $values;
     }
 
-    public static function caseExpressionBuilder(): array
+    public static function caseXBuilder(): array
     {
-        $data = parent::caseExpressionBuilder();
+        $data = parent::caseXBuilder();
 
         $db = self::getDb();
         $serverVersion = $db->getServerInfo()->getVersion();
@@ -529,17 +531,21 @@ final class QueryBuilderProvider extends \Yiisoft\Db\Tests\Provider\QueryBuilder
 
         if (version_compare($serverVersion, '10', '<')) {
             $data['without case expression'] = [
-                (new CaseExpression())
-                    ->addWhen(['=', 'column_name', 1], $paramA = new Param('a', DataType::STRING))
-                    ->addWhen(
+                new CaseX(
+                    when1: new When(['=', 'column_name', 1], new Value('a')),
+                    when2: new When(
                         '"column_name" = 2',
                         $db->select(new Expression(
                             ':pv2::text',
-                            [':pv2' => $paramB = new Param('b', DataType::STRING)],
+                            [':pv2' => $param = new Param('b', DataType::STRING)],
                         )),
                     ),
+                ),
                 'CASE WHEN "column_name" = 1 THEN :qp0 WHEN "column_name" = 2 THEN (SELECT :pv2::text) END',
-                [':qp0' => $paramA, ':pv2' => $paramB],
+                [
+                    ':qp0' => new Param('a', DataType::STRING),
+                    ':pv2' => $param,
+                ],
                 'b',
             ];
         }
@@ -547,28 +553,36 @@ final class QueryBuilderProvider extends \Yiisoft\Db\Tests\Provider\QueryBuilder
         return [
             ...$data,
             'without case and type hint' => [
-                (new CaseExpression())->caseType('int')
-                    ->addWhen(true, "'a'"),
+                new CaseX(
+                    valueType: 'int',
+                    when: new When(true, "'a'"),
+                ),
                 "CASE WHEN TRUE THEN 'a' END",
                 [],
                 'a',
             ],
             'with case and type hint' => [
-                (new CaseExpression('1 + 1', 'int'))
-                    ->addWhen(1, "'a'")
-                    ->else("'b'"),
+                new CaseX(
+                    '1 + 1',
+                    'int',
+                    new When(1, "'a'"),
+                    "'b'",
+                ),
                 "CASE (1 + 1)::int WHEN (1)::int THEN 'a' ELSE 'b' END",
                 [],
                 'b',
             ],
             'with case and type hint with column' => [
-                (new CaseExpression('1 + 1', new IntegerColumn()))
-                    ->addWhen(1, $paramA = new Param('a', DataType::STRING))
-                    ->else($paramB = new Param('b', DataType::STRING)),
+                new CaseX(
+                    '1 + 1',
+                    new IntegerColumn(),
+                    new When(1, new Value('a')),
+                    $param = new Param('b', DataType::STRING),
+                ),
                 'CASE (1 + 1)::integer WHEN (1)::integer THEN :qp0 ELSE :qp1 END',
                 [
-                    ':qp0' => $paramA,
-                    ':qp1' => $paramB,
+                    ':qp0' => new Param('a', DataType::STRING),
+                    ':qp1' => $param,
                 ],
                 'b',
             ],
@@ -627,7 +641,7 @@ final class QueryBuilderProvider extends \Yiisoft\Db\Tests\Provider\QueryBuilder
             ],
             'ArrayMerge with 4 operands' => [
                 ArrayMerge::class,
-                ['ARRAY[1,2,3]', [5, 6, 7], $stringParam, self::getDb()->select(new ArrayExpression([9, 10]))],
+                ['ARRAY[1,2,3]', [5, 6, 7], $stringParam, self::getDb()->select(new ArrayValue([9, 10]))],
                 'ARRAY(SELECT DISTINCT UNNEST(ARRAY[1,2,3] || ARRAY[5,6,7]::int[] || :qp0 || (SELECT ARRAY[9,10]::int[])))',
                 [1, 2, 3, 4, 5, 6, 7, 9, 10],
                 [

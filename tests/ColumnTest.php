@@ -9,9 +9,9 @@ use DateTimeZone;
 use PHPUnit\Framework\Attributes\DataProviderExternal;
 use Yiisoft\Db\Connection\ConnectionInterface;
 use Yiisoft\Db\Constant\ColumnType;
-use Yiisoft\Db\Expression\ArrayExpression;
+use Yiisoft\Db\Expression\Value\ArrayValue;
 use Yiisoft\Db\Expression\Expression;
-use Yiisoft\Db\Expression\JsonExpression;
+use Yiisoft\Db\Expression\Value\JsonValue;
 use Yiisoft\Db\Pgsql\Column\ArrayColumn;
 use Yiisoft\Db\Pgsql\Column\BigIntColumn;
 use Yiisoft\Db\Pgsql\Column\BinaryColumn;
@@ -59,10 +59,10 @@ final class ColumnTest extends CommonColumnTest
                 'intarray_col' => [1, -2, null, '42'],
                 'numericarray_col' => [null, 1.2, -2.2, null, null],
                 'varchararray_col' => ['', 'some text', '""', '\\\\', '[",","null",true,"false","f"]', null],
-                'textarray2_col' => new ArrayExpression(null),
+                'textarray2_col' => new ArrayValue(null),
                 'json_col' => [['a' => 1, 'b' => null, 'c' => [1, 3, 5]]],
-                'jsonb_col' => new JsonExpression(new ArrayExpression([1, 2, 3])),
-                'jsonarray_col' => [new ArrayExpression([[',', 'null', true, 'false', 'f']], ColumnType::JSON)],
+                'jsonb_col' => new JsonValue(new ArrayValue([1, 2, 3])),
+                'jsonarray_col' => [new ArrayValue([[',', 'null', true, 'false', 'f']], ColumnType::JSON)],
             ]
         )->execute();
     }
@@ -160,8 +160,8 @@ final class ColumnTest extends CommonColumnTest
         $schema = $db->getSchema();
         $tableSchema = $schema->getTableSchema('type');
 
-        $this->assertEquals(new JsonExpression('', 'json'), $tableSchema->getColumn('json_col')->dbTypecast(''));
-        $this->assertEquals(new JsonExpression('', 'jsonb'), $tableSchema->getColumn('jsonb_col')->dbTypecast(''));
+        $this->assertEquals(new JsonValue('', 'json'), $tableSchema->getColumn('json_col')->dbTypecast(''));
+        $this->assertEquals(new JsonValue('', 'jsonb'), $tableSchema->getColumn('jsonb_col')->dbTypecast(''));
 
         $db->close();
     }
@@ -293,7 +293,7 @@ final class ColumnTest extends CommonColumnTest
 
         $priceArray2 = $tableSchema->getColumn('price_array2');
         $this->assertEquals(
-            new ArrayExpression(
+            new ArrayValue(
                 [null, null],
                 new ArrayColumn(
                     dbType: 'currency_money_structured',
@@ -365,9 +365,9 @@ final class ColumnTest extends CommonColumnTest
             $arrayCol->dimension($dimension);
             $dbValue = $arrayCol->dbTypecast($value);
 
-            $this->assertInstanceOf(ArrayExpression::class, $dbValue);
-            $this->assertSame($arrayCol, $dbValue->getType());
-            $this->assertEquals($value, $dbValue->getValue());
+            $this->assertInstanceOf(ArrayValue::class, $dbValue);
+            $this->assertSame($arrayCol, $dbValue->type);
+            $this->assertEquals($value, $dbValue->value);
         }
     }
 

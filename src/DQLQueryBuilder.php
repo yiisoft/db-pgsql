@@ -4,19 +4,19 @@ declare(strict_types=1);
 
 namespace Yiisoft\Db\Pgsql;
 
-use Yiisoft\Db\Expression\ArrayExpression;
-use Yiisoft\Db\Expression\CaseExpression;
+use Yiisoft\Db\Expression\Value\ArrayValue;
+use Yiisoft\Db\Expression\Statement\CaseX;
 use Yiisoft\Db\Expression\Function\ArrayMerge;
-use Yiisoft\Db\Expression\JsonExpression;
-use Yiisoft\Db\Expression\StructuredExpression;
-use Yiisoft\Db\Pgsql\Builder\ArrayExpressionBuilder;
+use Yiisoft\Db\Expression\Value\JsonValue;
+use Yiisoft\Db\Expression\Value\StructuredValue;
+use Yiisoft\Db\Pgsql\Builder\ArrayValueBuilder;
 use Yiisoft\Db\Pgsql\Builder\ArrayMergeBuilder;
 use Yiisoft\Db\Pgsql\Builder\ArrayOverlapsBuilder;
-use Yiisoft\Db\Pgsql\Builder\CaseExpressionBuilder;
+use Yiisoft\Db\Pgsql\Builder\CaseXBuilder;
 use Yiisoft\Db\Pgsql\Builder\JsonOverlapsBuilder;
 use Yiisoft\Db\Pgsql\Builder\LikeBuilder;
-use Yiisoft\Db\Pgsql\Builder\StructuredExpressionBuilder;
-use Yiisoft\Db\Pgsql\Builder\JsonExpressionBuilder;
+use Yiisoft\Db\Pgsql\Builder\StructuredValueBuilder;
+use Yiisoft\Db\Pgsql\Builder\JsonValueBuilder;
 use Yiisoft\Db\QueryBuilder\AbstractDQLQueryBuilder;
 use Yiisoft\Db\QueryBuilder\Condition\Like;
 use Yiisoft\Db\QueryBuilder\Condition\ArrayOverlaps;
@@ -32,14 +32,14 @@ final class DQLQueryBuilder extends AbstractDQLQueryBuilder
     {
         return [
             ...parent::defaultExpressionBuilders(),
-            ArrayExpression::class => ArrayExpressionBuilder::class,
+            ArrayValue::class => ArrayValueBuilder::class,
             ArrayOverlaps::class => ArrayOverlapsBuilder::class,
-            JsonExpression::class => JsonExpressionBuilder::class,
+            JsonValue::class => JsonValueBuilder::class,
             JsonOverlaps::class => JsonOverlapsBuilder::class,
-            StructuredExpression::class => StructuredExpressionBuilder::class,
+            StructuredValue::class => StructuredValueBuilder::class,
             Like::class => LikeBuilder::class,
             NotLike::class => LikeBuilder::class,
-            CaseExpression::class => CaseExpressionBuilder::class,
+            CaseX::class => CaseXBuilder::class,
             ArrayMerge::class => ArrayMergeBuilder::class,
         ];
     }

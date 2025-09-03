@@ -5,13 +5,9 @@ declare(strict_types=1);
 namespace Yiisoft\Db\Pgsql\Builder;
 
 use Yiisoft\Db\Constant\DataType;
-use Yiisoft\Db\Exception\Exception;
-use InvalidArgumentException;
-use Yiisoft\Db\Exception\InvalidConfigException;
-use Yiisoft\Db\Exception\NotSupportedException;
-use Yiisoft\Db\Expression\Builder\AbstractStructuredExpressionBuilder;
-use Yiisoft\Db\Expression\Param;
-use Yiisoft\Db\Expression\StructuredExpression;
+use Yiisoft\Db\Expression\Value\Builder\AbstractStructuredValueBuilder;
+use Yiisoft\Db\Expression\Value\Param;
+use Yiisoft\Db\Expression\Value\StructuredValue;
 use Yiisoft\Db\Pgsql\Data\StructuredLazyArray;
 use Yiisoft\Db\Query\QueryInterface;
 use Yiisoft\Db\Schema\Column\AbstractStructuredColumn;
@@ -20,25 +16,25 @@ use Yiisoft\Db\Schema\Data\LazyArrayInterface;
 use function implode;
 
 /**
- * Builds expressions for {@see StructuredExpression} for PostgreSQL Server.
+ * Builds expressions for {@see StructuredValue} for PostgreSQL Server.
  */
-final class StructuredExpressionBuilder extends AbstractStructuredExpressionBuilder
+final class StructuredValueBuilder extends AbstractStructuredValueBuilder
 {
-    protected function buildStringValue(string $value, StructuredExpression $expression, array &$params): string
+    protected function buildStringValue(string $value, StructuredValue $expression, array &$params): string
     {
         $param = new Param($value, DataType::STRING);
 
         return $this->queryBuilder->bindParam($param, $params) . $this->getTypeHint($expression);
     }
 
-    protected function buildSubquery(QueryInterface $query, StructuredExpression $expression, array &$params): string
+    protected function buildSubquery(QueryInterface $query, StructuredValue $expression, array &$params): string
     {
         [$sql, $params] = $this->queryBuilder->build($query, $params);
 
         return "($sql)" . $this->getTypeHint($expression);
     }
 
-    protected function buildValue(array|object $value, StructuredExpression $expression, array &$params): string
+    protected function buildValue(array|object $value, StructuredValue $expression, array &$params): string
     {
         $value = $this->prepareValues($value, $expression);
         /** @psalm-var string[] $placeholders */
@@ -60,17 +56,12 @@ final class StructuredExpressionBuilder extends AbstractStructuredExpressionBuil
      * Builds a placeholder array out of $expression value.
      *
      * @param array $value The expression value.
-     * @param StructuredExpression $expression The structured expression.
+     * @param StructuredValue $expression The structured expression.
      * @param array $params The binding parameters.
-     *
-     * @throws Exception
-     * @throws InvalidArgumentException
-     * @throws InvalidConfigException
-     * @throws NotSupportedException
      */
-    private function buildPlaceholders(array $value, StructuredExpression $expression, array &$params): array
+    private function buildPlaceholders(array $value, StructuredValue $expression, array &$params): array
     {
-        $type = $expression->getType();
+        $type = $expression->type;
         $queryBuilder = $this->queryBuilder;
         $columns = $type instanceof AbstractStructuredColumn && $queryBuilder->isTypecastingEnabled()
             ? $type->getColumns()
@@ -93,9 +84,9 @@ final class StructuredExpressionBuilder extends AbstractStructuredExpressionBuil
     /**
      * Returns the type hint expression based on type.
      */
-    private function getTypeHint(StructuredExpression $expression): string
+    private function getTypeHint(StructuredValue $expression): string
     {
-        $type = $expression->getType();
+        $type = $expression->type;
 
         if ($type instanceof AbstractStructuredColumn) {
             $type = $type->getDbType();

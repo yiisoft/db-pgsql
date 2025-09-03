@@ -7,10 +7,10 @@ namespace Yiisoft\Db\Pgsql\Builder;
 use Yiisoft\Db\Constant\ColumnType;
 use Yiisoft\Db\Constant\DataType;
 use Yiisoft\Db\Constant\GettypeResult;
-use Yiisoft\Db\Expression\ArrayExpression;
-use Yiisoft\Db\Expression\Builder\AbstractArrayExpressionBuilder;
+use Yiisoft\Db\Expression\Value\ArrayValue;
+use Yiisoft\Db\Expression\Value\Builder\AbstractArrayValueBuilder;
 use Yiisoft\Db\Expression\ExpressionInterface;
-use Yiisoft\Db\Expression\Param;
+use Yiisoft\Db\Expression\Value\Param;
 use Yiisoft\Db\Pgsql\Data\LazyArray;
 use Yiisoft\Db\Query\QueryInterface;
 use Yiisoft\Db\Schema\Column\AbstractArrayColumn;
@@ -25,11 +25,11 @@ use function iterator_to_array;
 use function str_repeat;
 
 /**
- * Builds expressions for {@see ArrayExpression} for PostgreSQL Server.
+ * Builds expressions for {@see ArrayValue} for PostgreSQL Server.
  */
-final class ArrayExpressionBuilder extends AbstractArrayExpressionBuilder
+final class ArrayValueBuilder extends AbstractArrayValueBuilder
 {
-    protected function buildStringValue(string $value, ArrayExpression $expression, array &$params): string
+    protected function buildStringValue(string $value, ArrayValue $expression, array &$params): string
     {
         $param = new Param($value, DataType::STRING);
 
@@ -41,7 +41,7 @@ final class ArrayExpressionBuilder extends AbstractArrayExpressionBuilder
         return $this->queryBuilder->bindParam($param, $params) . $typeHint;
     }
 
-    protected function buildSubquery(QueryInterface $query, ArrayExpression $expression, array &$params): string
+    protected function buildSubquery(QueryInterface $query, ArrayValue $expression, array &$params): string
     {
         $column = $this->getColumn($expression);
         $dbType = $this->getColumnDbType($column);
@@ -49,7 +49,7 @@ final class ArrayExpressionBuilder extends AbstractArrayExpressionBuilder
         return $this->buildNestedSubquery($query, $dbType, $column?->getDimension() ?? 1, $params);
     }
 
-    protected function buildValue(iterable $value, ArrayExpression $expression, array &$params): string
+    protected function buildValue(iterable $value, ArrayValue $expression, array &$params): string
     {
         $column = $this->getColumn($expression);
         $dbType = $this->getColumnDbType($column);
@@ -125,9 +125,9 @@ final class ArrayExpressionBuilder extends AbstractArrayExpressionBuilder
         return $this->buildNestedArray($placeholders, $dbType, $dimension);
     }
 
-    private function getColumn(ArrayExpression $expression): AbstractArrayColumn|null
+    private function getColumn(ArrayValue $expression): AbstractArrayColumn|null
     {
-        $type = $expression->getType();
+        $type = $expression->type;
 
         if ($type === null || $type instanceof AbstractArrayColumn) {
             return $type;
