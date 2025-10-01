@@ -38,7 +38,7 @@ composer require yiisoft/db-pgsql
 ```
 
 > [!IMPORTANT]
-> It also depends on [PSR-16: Common Interface for Caching Libraries](https://www.php-fig.org/psr/psr-16/) and requires 
+> It also depends on [PSR-16: Common Interface for Caching Libraries](https://www.php-fig.org/psr/psr-16/) and requires
 > the installation of [PSR-16 implementation](https://packagist.org/providers/psr/simple-cache-implementation).
 > For example, [yiisoft/cache](https://github.com/yiisoft/cache) or one of the other [cache handlers](https://github.com/yiisoft/cache#cache-handlers).
 
