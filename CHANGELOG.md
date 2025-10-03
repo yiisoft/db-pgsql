@@ -45,7 +45,7 @@
 - New #408, #410: Implement `DMLQueryBuilder::upsertReturning()` method (@Tigrov)
 - Enh #412: Reduce binding parameters (@Tigrov)
 - Chg #414: Rename `DMLQueryBuilder::insertWithReturningPks()` to `DMLQueryBuilder::insertReturningPks()` (@Tigrov)
-- Enh #415, #448: Implement `CaseExpressionBuilder` class (@Tigrov)
+- Enh #415, #448, #451: Implement `CaseXBuilder` class (@Tigrov)
 - Enh #420: Provide `yiisoft/db-implementation` virtual package (@vjik)
 - Enh #424, #425, #428: Adapt to conditions refactoring in `yiisoft/db` package (@vjik)
 - Enh #431: Remove `TableSchema` class and refactor `Schema` class (@Tigrov)

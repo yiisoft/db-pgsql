@@ -6,17 +6,17 @@ namespace Yiisoft\Db\Pgsql\Tests\Provider;
 
 use Yiisoft\Db\Constant\DataType;
 use Yiisoft\Db\Constant\PseudoType;
-use Yiisoft\Db\Expression\Statement\When;
+use Yiisoft\Db\Expression\Statement\WhenThen;
 use Yiisoft\Db\Expression\Value\ArrayValue;
 use Yiisoft\Db\Expression\Statement\CaseX;
 use Yiisoft\Db\Expression\Expression;
 use Yiisoft\Db\Expression\Function\ArrayMerge;
 use Yiisoft\Db\Expression\Value\Param;
-use Yiisoft\Db\Expression\Value\Value;
 use Yiisoft\Db\Pgsql\Column\ColumnBuilder;
 use Yiisoft\Db\Pgsql\Column\IntegerColumn;
 use Yiisoft\Db\Pgsql\Tests\Support\TestTrait;
 use Yiisoft\Db\Query\Query;
+use Yiisoft\Db\QueryBuilder\Condition\Equals;
 use Yiisoft\Db\QueryBuilder\Condition\LikeConjunction;
 
 use function array_replace;
@@ -532,9 +532,9 @@ final class QueryBuilderProvider extends \Yiisoft\Db\Tests\Provider\QueryBuilder
         if (version_compare($serverVersion, '10', '<')) {
             $data['without case expression'] = [
                 new CaseX(
-                    when1: new When(['=', 'column_name', 1], new Value('a')),
-                    when2: new When(
-                        '"column_name" = 2',
+                    when1: new WhenThen(['column_name' => 1], 'a'),
+                    when2: new WhenThen(
+                        new Equals('column_name', 2),
                         $db->select(new Expression(
                             ':pv2::text',
                             [':pv2' => $param = new Param('b', DataType::STRING)],
@@ -555,31 +555,36 @@ final class QueryBuilderProvider extends \Yiisoft\Db\Tests\Provider\QueryBuilder
             'without case and type hint' => [
                 new CaseX(
                     valueType: 'int',
-                    when: new When(true, "'a'"),
+                    when: new WhenThen(true, 'a'),
                 ),
-                "CASE WHEN TRUE THEN 'a' END",
-                [],
+                'CASE WHEN TRUE THEN :qp0 END',
+                [
+                    ':qp0' => new Param('a', DataType::STRING),
+                ],
                 'a',
             ],
             'with case and type hint' => [
                 new CaseX(
-                    '1 + 1',
+                    'column_name',
                     'int',
-                    new When(1, "'a'"),
-                    "'b'",
+                    new WhenThen(1, 'a'),
+                    'b',
                 ),
-                "CASE (1 + 1)::int WHEN (1)::int THEN 'a' ELSE 'b' END",
-                [],
+                'CASE ("column_name")::int WHEN (1)::int THEN :qp0 ELSE :qp1 END',
+                [
+                    ':qp0' => new Param('a', DataType::STRING),
+                    ':qp1' => new Param('b', DataType::STRING),
+                ],
                 'b',
             ],
             'with case and type hint with column' => [
                 new CaseX(
-                    '1 + 1',
+                    'column_name',
                     new IntegerColumn(),
-                    new When(1, new Value('a')),
+                    new WhenThen(1, 'a'),
                     $param = new Param('b', DataType::STRING),
                 ),
-                'CASE (1 + 1)::integer WHEN (1)::integer THEN :qp0 ELSE :qp1 END',
+                'CASE ("column_name")::integer WHEN (1)::integer THEN :qp0 ELSE :qp1 END',
                 [
                     ':qp0' => new Param('a', DataType::STRING),
                     ':qp1' => $param,
