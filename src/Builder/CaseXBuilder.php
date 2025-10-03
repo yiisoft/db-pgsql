@@ -15,27 +15,37 @@ use function is_string;
  */
 final class CaseXBuilder extends \Yiisoft\Db\Expression\Statement\Builder\CaseXBuilder
 {
+    /**
+     * @param CaseX $expression The `CASE` expression to build.
+     */
     public function build(ExpressionInterface $expression, array &$params = []): string
     {
         $sql = 'CASE';
 
         if ($expression->value !== null) {
             $caseTypeHint = $this->buildTypeHint($expression->valueType);
-            $sql .= ' ' . $this->buildConditionWithTypeHint($expression->value, $caseTypeHint, $params);
+            $sql .= ' ' . $this->buildCaseValueWithTypeHint($expression->value, $caseTypeHint, $params);
         } else {
             $caseTypeHint = '';
         }
 
-        foreach ($expression->when as $when) {
-            $sql .= ' WHEN ' . $this->buildConditionWithTypeHint($when->condition, $caseTypeHint, $params);
-            $sql .= ' THEN ' . $this->buildResult($when->result, $params);
+        foreach ($expression->whenThen as $whenThen) {
+            $sql .= ' WHEN ' . $this->buildConditionWithTypeHint($whenThen->when, $caseTypeHint, $params);
+            $sql .= ' THEN ' . $this->queryBuilder->buildValue($whenThen->then, $params);
         }
 
         if ($expression->hasElse()) {
-            $sql .= ' ELSE ' . $this->buildResult($expression->else, $params);
+            $sql .= ' ELSE ' . $this->queryBuilder->buildValue($expression->else, $params);
         }
 
         return $sql . ' END';
+    }
+
+    private function buildCaseValueWithTypeHint(mixed $value, string $typeHint, array &$params): string
+    {
+        $builtValue = $this->buildCaseValue($value, $params);
+
+        return $typeHint !== '' ? "($builtValue)$typeHint" : $builtValue;
     }
 
     private function buildConditionWithTypeHint(mixed $condition, string $typeHint, array &$params): string
