@@ -637,15 +637,15 @@ final class QueryBuilderTest extends CommonQueryBuilderTest
 
         $stringParam = new Param('{4,3,5}', DataType::STRING);
         $arrayMerge = (new ArrayMerge(
-            'ARRAY[2,1,3]',
-            [6, 5, 7],
+            [2, 1, 3],
+            new ArrayValue([6, 5, 7]),
             $stringParam,
             self::getDb()->select(new ArrayValue([10, 9])),
         ))->type($type)->ordered();
         $params = [];
 
         $this->assertSame(
-            "ARRAY(SELECT DISTINCT UNNEST(ARRAY[2,1,3]$typeHint || ARRAY[6,5,7]::int[]$typeHint || :qp0$typeHint || (SELECT ARRAY[10,9]::int[])$typeHint) ORDER BY 1)$typeHint",
+            "ARRAY(SELECT DISTINCT UNNEST(ARRAY[2,1,3]::int[]$typeHint || ARRAY[6,5,7]::int[]$typeHint || :qp0$typeHint || (SELECT ARRAY[10,9]::int[])$typeHint) ORDER BY 1)$typeHint",
             $qb->buildExpression($arrayMerge, $params)
         );
         $this->assertSame([':qp0' => $stringParam], $params);
