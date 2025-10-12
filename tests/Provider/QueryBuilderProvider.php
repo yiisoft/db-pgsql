@@ -622,6 +622,14 @@ final class QueryBuilderProvider extends \Yiisoft\Db\Tests\Provider\QueryBuilder
         $stringQuerySql = "(SELECT 'longest'::text)";
         $stringParam = new Param('{3,4,5}', DataType::STRING);
 
+        $db = self::getDb();
+        $serverVersion = $db->getServerInfo()->getVersion();
+        $db->close();
+
+        if (version_compare($serverVersion, '10', '<')) {
+            unset($data['Longest with 1 operand'], $data['Shortest with 1 operand']);
+        }
+
         $data['Longest with 3 operands'][1][1] = $stringQuery;
         $data['Longest with 3 operands'][2] = "(SELECT value FROM (SELECT :qp0 AS value UNION SELECT $stringQuerySql"
             . ' AS value UNION SELECT :qp1 AS value) AS t ORDER BY LENGTH(value) DESC LIMIT 1)';
