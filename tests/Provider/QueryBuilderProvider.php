@@ -622,32 +622,40 @@ final class QueryBuilderProvider extends \Yiisoft\Db\Tests\Provider\QueryBuilder
         $stringQuerySql = "(SELECT 'longest'::text)";
         $stringParam = new Param('{3,4,5}', DataType::STRING);
 
+        $db = self::getDb();
+        $serverVersion = $db->getServerInfo()->getVersion();
+        $db->close();
+
+        if (version_compare($serverVersion, '10', '<')) {
+            unset($data['Longest with 1 operand'], $data['Shortest with 1 operand']);
+        }
+
         $data['Longest with 3 operands'][1][1] = $stringQuery;
-        $data['Longest with 3 operands'][2] = "(SELECT value FROM (SELECT 'short' AS value UNION SELECT $stringQuerySql"
-            . ' AS value UNION SELECT :qp0 AS value) AS t ORDER BY LENGTH(value) DESC LIMIT 1)';
+        $data['Longest with 3 operands'][2] = "(SELECT value FROM (SELECT :qp0 AS value UNION SELECT $stringQuerySql"
+            . ' AS value UNION SELECT :qp1 AS value) AS t ORDER BY LENGTH(value) DESC LIMIT 1)';
         $data['Shortest with 3 operands'][1][1] = $stringQuery;
-        $data['Shortest with 3 operands'][2] = "(SELECT value FROM (SELECT 'short' AS value UNION SELECT $stringQuerySql"
-            . ' AS value UNION SELECT :qp0 AS value) AS t ORDER BY LENGTH(value) ASC LIMIT 1)';
+        $data['Shortest with 3 operands'][2] = "(SELECT value FROM (SELECT :qp0 AS value UNION SELECT $stringQuerySql"
+            . ' AS value UNION SELECT :qp1 AS value) AS t ORDER BY LENGTH(value) ASC LIMIT 1)';
 
         return [
             ...$data,
             'ArrayMerge with 1 operand' => [
                 ArrayMerge::class,
-                ['ARRAY[1,2,3]'],
-                '(ARRAY[1,2,3])',
+                [[1, 2, 3]],
+                '(ARRAY[1,2,3]::int[])',
                 [1, 2, 3],
             ],
             'ArrayMerge with 2 operands' => [
                 ArrayMerge::class,
-                ['ARRAY[1,2,3]', $stringParam],
-                'ARRAY(SELECT DISTINCT UNNEST(ARRAY[1,2,3] || :qp0))',
+                [[1, 2, 3], $stringParam],
+                'ARRAY(SELECT DISTINCT UNNEST(ARRAY[1,2,3]::int[] || :qp0))',
                 [1, 2, 3, 4, 5],
                 [':qp0' => $stringParam],
             ],
             'ArrayMerge with 4 operands' => [
                 ArrayMerge::class,
-                ['ARRAY[1,2,3]', [5, 6, 7], $stringParam, self::getDb()->select(new ArrayValue([9, 10]))],
-                'ARRAY(SELECT DISTINCT UNNEST(ARRAY[1,2,3] || ARRAY[5,6,7]::int[] || :qp0 || (SELECT ARRAY[9,10]::int[])))',
+                [[1, 2, 3], new ArrayValue([5, 6, 7]), $stringParam, self::getDb()->select(new ArrayValue([9, 10]))],
+                'ARRAY(SELECT DISTINCT UNNEST(ARRAY[1,2,3]::int[] || ARRAY[5,6,7]::int[] || :qp0 || (SELECT ARRAY[9,10]::int[])))',
                 [1, 2, 3, 4, 5, 6, 7, 9, 10],
                 [
                     ':qp0' => $stringParam,
