@@ -277,7 +277,7 @@ final class QueryBuilderProvider extends \Yiisoft\Db\Tests\Provider\QueryBuilder
                         ],
                     ),
                 2 => ['ts' => 0, '[[orders]]' => new Expression('EXCLUDED.orders + 1')],
-                3 => 'INSERT INTO {{%T_upsert}} ("email", [[ts]]) SELECT :phEmail AS "email", extract(epoch from now()) * 1000 AS [[ts]] ' .
+                3 => 'INSERT INTO {{%T_upsert}} ("email", "ts") SELECT :phEmail AS "email", extract(epoch from now()) * 1000 AS [[ts]] ' .
                     'ON CONFLICT ("email") DO UPDATE SET "ts"=0, "orders"=EXCLUDED.orders + 1',
             ],
             'query, values and expressions without update part' => [
@@ -288,7 +288,7 @@ final class QueryBuilderProvider extends \Yiisoft\Db\Tests\Provider\QueryBuilder
                             '[[ts]]' => new Expression('extract(epoch from now()) * 1000'),
                         ],
                     ),
-                3 => 'INSERT INTO "T_upsert" ("email", [[ts]]) SELECT :phEmail AS "email", extract(epoch from now()) * 1000 AS [[ts]] ON CONFLICT DO NOTHING',
+                3 => 'INSERT INTO "T_upsert" ("email", "ts") SELECT :phEmail AS "email", extract(epoch from now()) * 1000 AS [[ts]] ON CONFLICT DO NOTHING',
             ],
             'no columns to update' => [
                 3 => 'INSERT INTO "T_upsert_1" ("a") VALUES (1) ON CONFLICT DO NOTHING',
