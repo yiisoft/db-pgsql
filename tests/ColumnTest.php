@@ -383,7 +383,7 @@ final class ColumnTest extends CommonColumnTest
         }
     }
 
-    public function testIntegerColumn()
+    public function testIntegerColumn(): void
     {
         $intCol = new IntegerColumn();
 
@@ -396,7 +396,7 @@ final class ColumnTest extends CommonColumnTest
         $this->assertNull($intCol->getSequenceName());
     }
 
-    public function testBigIntColumn()
+    public function testBigIntColumn(): void
     {
         $bigintCol = new BigIntColumn();
 
@@ -407,5 +407,15 @@ final class ColumnTest extends CommonColumnTest
         $bigintCol->sequenceName(null);
 
         $this->assertNull($bigintCol->getSequenceName());
+    }
+
+    public function testBitColumnTypecasting(): void
+    {
+        $db = $this->getConnection(true);
+
+        $row = $db->select()->from('test_bit_column')->where(['id' => 1])->withTypecasting()->one();
+
+        $this->assertSame('1100000100011100100110001011000010100000001011001101111011100001', $row['bit_varying_64']);
+        $this->assertSame(9, $row['bit_varying_4']);
     }
 }

@@ -490,3 +490,12 @@ CREATE TABLE "test_structured_type"
     "price_array2" "currency_money_structured"[][],
     "range_price_col" "range_price_structured" DEFAULT '("(0,USD)","(100,USD)")'
 );
+
+DROP TABLE IF EXISTS "test_bit_column";
+CREATE TABLE "test_bit_column"
+(
+    "id" SERIAL NOT NULL PRIMARY KEY,
+    "bit_varying_64" BIT VARYING(64),
+    "bit_varying_4" BIT VARYING(4)
+);
+INSERT INTO "test_bit_column" ("bit_varying_64", "bit_varying_4") VALUES (B'1100000100011100100110001011000010100000001011001101111011100001', B'1001');
