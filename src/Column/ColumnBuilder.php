@@ -18,8 +18,9 @@ final class ColumnBuilder extends \Yiisoft\Db\Schema\Column\ColumnBuilder
 
     public static function bit(int|null $size = null): BitColumn|BigBitColumn
     {
-        $className = ColumnClassName::bit($size);
+        $className = BitColumnInternal::className($size);
 
+        /** @psalm-suppress UnsafeInstantiation */
         return new $className(ColumnType::BIT, size: $size);
     }
 
