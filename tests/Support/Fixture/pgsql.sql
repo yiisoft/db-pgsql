@@ -496,6 +496,8 @@ CREATE TABLE "test_bit_column"
 (
     "id" SERIAL NOT NULL PRIMARY KEY,
     "bit_varying_64" BIT VARYING(64),
-    "bit_varying_4" BIT VARYING(4)
+    "bit_varying_4" BIT VARYING(4),
+    "bit_varying" BIT VARYING,
+    "bit" BIT
 );
-INSERT INTO "test_bit_column" ("bit_varying_64", "bit_varying_4") VALUES (B'1100000100011100100110001011000010100000001011001101111011100001', B'1001');
+INSERT INTO "test_bit_column" ("bit_varying_64", "bit_varying_4", "bit_varying", "bit") VALUES (B'1100000100011100100110001011000010100000001011001101111011100001', B'1001', B'101', B'1');

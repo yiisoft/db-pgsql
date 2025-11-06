@@ -44,7 +44,7 @@ final class BitColumn extends AbstractColumn
     private function isBig(): bool
     {
         $size = $this->getSize();
-        return $size !== null
-            && $size >= (PHP_INT_SIZE === 8 ? 64 : 32);
+        return $size === null
+            || $size >= (PHP_INT_SIZE === 8 ? 64 : 32);
     }
 }

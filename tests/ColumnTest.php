@@ -417,5 +417,7 @@ final class ColumnTest extends CommonColumnTest
 
         $this->assertSame('1100000100011100100110001011000010100000001011001101111011100001', $row['bit_varying_64']);
         $this->assertSame(9, $row['bit_varying_4']);
+        $this->assertSame('101', $row['bit_varying']);
+        $this->assertSame(1, $row['bit']);
     }
 }
