@@ -135,7 +135,7 @@ final class StructuredValueBuilderTest extends TestCase
         array|object|string|null $value,
         AbstractStructuredColumn|string|null $type,
         string $expected,
-        array $expectedParams
+        array $expectedParams,
     ): void {
         $db = $this->getConnection();
         $qb = $db->getQueryBuilder();

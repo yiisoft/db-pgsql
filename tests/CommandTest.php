@@ -30,7 +30,7 @@ final class CommandTest extends CommonCommandTest
 
         $this->expectException(NotSupportedException::class);
         $this->expectExceptionMessage(
-            'Yiisoft\Db\Pgsql\DDLQueryBuilder::addDefaultValue is not supported by PostgreSQL.'
+            'Yiisoft\Db\Pgsql\DDLQueryBuilder::addDefaultValue is not supported by PostgreSQL.',
         );
 
         $command->addDefaultValue('{{table}}', '{{name}}', 'column', 'value');
@@ -45,7 +45,7 @@ final class CommandTest extends CommonCommandTest
         array $columns,
         string $expected,
         array $expectedParams = [],
-        int $insertedRow = 1
+        int $insertedRow = 1,
     ): void {
         parent::testBatchInsert($table, $values, $columns, $expected, $expectedParams, $insertedRow);
     }
@@ -140,7 +140,7 @@ final class CommandTest extends CommonCommandTest
 
         $this->expectException(NotSupportedException::class);
         $this->expectExceptionMessage(
-            'Yiisoft\Db\Pgsql\DDLQueryBuilder::dropDefaultValue is not supported by PostgreSQL.'
+            'Yiisoft\Db\Pgsql\DDLQueryBuilder::dropDefaultValue is not supported by PostgreSQL.',
         );
 
         $command->dropDefaultValue('{{table}}', '{{name}}');
@@ -229,7 +229,7 @@ final class CommandTest extends CommonCommandTest
     }
 
     #[DataProviderExternal(CommandProvider::class, 'createIndex')]
-    public function testCreateIndex(array $columns, array $indexColumns, string|null $indexType, string|null $indexMethod): void
+    public function testCreateIndex(array $columns, array $indexColumns, ?string $indexType, ?string $indexMethod): void
     {
         parent::testCreateIndex($columns, $indexColumns, $indexType, $indexMethod);
     }

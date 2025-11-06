@@ -36,12 +36,12 @@ final class QueryBuilderTest extends CommonQueryBuilderTest
 {
     use TestTrait;
 
+    protected PdoConnectionInterface $db;
+
     public function getBuildColumnDefinitionProvider(): array
     {
         return QueryBuilderProvider::buildColumnDefinition();
     }
-
-    protected PdoConnectionInterface $db;
 
     public function testAddDefaultValue(): void
     {
@@ -51,7 +51,7 @@ final class QueryBuilderTest extends CommonQueryBuilderTest
 
         $this->expectException(NotSupportedException::class);
         $this->expectExceptionMessage(
-            'Yiisoft\Db\Pgsql\DDLQueryBuilder::addDefaultValue is not supported by PostgreSQL.'
+            'Yiisoft\Db\Pgsql\DDLQueryBuilder::addDefaultValue is not supported by PostgreSQL.',
         );
 
         $qb->addDefaultValue('T_constraints_1', 'CN_pk', 'C_default', 1);
@@ -72,9 +72,9 @@ final class QueryBuilderTest extends CommonQueryBuilderTest
         array|string $columns,
         string $refTable,
         array|string $refColumns,
-        string|null $delete,
-        string|null $update,
-        string $expected
+        ?string $delete,
+        ?string $update,
+        string $expected,
     ): void {
         parent::testAddForeignKey($name, $table, $columns, $refTable, $refColumns, $delete, $update, $expected);
     }
@@ -105,8 +105,8 @@ final class QueryBuilderTest extends CommonQueryBuilderTest
     #[DataProviderExternal(QueryBuilderProvider::class, 'buildCondition')]
     public function testBuildCondition(
         array|ExpressionInterface|string $condition,
-        string|null $expected,
-        array $expectedParams
+        ?string $expected,
+        array $expectedParams,
     ): void {
         parent::testBuildCondition($condition, $expected, $expectedParams);
     }
@@ -115,7 +115,7 @@ final class QueryBuilderTest extends CommonQueryBuilderTest
     public function testBuildLikeCondition(
         array|ExpressionInterface $condition,
         string $expected,
-        array $expectedParams
+        array $expectedParams,
     ): void {
         parent::testBuildLikeCondition($condition, $expected, $expectedParams);
     }
@@ -156,7 +156,7 @@ final class QueryBuilderTest extends CommonQueryBuilderTest
         $command = $db->createCommand(
             <<<SQL
             INSERT INTO {{item}}([[name]], [[category_id]]) VALUES ('invalid', 99999)
-            SQL
+            SQL,
         );
         $command->execute();
 
@@ -164,7 +164,7 @@ final class QueryBuilderTest extends CommonQueryBuilderTest
 
         $this->expectException(IntegrityException::class);
         $this->expectExceptionMessage(
-            'SQLSTATE[23503]: Foreign key violation: 7 ERROR:  insert or update on table "item" violates foreign key constraint "item_category_id_fkey"'
+            'SQLSTATE[23503]: Foreign key violation: 7 ERROR:  insert or update on table "item" violates foreign key constraint "item_category_id_fkey"',
         );
 
         $command->execute();
@@ -233,7 +233,7 @@ final class QueryBuilderTest extends CommonQueryBuilderTest
 
         $this->expectException(NotSupportedException::class);
         $this->expectExceptionMessage(
-            'Yiisoft\Db\Pgsql\DDLQueryBuilder::dropDefaultValue is not supported by PostgreSQL.'
+            'Yiisoft\Db\Pgsql\DDLQueryBuilder::dropDefaultValue is not supported by PostgreSQL.',
         );
 
         $qb->dropDefaultValue('T_constraints_1', 'CN_pk');
@@ -298,7 +298,7 @@ final class QueryBuilderTest extends CommonQueryBuilderTest
         array|QueryInterface $columns,
         array $params,
         string $expectedSQL,
-        array $expectedParams
+        array $expectedParams,
     ): void {
         parent::testInsert($table, $columns, $params, $expectedSQL, $expectedParams);
     }
@@ -309,7 +309,7 @@ final class QueryBuilderTest extends CommonQueryBuilderTest
         array|QueryInterface $columns,
         array $params,
         string $expectedSQL,
-        array $expectedParams
+        array $expectedParams,
     ): void {
         parent::testInsertReturningPks($table, $columns, $params, $expectedSQL, $expectedParams);
     }
@@ -441,7 +441,7 @@ final class QueryBuilderTest extends CommonQueryBuilderTest
         array|QueryInterface $insertColumns,
         array|bool $updateColumns,
         string $expectedSql,
-        array $expectedParams
+        array $expectedParams,
     ): void {
         parent::testUpsert($table, $insertColumns, $updateColumns, $expectedSql, $expectedParams);
     }
@@ -451,9 +451,9 @@ final class QueryBuilderTest extends CommonQueryBuilderTest
         string $table,
         array|QueryInterface $insertColumns,
         array|bool $updateColumns,
-        array|null $returnColumns,
+        ?array $returnColumns,
         string $expectedSql,
-        array $expectedParams
+        array $expectedParams,
     ): void {
         parent::testUpsertReturning($table, $insertColumns, $updateColumns, $returnColumns, $expectedSql, $expectedParams);
     }
@@ -495,7 +495,7 @@ final class QueryBuilderTest extends CommonQueryBuilderTest
 
         $this->assertSame(
             'ARRAY(SELECT jsonb_array_elements_text("column"::jsonb))::int[] && ARRAY[1,2,3]::int[]',
-            $sql
+            $sql,
         );
         $this->assertSame([], $params);
 
@@ -646,7 +646,7 @@ final class QueryBuilderTest extends CommonQueryBuilderTest
 
         $this->assertSame(
             "ARRAY(SELECT DISTINCT UNNEST(ARRAY[2,1,3]::int[]$typeHint || ARRAY[6,5,7]::int[]$typeHint || :qp0$typeHint || (SELECT ARRAY[10,9]::int[])$typeHint) ORDER BY 1)$typeHint",
-            $qb->buildExpression($arrayMerge, $params)
+            $qb->buildExpression($arrayMerge, $params),
         );
         $this->assertSame([':qp0' => $stringParam], $params);
 

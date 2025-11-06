@@ -27,7 +27,7 @@ final class ArrayParserTest extends TestCase
         $this->assertSame([0 => ''], $arrayParse->parse('{""}'));
         $this->assertSame(
             [0 => '[",","null",true,"false","f"]'],
-            $arrayParse->parse('{"[\",\",\"null\",true,\"false\",\"f\"]"}')
+            $arrayParse->parse('{"[\",\",\"null\",true,\"false\",\"f\"]"}'),
         );
 
         // Similar cases can be in default values
