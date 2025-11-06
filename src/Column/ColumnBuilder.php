@@ -7,6 +7,8 @@ namespace Yiisoft\Db\Pgsql\Column;
 use Yiisoft\Db\Constant\ColumnType;
 use Yiisoft\Db\Schema\Column\ColumnInterface;
 
+use const PHP_INT_SIZE;
+
 final class ColumnBuilder extends \Yiisoft\Db\Schema\Column\ColumnBuilder
 {
     public static function boolean(): BooleanColumn
@@ -14,9 +16,11 @@ final class ColumnBuilder extends \Yiisoft\Db\Schema\Column\ColumnBuilder
         return new BooleanColumn(ColumnType::BOOLEAN);
     }
 
-    public static function bit(int|null $size = null): BitColumn
+    public static function bit(int|null $size = null): BitColumn|BigBitColumn
     {
-        return new BitColumn(ColumnType::BIT, size: $size);
+        return !empty($size) && ($size > 63 || PHP_INT_SIZE !== 8 && $size > 31)
+            ? new BigBitColumn(ColumnType::BIT, size: $size)
+            : new BitColumn(ColumnType::BIT, size: $size);
     }
 
     public static function tinyint(int|null $size = null): IntegerColumn

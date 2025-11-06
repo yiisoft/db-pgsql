@@ -7,6 +7,7 @@ namespace Yiisoft\Db\Pgsql\Tests\Provider;
 use Yiisoft\Db\Constant\ColumnType;
 use Yiisoft\Db\Expression\Expression;
 use Yiisoft\Db\Pgsql\Column\ArrayColumn;
+use Yiisoft\Db\Pgsql\Column\BigBitColumn;
 use Yiisoft\Db\Pgsql\Column\BinaryColumn;
 use Yiisoft\Db\Pgsql\Column\BitColumn;
 use Yiisoft\Db\Pgsql\Column\BooleanColumn;
@@ -95,6 +96,7 @@ final class ColumnFactoryProvider extends \Yiisoft\Db\Tests\Provider\ColumnFacto
         $definitions['bigint UNSIGNED'][1] = new IntegerColumn(ColumnType::BIGINT, dbType: 'bigint', unsigned: true);
         $definitions['integer[]'][1] = new ArrayColumn(dbType: 'integer', column: new IntegerColumn(dbType: 'integer'));
         $definitions['string(126)[][]'][1] = new ArrayColumn(size: 126, dimension: 2, column: new StringColumn(size: 126));
+        $definitions['bit(64)'] = ['bit(64)', new BigBitColumn(dbType: 'bit', size: 64)];
 
         return $definitions;
     }

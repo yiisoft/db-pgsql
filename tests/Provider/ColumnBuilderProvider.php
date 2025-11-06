@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace Yiisoft\Db\Pgsql\Tests\Provider;
 
+use Yiisoft\Db\Constant\ColumnType;
 use Yiisoft\Db\Pgsql\Column\ArrayColumn;
+use Yiisoft\Db\Pgsql\Column\BigBitColumn;
 use Yiisoft\Db\Pgsql\Column\BinaryColumn;
 use Yiisoft\Db\Pgsql\Column\BitColumn;
 use Yiisoft\Db\Pgsql\Column\BooleanColumn;
@@ -27,6 +29,7 @@ class ColumnBuilderProvider extends \Yiisoft\Db\Tests\Provider\ColumnBuilderProv
         $values['boolean()'][2] = BooleanColumn::class;
         $values['bit()'][2] = BitColumn::class;
         $values['bit(1)'][2] = BitColumn::class;
+        $values['bit(64)'] = ['bit', [64], BigBitColumn::class, ColumnType::BIT, ['getSize' => 64]];
         $values['tinyint()'][2] = IntegerColumn::class;
         $values['tinyint(1)'][2] = IntegerColumn::class;
         $values['smallint()'][2] = IntegerColumn::class;

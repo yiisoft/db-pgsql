@@ -9,6 +9,7 @@ use DateTimeZone;
 use Yiisoft\Db\Constant\ColumnType;
 use Yiisoft\Db\Expression\Expression;
 use Yiisoft\Db\Pgsql\Column\ArrayColumn;
+use Yiisoft\Db\Pgsql\Column\BigBitColumn;
 use Yiisoft\Db\Pgsql\Column\BinaryColumn;
 use Yiisoft\Db\Pgsql\Column\BitColumn;
 use Yiisoft\Db\Pgsql\Column\BooleanColumn;
@@ -118,6 +119,10 @@ final class SchemaProvider extends \Yiisoft\Db\Tests\Provider\SchemaProvider
                         dbType: 'varbit',
                         notNull: true,
                         defaultValue: 0b100, // 4
+                    ),
+                    'bigbit_col' => new BigBitColumn(
+                        dbType: 'varbit',
+                        size: 64,
                     ),
                     'bigint_col' => new IntegerColumn(
                         ColumnType::BIGINT,
@@ -396,6 +401,16 @@ final class SchemaProvider extends \Yiisoft\Db\Tests\Provider\SchemaProvider
                 'name' => 'bit_col',
                 'len' => -1,
                 'precision' => 8,
+            ]],
+            [new BigBitColumn(dbType: 'bit', name: 'bigbit_col', size: 64), [
+                'pgsql:oid' => 1560,
+                'pgsql:table_oid' => 40133105,
+                'table' => 'type',
+                'native_type' => 'bit',
+                'pdo_type' => 2,
+                'name' => 'bigbit_col',
+                'len' => -1,
+                'precision' => 64,
             ]],
             [new ArrayColumn(dbType: 'int4', name: 'intarray_col', dimension: 1, column: new IntegerColumn(dbType: 'int4', name: 'intarray_col')), [
                 'pgsql:oid' => 1007,

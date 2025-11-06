@@ -142,7 +142,9 @@ final class ColumnFactory extends AbstractColumnFactory
     {
         return match ($type) {
             ColumnType::BOOLEAN => BooleanColumn::class,
-            ColumnType::BIT => BitColumn::class,
+            ColumnType::BIT => !empty($info['size']) && ($info['size'] > 63 || PHP_INT_SIZE !== 8 && $info['size'] > 31)
+                ? BigBitColumn::class
+                : BitColumn::class,
             ColumnType::TINYINT => IntegerColumn::class,
             ColumnType::SMALLINT => IntegerColumn::class,
             ColumnType::INTEGER => IntegerColumn::class,
