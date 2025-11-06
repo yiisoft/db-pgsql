@@ -7,8 +7,6 @@ namespace Yiisoft\Db\Pgsql\Column;
 use Yiisoft\Db\Constant\ColumnType;
 use Yiisoft\Db\Schema\Column\ColumnInterface;
 
-use const PHP_INT_SIZE;
-
 final class ColumnBuilder extends \Yiisoft\Db\Schema\Column\ColumnBuilder
 {
     public static function boolean(): BooleanColumn

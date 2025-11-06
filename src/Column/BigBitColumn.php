@@ -17,7 +17,7 @@ final class BigBitColumn extends AbstractColumn
         return BitColumnInternal::dbTypecast($value, $this->getSize());
     }
 
-    public function phpTypecast(mixed $value): string|null
+    public function phpTypecast(mixed $value): ?string
     {
         /** @var string|null $value */
         return $value;
