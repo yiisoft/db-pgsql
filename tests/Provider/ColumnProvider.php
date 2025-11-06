@@ -9,6 +9,7 @@ use DateTimeZone;
 use Yiisoft\Db\Expression\Expression;
 use Yiisoft\Db\Pgsql\Column\ArrayColumn;
 use Yiisoft\Db\Pgsql\Column\ArrayLazyColumn;
+use Yiisoft\Db\Pgsql\Column\BigBitColumn;
 use Yiisoft\Db\Pgsql\Column\BigIntColumn;
 use Yiisoft\Db\Pgsql\Column\BinaryColumn;
 use Yiisoft\Db\Pgsql\Column\BitColumn;
@@ -45,15 +46,30 @@ class ColumnProvider extends \Yiisoft\Db\Tests\Provider\ColumnProvider
         $values['binary'][0] = new BinaryColumn();
         $values['boolean'][0] = new BooleanColumn();
         $values['bit'] = [
-            new BitColumn(),
+            new BitColumn(size: 4),
             [
                 [null, null],
                 [null, ''],
                 ['1001', 0b1001],
                 ['1001', '1001'],
-                ['1', 1.0],
-                ['1', true],
-                ['0', false],
+                ['0001', 1.0],
+                ['0001', true],
+                ['0000', false],
+                [$expression = new Expression('1001'), $expression],
+            ],
+        ];
+        $values['bigbit'] = [
+            new BigBitColumn(size: 64),
+            [
+                [null, null],
+                [null, ''],
+                ['0000000000000000000000000000000000000000000000000000000000001001', 0b1001],
+                ['0000000000000000000000000000000000000000000000000000000000000001', 1.0],
+                ['0000000000000000000000000000000000000000000000000000000000000001', true],
+                ['0000000000000000000000000000000000000000000000000000000000000000', false],
+                ['1100000100011100100110001011000010100000001011001101111011100000', '1100000100011100100110001011000010100000001011001101111011100000'],
+                ['1001', '1001'],
+                ['13915164833036950442', '13915164833036950442'],
                 [$expression = new Expression('1001'), $expression],
             ],
         ];
@@ -91,6 +107,14 @@ class ColumnProvider extends \Yiisoft\Db\Tests\Provider\ColumnProvider
 
         return [
             ...$values,
+            'bigbit' => [
+                new BigBitColumn(size: 64),
+                [
+                    [null, null],
+                    ['1001', '1001'],
+                    ['1100000100011100100110001011000010100000001011001101111011100000', '1100000100011100100110001011000010100000001011001101111011100000'],
+                ],
+            ],
             'array' => [
                 (new ArrayColumn())->column(new IntegerColumn()),
                 [

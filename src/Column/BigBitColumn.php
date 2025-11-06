@@ -8,9 +8,7 @@ use Yiisoft\Db\Constant\ColumnType;
 use Yiisoft\Db\Expression\ExpressionInterface;
 use Yiisoft\Db\Schema\Column\AbstractColumn;
 
-use function bindec;
-
-final class BitColumn extends AbstractColumn
+final class BigBitColumn extends AbstractColumn
 {
     protected const DEFAULT_TYPE = ColumnType::BIT;
 
@@ -19,14 +17,9 @@ final class BitColumn extends AbstractColumn
         return BitColumnInternal::dbTypecast($value, $this->getSize());
     }
 
-    public function phpTypecast(mixed $value): ?int
+    public function phpTypecast(mixed $value): ?string
     {
-        /** @var int|string|null $value */
-        if (is_string($value)) {
-            /** @var int */
-            return bindec($value);
-        }
-
+        /** @var string|null $value */
         return $value;
     }
 }

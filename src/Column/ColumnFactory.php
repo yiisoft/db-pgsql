@@ -142,7 +142,7 @@ final class ColumnFactory extends AbstractColumnFactory
     {
         return match ($type) {
             ColumnType::BOOLEAN => BooleanColumn::class,
-            ColumnType::BIT => BitColumn::class,
+            ColumnType::BIT => BitColumnInternal::className($info['size'] ?? null),
             ColumnType::TINYINT => IntegerColumn::class,
             ColumnType::SMALLINT => IntegerColumn::class,
             ColumnType::INTEGER => IntegerColumn::class,

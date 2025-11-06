@@ -13,6 +13,7 @@ use Yiisoft\Db\Expression\Value\ArrayValue;
 use Yiisoft\Db\Expression\Expression;
 use Yiisoft\Db\Expression\Value\JsonValue;
 use Yiisoft\Db\Pgsql\Column\ArrayColumn;
+use Yiisoft\Db\Pgsql\Column\BigBitColumn;
 use Yiisoft\Db\Pgsql\Column\BigIntColumn;
 use Yiisoft\Db\Pgsql\Column\BinaryColumn;
 use Yiisoft\Db\Pgsql\Column\BitColumn;
@@ -283,6 +284,7 @@ final class ColumnTest extends CommonColumnTest
         $this->assertInstanceOf(BinaryColumn::class, $tableSchema->getColumn('blob_col'));
         $this->assertInstanceOf(BooleanColumn::class, $tableSchema->getColumn('bool_col'));
         $this->assertInstanceOf(BitColumn::class, $tableSchema->getColumn('bit_col'));
+        $this->assertInstanceOf(BigBitColumn::class, $tableSchema->getColumn('bigbit_col'));
         $this->assertInstanceOf(ArrayColumn::class, $tableSchema->getColumn('intarray_col'));
         $this->assertInstanceOf(IntegerColumn::class, $tableSchema->getColumn('intarray_col')->getColumn());
         $this->assertInstanceOf(JsonColumn::class, $tableSchema->getColumn('json_col'));

@@ -14,9 +14,12 @@ final class ColumnBuilder extends \Yiisoft\Db\Schema\Column\ColumnBuilder
         return new BooleanColumn(ColumnType::BOOLEAN);
     }
 
-    public static function bit(?int $size = null): BitColumn
+    public static function bit(?int $size = null): BitColumn|BigBitColumn
     {
-        return new BitColumn(ColumnType::BIT, size: $size);
+        $className = BitColumnInternal::className($size);
+
+        /** @psalm-suppress UnsafeInstantiation */
+        return new $className(ColumnType::BIT, size: $size);
     }
 
     public static function tinyint(?int $size = null): IntegerColumn

@@ -158,6 +158,7 @@ CREATE TABLE "type" (
   bool_col2 boolean DEFAULT TRUE,
   bit_col BIT(8) NOT NULL DEFAULT B'10000010', -- 130
   varbit_col VARBIT NOT NULL DEFAULT '100'::bit, -- 4
+  bigbit_col VARBIT(64),
   bigint_col BIGINT,
   intarray_col integer[],
   numericarray_col numeric(5,2)[],
