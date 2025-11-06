@@ -15,7 +15,7 @@ final class StructuredLazyColumn extends AbstractStructuredColumn
      * @param string|null $value
      * @psalm-suppress MoreSpecificImplementedParamType
      */
-    public function phpTypecast(mixed $value): StructuredLazyArray|null
+    public function phpTypecast(mixed $value): ?StructuredLazyArray
     {
         if (is_string($value)) {
             return new StructuredLazyArray($value, $this->columns);

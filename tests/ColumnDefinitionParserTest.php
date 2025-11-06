@@ -12,16 +12,16 @@ use Yiisoft\Db\Tests\AbstractColumnDefinitionParserTest;
  */
 final class ColumnDefinitionParserTest extends AbstractColumnDefinitionParserTest
 {
-    protected function createColumnDefinitionParser(): ColumnDefinitionParser
-    {
-        return new ColumnDefinitionParser();
-    }
-
     /**
      * @dataProvider \Yiisoft\Db\Pgsql\Tests\Provider\ColumnDefinitionParserProvider::parse
      */
     public function testParse(string $definition, array $expected): void
     {
         parent::testParse($definition, $expected);
+    }
+
+    protected function createColumnDefinitionParser(): ColumnDefinitionParser
+    {
+        return new ColumnDefinitionParser();
     }
 }

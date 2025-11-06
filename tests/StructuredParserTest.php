@@ -23,7 +23,7 @@ final class StructuredParserTest extends TestCase
         $this->assertSame([0 => ''], $parser->parse('("")'));
         $this->assertSame(
             [0 => '[",","null",true,"false","f"]'],
-            $parser->parse('("[\",\",\"null\",true,\"false\",\"f\"]")')
+            $parser->parse('("[\",\",\"null\",true,\"false\",\"f\"]")'),
         );
 
         // Default values can have any expressions

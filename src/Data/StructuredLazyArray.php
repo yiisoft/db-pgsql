@@ -8,7 +8,7 @@ use Yiisoft\Db\Schema\Data\AbstractStructuredLazyArray;
 
 final class StructuredLazyArray extends AbstractStructuredLazyArray
 {
-    protected function parse(string $value): array|null
+    protected function parse(string $value): ?array
     {
         return (new StructuredParser())->parse($value);
     }

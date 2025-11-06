@@ -59,21 +59,21 @@ final class QueryTest extends CommonQueryTest
         $this->assertSame(1, (new Query($db))->from('bool_values')->where('bool_col = FALSE')->count());
         $this->assertSame(
             2,
-            (new Query($db))->from('bool_values')->where('bool_col IN (TRUE, FALSE)')->count()
+            (new Query($db))->from('bool_values')->where('bool_col IN (TRUE, FALSE)')->count(),
         );
         $this->assertSame(1, (new Query($db))->from('bool_values')->where(['bool_col' => true])->count());
         $this->assertSame(1, (new Query($db))->from('bool_values')->where(['bool_col' => false])->count());
         $this->assertSame(
             2,
-            (new Query($db))->from('bool_values')->where(['bool_col' => [true, false]])->count()
+            (new Query($db))->from('bool_values')->where(['bool_col' => [true, false]])->count(),
         );
         $this->assertSame(
             1,
-            (new Query($db))->from('bool_values')->where('bool_col = :bool_col', ['bool_col' => true])->count()
+            (new Query($db))->from('bool_values')->where('bool_col = :bool_col', ['bool_col' => true])->count(),
         );
         $this->assertSame(
             1,
-            (new Query($db))->from('bool_values')->where('bool_col = :bool_col', ['bool_col' => false])->count()
+            (new Query($db))->from('bool_values')->where('bool_col = :bool_col', ['bool_col' => false])->count(),
         );
 
         $db->close();

@@ -26,7 +26,7 @@ final class BitColumn extends BaseBitColumn
         };
     }
 
-    public function phpTypecast(mixed $value): int|null
+    public function phpTypecast(mixed $value): ?int
     {
         /** @var int|string|null $value */
         if (is_string($value)) {

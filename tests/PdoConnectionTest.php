@@ -38,7 +38,7 @@ final class PdoConnectionTest extends CommonPdoConnectionTest
                 'name' => 'Some {{weird}} name',
                 'email' => 'test@example.com',
                 'address' => 'Some {{%weird}} address',
-            ]
+            ],
         )->execute();
 
         $this->assertSame('4', $db->getLastInsertId('public.customer_id_seq'));

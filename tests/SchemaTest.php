@@ -125,7 +125,7 @@ final class SchemaTest extends CommonSchemaTest
 
         $this->expectException(NotSupportedException::class);
         $this->expectExceptionMessage(
-            'Yiisoft\Db\Pgsql\Schema::loadTableDefaultValues is not supported by PostgreSQL.'
+            'Yiisoft\Db\Pgsql\Schema::loadTableDefaultValues is not supported by PostgreSQL.',
         );
 
         $db->getSchema()->getSchemaDefaultValues();
@@ -259,7 +259,7 @@ final class SchemaTest extends CommonSchemaTest
         string $tablePrefix,
         string $tableName,
         string $testTablePrefix,
-        string $testTableName
+        string $testTableName,
     ): void {
         $db = $this->getConnection();
 
@@ -318,7 +318,7 @@ final class SchemaTest extends CommonSchemaTest
     public function testTableSchemaWithDbSchemes(
         string $tableName,
         string $expectedTableName,
-        string $expectedSchemaName = ''
+        string $expectedSchemaName = '',
     ): void {
         $db = $this->getConnection();
 
@@ -330,15 +330,15 @@ final class SchemaTest extends CommonSchemaTest
             ->expects(self::atLeastOnce())
             ->method('createCommand')
             ->with(
-                self::callback(static fn ($sql) => true),
+                self::callback(static fn($sql) => true),
                 self::callback(
                     function ($params) use ($expectedTableName, $expectedSchemaName) {
                         $this->assertSame($expectedTableName, $params[':tableName']);
                         $this->assertSame($expectedSchemaName, $params[':schemaName']);
 
                         return true;
-                    }
-                )
+                    },
+                ),
             )
             ->willReturn($commandMock);
         $schema = new Schema($mockDb, DbHelper::getSchemaCache());
@@ -363,7 +363,7 @@ final class SchemaTest extends CommonSchemaTest
 
         $command->createTable(
             'test_timestamp_default_null',
-            ['id' => 'pk', 'timestamp' => 'timestamp DEFAULT NULL']
+            ['id' => 'pk', 'timestamp' => 'timestamp DEFAULT NULL'],
         )->execute();
         $schema->refreshTableSchema('test_timestamp_default_null');
         $tableSchema = $schema->getTableSchema('test_timestamp_default_null');
@@ -382,7 +382,7 @@ final class SchemaTest extends CommonSchemaTest
     {
         $this->expectException(NotSupportedException::class);
         $this->expectExceptionMessage(
-            'Yiisoft\Db\Pgsql\DDLQueryBuilder::addDefaultValue is not supported by PostgreSQL.'
+            'Yiisoft\Db\Pgsql\DDLQueryBuilder::addDefaultValue is not supported by PostgreSQL.',
         );
 
         parent::testWorkWithDefaultValueConstraint();
@@ -450,7 +450,7 @@ final class SchemaTest extends CommonSchemaTest
 
         $command->setSql('DROP DOMAIN IF EXISTS sex_char CASCADE')->execute();
         $command->setSql(
-            'CREATE DOMAIN sex_char AS "char" NOT NULL DEFAULT \'x\' CHECK (VALUE in (\'m\', \'f\', \'x\'))'
+            'CREATE DOMAIN sex_char AS "char" NOT NULL DEFAULT \'x\' CHECK (VALUE in (\'m\', \'f\', \'x\'))',
         )->execute();
 
         if ($schema->getTableSchema('test_domain_type') !== null) {
@@ -521,14 +521,14 @@ final class SchemaTest extends CommonSchemaTest
                 'table_index_unique_index_non_unique_index_idx' => new Index('table_index_unique_index_non_unique_index_idx', ['unique_index'], true),
                 'table_index_non_unique_index_unique_index_idx' => new Index('table_index_non_unique_index_unique_index_idx', ['non_unique_index']),
             ],
-            $tableIndexes
+            $tableIndexes,
         );
 
         $db->close();
     }
 
     #[DataProviderExternal(SchemaProvider::class, 'resultColumns')]
-    public function testGetResultColumn(ColumnInterface|null $expected, array $metadata): void
+    public function testGetResultColumn(?ColumnInterface $expected, array $metadata): void
     {
         parent::testGetResultColumn($expected, $metadata);
     }

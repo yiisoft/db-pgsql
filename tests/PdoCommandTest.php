@@ -27,7 +27,7 @@ final class PdoCommandTest extends CommonPdoCommandTest
         string $name,
         mixed $value,
         int $dataType,
-        int|null $length,
+        ?int $length,
         mixed $driverOptions,
         array $expected,
     ): void {
