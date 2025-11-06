@@ -13,10 +13,10 @@ interface SequenceColumnInterface extends ColumnInterface
      *
      * @psalm-mutation-free
      */
-    public function getSequenceName(): string|null;
+    public function getSequenceName(): ?string;
 
     /**
      * Set the name of an associated sequence if a column is auto incremental.
      */
-    public function sequenceName(string|null $sequenceName): static;
+    public function sequenceName(?string $sequenceName): static;
 }

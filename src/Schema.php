@@ -83,6 +83,11 @@ use function substr;
  */
 final class Schema extends AbstractPdoSchema
 {
+    /**
+     * @var string The default schema used for the current session.
+     */
+    protected string $defaultSchema = 'public';
+
     protected function findConstraints(TableSchemaInterface $table): void
     {
         $tableName = $this->resolveFullName($table->getName(), $table->getSchemaName());
@@ -91,11 +96,6 @@ final class Schema extends AbstractPdoSchema
         $table->foreignKeys(...$this->getTableMetadata($tableName, SchemaInterface::FOREIGN_KEYS));
         $table->indexes(...$this->getTableMetadata($tableName, SchemaInterface::INDEXES));
     }
-
-    /**
-     * @var string The default schema used for the current session.
-     */
-    protected string $defaultSchema = 'public';
 
     protected function findSchemaNames(): array
     {
@@ -147,7 +147,7 @@ final class Schema extends AbstractPdoSchema
         return $this->db->createCommand($sql, [':schemaName' => $schema])->queryColumn();
     }
 
-    protected function loadTableSchema(string $name): TableSchemaInterface|null
+    protected function loadTableSchema(string $name): ?TableSchemaInterface
     {
         $table = new TableSchema(...$this->db->getQuoter()->getTableNameParts($name));
 
@@ -197,6 +197,7 @@ final class Schema extends AbstractPdoSchema
             ':tableName' => $nameParts['name'],
         ])->queryAll();
 
+        /** @psalm-var list<array<string,mixed>> $indexes */
         $indexes = array_map(array_change_key_case(...), $indexes);
         $indexes = DbArrayHelper::arrange($indexes, ['name']);
         $result = [];
@@ -402,7 +403,7 @@ final class Schema extends AbstractPdoSchema
      *
      * @psalm-suppress MoreSpecificImplementedParamType
      */
-    protected function loadResultColumn(array $metadata): ColumnInterface|null
+    protected function loadResultColumn(array $metadata): ?ColumnInterface
     {
         if (empty($metadata['native_type'])) {
             return null;
@@ -461,7 +462,7 @@ final class Schema extends AbstractPdoSchema
                 LEFT JOIN pg_namespace AS ns ON ns.oid = COALESCE(t2.typnamespace, t.typnamespace)
                 WHERE t.oid = :oid
                 SQL,
-                [':oid' => $metadata['pgsql:oid']]
+                [':oid' => $metadata['pgsql:oid']],
             )->queryOne();
 
             $dbType = $this->resolveFullName($typeInfo['typname'], $typeInfo['schema']);
@@ -626,6 +627,7 @@ final class Schema extends AbstractPdoSchema
             ':tableName' => $nameParts['name'],
         ])->queryAll();
 
+        /** @psalm-var list<array<string,mixed>> $constraints */
         $constraints = array_map(array_change_key_case(...), $constraints);
         $constraints = DbArrayHelper::arrange($constraints, ['type', 'name']);
 

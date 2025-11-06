@@ -528,7 +528,7 @@ final class SchemaProvider extends \Yiisoft\Db\Tests\Provider\SchemaProvider
                     $config['name'],
                     $config['prefix'],
                     $testConfig['name'],
-                    $testConfig['prefix']
+                    $testConfig['prefix'],
                 );
                 $data[$description] = [
                     $config['prefix'],

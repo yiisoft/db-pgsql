@@ -41,54 +41,6 @@ final class ColumnTest extends CommonColumnTest
 {
     use TestTrait;
 
-    protected function insertTypeValues(ConnectionInterface $db): void
-    {
-        $db->createCommand()->insert(
-            'type',
-            [
-                'int_col' => 1,
-                'char_col' => str_repeat('x', 100),
-                'char_col3' => null,
-                'float_col' => 1.234,
-                'blob_col' => "\x10\x11\x12",
-                'timestamp_col' => '2023-07-11 14:50:23',
-                'timestamp_default' => new DateTimeImmutable('2023-07-11 14:50:23'),
-                'bool_col' => false,
-                'bit_col' => 0b0110_0100, // 100
-                'varbit_col' => 0b1_1100_1000, // 456
-                'bigint_col' => 9_223_372_036_854_775_806,
-                'intarray_col' => [1, -2, null, '42'],
-                'numericarray_col' => [null, 1.2, -2.2, null, null],
-                'varchararray_col' => ['', 'some text', '""', '\\\\', '[",","null",true,"false","f"]', null],
-                'textarray2_col' => new ArrayValue(null),
-                'json_col' => [['a' => 1, 'b' => null, 'c' => [1, 3, 5]]],
-                'jsonb_col' => new JsonValue(new ArrayValue([1, 2, 3])),
-                'jsonarray_col' => [new ArrayValue([[',', 'null', true, 'false', 'f']], ColumnType::JSON)],
-            ]
-        )->execute();
-    }
-
-    protected function assertTypecastedValues(array $result, bool $allTypecasted = false): void
-    {
-        $this->assertSame(1, $result['int_col']);
-        $this->assertSame(str_repeat('x', 100), $result['char_col']);
-        $this->assertSame(1.234, $result['float_col']);
-        $this->assertSame("\x10\x11\x12", (string) $result['blob_col']);
-        $this->assertEquals(new DateTimeImmutable('2023-07-11 14:50:23', new DateTimeZone('UTC')), $result['timestamp_col']);
-        $this->assertEquals(new DateTimeImmutable('2023-07-11 14:50:23'), $result['timestamp_default']);
-        $this->assertFalse($result['bool_col']);
-        $this->assertSame(0b0110_0100, $result['bit_col']);
-        $this->assertSame(0b1_1100_1000, $result['varbit_col']);
-        $this->assertSame(33.22, $result['numeric_col']);
-        $this->assertSame([1, -2, null, 42], $result['intarray_col']);
-        $this->assertSame([null, 1.2, -2.2, null, null], $result['numericarray_col']);
-        $this->assertSame(['', 'some text', '""', '\\\\', '[",","null",true,"false","f"]', null], $result['varchararray_col']);
-        $this->assertNull($result['textarray2_col']);
-        $this->assertSame([['a' => 1, 'b' => null, 'c' => [1, 3, 5]]], $result['json_col']);
-        $this->assertSame([1, 2, 3], $result['jsonb_col']);
-        $this->assertSame([[[',', 'null', true, 'false', 'f']]], $result['jsonarray_col']);
-    }
-
     public function testSelectWithPhpTypecasting(): void
     {
         $db = $this->getConnection(true);
@@ -193,7 +145,7 @@ final class ColumnTest extends CommonColumnTest
         $this->assertFalse($query['default_0']);
         $this->assertSame(
             [null, true, true, true, true, true, true, false, false, false, false, false, false],
-            $tableSchema->getColumn('default_array')->phpTypecast($query['default_array'])
+            $tableSchema->getColumn('default_array')->phpTypecast($query['default_array']),
         );
 
         $this->assertNull($tableSchema->getColumn('bool_col')->getDefaultValue());
@@ -211,7 +163,7 @@ final class ColumnTest extends CommonColumnTest
         $this->assertFalse($tableSchema->getColumn('default_0')->getDefaultValue());
         $this->assertSame(
             [null, true, true, true, true, true, true, false, false, false, false, false, false],
-            $tableSchema->getColumn('default_array')->getDefaultValue()
+            $tableSchema->getColumn('default_array')->getDefaultValue(),
         );
 
         $db->close();
@@ -272,20 +224,20 @@ final class ColumnTest extends CommonColumnTest
                 ['value' => 11.11, 'currency_code' => 'USD'],
                 ['value' => null, 'currency_code' => null],
             ],
-            $priceArrayPhpType
+            $priceArrayPhpType,
         );
         $this->assertSame(
             [[
                 ['value' => 123.45, 'currency_code' => 'USD'],
             ]],
-            $priceArray2PhpType
+            $priceArray2PhpType,
         );
         $this->assertSame(
             [
                 'price_from' => ['value' => 1000.0, 'currency_code' => 'USD'],
                 'price_to' => ['value' => 2000.0, 'currency_code' => 'USD'],
             ],
-            $rangePriceColPhpType
+            $rangePriceColPhpType,
         );
 
         $priceCol = $tableSchema->getColumn('price_col');
@@ -314,7 +266,7 @@ final class ColumnTest extends CommonColumnTest
                 ),
             ),
             $priceArray2->dbTypecast([null, null]),
-            'Double array of null values'
+            'Double array of null values',
         );
 
         $db->close();
@@ -409,5 +361,53 @@ final class ColumnTest extends CommonColumnTest
         $bigintCol->sequenceName(null);
 
         $this->assertNull($bigintCol->getSequenceName());
+    }
+
+    protected function insertTypeValues(ConnectionInterface $db): void
+    {
+        $db->createCommand()->insert(
+            'type',
+            [
+                'int_col' => 1,
+                'char_col' => str_repeat('x', 100),
+                'char_col3' => null,
+                'float_col' => 1.234,
+                'blob_col' => "\x10\x11\x12",
+                'timestamp_col' => '2023-07-11 14:50:23',
+                'timestamp_default' => new DateTimeImmutable('2023-07-11 14:50:23'),
+                'bool_col' => false,
+                'bit_col' => 0b0110_0100, // 100
+                'varbit_col' => 0b1_1100_1000, // 456
+                'bigint_col' => 9_223_372_036_854_775_806,
+                'intarray_col' => [1, -2, null, '42'],
+                'numericarray_col' => [null, 1.2, -2.2, null, null],
+                'varchararray_col' => ['', 'some text', '""', '\\\\', '[",","null",true,"false","f"]', null],
+                'textarray2_col' => new ArrayValue(null),
+                'json_col' => [['a' => 1, 'b' => null, 'c' => [1, 3, 5]]],
+                'jsonb_col' => new JsonValue(new ArrayValue([1, 2, 3])),
+                'jsonarray_col' => [new ArrayValue([[',', 'null', true, 'false', 'f']], ColumnType::JSON)],
+            ],
+        )->execute();
+    }
+
+    protected function assertTypecastedValues(array $result, bool $allTypecasted = false): void
+    {
+        $this->assertSame(1, $result['int_col']);
+        $this->assertSame(str_repeat('x', 100), $result['char_col']);
+        $this->assertSame(1.234, $result['float_col']);
+        $this->assertSame("\x10\x11\x12", (string) $result['blob_col']);
+        $this->assertEquals(new DateTimeImmutable('2023-07-11 14:50:23', new DateTimeZone('UTC')), $result['timestamp_col']);
+        $this->assertEquals(new DateTimeImmutable('2023-07-11 14:50:23'), $result['timestamp_default']);
+        $this->assertFalse($result['bool_col']);
+        $this->assertSame(0b0110_0100, $result['bit_col']);
+        $this->assertSame(0b1_1100_1000, $result['varbit_col']);
+        $this->assertSame(33.22, $result['numeric_col']);
+        $this->assertSame([1, -2, null, 42], $result['intarray_col']);
+        $this->assertSame([null, 1.2, -2.2, null, null], $result['numericarray_col']);
+        $this->assertSame(['', 'some text', '""', '\\\\', '[",","null",true,"false","f"]', null], $result['varchararray_col']);
+        $this->assertNull($result['textarray2_col']);
+        $this->assertSame([['a' => 1, 'b' => null, 'c' => [1, 3, 5]]], $result['json_col']);
+        $this->assertSame([1, 2, 3], $result['jsonb_col']);
+        $this->assertSame([[[',', 'null', true, 'false', 'f']]], $result['jsonarray_col']);
     }
 }

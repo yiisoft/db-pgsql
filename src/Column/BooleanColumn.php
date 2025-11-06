@@ -8,7 +8,7 @@ use Yiisoft\Db\Schema\Column\BooleanColumn as BaseBooleanColumn;
 
 final class BooleanColumn extends BaseBooleanColumn
 {
-    public function phpTypecast(mixed $value): bool|null
+    public function phpTypecast(mixed $value): ?bool
     {
         if ($value === null) {
             return null;

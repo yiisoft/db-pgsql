@@ -221,48 +221,48 @@ final class QueryBuilderProvider extends \Yiisoft\Db\Tests\Provider\QueryBuilder
     {
         $concreteData = [
             'regular values' => [
-                3 => 'INSERT INTO "T_upsert" ("email", "address", "status", "profile_id") ' .
-                    'VALUES (:qp0, :qp1, 1, NULL) ON CONFLICT ("email") ' .
-                    'DO UPDATE SET "address"=EXCLUDED."address", "status"=EXCLUDED."status", "profile_id"=EXCLUDED."profile_id"',
+                3 => 'INSERT INTO "T_upsert" ("email", "address", "status", "profile_id") '
+                    . 'VALUES (:qp0, :qp1, 1, NULL) ON CONFLICT ("email") '
+                    . 'DO UPDATE SET "address"=EXCLUDED."address", "status"=EXCLUDED."status", "profile_id"=EXCLUDED."profile_id"',
             ],
             'regular values with unique at not the first position' => [
-                3 => 'INSERT INTO "T_upsert" ("address", "email", "status", "profile_id") ' .
-                    'VALUES (:qp0, :qp1, 1, NULL) ON CONFLICT ("email") ' .
-                    'DO UPDATE SET "address"=EXCLUDED."address", "status"=EXCLUDED."status", "profile_id"=EXCLUDED."profile_id"',
+                3 => 'INSERT INTO "T_upsert" ("address", "email", "status", "profile_id") '
+                    . 'VALUES (:qp0, :qp1, 1, NULL) ON CONFLICT ("email") '
+                    . 'DO UPDATE SET "address"=EXCLUDED."address", "status"=EXCLUDED."status", "profile_id"=EXCLUDED."profile_id"',
             ],
             'regular values with update part' => [
                 2 => ['address' => 'foo {{city}}', 'status' => 2, 'orders' => new Expression('"T_upsert"."orders" + 1')],
-                3 => 'INSERT INTO "T_upsert" ("email", "address", "status", "profile_id") ' .
-                    'VALUES (:qp0, :qp1, 1, NULL) ON CONFLICT ("email") ' .
-                    'DO UPDATE SET "address"=:qp2, "status"=2, "orders"="T_upsert"."orders" + 1',
+                3 => 'INSERT INTO "T_upsert" ("email", "address", "status", "profile_id") '
+                    . 'VALUES (:qp0, :qp1, 1, NULL) ON CONFLICT ("email") '
+                    . 'DO UPDATE SET "address"=:qp2, "status"=2, "orders"="T_upsert"."orders" + 1',
             ],
             'regular values without update part' => [
-                3 => 'INSERT INTO "T_upsert" ("email", "address", "status", "profile_id") ' .
-                    'VALUES (:qp0, :qp1, 1, NULL) ON CONFLICT DO NOTHING',
+                3 => 'INSERT INTO "T_upsert" ("email", "address", "status", "profile_id") '
+                    . 'VALUES (:qp0, :qp1, 1, NULL) ON CONFLICT DO NOTHING',
             ],
             'query' => [
-                3 => 'INSERT INTO "T_upsert" ("email", "status") SELECT "email", 2 AS "status" FROM "customer" ' .
-                    'WHERE "name" = :qp0 LIMIT 1 ON CONFLICT ("email") DO UPDATE SET "status"=EXCLUDED."status"',
+                3 => 'INSERT INTO "T_upsert" ("email", "status") SELECT "email", 2 AS "status" FROM "customer" '
+                    . 'WHERE "name" = :qp0 LIMIT 1 ON CONFLICT ("email") DO UPDATE SET "status"=EXCLUDED."status"',
             ],
             'query with update part' => [
                 2 => ['address' => 'foo {{city}}', 'status' => 2, 'orders' => new Expression('"T_upsert"."orders" + 1')],
-                3 => 'INSERT INTO "T_upsert" ("email", "status") SELECT "email", 2 AS "status" FROM "customer" ' .
-                    'WHERE "name" = :qp0 LIMIT 1 ON CONFLICT ("email") DO UPDATE SET "address"=:qp1, "status"=2, "orders"="T_upsert"."orders" + 1',
+                3 => 'INSERT INTO "T_upsert" ("email", "status") SELECT "email", 2 AS "status" FROM "customer" '
+                    . 'WHERE "name" = :qp0 LIMIT 1 ON CONFLICT ("email") DO UPDATE SET "address"=:qp1, "status"=2, "orders"="T_upsert"."orders" + 1',
             ],
             'query without update part' => [
-                3 => 'INSERT INTO "T_upsert" ("email", "status") SELECT "email", 2 AS "status" FROM "customer" ' .
-                    'WHERE "name" = :qp0 LIMIT 1 ON CONFLICT DO NOTHING',
+                3 => 'INSERT INTO "T_upsert" ("email", "status") SELECT "email", 2 AS "status" FROM "customer" '
+                    . 'WHERE "name" = :qp0 LIMIT 1 ON CONFLICT DO NOTHING',
             ],
             'values and expressions' => [
                 1 => ['{{%T_upsert}}.[[email]]' => 'dynamic@example.com', '[[ts]]' => new Expression('extract(epoch from now()) * 1000')],
-                3 => 'INSERT INTO {{%T_upsert}} ("email", "ts") VALUES (:qp0, extract(epoch from now()) * 1000) ' .
-                    'ON CONFLICT ("email") DO UPDATE SET "ts"=EXCLUDED."ts"',
+                3 => 'INSERT INTO {{%T_upsert}} ("email", "ts") VALUES (:qp0, extract(epoch from now()) * 1000) '
+                    . 'ON CONFLICT ("email") DO UPDATE SET "ts"=EXCLUDED."ts"',
             ],
             'values and expressions with update part' => [
                 1 => ['{{%T_upsert}}.[[email]]' => 'dynamic@example.com', '[[ts]]' => new Expression('extract(epoch from now()) * 1000')],
                 2 => ['[[orders]]' => new Expression('EXCLUDED.orders + 1')],
-                3 => 'INSERT INTO {{%T_upsert}} ("email", "ts") VALUES (:qp0, extract(epoch from now()) * 1000) ' .
-                    'ON CONFLICT ("email") DO UPDATE SET "orders"=EXCLUDED.orders + 1',
+                3 => 'INSERT INTO {{%T_upsert}} ("email", "ts") VALUES (:qp0, extract(epoch from now()) * 1000) '
+                    . 'ON CONFLICT ("email") DO UPDATE SET "orders"=EXCLUDED.orders + 1',
             ],
             'values and expressions without update part' => [
                 1 => ['{{%T_upsert}}.[[email]]' => 'dynamic@example.com', '[[ts]]' => new Expression('extract(epoch from now()) * 1000')],
@@ -277,8 +277,8 @@ final class QueryBuilderProvider extends \Yiisoft\Db\Tests\Provider\QueryBuilder
                         ],
                     ),
                 2 => ['ts' => 0, '[[orders]]' => new Expression('EXCLUDED.orders + 1')],
-                3 => 'INSERT INTO {{%T_upsert}} ("email", "ts") SELECT :phEmail AS "email", extract(epoch from now()) * 1000 AS [[ts]] ' .
-                    'ON CONFLICT ("email") DO UPDATE SET "ts"=0, "orders"=EXCLUDED.orders + 1',
+                3 => 'INSERT INTO {{%T_upsert}} ("email", "ts") SELECT :phEmail AS "email", extract(epoch from now()) * 1000 AS [[ts]] '
+                    . 'ON CONFLICT ("email") DO UPDATE SET "ts"=0, "orders"=EXCLUDED.orders + 1',
             ],
             'query, values and expressions without update part' => [
                 1 => (new Query(self::getDb()))

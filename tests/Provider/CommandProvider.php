@@ -20,8 +20,8 @@ final class CommandProvider extends \Yiisoft\Db\Tests\Provider\CommandProvider
     {
         $batchInsert = parent::batchInsert();
 
-        $batchInsert['binds json params']['expected'] =
-            'INSERT INTO "type" ("int_col", "char_col", "float_col", "bool_col", "json_col")'
+        $batchInsert['binds json params']['expected']
+            = 'INSERT INTO "type" ("int_col", "char_col", "float_col", "bool_col", "json_col")'
             . ' VALUES (1, :qp0, 0, TRUE, :qp1::json), (2, :qp2, -1, FALSE, :qp3)';
 
         $batchInsert['binds params from jsonValue'] = [
@@ -29,7 +29,7 @@ final class CommandProvider extends \Yiisoft\Db\Tests\Provider\CommandProvider
             [
                 [
                     new JsonValue(
-                        ['username' => 'silverfire', 'is_active' => true, 'langs' => ['Ukrainian', 'Russian', 'English']]
+                        ['username' => 'silverfire', 'is_active' => true, 'langs' => ['Ukrainian', 'Russian', 'English']],
                     ),
                     1,
                     1.0,

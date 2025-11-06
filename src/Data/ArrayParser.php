@@ -20,7 +20,7 @@ final class ArrayParser
      *
      * @psalm-return list<array|string|null>|null
      */
-    public function parse(string $value): array|null
+    public function parse(string $value): ?array
     {
         return $value[0] === '{'
             ? $this->parseArray($value)
@@ -79,7 +79,7 @@ final class ArrayParser
     /**
      * Parses unquoted string.
      */
-    private function parseUnquotedString(string $value, int &$i): string|null
+    private function parseUnquotedString(string $value, int &$i): ?string
     {
         for ($result = '';; ++$i) {
             if (in_array($value[$i], [',', '}'], true)) {

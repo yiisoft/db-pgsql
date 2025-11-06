@@ -20,7 +20,7 @@ final class StructuredParser
      *
      * @psalm-return non-empty-list<null|string>|null
      */
-    public function parse(string $value): array|null
+    public function parse(string $value): ?array
     {
         if ($value[0] !== '(') {
             return null;
