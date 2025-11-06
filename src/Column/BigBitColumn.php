@@ -8,12 +8,6 @@ use Yiisoft\Db\Constant\ColumnType;
 use Yiisoft\Db\Expression\ExpressionInterface;
 use Yiisoft\Db\Schema\Column\AbstractColumn;
 
-use function decbin;
-use function gettype;
-use function str_pad;
-
-use const STR_PAD_LEFT;
-
 final class BigBitColumn extends AbstractColumn
 {
     protected const DEFAULT_TYPE = ColumnType::BIT;
