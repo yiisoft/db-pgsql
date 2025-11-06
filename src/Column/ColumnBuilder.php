@@ -18,9 +18,9 @@ final class ColumnBuilder extends \Yiisoft\Db\Schema\Column\ColumnBuilder
 
     public static function bit(int|null $size = null): BitColumn|BigBitColumn
     {
-        return !empty($size) && ($size > 63 || PHP_INT_SIZE !== 8 && $size > 31)
-            ? new BigBitColumn(ColumnType::BIT, size: $size)
-            : new BitColumn(ColumnType::BIT, size: $size);
+        $className = ColumnClassName::bit($size);
+
+        return new $className(ColumnType::BIT, size: $size);
     }
 
     public static function tinyint(int|null $size = null): IntegerColumn
