@@ -4,17 +4,18 @@ declare(strict_types=1);
 
 namespace Yiisoft\Db\Pgsql\Tests;
 
-use JsonException;
-use Throwable;
+use PHPUnit\Framework\Attributes\DataProviderExternal;
 use Yiisoft\Db\Command\CommandInterface;
 use Yiisoft\Db\Connection\ConnectionInterface;
+use Yiisoft\Db\Constraint\Index;
 use Yiisoft\Db\Driver\Pdo\PdoConnectionInterface;
-use Yiisoft\Db\Exception\Exception;
-use Yiisoft\Db\Exception\InvalidConfigException;
 use Yiisoft\Db\Exception\NotSupportedException;
 use Yiisoft\Db\Expression\Expression;
 use Yiisoft\Db\Pgsql\Schema;
+use Yiisoft\Db\Pgsql\Tests\Provider\SchemaProvider;
+use Yiisoft\Db\Pgsql\Tests\Provider\StructuredTypeProvider;
 use Yiisoft\Db\Pgsql\Tests\Support\TestTrait;
+use Yiisoft\Db\Schema\Column\ColumnInterface;
 use Yiisoft\Db\Schema\SchemaInterface;
 use Yiisoft\Db\Schema\TableSchemaInterface;
 use Yiisoft\Db\Tests\Common\CommonSchemaTest;
@@ -22,17 +23,11 @@ use Yiisoft\Db\Tests\Support\DbHelper;
 
 /**
  * @group pgsql
- *
- * @psalm-suppress PropertyNotSetInConstructor
  */
 final class SchemaTest extends CommonSchemaTest
 {
     use TestTrait;
 
-    /**
-     * @throws Exception
-     * @throws InvalidConfigException
-     */
     public function testBooleanDefaultValues(): void
     {
         $db = $this->getConnection(true);
@@ -53,32 +48,23 @@ final class SchemaTest extends CommonSchemaTest
         $db->close();
     }
 
-    /**
-     * @dataProvider \Yiisoft\Db\Pgsql\Tests\Provider\SchemaProvider::columns
-     *
-     * @throws Exception
-     */
-    public function testColumnSchema(array $columns, string $tableName): void
+    #[DataProviderExternal(SchemaProvider::class, 'columns')]
+    public function testColumns(array $columns, string $tableName): void
     {
         $db = $this->getConnection();
 
-        if (version_compare($db->getServerVersion(), '10', '>')) {
+        if (version_compare($db->getServerInfo()->getVersion(), '10', '>')) {
             if ($tableName === 'type') {
-                $columns['ts_default']['defaultValue'] = new Expression('CURRENT_TIMESTAMP');
+                $columns['timestamp_default']->defaultValue(new Expression('CURRENT_TIMESTAMP'));
             }
         }
 
-        $this->columnSchema($columns, $tableName);
+        $this->assertTableColumns($columns, $tableName);
 
         $db->close();
     }
 
-    /**
-     * @throws Exception
-     * @throws InvalidConfigException
-     * @throws Throwable
-     */
-    public function testColumnSchemaTypeMapNoExist(): void
+    public function testColumnTypeMapNoExist(): void
     {
         $db = $this->getConnection();
 
@@ -100,15 +86,11 @@ final class SchemaTest extends CommonSchemaTest
         $db->close();
     }
 
-    /**
-     * @throws Exception
-     * @throws InvalidConfigException
-     */
     public function testGeneratedValues(): void
     {
         $this->fixture = 'pgsql12.sql';
 
-        if (version_compare($this->getConnection()->getServerVersion(), '12.0', '<')) {
+        if (version_compare($this->getConnection()->getServerInfo()->getVersion(), '12.0', '<')) {
             $this->markTestSkipped('PostgresSQL < 12.0 does not support GENERATED AS IDENTITY columns.');
         }
 
@@ -126,10 +108,6 @@ final class SchemaTest extends CommonSchemaTest
         $db->close();
     }
 
-    /**
-     * @throws Exception
-     * @throws InvalidConfigException
-     */
     public function testGetDefaultSchema(): void
     {
         $db = $this->getConnection();
@@ -141,27 +119,18 @@ final class SchemaTest extends CommonSchemaTest
         $db->close();
     }
 
-    /**
-     * @throws Exception
-     * @throws InvalidConfigException
-     */
     public function testGetSchemaDefaultValues(): void
     {
         $db = $this->getConnection();
 
         $this->expectException(NotSupportedException::class);
         $this->expectExceptionMessage(
-            'Yiisoft\Db\Pgsql\Schema::loadTableDefaultValues is not supported by PostgreSQL.'
+            'Yiisoft\Db\Pgsql\Schema::loadTableDefaultValues is not supported by PostgreSQL.',
         );
 
         $db->getSchema()->getSchemaDefaultValues();
     }
 
-    /**
-     * @throws Exception
-     * @throws InvalidConfigException
-     * @throws NotSupportedException
-     */
     public function testGetSchemaNames(): void
     {
         $db = $this->getConnection(true);
@@ -179,23 +148,6 @@ final class SchemaTest extends CommonSchemaTest
         $db->close();
     }
 
-    /**
-     * @dataProvider \Yiisoft\Db\Pgsql\Tests\Provider\SchemaProvider::columnsTypeChar
-     */
-    public function testGetStringFieldsSize(
-        string $columnName,
-        string $columnType,
-        int|null $columnSize,
-        string $columnDbType
-    ): void {
-        parent::testGetStringFieldsSize($columnName, $columnType, $columnSize, $columnDbType);
-    }
-
-    /**
-     * @throws Exception
-     * @throws InvalidConfigException
-     * @throws NotSupportedException
-     */
     public function testGetTableSchemasNotSchemaDefault(): void
     {
         $db = $this->getConnection(true);
@@ -214,9 +166,6 @@ final class SchemaTest extends CommonSchemaTest
 
     /**
      * @link https://github.com/yiisoft/yii2/issues/12483
-     *
-     * @throws Exception
-     * @throws Throwable
      */
     public function testParenthesisDefaultValue(): void
     {
@@ -245,22 +194,18 @@ final class SchemaTest extends CommonSchemaTest
         $column = $tableSchema->getColumn('user_timezone');
 
         $this->assertNotNull($column);
-        $this->assertFalse($column->isAllowNull());
+        $this->assertTrue($column->isNotNull());
         $this->assertEquals('numeric', $column->getDbType());
         $this->assertEquals(0, $column->getDefaultValue());
 
         $db->close();
     }
 
-    /**
-     * @throws Exception
-     * @throws InvalidConfigException
-     */
     public function testPartitionedTable(): void
     {
         $this->fixture = 'pgsql10.sql';
 
-        if (version_compare($this->getConnection()->getServerVersion(), '10.0', '<')) {
+        if (version_compare($this->getConnection()->getServerInfo()->getVersion(), '10.0', '<')) {
             $this->markTestSkipped('PostgresSQL < 10.0 does not support PARTITION BY clause.');
         }
 
@@ -273,11 +218,6 @@ final class SchemaTest extends CommonSchemaTest
         $db->close();
     }
 
-    /**
-     * @throws Exception
-     * @throws InvalidConfigException
-     * @throws Throwable
-     */
     public function testSequenceName(): void
     {
         $db = $this->getConnection(true);
@@ -291,14 +231,14 @@ final class SchemaTest extends CommonSchemaTest
         $sequenceName = $tableSchema->getSequenceName();
         $command->setSql(
             <<<SQL
-            ALTER TABLE "item" ALTER COLUMN "id" SET DEFAULT nextval('item_id_seq_2')
+            ALTER TABLE "item" ALTER COLUMN "id" SET DEFAULT nextval('nextval_item_id_seq_2')
             SQL,
         )->execute();
         $schema->refreshTableSchema('item');
         $tableSchema = $schema->getTableSchema('item');
 
         $this->assertNotNull($tableSchema);
-        $this->assertEquals('item_id_seq_2', $tableSchema->getSequenceName());
+        $this->assertEquals('nextval_item_id_seq_2', $tableSchema->getSequenceName());
 
         $command->setSql(
             <<<SQL
@@ -314,16 +254,12 @@ final class SchemaTest extends CommonSchemaTest
         $db->close();
     }
 
-    /**
-     * @dataProvider \Yiisoft\Db\Pgsql\Tests\Provider\SchemaProvider::tableSchemaCacheWithTablePrefixes
-     *
-     * @throws Exception
-     */
+    #[DataProviderExternal(SchemaProvider::class, 'tableSchemaCacheWithTablePrefixes')]
     public function testTableSchemaCacheWithTablePrefixes(
         string $tablePrefix,
         string $tableName,
         string $testTablePrefix,
-        string $testTableName
+        string $testTableName,
     ): void {
         $db = $this->getConnection();
 
@@ -359,50 +295,30 @@ final class SchemaTest extends CommonSchemaTest
         $db->close();
     }
 
-    /**
-     * @dataProvider \Yiisoft\Db\Pgsql\Tests\Provider\SchemaProvider::constraints
-     *
-     * @throws Exception
-     * @throws JsonException
-     */
+    #[DataProviderExternal(SchemaProvider::class, 'constraints')]
+    #[DataProviderExternal(SchemaProvider::class, 'constraintsOfView')]
     public function testTableSchemaConstraints(string $tableName, string $type, mixed $expected): void
     {
         parent::testTableSchemaConstraints($tableName, $type, $expected);
     }
 
-    /**
-     * @dataProvider \Yiisoft\Db\Pgsql\Tests\Provider\SchemaProvider::constraints
-     *
-     * @throws Exception
-     * @throws InvalidConfigException
-     * @throws JsonException
-     * @throws NotSupportedException
-     */
+    #[DataProviderExternal(SchemaProvider::class, 'constraints')]
     public function testTableSchemaConstraintsWithPdoLowercase(string $tableName, string $type, mixed $expected): void
     {
         parent::testTableSchemaConstraintsWithPdoLowercase($tableName, $type, $expected);
     }
 
-    /**
-     * @dataProvider \Yiisoft\Db\Pgsql\Tests\Provider\SchemaProvider::constraints
-     *
-     * @throws Exception
-     * @throws JsonException
-     */
+    #[DataProviderExternal(SchemaProvider::class, 'constraints')]
     public function testTableSchemaConstraintsWithPdoUppercase(string $tableName, string $type, mixed $expected): void
     {
         parent::testTableSchemaConstraintsWithPdoUppercase($tableName, $type, $expected);
     }
 
-    /**
-     * @dataProvider \Yiisoft\Db\Pgsql\Tests\Provider\SchemaProvider::tableSchemaWithDbSchemes
-     *
-     * @throws Exception
-     */
+    #[DataProviderExternal(SchemaProvider::class, 'tableSchemaWithDbSchemes')]
     public function testTableSchemaWithDbSchemes(
         string $tableName,
         string $expectedTableName,
-        string $expectedSchemaName = ''
+        string $expectedSchemaName = '',
     ): void {
         $db = $this->getConnection();
 
@@ -414,15 +330,15 @@ final class SchemaTest extends CommonSchemaTest
             ->expects(self::atLeastOnce())
             ->method('createCommand')
             ->with(
-                self::callback(static fn ($sql) => true),
+                self::callback(static fn($sql) => true),
                 self::callback(
                     function ($params) use ($expectedTableName, $expectedSchemaName) {
                         $this->assertSame($expectedTableName, $params[':tableName']);
                         $this->assertSame($expectedSchemaName, $params[':schemaName']);
 
                         return true;
-                    }
-                )
+                    },
+                ),
             )
             ->willReturn($commandMock);
         $schema = new Schema($mockDb, DbHelper::getSchemaCache());
@@ -433,9 +349,6 @@ final class SchemaTest extends CommonSchemaTest
 
     /**
      * @link https://github.com/yiisoft/yii2/issues/14192
-     *
-     * @throws Exception
-     * @throws Throwable
      */
     public function testTimestampNullDefaultValue(): void
     {
@@ -450,17 +363,17 @@ final class SchemaTest extends CommonSchemaTest
 
         $command->createTable(
             'test_timestamp_default_null',
-            ['id' => 'pk', 'timestamp' => 'timestamp DEFAULT NULL']
+            ['id' => 'pk', 'timestamp' => 'timestamp DEFAULT NULL'],
         )->execute();
         $schema->refreshTableSchema('test_timestamp_default_null');
         $tableSchema = $schema->getTableSchema('test_timestamp_default_null');
 
         $this->assertNotNull($tableSchema);
 
-        $columnSchema = $tableSchema->getColumn('timestamp');
+        $column = $tableSchema->getColumn('timestamp');
 
-        $this->assertNotNull($columnSchema);
-        $this->assertNull($columnSchema->getDefaultValue());
+        $this->assertNotNull($column);
+        $this->assertNull($column->getDefaultValue());
 
         $db->close();
     }
@@ -469,7 +382,7 @@ final class SchemaTest extends CommonSchemaTest
     {
         $this->expectException(NotSupportedException::class);
         $this->expectExceptionMessage(
-            'Yiisoft\Db\Pgsql\DDLQueryBuilder::addDefaultValue is not supported by PostgreSQL.'
+            'Yiisoft\Db\Pgsql\DDLQueryBuilder::addDefaultValue is not supported by PostgreSQL.',
         );
 
         parent::testWorkWithDefaultValueConstraint();
@@ -513,17 +426,19 @@ final class SchemaTest extends CommonSchemaTest
         $schema = $db->getSchema()->getTableSchema('schema2.custom_type_test_table');
         $this->assertEquals('my_type', $schema->getColumn('test_type')->getDbType());
         $this->assertEquals('schema2.my_type2', $schema->getColumn('test_type2')->getDbType());
+
+        $db->close();
     }
 
     public function testNotConnectionPDO(): void
     {
         $db = $this->createMock(ConnectionInterface::class);
-        $schema = new Schema($db, DbHelper::getSchemaCache(), 'system');
+        $schema = new Schema($db, DbHelper::getSchemaCache());
 
         $this->expectException(NotSupportedException::class);
         $this->expectExceptionMessage('Only PDO connections are supported.');
 
-        $schema->refreshTableSchema('customer');
+        $schema->refresh();
     }
 
     public function testDomainType(): void
@@ -535,7 +450,7 @@ final class SchemaTest extends CommonSchemaTest
 
         $command->setSql('DROP DOMAIN IF EXISTS sex_char CASCADE')->execute();
         $command->setSql(
-            'CREATE DOMAIN sex_char AS "char" NOT NULL DEFAULT \'x\' CHECK (VALUE in (\'m\', \'f\', \'x\'))'
+            'CREATE DOMAIN sex_char AS "char" NOT NULL DEFAULT \'x\' CHECK (VALUE in (\'m\', \'f\', \'x\'))',
         )->execute();
 
         if ($schema->getTableSchema('test_domain_type') !== null) {
@@ -547,7 +462,7 @@ final class SchemaTest extends CommonSchemaTest
         $tableSchema = $schema->getTableSchema('test_domain_type');
         $column = $tableSchema->getColumn('sex');
 
-        $this->assertFalse($column->isAllowNull());
+        $this->assertTrue($column->isNotNull());
         $this->assertEquals('char', $column->getDbType());
         $this->assertEquals('x', $column->getDefaultValue());
 
@@ -556,5 +471,65 @@ final class SchemaTest extends CommonSchemaTest
         $this->assertEquals('m', $sex);
 
         $db->close();
+    }
+
+    public function testGetViewNames(): void
+    {
+        $db = $this->getConnection(true);
+
+        $schema = $db->getSchema();
+        $views = $schema->getViewNames();
+
+        $this->assertSame(
+            [
+                'T_constraints_1_view',
+                'T_constraints_2_view',
+                'T_constraints_3_view',
+                'T_constraints_4_view',
+                'animal_view',
+            ],
+            $views,
+        );
+
+        $db->close();
+    }
+
+    #[DataProviderExternal(StructuredTypeProvider::class, 'columns')]
+    public function testStructuredTypeColumn(array $columns, string $tableName): void
+    {
+        $this->assertTableColumns($columns, $tableName);
+    }
+
+    public function testTableIndexes(): void
+    {
+        $this->fixture = 'pgsql11.sql';
+
+        if (version_compare($this->getConnection()->getServerInfo()->getVersion(), '11.0', '<')) {
+            $this->markTestSkipped('PostgresSQL < 11.0 does not support INCLUDE clause.');
+        }
+
+        $db = $this->getConnection(true);
+        $schema = $db->getSchema();
+
+        $tableIndexes = $schema->getTableIndexes('table_index');
+
+        $this->assertEquals(
+            [
+                'table_index_pkey' => new Index('table_index_pkey', ['id'], true, true),
+                'table_index_one_unique_key' => new Index('table_index_one_unique_key', ['one_unique'], true),
+                'table_index_two_unique_1_two_unique_2_key' => new Index('table_index_two_unique_1_two_unique_2_key', ['two_unique_1', 'two_unique_2'], true),
+                'table_index_unique_index_non_unique_index_idx' => new Index('table_index_unique_index_non_unique_index_idx', ['unique_index'], true),
+                'table_index_non_unique_index_unique_index_idx' => new Index('table_index_non_unique_index_unique_index_idx', ['non_unique_index']),
+            ],
+            $tableIndexes,
+        );
+
+        $db->close();
+    }
+
+    #[DataProviderExternal(SchemaProvider::class, 'resultColumns')]
+    public function testGetResultColumn(?ColumnInterface $expected, array $metadata): void
+    {
+        parent::testGetResultColumn($expected, $metadata);
     }
 }

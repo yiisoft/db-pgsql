@@ -1,6 +1,7 @@
 <?xml version="1.0"?>
 <psalm
   errorLevel="1"
+  ensureOverrideAttribute="false"
   findUnusedBaselineEntry="true"
   findUnusedCode="false"
   resolveFromConfigFile="true"
@@ -14,4 +15,9 @@
         <directory name="vendor" />
     </ignoreFiles>
   </projectFiles>
+  <issueHandlers>
+    <MixedAssignment errorLevel="suppress" />
+    <RiskyTruthyFalsyComparison errorLevel="suppress" />
+    <MoreSpecificImplementedParamType errorLevel="suppress" />
+  </issueHandlers>
 </psalm>

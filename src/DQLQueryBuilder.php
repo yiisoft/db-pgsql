@@ -4,52 +4,43 @@ declare(strict_types=1);
 
 namespace Yiisoft\Db\Pgsql;
 
-use Yiisoft\Db\Expression\ArrayExpression;
-use Yiisoft\Db\Expression\ExpressionBuilderInterface;
-use Yiisoft\Db\Expression\JsonExpression;
-use Yiisoft\Db\Pgsql\Builder\ArrayExpressionBuilder;
-use Yiisoft\Db\Pgsql\Builder\JsonExpressionBuilder;
+use Yiisoft\Db\Expression\Value\ArrayValue;
+use Yiisoft\Db\Expression\Statement\CaseX;
+use Yiisoft\Db\Expression\Function\ArrayMerge;
+use Yiisoft\Db\Expression\Value\JsonValue;
+use Yiisoft\Db\Expression\Value\StructuredValue;
+use Yiisoft\Db\Pgsql\Builder\ArrayValueBuilder;
+use Yiisoft\Db\Pgsql\Builder\ArrayMergeBuilder;
+use Yiisoft\Db\Pgsql\Builder\ArrayOverlapsBuilder;
+use Yiisoft\Db\Pgsql\Builder\CaseXBuilder;
+use Yiisoft\Db\Pgsql\Builder\JsonOverlapsBuilder;
+use Yiisoft\Db\Pgsql\Builder\LikeBuilder;
+use Yiisoft\Db\Pgsql\Builder\StructuredValueBuilder;
+use Yiisoft\Db\Pgsql\Builder\JsonValueBuilder;
 use Yiisoft\Db\QueryBuilder\AbstractDQLQueryBuilder;
-use Yiisoft\Db\QueryBuilder\Condition\LikeCondition;
-
-use function array_merge;
+use Yiisoft\Db\QueryBuilder\Condition\Like;
+use Yiisoft\Db\QueryBuilder\Condition\ArrayOverlaps;
+use Yiisoft\Db\QueryBuilder\Condition\JsonOverlaps;
+use Yiisoft\Db\QueryBuilder\Condition\NotLike;
 
 /**
  * Implements a DQL (Data Query Language) SQL statements for PostgreSQL Server.
  */
 final class DQLQueryBuilder extends AbstractDQLQueryBuilder
 {
-    /**
-     * Has an array of default condition classes.
-     *
-     * Extend this method if you want to change default condition classes for the query builder.
-     *
-     * {@see conditionClasses} docs for details.
-     */
-    protected function defaultConditionClasses(): array
-    {
-        return array_merge(parent::defaultConditionClasses(), [
-            'ILIKE' => LikeCondition::class,
-            'NOT ILIKE' => LikeCondition::class,
-            'OR ILIKE' => LikeCondition::class,
-            'OR NOT ILIKE' => LikeCondition::class,
-        ]);
-    }
-
-    /**
-     * Has an array of default expression builders.
-     *
-     * Extend this method and override it if you want to change default expression builders for this query builder.
-     *
-     * {@see ExpressionBuilder} docs for details.
-     *
-     * @psalm-return array<string, class-string<ExpressionBuilderInterface>>
-     */
     protected function defaultExpressionBuilders(): array
     {
-        return array_merge(parent::defaultExpressionBuilders(), [
-            ArrayExpression::class => ArrayExpressionBuilder::class,
-            JsonExpression::class => JsonExpressionBuilder::class,
-        ]);
+        return [
+            ...parent::defaultExpressionBuilders(),
+            ArrayValue::class => ArrayValueBuilder::class,
+            ArrayOverlaps::class => ArrayOverlapsBuilder::class,
+            JsonValue::class => JsonValueBuilder::class,
+            JsonOverlaps::class => JsonOverlapsBuilder::class,
+            StructuredValue::class => StructuredValueBuilder::class,
+            Like::class => LikeBuilder::class,
+            NotLike::class => LikeBuilder::class,
+            CaseX::class => CaseXBuilder::class,
+            ArrayMerge::class => ArrayMergeBuilder::class,
+        ];
     }
 }

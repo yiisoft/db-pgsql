@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Yiisoft\Db\Pgsql\Tests;
 
 use PHPUnit\Framework\TestCase;
-use Yiisoft\Db\Pgsql\ArrayParser;
+use Yiisoft\Db\Pgsql\Data\ArrayParser;
 
 /**
  * @group pgsql
@@ -18,7 +18,6 @@ final class ArrayParserTest extends TestCase
     {
         $arrayParse = new ArrayParser();
 
-        $this->assertNull($arrayParse->parse(null));
         $this->assertSame([0 => null, 1 => null], $arrayParse->parse('{NULL,NULL}'));
         $this->assertSame([], $arrayParse->parse('{}'));
         $this->assertSame([0 => null, 1 => null], $arrayParse->parse('{,}'));
@@ -28,7 +27,7 @@ final class ArrayParserTest extends TestCase
         $this->assertSame([0 => ''], $arrayParse->parse('{""}'));
         $this->assertSame(
             [0 => '[",","null",true,"false","f"]'],
-            $arrayParse->parse('{"[\",\",\"null\",true,\"false\",\"f\"]"}')
+            $arrayParse->parse('{"[\",\",\"null\",true,\"false\",\"f\"]"}'),
         );
 
         // Similar cases can be in default values

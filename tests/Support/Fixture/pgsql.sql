@@ -1,7 +1,7 @@
 DROP TABLE IF EXISTS "composite_fk" CASCADE;
 DROP TABLE IF EXISTS "order_item" CASCADE;
 DROP TABLE IF EXISTS "item" CASCADE;
-DROP SEQUENCE IF EXISTS "item_id_seq_2" CASCADE;
+DROP SEQUENCE IF EXISTS "nextval_item_id_seq_2" CASCADE;
 DROP TABLE IF EXISTS "order_item_with_null_fk" CASCADE;
 DROP TABLE IF EXISTS "order" CASCADE;
 DROP TABLE IF EXISTS "order_with_null_fk" CASCADE;
@@ -25,6 +25,10 @@ DROP TABLE IF EXISTS "department";
 DROP TABLE IF EXISTS "alpha";
 DROP TABLE IF EXISTS "beta";
 DROP VIEW IF EXISTS "animal_view";
+DROP VIEW IF EXISTS "T_constraints_4_view";
+DROP VIEW IF EXISTS "T_constraints_3_view";
+DROP VIEW IF EXISTS "T_constraints_2_view";
+DROP VIEW IF EXISTS "T_constraints_1_view";
 DROP TABLE IF EXISTS "T_constraints_6";
 DROP TABLE IF EXISTS "T_constraints_5";
 DROP TABLE IF EXISTS "T_constraints_4";
@@ -72,7 +76,6 @@ CREATE TABLE "customer" (
   name varchar(128),
   address text,
   status integer DEFAULT 0,
-  bool_status boolean DEFAULT FALSE,
   profile_id integer
 );
 
@@ -88,7 +91,7 @@ CREATE TABLE "item" (
   name varchar(128) NOT NULL,
   category_id integer NOT NULL references "category"(id) on UPDATE CASCADE on DELETE CASCADE
 );
-CREATE SEQUENCE "item_id_seq_2";
+CREATE SEQUENCE "nextval_item_id_seq_2";
 
 CREATE TABLE "order" (
   id serial not null primary key,
@@ -124,7 +127,7 @@ CREATE TABLE "composite_fk" (
   order_id integer NOT NULL,
   item_id integer NOT NULL,
   PRIMARY KEY (id),
-  CONSTRAINT FK_composite_fk_order_item FOREIGN KEY (order_id, item_id) REFERENCES "order_item" (order_id, item_id) ON DELETE CASCADE
+  CONSTRAINT "FK_composite_fk_order_item" FOREIGN KEY (order_id, item_id) REFERENCES "order_item" (order_id, item_id) ON DELETE CASCADE
 );
 
 CREATE TABLE "null_values" (
@@ -142,19 +145,20 @@ CREATE TABLE "type" (
   tinyint_col smallint DEFAULT '1',
   smallint_col smallint DEFAULT '1',
   char_col char(100) NOT NULL,
-  char_col2 varchar(100) DEFAULT 'some''thing',
+  char_col2 varchar(100) DEFAULT 'some''thing' COLLATE "C",
   char_col3 text,
   char_col4 character varying DEFAULT E'first line\nsecond line',
   float_col double precision NOT NULL,
   float_col2 double precision DEFAULT '1.23',
   blob_col bytea DEFAULT 'a binary value',
   numeric_col decimal(5,2) DEFAULT '33.22',
-  time timestamp NOT NULL DEFAULT '2002-01-01 00:00:00',
+  timestamp_col timestamp NOT NULL DEFAULT '2002-01-01 00:00:00',
+  timestamp_default TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   bool_col boolean NOT NULL,
   bool_col2 boolean DEFAULT TRUE,
-  ts_default TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   bit_col BIT(8) NOT NULL DEFAULT B'10000010', -- 130
   varbit_col VARBIT NOT NULL DEFAULT '100'::bit, -- 4
+  bigbit_col VARBIT(64),
   bigint_col BIGINT,
   intarray_col integer[],
   numericarray_col numeric(5,2)[],
@@ -210,7 +214,7 @@ CREATE TABLE "default_pk" (
 
 CREATE TABLE "notauto_pk" (
   id_1 INTEGER,
-  id_2 INTEGER,
+  id_2 DECIMAL(5,2),
   type VARCHAR(255) NOT NULL,
   PRIMARY KEY (id_1, id_2)
 );
@@ -272,9 +276,9 @@ INSERT INTO "profile" (description) VALUES ('profile customer 3');
 INSERT INTO "schema1"."profile" (description) VALUES ('profile customer 1');
 INSERT INTO "schema1"."profile" (description) VALUES ('profile customer 3');
 
-INSERT INTO "customer" (email, name, address, status, bool_status, profile_id) VALUES ('user1@example.com', 'user1', 'address1', 1, true, 1);
-INSERT INTO "customer" (email, name, address, status, bool_status) VALUES ('user2@example.com', 'user2', 'address2', 1, true);
-INSERT INTO "customer" (email, name, address, status, bool_status, profile_id) VALUES ('user3@example.com', 'user3', 'address3', 2, false, 2);
+INSERT INTO "customer" (email, name, address, status, profile_id) VALUES ('user1@example.com', 'user1', 'address1', 1, 1);
+INSERT INTO "customer" (email, name, address, status) VALUES ('user2@example.com', 'user2', 'address2', 1);
+INSERT INTO "customer" (email, name, address, status, profile_id) VALUES ('user3@example.com', 'user3', 'address3', 2, 2);
 
 INSERT INTO "category" (name) VALUES ('Books');
 INSERT INTO "category" (name) VALUES ('Movies');
@@ -359,6 +363,10 @@ CREATE TABLE "array_and_json_types" (
   jsonarray_col JSON[]
 );
 
+INSERT INTO "array_and_json_types" (intarray_col, json_col, jsonb_col) VALUES (null, null, null);
+INSERT INTO "array_and_json_types" (intarray_col, json_col, jsonb_col) VALUES ('{1,2,3,null}', '[1,2,3,null]', '[1,2,3,null]');
+INSERT INTO "array_and_json_types" (intarray_col, json_col, jsonb_col) VALUES ('{3,4,5}', '[3,4,5]', '[3,4,5]');
+
 CREATE TABLE "T_constraints_1"
 (
     "C_id" INT NOT NULL PRIMARY KEY,
@@ -419,6 +427,11 @@ CREATE TABLE "T_constraints_6"
     CONSTRAINT "CN_constraints_6" FOREIGN KEY ("C_fk_id_1", "C_fk_id_2") REFERENCES "schema1"."T_constraints_5" ("C_id_1", "C_id_2") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
+CREATE VIEW "T_constraints_1_view" AS SELECT 'first_value', * FROM "T_constraints_1";
+CREATE VIEW "T_constraints_2_view" AS SELECT 'first_value', * FROM "T_constraints_2";
+CREATE VIEW "T_constraints_3_view" AS SELECT 'first_value', * FROM "T_constraints_3";
+CREATE VIEW "T_constraints_4_view" AS SELECT 'first_value', * FROM "T_constraints_4";
+
 CREATE TABLE "T_upsert"
 (
     "id" SERIAL NOT NULL PRIMARY KEY,
@@ -459,4 +472,28 @@ CREATE TABLE "table_with_array_col" (
 CREATE TABLE "table_uuid" (
     "uuid" uuid NOT NULL PRIMARY KEY DEFAULT uuid_generate_v4(),
     "col" varchar(16)
+);
+
+DROP TYPE IF EXISTS "currency_money_structured" CASCADE;
+DROP TYPE IF EXISTS "range_price_structured" CASCADE;
+DROP TABLE IF EXISTS "test_structured_type" CASCADE;
+
+CREATE TYPE "currency_money_structured" AS (
+    "value" numeric(10,2),
+    "currency_code" char(3)
+);
+
+CREATE TYPE "range_price_structured" AS (
+    "price_from" "currency_money_structured",
+    "price_to" "currency_money_structured"
+);
+
+CREATE TABLE "test_structured_type"
+(
+    "id" SERIAL NOT NULL PRIMARY KEY,
+    "price_col" "currency_money_structured",
+    "price_default" "currency_money_structured" DEFAULT '(5,USD)',
+    "price_array" "currency_money_structured"[] DEFAULT '{null,"(10.55,USD)","(-1,)"}',
+    "price_array2" "currency_money_structured"[][],
+    "range_price_col" "range_price_structured" DEFAULT '("(0,USD)","(100,USD)")'
 );

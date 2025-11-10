@@ -4,26 +4,33 @@ declare(strict_types=1);
 
 namespace Yiisoft\Db\Pgsql\Tests;
 
-use Generator;
-use Throwable;
+use PHPUnit\Framework\Attributes\DataProviderExternal;
+use PHPUnit\Framework\Attributes\TestWith;
+use Yiisoft\Db\Constant\DataType;
 use Yiisoft\Db\Driver\Pdo\PdoConnectionInterface;
-use Yiisoft\Db\Exception\Exception;
 use Yiisoft\Db\Exception\IntegrityException;
-use Yiisoft\Db\Exception\InvalidConfigException;
 use Yiisoft\Db\Exception\NotSupportedException;
+use Yiisoft\Db\Expression\Value\ArrayValue;
+use Yiisoft\Db\Expression\Statement\CaseX;
+use Yiisoft\Db\Expression\Expression;
 use Yiisoft\Db\Expression\ExpressionInterface;
-use Yiisoft\Db\Pgsql\Column;
+use Yiisoft\Db\Expression\Function\ArrayMerge;
+use Yiisoft\Db\Expression\Value\Param;
+use Yiisoft\Db\Pgsql\Column\ArrayColumn;
+use Yiisoft\Db\Pgsql\Column\IntegerColumn;
+use Yiisoft\Db\Pgsql\Tests\Provider\QueryBuilderProvider;
 use Yiisoft\Db\Pgsql\Tests\Support\TestTrait;
+use Yiisoft\Db\Query\Query;
 use Yiisoft\Db\Query\QueryInterface;
-use Yiisoft\Db\Schema\SchemaInterface;
+use Yiisoft\Db\QueryBuilder\Condition\ArrayOverlaps;
+use Yiisoft\Db\QueryBuilder\Condition\JsonOverlaps;
+use Yiisoft\Db\Schema\Column\ColumnInterface;
 use Yiisoft\Db\Tests\Common\CommonQueryBuilderTest;
 
 use function version_compare;
 
 /**
  * @group pgsql
- *
- * @psalm-suppress PropertyNotSetInConstructor
  */
 final class QueryBuilderTest extends CommonQueryBuilderTest
 {
@@ -31,10 +38,11 @@ final class QueryBuilderTest extends CommonQueryBuilderTest
 
     protected PdoConnectionInterface $db;
 
-    /**
-     * @throws Exception
-     * @throws InvalidConfigException
-     */
+    public function getBuildColumnDefinitionProvider(): array
+    {
+        return QueryBuilderProvider::buildColumnDefinition();
+    }
+
     public function testAddDefaultValue(): void
     {
         $db = $this->getConnection();
@@ -43,7 +51,7 @@ final class QueryBuilderTest extends CommonQueryBuilderTest
 
         $this->expectException(NotSupportedException::class);
         $this->expectExceptionMessage(
-            'Yiisoft\Db\Pgsql\DDLQueryBuilder::addDefaultValue is not supported by PostgreSQL.'
+            'Yiisoft\Db\Pgsql\DDLQueryBuilder::addDefaultValue is not supported by PostgreSQL.',
         );
 
         $qb->addDefaultValue('T_constraints_1', 'CN_pk', 'C_default', 1);
@@ -51,256 +59,79 @@ final class QueryBuilderTest extends CommonQueryBuilderTest
         $db->close();
     }
 
-    /**
-     * @throws Exception
-     * @throws InvalidConfigException
-     */
-    public function testAlterColumn(): void
+    #[DataProviderExternal(QueryBuilderProvider::class, 'alterColumn')]
+    public function testAlterColumn(string|ColumnInterface $type, string $expected): void
     {
-        $db = $this->getConnection();
-
-        $qb = $db->getQueryBuilder();
-
-        $this->assertSame(
-            <<<SQL
-            ALTER TABLE "foo1" ALTER COLUMN "bar" TYPE varchar(255)
-            SQL,
-            $qb->alterColumn('foo1', 'bar', 'varchar(255)'),
-        );
-
-        $this->assertSame(
-            <<<SQL
-            ALTER TABLE "foo1" ALTER COLUMN "bar" SET NOT null
-            SQL,
-            $qb->alterColumn('foo1', 'bar', 'SET NOT null'),
-        );
-
-        $this->assertSame(
-            <<<SQL
-            ALTER TABLE "foo1" ALTER COLUMN "bar" drop default
-            SQL,
-            $qb->alterColumn('foo1', 'bar', 'drop default'),
-        );
-
-        $this->assertSame(
-            <<<SQL
-            ALTER TABLE "foo1" ALTER COLUMN "bar" reset xyz
-            SQL,
-            $qb->alterColumn('foo1', 'bar', 'reset xyz'),
-        );
-
-        $this->assertSame(
-            <<<SQL
-            ALTER TABLE "foo1" ALTER COLUMN "bar" TYPE varchar(255)
-            SQL,
-            $qb->alterColumn(
-                'foo1',
-                'bar',
-                (new Column(SchemaInterface::TYPE_STRING, 255))->asString()
-            ),
-        );
-
-        $this->assertSame(
-            <<<SQL
-            ALTER TABLE "foo1" ALTER COLUMN "bar" TYPE varchar(255) USING bar::varchar
-            SQL,
-            $qb->alterColumn('foo1', 'bar', 'varchar(255) USING bar::varchar'),
-        );
-
-        $this->assertSame(
-            <<<SQL
-            ALTER TABLE "foo1" ALTER COLUMN "bar" TYPE varchar(255) using cast("bar" as varchar)
-            SQL,
-            $qb->alterColumn('foo1', 'bar', 'varchar(255) using cast("bar" as varchar)'),
-        );
-
-        $this->assertSame(
-            <<<SQL
-            ALTER TABLE "foo1" ALTER COLUMN "bar" TYPE varchar(255), ALTER COLUMN "bar" SET NOT NULL
-            SQL,
-            $qb->alterColumn(
-                'foo1',
-                'bar',
-                (new Column(SchemaInterface::TYPE_STRING, 255))->notNull()->asString()
-            ),
-        );
-
-        $this->assertSame(
-            <<<SQL
-            ALTER TABLE "foo1" ALTER COLUMN "bar" TYPE varchar(255), ALTER COLUMN "bar" SET DEFAULT NULL, ALTER COLUMN "bar" DROP NOT NULL
-            SQL,
-            $qb->alterColumn(
-                'foo1',
-                'bar',
-                (new Column(SchemaInterface::TYPE_STRING, 255))->null()->asString()
-            ),
-        );
-
-        $this->assertSame(
-            <<<SQL
-            ALTER TABLE "foo1" ALTER COLUMN "bar" TYPE varchar(255), ALTER COLUMN "bar" SET DEFAULT 'xxx', ALTER COLUMN "bar" DROP NOT NULL
-            SQL,
-            $qb->alterColumn(
-                'foo1',
-                'bar',
-                (new Column(SchemaInterface::TYPE_STRING, 255))->null()->defaultValue('xxx')->asString()
-            ),
-        );
-
-        $this->assertSame(
-            <<<SQL
-            ALTER TABLE "foo1" ALTER COLUMN "bar" TYPE varchar(255), ADD CONSTRAINT foo1_bar_check CHECK (char_length(bar) > 5)
-            SQL,
-            $qb->alterColumn(
-                'foo1',
-                'bar',
-                (new Column(SchemaInterface::TYPE_STRING, 255))->check('char_length(bar) > 5')->asString()
-            ),
-        );
-
-        $this->assertSame(
-            <<<SQL
-            ALTER TABLE "foo1" ALTER COLUMN "bar" TYPE varchar(255), ALTER COLUMN "bar" SET DEFAULT ''
-            SQL,
-            $qb->alterColumn(
-                'foo1',
-                'bar',
-                (new Column(SchemaInterface::TYPE_STRING, 255))->defaultValue('')->asString()
-            ),
-        );
-
-        $this->assertSame(
-            <<<SQL
-            ALTER TABLE "foo1" ALTER COLUMN "bar" TYPE varchar(255), ALTER COLUMN "bar" SET DEFAULT 'AbCdE'
-            SQL,
-            $qb->alterColumn(
-                'foo1',
-                'bar',
-                (new Column(SchemaInterface::TYPE_STRING, 255))->defaultValue('AbCdE')->asString()
-            ),
-        );
-
-        $this->assertSame(
-            <<<SQL
-            ALTER TABLE "foo1" ALTER COLUMN "bar" TYPE timestamp(0), ALTER COLUMN "bar" SET DEFAULT CURRENT_TIMESTAMP
-            SQL,
-            $qb->alterColumn(
-                'foo1',
-                'bar',
-                (new Column(SchemaInterface::TYPE_TIMESTAMP))
-                    ->defaultExpression('CURRENT_TIMESTAMP')
-                    ->asString()
-            ),
-        );
-
-        $this->assertSame(
-            <<<SQL
-            ALTER TABLE "foo1" ALTER COLUMN "bar" TYPE varchar(30), ADD UNIQUE ("bar")
-            SQL,
-            $qb->alterColumn(
-                'foo1',
-                'bar',
-                (new Column(SchemaInterface::TYPE_STRING, 30))->unique()->asString()
-            ),
-        );
-
-        $this->assertSame(
-            <<<SQL
-            ALTER TABLE "foo1" ALTER COLUMN "bar" TYPE varchar(30), ADD UNIQUE ("bar")
-            SQL,
-            $qb->alterColumn(
-                'foo1',
-                'bar',
-                (new Column(SchemaInterface::TYPE_STRING, 30))->unique()
-            ),
-        );
-
-        $db->close();
+        parent::testAlterColumn($type, $expected);
     }
 
-    /**
-     * @dataProvider \Yiisoft\Db\Pgsql\Tests\Provider\QueryBuilderProvider::addForeignKey
-     */
+    #[DataProviderExternal(QueryBuilderProvider::class, 'addForeignKey')]
     public function testAddForeignKey(
         string $name,
         string $table,
         array|string $columns,
         string $refTable,
         array|string $refColumns,
-        string|null $delete,
-        string|null $update,
-        string $expected
+        ?string $delete,
+        ?string $update,
+        string $expected,
     ): void {
         parent::testAddForeignKey($name, $table, $columns, $refTable, $refColumns, $delete, $update, $expected);
     }
 
-    /**
-     * @dataProvider \Yiisoft\Db\Pgsql\Tests\Provider\QueryBuilderProvider::addPrimaryKey
-     */
+    #[DataProviderExternal(QueryBuilderProvider::class, 'addPrimaryKey')]
     public function testAddPrimaryKey(string $name, string $table, array|string $columns, string $expected): void
     {
         parent::testAddPrimaryKey($name, $table, $columns, $expected);
     }
 
-    /**
-     * @dataProvider \Yiisoft\Db\Pgsql\Tests\Provider\QueryBuilderProvider::addUnique
-     */
+    #[DataProviderExternal(QueryBuilderProvider::class, 'addUnique')]
     public function testAddUnique(string $name, string $table, array|string $columns, string $expected): void
     {
         parent::testAddUnique($name, $table, $columns, $expected);
     }
 
-    /**
-     * @dataProvider \Yiisoft\Db\Pgsql\Tests\Provider\QueryBuilderProvider::batchInsert
-     */
-    public function testBatchInsert(string $table, array $columns, iterable|Generator $rows, string $expected): void
-    {
-        parent::testBatchInsert($table, $columns, $rows, $expected);
+    #[DataProviderExternal(QueryBuilderProvider::class, 'batchInsert')]
+    public function testBatchInsert(
+        string $table,
+        iterable $rows,
+        array $columns,
+        string $expected,
+        array $expectedParams = [],
+    ): void {
+        parent::testBatchInsert($table, $rows, $columns, $expected, $expectedParams);
     }
 
-    /**
-     * @dataProvider \Yiisoft\Db\Pgsql\Tests\Provider\QueryBuilderProvider::buildCondition
-     */
+    #[DataProviderExternal(QueryBuilderProvider::class, 'buildCondition')]
     public function testBuildCondition(
         array|ExpressionInterface|string $condition,
-        string|null $expected,
-        array $expectedParams
+        ?string $expected,
+        array $expectedParams,
     ): void {
         parent::testBuildCondition($condition, $expected, $expectedParams);
     }
 
-    /**
-     * @dataProvider \Yiisoft\Db\Pgsql\Tests\Provider\QueryBuilderProvider::buildLikeCondition
-     */
+    #[DataProviderExternal(QueryBuilderProvider::class, 'buildLikeCondition')]
     public function testBuildLikeCondition(
         array|ExpressionInterface $condition,
         string $expected,
-        array $expectedParams
+        array $expectedParams,
     ): void {
         parent::testBuildLikeCondition($condition, $expected, $expectedParams);
     }
 
-    /**
-     * @dataProvider \Yiisoft\Db\Pgsql\Tests\Provider\QueryBuilderProvider::buildFrom
-     */
+    #[DataProviderExternal(QueryBuilderProvider::class, 'buildFrom')]
     public function testBuildWithFrom(mixed $table, string $expectedSql, array $expectedParams = []): void
     {
         parent::testBuildWithFrom($table, $expectedSql, $expectedParams);
     }
 
-    /**
-     * @dataProvider \Yiisoft\Db\Pgsql\Tests\Provider\QueryBuilderProvider::buildWhereExists
-     */
+    #[DataProviderExternal(QueryBuilderProvider::class, 'buildWhereExists')]
     public function testBuildWithWhereExists(string $cond, string $expectedQuerySql): void
     {
         parent::testBuildWithWhereExists($cond, $expectedQuerySql);
     }
 
-    /**
-     * @throws Exception
-     * @throws InvalidConfigException
-     * @throws NotSupportedException
-     */
     public function testCheckIntegrity(): void
     {
         $db = $this->getConnection();
@@ -317,11 +148,6 @@ final class QueryBuilderTest extends CommonQueryBuilderTest
         $db->close();
     }
 
-    /**
-     * @throws Exception
-     * @throws InvalidConfigException
-     * @throws Throwable
-     */
     public function testCheckIntegrityExecute(): void
     {
         $db = $this->getConnection(true);
@@ -330,7 +156,7 @@ final class QueryBuilderTest extends CommonQueryBuilderTest
         $command = $db->createCommand(
             <<<SQL
             INSERT INTO {{item}}([[name]], [[category_id]]) VALUES ('invalid', 99999)
-            SQL
+            SQL,
         );
         $command->execute();
 
@@ -338,7 +164,7 @@ final class QueryBuilderTest extends CommonQueryBuilderTest
 
         $this->expectException(IntegrityException::class);
         $this->expectExceptionMessage(
-            'SQLSTATE[23503]: Foreign key violation: 7 ERROR:  insert or update on table "item" violates foreign key constraint "item_category_id_fkey"'
+            'SQLSTATE[23503]: Foreign key violation: 7 ERROR:  insert or update on table "item" violates foreign key constraint "item_category_id_fkey"',
         );
 
         $command->execute();
@@ -346,10 +172,6 @@ final class QueryBuilderTest extends CommonQueryBuilderTest
         $db->close();
     }
 
-    /**
-     * @throws Exception
-     * @throws InvalidConfigException
-     */
     public function testCreateTable(): void
     {
         $db = $this->getConnection();
@@ -359,11 +181,11 @@ final class QueryBuilderTest extends CommonQueryBuilderTest
         $this->assertSame(
             <<<SQL
             CREATE TABLE "test" (
-            \t"id" serial NOT NULL PRIMARY KEY,
+            \t"id" serial PRIMARY KEY,
             \t"name" varchar(255) NOT NULL,
             \t"email" varchar(255) NOT NULL,
             \t"status" integer NOT NULL,
-            \t"created_at" timestamp(0) NOT NULL
+            \t"created_at" timestamp NOT NULL
             )
             SQL,
             $qb->createTable(
@@ -381,18 +203,12 @@ final class QueryBuilderTest extends CommonQueryBuilderTest
         $db->close();
     }
 
-    /**
-     * @dataProvider \Yiisoft\Db\Pgsql\Tests\Provider\QueryBuilderProvider::delete
-     */
+    #[DataProviderExternal(QueryBuilderProvider::class, 'delete')]
     public function testDelete(string $table, array|string $condition, string $expectedSQL, array $expectedParams): void
     {
         parent::testDelete($table, $condition, $expectedSQL, $expectedParams);
     }
 
-    /**
-     * @throws Exception
-     * @throws InvalidConfigException
-     */
     public function testDropCommentFromColumn(): void
     {
         $db = $this->getConnection(true);
@@ -409,10 +225,6 @@ final class QueryBuilderTest extends CommonQueryBuilderTest
         $db->close();
     }
 
-    /**
-     * @throws Exception
-     * @throws InvalidConfigException
-     */
     public function testDropDefaultValue(): void
     {
         $db = $this->getConnection(true);
@@ -421,16 +233,14 @@ final class QueryBuilderTest extends CommonQueryBuilderTest
 
         $this->expectException(NotSupportedException::class);
         $this->expectExceptionMessage(
-            'Yiisoft\Db\Pgsql\DDLQueryBuilder::dropDefaultValue is not supported by PostgreSQL.'
+            'Yiisoft\Db\Pgsql\DDLQueryBuilder::dropDefaultValue is not supported by PostgreSQL.',
         );
 
         $qb->dropDefaultValue('T_constraints_1', 'CN_pk');
+
+        $db->close();
     }
 
-    /**
-     * @throws Exception
-     * @throws InvalidConfigException
-     */
     public function testDropIndex(): void
     {
         $db = $this->getConnection();
@@ -482,36 +292,28 @@ final class QueryBuilderTest extends CommonQueryBuilderTest
         $db->close();
     }
 
-    /**
-     * @dataProvider \Yiisoft\Db\Pgsql\Tests\Provider\QueryBuilderProvider::insert
-     */
+    #[DataProviderExternal(QueryBuilderProvider::class, 'insert')]
     public function testInsert(
         string $table,
         array|QueryInterface $columns,
         array $params,
         string $expectedSQL,
-        array $expectedParams
+        array $expectedParams,
     ): void {
         parent::testInsert($table, $columns, $params, $expectedSQL, $expectedParams);
     }
 
-    /**
-     * @dataProvider \Yiisoft\Db\Pgsql\Tests\Provider\QueryBuilderProvider::insertWithReturningPks
-     */
-    public function testInsertWithReturningPks(
+    #[DataProviderExternal(QueryBuilderProvider::class, 'insertReturningPks')]
+    public function testInsertReturningPks(
         string $table,
         array|QueryInterface $columns,
         array $params,
         string $expectedSQL,
-        array $expectedParams
+        array $expectedParams,
     ): void {
-        parent::testInsertWithReturningPks($table, $columns, $params, $expectedSQL, $expectedParams);
+        parent::testInsertReturningPks($table, $columns, $params, $expectedSQL, $expectedParams);
     }
 
-    /**
-     * @throws Exception
-     * @throws InvalidConfigException
-     */
     public function testRenameTable(): void
     {
         $db = $this->getConnection();
@@ -528,11 +330,6 @@ final class QueryBuilderTest extends CommonQueryBuilderTest
         $db->close();
     }
 
-    /**
-     * @throws Exception
-     * @throws InvalidConfigException
-     * @throws NotSupportedException
-     */
     public function testResetSequence(): void
     {
         $db = $this->getConnection(true);
@@ -563,14 +360,9 @@ final class QueryBuilderTest extends CommonQueryBuilderTest
         $db->close();
     }
 
-    /**
-     * @throws Exception
-     * @throws InvalidConfigException
-     * @throws NotSupportedException
-     */
     public function testResetSequencePgsql12(): void
     {
-        if (version_compare($this->getConnection()->getServerVersion(), '12.0', '<')) {
+        if (version_compare($this->getConnection()->getServerInfo()->getVersion(), '12.0', '<')) {
             $this->markTestSkipped('PostgreSQL < 12.0 does not support GENERATED AS IDENTITY columns.');
         }
 
@@ -604,10 +396,6 @@ final class QueryBuilderTest extends CommonQueryBuilderTest
         $db->close();
     }
 
-    /**
-     * @throws Exception
-     * @throws InvalidConfigException
-     */
     public function testTruncateTable(): void
     {
         $db = $this->getConnection();
@@ -634,40 +422,248 @@ final class QueryBuilderTest extends CommonQueryBuilderTest
         $db->close();
     }
 
-    /**
-     * @dataProvider \Yiisoft\Db\Pgsql\Tests\Provider\QueryBuilderProvider::update
-     */
+    #[DataProviderExternal(QueryBuilderProvider::class, 'update')]
     public function testUpdate(
         string $table,
         array $columns,
-        array|string $condition,
-        string $expectedSQL,
-        array $expectedParams
+        array|ExpressionInterface|string $condition,
+        array|ExpressionInterface|string|null $from,
+        array $params,
+        string $expectedSql,
+        array $expectedParams = [],
     ): void {
-        parent::testUpdate($table, $columns, $condition, $expectedSQL, $expectedParams);
+        parent::testUpdate($table, $columns, $condition, $from, $params, $expectedSql, $expectedParams);
     }
 
-    /**
-     * @dataProvider \Yiisoft\Db\Pgsql\Tests\Provider\QueryBuilderProvider::upsert
-     */
+    #[DataProviderExternal(QueryBuilderProvider::class, 'upsert')]
     public function testUpsert(
         string $table,
         array|QueryInterface $insertColumns,
         array|bool $updateColumns,
-        string $expectedSQL,
-        array $expectedParams
+        string $expectedSql,
+        array $expectedParams,
     ): void {
-        parent::testUpsert($table, $insertColumns, $updateColumns, $expectedSQL, $expectedParams);
+        parent::testUpsert($table, $insertColumns, $updateColumns, $expectedSql, $expectedParams);
     }
 
-    /**
-     * @dataProvider \Yiisoft\Db\Pgsql\Tests\Provider\QueryBuilderProvider::upsert
-     */
-    public function testUpsertExecute(
+    #[DataProviderExternal(QueryBuilderProvider::class, 'upsertReturning')]
+    public function testUpsertReturning(
         string $table,
         array|QueryInterface $insertColumns,
-        array|bool $updateColumns
+        array|bool $updateColumns,
+        ?array $returnColumns,
+        string $expectedSql,
+        array $expectedParams,
     ): void {
-        parent::testUpsertExecute($table, $insertColumns, $updateColumns);
+        parent::testUpsertReturning($table, $insertColumns, $updateColumns, $returnColumns, $expectedSql, $expectedParams);
+    }
+
+    #[DataProviderExternal(QueryBuilderProvider::class, 'selectScalar')]
+    public function testSelectScalar(array|bool|float|int|string $columns, string $expected): void
+    {
+        parent::testSelectScalar($columns, $expected);
+    }
+
+    public function testArrayOverlapsBuilder(): void
+    {
+        $db = $this->getConnection();
+        $qb = $db->getQueryBuilder();
+
+        $params = [];
+        $sql = $qb->buildExpression(new ArrayOverlaps('column', [1, 2, 3]), $params);
+
+        $this->assertSame('"column"::int[] && ARRAY[1,2,3]::int[]', $sql);
+        $this->assertSame([], $params);
+
+        // Test column as Expression
+        $params = [];
+        $sql = $qb->buildExpression(new ArrayOverlaps(new Expression('column'), [1, 2, 3]), $params);
+
+        $this->assertSame('column::int[] && ARRAY[1,2,3]::int[]', $sql);
+        $this->assertSame([], $params);
+
+        $db->close();
+    }
+
+    public function testJsonOverlapsBuilder(): void
+    {
+        $db = $this->getConnection();
+        $qb = $db->getQueryBuilder();
+
+        $params = [];
+        $sql = $qb->buildExpression(new JsonOverlaps('column', [1, 2, 3]), $params);
+
+        $this->assertSame(
+            'ARRAY(SELECT jsonb_array_elements_text("column"::jsonb))::int[] && ARRAY[1,2,3]::int[]',
+            $sql,
+        );
+        $this->assertSame([], $params);
+
+        $db->close();
+    }
+
+    #[DataProviderExternal(QueryBuilderProvider::class, 'overlapsCondition')]
+    public function testOverlapsCondition(iterable|ExpressionInterface $values, int $expectedCount): void
+    {
+        $db = $this->getConnection();
+        $query = new Query($db);
+
+        $count = $query
+            ->from('array_and_json_types')
+            ->where(new ArrayOverlaps('intarray_col', $values))
+            ->count();
+
+        $this->assertSame($expectedCount, $count);
+
+        $count = $query
+            ->from('array_and_json_types')
+            ->setWhere(new JsonOverlaps('json_col', $values))
+            ->count();
+
+        $this->assertSame($expectedCount, $count);
+
+        $count = $query
+            ->from('array_and_json_types')
+            ->setWhere(new JsonOverlaps('jsonb_col', $values))
+            ->count();
+
+        $this->assertSame($expectedCount, $count);
+
+        $db->close();
+    }
+
+    #[DataProviderExternal(QueryBuilderProvider::class, 'overlapsCondition')]
+    public function testOverlapsConditionOperator(iterable|ExpressionInterface $values, int $expectedCount): void
+    {
+        $db = $this->getConnection();
+        $query = new Query($db);
+
+        $count = $query
+            ->from('array_and_json_types')
+            ->where(['array overlaps', 'intarray_col', $values])
+            ->count();
+
+        $this->assertSame($expectedCount, $count);
+
+        $count = $query
+            ->from('array_and_json_types')
+            ->setWhere(['json overlaps', 'json_col', $values])
+            ->count();
+
+        $this->assertSame($expectedCount, $count);
+
+        $count = $query
+            ->from('array_and_json_types')
+            ->setWhere(['json overlaps', 'jsonb_col', $values])
+            ->count();
+
+        $this->assertSame($expectedCount, $count);
+
+        $db->close();
+    }
+
+    #[DataProviderExternal(QueryBuilderProvider::class, 'buildColumnDefinition')]
+    public function testBuildColumnDefinition(string $expected, ColumnInterface|string $column): void
+    {
+        parent::testBuildColumnDefinition($expected, $column);
+    }
+
+    #[DataProviderExternal(QueryBuilderProvider::class, 'buildValue')]
+    public function testBuildValue(mixed $value, string $expected, array $expectedParams = []): void
+    {
+        parent::testBuildValue($value, $expected, $expectedParams);
+    }
+
+    #[DataProviderExternal(QueryBuilderProvider::class, 'prepareParam')]
+    public function testPrepareParam(string $expected, mixed $value, int $type): void
+    {
+        parent::testPrepareParam($expected, $value, $type);
+    }
+
+    #[DataProviderExternal(QueryBuilderProvider::class, 'prepareValue')]
+    public function testPrepareValue(string $expected, mixed $value): void
+    {
+        parent::testPrepareValue($expected, $value);
+    }
+
+    #[DataProviderExternal(QueryBuilderProvider::class, 'caseXBuilder')]
+    public function testCaseXBuilder(
+        CaseX $case,
+        string $expectedSql,
+        array $expectedParams,
+        string|int $expectedResult,
+    ): void {
+        parent::testCaseXBuilder($case, $expectedSql, $expectedParams, $expectedResult);
+    }
+
+    #[DataProviderExternal(QueryBuilderProvider::class, 'lengthBuilder')]
+    public function testLengthBuilder(
+        string|ExpressionInterface $operand,
+        string $expectedSql,
+        int $expectedResult,
+        array $expectedParams = [],
+    ): void {
+        parent::testLengthBuilder($operand, $expectedSql, $expectedResult, $expectedParams);
+    }
+
+    #[DataProviderExternal(QueryBuilderProvider::class, 'multiOperandFunctionBuilder')]
+    public function testMultiOperandFunctionBuilder(
+        string $class,
+        array $operands,
+        string $expectedSql,
+        array|string|int $expectedResult,
+        array $expectedParams = [],
+    ): void {
+        parent::testMultiOperandFunctionBuilder($class, $operands, $expectedSql, $expectedResult, $expectedParams);
+    }
+
+    #[DataProviderExternal(QueryBuilderProvider::class, 'multiOperandFunctionClasses')]
+    public function testMultiOperandFunctionBuilderWithoutOperands(string $class): void
+    {
+        parent::testMultiOperandFunctionBuilderWithoutOperands($class);
+    }
+
+    #[TestWith(['int[]', '::int[]', '{1,2,3,4,5,6,7,9,10}'])]
+    #[TestWith([new IntegerColumn(), '::integer[]', '{1,2,3,4,5,6,7,9,10}'])]
+    #[TestWith([new ArrayColumn(), '::varchar[]', '{1,10,2,3,4,5,6,7,9}'])]
+    #[TestWith([new ArrayColumn(column: new IntegerColumn()), '::integer[]', '{1,2,3,4,5,6,7,9,10}'])]
+    public function testArrayMergeWithTypeWithOrdering(
+        string|ColumnInterface $type,
+        string $typeHint,
+        string $expectedResult,
+    ): void {
+        $db = $this->getConnection();
+        $qb = $db->getQueryBuilder();
+
+        $stringParam = new Param('{4,3,5}', DataType::STRING);
+        $arrayMerge = (new ArrayMerge(
+            [2, 1, 3],
+            new ArrayValue([6, 5, 7]),
+            $stringParam,
+            self::getDb()->select(new ArrayValue([10, 9])),
+        ))->type($type)->ordered();
+        $params = [];
+
+        $this->assertSame(
+            "ARRAY(SELECT DISTINCT UNNEST(ARRAY[2,1,3]::int[]$typeHint || ARRAY[6,5,7]::int[]$typeHint || :qp0$typeHint || (SELECT ARRAY[10,9]::int[])$typeHint) ORDER BY 1)$typeHint",
+            $qb->buildExpression($arrayMerge, $params),
+        );
+        $this->assertSame([':qp0' => $stringParam], $params);
+
+        $result = $db->select($arrayMerge)->scalar();
+
+        $this->assertSame($expectedResult, $result);
+    }
+
+    #[DataProviderExternal(QueryBuilderProvider::class, 'upsertWithMultiOperandFunctions')]
+    public function testUpsertWithMultiOperandFunctions(
+        array $initValues,
+        array $insertValues,
+        array $updateValues,
+        string $expectedSql,
+        array $expectedResult,
+        array $expectedParams = [],
+    ): void {
+        parent::testUpsertWithMultiOperandFunctions($initValues, $insertValues, $updateValues, $expectedSql, $expectedResult, $expectedParams);
     }
 }

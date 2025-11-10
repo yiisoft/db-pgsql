@@ -9,6 +9,4 @@ use Yiisoft\Db\Driver\Pdo\AbstractPdoTransaction;
 /**
  * Implements the PostgreSQL Server specific transaction.
  */
-final class Transaction extends AbstractPdoTransaction
-{
-}
+final class Transaction extends AbstractPdoTransaction {}

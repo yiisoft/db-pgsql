@@ -5,28 +5,22 @@ declare(strict_types=1);
 namespace Yiisoft\Db\Pgsql\Tests;
 
 use PDO;
-use Throwable;
 use Yiisoft\Db\Connection\ConnectionInterface;
-use Yiisoft\Db\Exception\Exception;
-use Yiisoft\Db\Exception\InvalidConfigException;
-use Yiisoft\Db\Exception\NotSupportedException;
+use Yiisoft\Db\Pgsql\Column\ColumnBuilder;
+use Yiisoft\Db\Pgsql\Column\ColumnFactory;
+use Yiisoft\Db\Pgsql\Connection;
 use Yiisoft\Db\Pgsql\Tests\Support\TestTrait;
 use Yiisoft\Db\Tests\Common\CommonConnectionTest;
+use Yiisoft\Db\Tests\Support\DbHelper;
 use Yiisoft\Db\Transaction\TransactionInterface;
 
 /**
  * @group pgsql
- *
- * @psalm-suppress PropertyNotSetInConstructor
  */
 final class ConnectionTest extends CommonConnectionTest
 {
     use TestTrait;
 
-    /**
-     * @throws Exception
-     * @throws InvalidConfigException
-     */
     public function testInitConnection(): void
     {
         $db = $this->getConnection();
@@ -39,10 +33,6 @@ final class ConnectionTest extends CommonConnectionTest
         $db->close();
     }
 
-    /**
-     * @throws Exception
-     * @throws InvalidConfigException
-     */
     public function testSettingDefaultAttributes(): void
     {
         $db = $this->getConnection();
@@ -64,12 +54,6 @@ final class ConnectionTest extends CommonConnectionTest
         $db->close();
     }
 
-    /**
-     * @throws Exception
-     * @throws InvalidConfigException
-     * @throws NotSupportedException
-     * @throws Throwable
-     */
     public function testTransactionIsolation(): void
     {
         $db = $this->getConnection();
@@ -100,11 +84,6 @@ final class ConnectionTest extends CommonConnectionTest
         $db->close();
     }
 
-    /**
-     * @throws Exception
-     * @throws InvalidConfigException
-     * @throws Throwable
-     */
     public function testTransactionShortcutCustom(): void
     {
         $db = $this->getConnection(true);
@@ -130,6 +109,35 @@ final class ConnectionTest extends CommonConnectionTest
             )->queryScalar(),
             'profile should be inserted in transaction shortcut',
         );
+
+        $db->close();
+    }
+
+    public function getColumnBuilderClass(): void
+    {
+        $db = $this->getConnection();
+
+        $this->assertSame(ColumnBuilder::class, $db->getColumnBuilderClass());
+
+        $db->close();
+    }
+
+    public function testGetColumnFactory(): void
+    {
+        $db = $this->getConnection();
+
+        $this->assertInstanceOf(ColumnFactory::class, $db->getColumnFactory());
+
+        $db->close();
+    }
+
+    public function testUserDefinedColumnFactory(): void
+    {
+        $columnFactory = new ColumnFactory();
+
+        $db = new Connection($this->getDriver(), DbHelper::getSchemaCache(), $columnFactory);
+
+        $this->assertSame($columnFactory, $db->getColumnFactory());
 
         $db->close();
     }

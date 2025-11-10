@@ -4,23 +4,21 @@ declare(strict_types=1);
 
 namespace Yiisoft\Db\Pgsql\Tests;
 
+use PHPUnit\Framework\Attributes\DataProviderExternal;
+use Yiisoft\Db\Pgsql\Tests\Provider\QuoterProvider;
 use Yiisoft\Db\Pgsql\Tests\Support\TestTrait;
 use Yiisoft\Db\Tests\AbstractQuoterTest;
 
 /**
  * @group pgsql
- *
- * @psalm-suppress PropertyNotSetInConstructor
  */
 final class QuoterTest extends AbstractQuoterTest
 {
     use TestTrait;
 
-    /**
-     * @dataProvider \Yiisoft\Db\Pgsql\Tests\Provider\QuoterProvider::tableNameParts
-     */
-    public function testGetTableNameParts(string $tableName, string ...$expected): void
+    #[DataProviderExternal(QuoterProvider::class, 'tableNameParts')]
+    public function testGetTableNameParts(string $tableName, array $expected): void
     {
-        parent::testGetTableNameParts($tableName, ...$expected);
+        parent::testGetTableNameParts($tableName, $expected);
     }
 }

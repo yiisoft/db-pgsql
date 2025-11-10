@@ -4,24 +4,17 @@ declare(strict_types=1);
 
 namespace Yiisoft\Db\Pgsql\Tests;
 
-use Throwable;
-use Yiisoft\Db\Exception\Exception;
-use Yiisoft\Db\Exception\InvalidConfigException;
+use PHPUnit\Framework\Attributes\DataProviderExternal;
 use Yiisoft\Db\Exception\NotSupportedException;
-use Yiisoft\Db\Expression\JsonExpression;
-use Yiisoft\Db\Pgsql\Connection;
-use Yiisoft\Db\Pgsql\Dsn;
-use Yiisoft\Db\Pgsql\Driver;
+use Yiisoft\Db\Expression\ExpressionInterface;
+use Yiisoft\Db\Pgsql\Tests\Provider\CommandProvider;
 use Yiisoft\Db\Pgsql\Tests\Support\TestTrait;
 use Yiisoft\Db\Tests\Common\CommonCommandTest;
-use Yiisoft\Db\Tests\Support\DbHelper;
 
 use function serialize;
 
 /**
  * @group pgsql
- *
- * @psalm-suppress PropertyNotSetInConstructor
  */
 final class CommandTest extends CommonCommandTest
 {
@@ -29,10 +22,6 @@ final class CommandTest extends CommonCommandTest
 
     protected string $upsertTestCharCast = 'CAST([[address]] AS VARCHAR(255))';
 
-    /**
-     * @throws Exception
-     * @throws InvalidConfigException
-     */
     public function testAddDefaultValue(): void
     {
         $db = $this->getConnection();
@@ -41,7 +30,7 @@ final class CommandTest extends CommonCommandTest
 
         $this->expectException(NotSupportedException::class);
         $this->expectExceptionMessage(
-            'Yiisoft\Db\Pgsql\DDLQueryBuilder::addDefaultValue is not supported by PostgreSQL.'
+            'Yiisoft\Db\Pgsql\DDLQueryBuilder::addDefaultValue is not supported by PostgreSQL.',
         );
 
         $command->addDefaultValue('{{table}}', '{{name}}', 'column', 'value');
@@ -49,27 +38,18 @@ final class CommandTest extends CommonCommandTest
         $db->close();
     }
 
-    /**
-     * @dataProvider \Yiisoft\Db\Pgsql\Tests\Provider\CommandProvider::batchInsert
-     *
-     * @throws Throwable
-     */
+    #[DataProviderExternal(CommandProvider::class, 'batchInsert')]
     public function testBatchInsert(
         string $table,
+        iterable $values,
         array $columns,
-        array $values,
         string $expected,
         array $expectedParams = [],
-        int $insertedRow = 1
+        int $insertedRow = 1,
     ): void {
-        parent::testBatchInsert($table, $columns, $values, $expected, $expectedParams, $insertedRow);
+        parent::testBatchInsert($table, $values, $columns, $expected, $expectedParams, $insertedRow);
     }
 
-    /**
-     * @throws Exception
-     * @throws InvalidConfigException
-     * @throws Throwable
-     */
     public function testBooleanValuesInsert(): void
     {
         $db = $this->getConnection(true);
@@ -103,17 +83,12 @@ final class CommandTest extends CommonCommandTest
         $db->close();
     }
 
-    /**
-     * @throws Exception
-     * @throws InvalidConfigException
-     * @throws Throwable
-     */
     public function testBooleanValuesBatchInsert(): void
     {
         $db = $this->getConnection(true);
 
         $command = $db->createCommand();
-        $command->batchInsert('{{bool_values}}', ['bool_col'], [[true], [false]]);
+        $command->insertBatch('{{bool_values}}', [[true], [false]], ['bool_col']);
 
         $this->assertSame(2, $command->execute());
 
@@ -136,11 +111,6 @@ final class CommandTest extends CommonCommandTest
         $db->close();
     }
 
-    /**
-     * @throws Exception
-     * @throws InvalidConfigException
-     * @throws Throwable
-     */
     public function testDelete(): void
     {
         $db = $this->getConnection(true);
@@ -162,10 +132,6 @@ final class CommandTest extends CommonCommandTest
         $db->close();
     }
 
-    /**
-     * @throws Exception
-     * @throws InvalidConfigException
-     */
     public function testDropDefaultValue(): void
     {
         $db = $this->getConnection();
@@ -174,7 +140,7 @@ final class CommandTest extends CommonCommandTest
 
         $this->expectException(NotSupportedException::class);
         $this->expectExceptionMessage(
-            'Yiisoft\Db\Pgsql\DDLQueryBuilder::dropDefaultValue is not supported by PostgreSQL.'
+            'Yiisoft\Db\Pgsql\DDLQueryBuilder::dropDefaultValue is not supported by PostgreSQL.',
         );
 
         $command->dropDefaultValue('{{table}}', '{{name}}');
@@ -182,68 +148,13 @@ final class CommandTest extends CommonCommandTest
         $db->close();
     }
 
-    /**
-     * @throws Exception
-     * @throws InvalidConfigException
-     * @throws Throwable
-     *
-     * {@link https://github.com/yiisoft/yii2/issues/15827}
-     */
-    public function testIssue15827(): void
-    {
-        $db = $this->getConnection();
-
-        $command = $db->createCommand();
-        $inserted = $command->insert(
-            '{{array_and_json_types}}',
-            [
-                'jsonb_col' => new JsonExpression(['Solution date' => '13.01.2011']),
-            ],
-        )->execute();
-
-        $this->assertSame(1, $inserted);
-
-        $found = $command->setSql(
-            <<<SQL
-            SELECT *
-            FROM [[array_and_json_types]]
-            WHERE [[jsonb_col]] @> '{"Some not existing key": "random value"}'
-            SQL,
-        )->execute();
-
-        $this->assertSame(0, $found);
-
-        $found = $command->setSql(
-            <<<SQL
-            SELECT *
-            FROM [[array_and_json_types]]
-            WHERE [[jsonb_col]] @> '{"Solution date": "13.01.2011"}'
-            SQL,
-        )->execute();
-
-        $this->assertSame(1, $found);
-        $this->assertSame(1, $command->delete('{{array_and_json_types}}')->execute());
-
-        $db->close();
-    }
-
-    /**
-     * @dataProvider \Yiisoft\Db\Pgsql\Tests\Provider\CommandProvider::rawSql
-     *
-     * @throws Exception
-     * @throws InvalidConfigException
-     * @throws NotSupportedException
-     */
+    #[DataProviderExternal(CommandProvider::class, 'rawSql')]
     public function testGetRawSql(string $sql, array $params, string $expectedRawSql): void
     {
         parent::testGetRawSql($sql, $params, $expectedRawSql);
     }
 
     /**
-     * @throws Exception
-     * @throws InvalidConfigException
-     * @throws Throwable
-     *
      * {@link https://github.com/yiisoft/yii2/issues/11498}
      */
     public function testSaveSerializedObject(): void
@@ -271,39 +182,31 @@ final class CommandTest extends CommonCommandTest
         $db->close();
     }
 
-    /**
-     * @dataProvider \Yiisoft\Db\Pgsql\Tests\Provider\CommandProvider::update
-     *
-     * @throws Exception
-     * @throws Throwable
-     */
+    #[DataProviderExternal(CommandProvider::class, 'update')]
     public function testUpdate(
         string $table,
         array $columns,
-        array|string $conditions,
+        array|ExpressionInterface|string $conditions,
+        array|ExpressionInterface|string|null $from,
         array $params,
-        string $expected
+        array $expectedValues,
+        int $expectedCount,
     ): void {
-        parent::testUpdate($table, $columns, $conditions, $params, $expected);
+        parent::testUpdate($table, $columns, $conditions, $from, $params, $expectedValues, $expectedCount);
     }
 
-    /**
-     * @dataProvider \Yiisoft\Db\Pgsql\Tests\Provider\CommandProvider::upsert
-     *
-     * @throws Exception
-     * @throws Throwable
-     */
+    #[DataProviderExternal(CommandProvider::class, 'upsert')]
     public function testUpsert(array $firstData, array $secondData): void
     {
         parent::testUpsert($firstData, $secondData);
     }
 
-    public function testinsertWithReturningPksUuid(): void
+    public function testInsertReturningPksUuid(): void
     {
         $db = $this->getConnection(true);
 
         $command = $db->createCommand();
-        $result = $command->insertWithReturningPks(
+        $result = $command->insertReturningPks(
             '{{%table_uuid}}',
             [
                 'col' => 'test',
@@ -322,12 +225,12 @@ final class CommandTest extends CommonCommandTest
 
     public function testShowDatabases(): void
     {
-        $dsn = new Dsn('pgsql', '127.0.0.1');
-        $db = new Connection(new Driver($dsn->asString(), 'root', 'root'), DbHelper::getSchemaCache());
+        $this->assertSame([self::getDatabaseName()], self::getDb()->createCommand()->showDatabases());
+    }
 
-        $command = $db->createCommand();
-
-        $this->assertSame('pgsql:host=127.0.0.1;dbname=postgres;port=5432', $db->getDriver()->getDsn());
-        $this->assertSame(['yiitest'], $command->showDatabases());
+    #[DataProviderExternal(CommandProvider::class, 'createIndex')]
+    public function testCreateIndex(array $columns, array $indexColumns, ?string $indexType, ?string $indexMethod): void
+    {
+        parent::testCreateIndex($columns, $indexColumns, $indexType, $indexMethod);
     }
 }
