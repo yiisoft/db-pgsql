@@ -5,29 +5,29 @@
     <a href="https://www.postgresql.org/" target="_blank">
         <img src="https://www.postgresql.org/media/img/about/press/elephant.png" height="80px" alt="PostgreSQL">
     </a>
-    <h1 align="center">Yii Database PostgreSQL driver</h1>
+    <h1 align="center">Yii Database PostgreSQL Driver</h1>
     <br>
 </p>
 
 [![Latest Stable Version](https://poser.pugx.org/yiisoft/db-pgsql/v)](https://packagist.org/packages/yiisoft/db-pgsql)
 [![Total Downloads](https://poser.pugx.org/yiisoft/db-pgsql/downloads)](https://packagist.org/packages/yiisoft/db-pgsql)
-[![rector](https://github.com/yiisoft/db-pgsql/actions/workflows/rector.yml/badge.svg)](https://github.com/yiisoft/db-pgsql/actions/workflows/rector.yml)
-[![codecov](https://codecov.io/gh/yiisoft/db-pgsql/branch/master/graph/badge.svg?token=3FGN91IVZA)](https://codecov.io/gh/yiisoft/db-pgsql)
-[![StyleCI](https://github.styleci.io/repos/145220173/shield?branch=master)](https://github.styleci.io/repos/145220173?branch=master)
+[![Build status](https://github.com/yiisoft/db-pgsql/actions/workflows/build.yml/badge.svg)](https://github.com/yiisoft/db-pgsql/actions/workflows/build.yml)
+[![Code Coverage](https://codecov.io/gh/yiisoft/db-pgsql/branch/master/graph/badge.svg?token=UF9VERNMYU)](https://codecov.io/gh/yiisoft/db-pgsql)
+[![Mutation testing badge](https://img.shields.io/endpoint?style=flat&url=https%3A%2F%2Fbadge-api.stryker-mutator.io%2Fgithub.com%2Fyiisoft%2Fdb-pgsql%2Fmaster)](https://dashboard.stryker-mutator.io/reports/github.com/yiisoft/db-pgsql/master)
+[![static analysis](https://github.com/yiisoft/db-pgsql/workflows/static%20analysis/badge.svg)](https://github.com/yiisoft/db-pgsql/actions?query=workflow%3A%22static+analysis%22)
+[![type-coverage](https://shepherd.dev/github/yiisoft/db-pgsql/coverage.svg)](https://shepherd.dev/github/yiisoft/db-pgsql)
+[![psalm-level](https://shepherd.dev/github/yiisoft/db-pgsql/level.svg)](https://shepherd.dev/github/yiisoft/db-pgsql)
 
-PostgreSQL driver for [Yii Database](https://github.com/yiisoft/db) is a [PostgreSQL] database adapter.
-The package provides a database connection interface and a set of classes for interacting with a [PostgreSQL] database.
-It allows you to perform common database operations such as executing queries, building and executing `INSERT`, `UPDATE`,
-and `DELETE` statements, and working with transactions. It also provides support for PostgreSQL-specific features such
-as stored procedures and server-side cursors.
+PostgreSQL driver for [Yii Database](https://github.com/yiisoft/db) is a package for working with
+[PostgreSQL](https://www.postgresql.org/) databases in PHP. It includes a database connection class, a command
+builder class, and a set of classes for representing database tables and rows as PHP objects.
 
-[PostgreSQL]: https://www.postgresql.org/
+Driver supports PostgreSQL 9 or higher.
 
-## Support version
+## Requirements
 
-| PHP           | PostgreSQL Version | CI-Actions
-|---------------|--------------------|-----------
-| **8.1 - 8.4** | **9 - 17**     |[![build](https://github.com/yiisoft/db-pgsql/actions/workflows/build.yml/badge.svg?branch=dev)](https://github.com/yiisoft/db-pgsql/actions/workflows/build.yml) [![Mutation testing badge](https://img.shields.io/endpoint?style=flat&url=https%3A%2F%2Fbadge-api.stryker-mutator.io%2Fgithub.com%2Fyiisoft%2Fdb-pgsql%2Fmaster)](https://dashboard.stryker-mutator.io/reports/github.com/yiisoft/db-pgsql/master) [![static analysis](https://github.com/yiisoft/db-pgsql/actions/workflows/static.yml/badge.svg?branch=dev)](https://github.com/yiisoft/db-pgsql/actions/workflows/static.yml) [![type-coverage](https://shepherd.dev/github/yiisoft/db-pgsql/coverage.svg)](https://shepherd.dev/github/yiisoft/db-pgsql)
+- PHP 8.1 - 8.4.
+- `pdo_pgsql` PHP extension.
 
 ## Installation
 
@@ -38,15 +38,15 @@ composer require yiisoft/db-pgsql
 ```
 
 > [!IMPORTANT]
-> It also depends on [PSR-16: Common Interface for Caching Libraries](https://www.php-fig.org/psr/psr-16/) and requires
-> the installation of [PSR-16 implementation](https://packagist.org/providers/psr/simple-cache-implementation).
-> For example, [yiisoft/cache](https://github.com/yiisoft/cache) or one of the other [cache handlers](https://github.com/yiisoft/cache#cache-handlers).
+> See also [installation notes](https://github.com/yiisoft/db/?tab=readme-ov-file#installation) for `yiisoft/db`
+> package.
 
 ## Documentation
 
-For config connection to PostgreSQL database check [Connecting PostgreSQL](https://github.com/yiisoft/db/blob/master/docs/guide/en/connection/pgsql.md).
+For config connection to PostgreSQL database check
+[Connecting PostgreSQL](https://github.com/yiisoft/db/blob/master/docs/guide/en/connection/pgsql.md).
 
-[Check the documentation](https://github.com/yiisoft/db/blob/master/docs/guide/en/README.md) to learn about usage.
+Check the `yiisoft/db` [docs](https://github.com/yiisoft/db/blob/master/docs/guide/en/README.md) to learn about usage.
 
 - [Internals](docs/internals.md)
 
@@ -55,7 +55,7 @@ You may also check out other [Yii Community Resources](https://www.yiiframework.
 
 ## License
 
-The Yii Database PostgreSQL driver is free software. It is released under the terms of the BSD License.
+The Yii Database PostgreSQL Driver is free software. It is released under the terms of the BSD License.
 Please see [`LICENSE`](./LICENSE.md) for more information.
 
 Maintained by [Yii Software](https://www.yiiframework.com/).
