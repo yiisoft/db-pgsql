@@ -5,46 +5,17 @@ declare(strict_types=1);
 namespace Yiisoft\Db\Pgsql\Column;
 
 use Yiisoft\Db\Constant\ColumnType;
-use Yiisoft\Db\Constraint\ForeignKeyConstraint;
 use Yiisoft\Db\Expression\Expression;
 use Yiisoft\Db\Schema\Column\AbstractColumnFactory;
 use Yiisoft\Db\Schema\Column\ColumnInterface;
 
+use function is_array;
 use function preg_replace;
 use function str_starts_with;
 use function substr;
 
 use const PHP_INT_SIZE;
 
-/**
- * @psalm-type ColumnInfo = array{
- *     auto_increment?: bool|string,
- *     check?: string|null,
- *     collation?: string|null,
- *     column?: ColumnInterface,
- *     columns?: array<string, ColumnInterface>,
- *     comment?: string|null,
- *     computed?: bool|string,
- *     dbTimezone?: string,
- *     db_type?: string|null,
- *     default_value?: mixed,
- *     dimension?: int|string,
- *     enum_values?: array|null,
- *     extra?: string|null,
- *     fromResult?: bool,
- *     primary_key?: bool|string,
- *     name?: string,
- *     not_null?: bool|string|null,
- *     reference?: ForeignKeyConstraint|null,
- *     sequence_name?: string|null,
- *     scale?: int|string|null,
- *     schema?: string|null,
- *     size?: int|string|null,
- *     table?: string|null,
- *     type?: string,
- *     unique?: bool|string,
- * }
- */
 final class ColumnFactory extends AbstractColumnFactory
 {
     /**
