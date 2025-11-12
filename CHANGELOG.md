@@ -15,7 +15,7 @@
 - New #355, #368, #370, #399: Implement `ColumnFactory` class (@Tigrov)
 - Enh #359: Separate column type constants (@Tigrov)
 - Enh #359: Remove `Schema::TYPE_ARRAY` and `Schema::TYPE_STRUCTURED` constants (@Tigrov)
-- New #360: Realize `ColumnBuilder` class (@Tigrov)
+- New #360, #460: Realize `ColumnBuilder` class (@Tigrov, @vjik)
 - Enh #362: Update according changes in `ColumnSchemaInterface` (@Tigrov)
 - New #364, #372: Add `ColumnDefinitionBuilder` class (@Tigrov)
 - Enh #365, #427: Refactor `Dsn` class (@Tigrov)
