@@ -56,6 +56,7 @@
 - Enh #444: Improve `ArrayExpressionBuilder` and `JsonExpressionBuilder` classes (@Tigrov)
 - Chg #447: Update expression namespaces according to changes in `yiisoft/db` package (@Tigrov)
 - Bug #456: Fix typecasting bit columns' values with big size (@Tigrov)
+- Chg #460: Throw exception on "unsigned" column usage (@vjik)
 
 ## 1.3.0 March 21, 2024
 
