@@ -105,9 +105,9 @@ final class ColumnFactoryProvider extends \Yiisoft\Db\Tests\Provider\ColumnFacto
     {
         $result = parent::pseudoTypes();
         $result['pk'][1] = new IntegerColumn(primaryKey: true, autoIncrement: true);
-        $result['upk'][1] = new IntegerColumn(primaryKey: true, autoIncrement: true, unsigned: true);
+        $result['upk'][1] = new IntegerColumn(primaryKey: true, autoIncrement: true, unsigned: false);
         $result['bigpk'][1] = new IntegerColumn(ColumnType::BIGINT, primaryKey: true, autoIncrement: true);
-        $result['ubigpk'][1] = new IntegerColumn(ColumnType::BIGINT, primaryKey: true, autoIncrement: true, unsigned: true);
+        $result['ubigpk'][1] = new IntegerColumn(ColumnType::BIGINT, primaryKey: true, autoIncrement: true, unsigned: false);
 
         return $result;
     }

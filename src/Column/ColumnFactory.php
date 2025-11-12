@@ -104,6 +104,12 @@ final class ColumnFactory extends AbstractColumnFactory
         return $column;
     }
 
+    public function fromPseudoType(string $pseudoType, array $info = []): ColumnInterface
+    {
+        // PostgreSQL doesn't support unsigned types
+        return parent::fromPseudoType($pseudoType, $info)->unsigned(false);
+    }
+
     protected function columnDefinitionParser(): ColumnDefinitionParser
     {
         return new ColumnDefinitionParser();
