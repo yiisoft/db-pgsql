@@ -396,6 +396,12 @@ final class QueryBuilderProvider extends \Yiisoft\Db\Tests\Provider\QueryBuilder
     {
         $values = parent::buildColumnDefinition();
 
+        // PostgreSQL does not support unsigned types
+        unset(
+            $values['bigint(15) unsigned'],
+            $values['unsigned()'],
+        );
+
         $values[PseudoType::PK][0] = 'serial PRIMARY KEY';
         $values[PseudoType::UPK][0] = 'serial PRIMARY KEY';
         $values[PseudoType::BIGPK][0] = 'bigserial PRIMARY KEY';
@@ -443,7 +449,6 @@ final class QueryBuilderProvider extends \Yiisoft\Db\Tests\Provider\QueryBuilder
         $values['structured()'][0] = 'jsonb';
         $values['json()'][0] = 'jsonb';
         $values['json(100)'][0] = 'jsonb';
-        $values['unsigned()'][0] = 'integer';
         $values['scale(2)'][0] = 'numeric(10,2)';
         $values['integer(8)->scale(2)'][0] = 'integer';
         $values["collation('collation_name')"] = [

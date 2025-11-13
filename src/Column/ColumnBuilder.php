@@ -37,9 +37,11 @@ final class ColumnBuilder extends \Yiisoft\Db\Schema\Column\ColumnBuilder
         return new IntegerColumn(ColumnType::INTEGER, size: $size);
     }
 
-    public static function bigint(?int $size = null): IntegerColumn
+    public static function bigint(?int $size = null, bool $unsigned = false): BigIntColumn|IntegerColumn
     {
-        return new IntegerColumn(ColumnType::BIGINT, size: $size);
+        return PHP_INT_SIZE === 4 || $unsigned
+            ? new BigIntColumn(ColumnType::BIGINT, size: $size, unsigned: $unsigned)
+            : new IntegerColumn(ColumnType::BIGINT, size: $size, unsigned: $unsigned);
     }
 
     public static function binary(?int $size = null): BinaryColumn
