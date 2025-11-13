@@ -6,6 +6,7 @@ namespace Yiisoft\Db\Pgsql\Column;
 
 use Yiisoft\Db\Constant\ColumnType;
 use Yiisoft\Db\Expression\Expression;
+use Yiisoft\Db\Pgsql\Constant\PgsqlColumnType;
 use Yiisoft\Db\Schema\Column\AbstractColumnFactory;
 use Yiisoft\Db\Schema\Column\ColumnInterface;
 
@@ -23,8 +24,7 @@ final class ColumnFactory extends AbstractColumnFactory
      *
      * @link https://www.postgresql.org/docs/current/datatype.html#DATATYPE-TABLE
      *
-     * @var string[]
-     * @psalm-var array<string, ColumnType::*>
+     * @inheritdoc
      */
     protected const TYPE_MAP = [
         'bool' => ColumnType::BOOLEAN,
@@ -91,6 +91,12 @@ final class ColumnFactory extends AbstractColumnFactory
         'xml' => ColumnType::STRING,
         'json' => ColumnType::JSON,
         'jsonb' => ColumnType::JSON,
+        'int4range' => PgsqlColumnType::RANGE,
+        'int8range' => PgsqlColumnType::RANGE,
+        'numrange' => PgsqlColumnType::RANGE,
+        'tsrange' => PgsqlColumnType::RANGE,
+        'tstzrange' => PgsqlColumnType::RANGE,
+        'daterange' => PgsqlColumnType::RANGE,
     ];
 
     public function fromType(string $type, array $info = []): ColumnInterface
@@ -129,7 +135,16 @@ final class ColumnFactory extends AbstractColumnFactory
             ColumnType::BINARY => BinaryColumn::class,
             ColumnType::ARRAY => ArrayColumn::class,
             ColumnType::STRUCTURED => StructuredColumn::class,
+            PgsqlColumnType::RANGE => RangeColumn::class,
             default => parent::getColumnClass($type, $info),
+        };
+    }
+
+    protected function isType(string $type): bool
+    {
+        return match ($type) {
+            PgsqlColumnType::RANGE => true,
+            default => parent::isType($type),
         };
     }
 

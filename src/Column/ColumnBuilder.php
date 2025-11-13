@@ -6,6 +6,8 @@ namespace Yiisoft\Db\Pgsql\Column;
 
 use Yiisoft\Db\Constant\ColumnType;
 use Yiisoft\Db\Schema\Column\ColumnInterface;
+use Yiisoft\Db\Schema\Column\DateTimeColumn;
+use Yiisoft\Db\Schema\Column\DoubleColumn;
 
 final class ColumnBuilder extends \Yiisoft\Db\Schema\Column\ColumnBuilder
 {
@@ -20,6 +22,11 @@ final class ColumnBuilder extends \Yiisoft\Db\Schema\Column\ColumnBuilder
 
         /** @psalm-suppress UnsafeInstantiation */
         return new $className(ColumnType::BIT, size: $size);
+    }
+
+    public static function decimal(?int $size = 10, ?int $scale = 0): DoubleColumn
+    {
+        return new DoubleColumn(ColumnType::DECIMAL, scale: $scale, size: $size);
     }
 
     public static function tinyint(?int $size = null): IntegerColumn
@@ -57,5 +64,50 @@ final class ColumnBuilder extends \Yiisoft\Db\Schema\Column\ColumnBuilder
     public static function structured(?string $dbType = null, array $columns = []): StructuredColumn
     {
         return new StructuredColumn(ColumnType::STRUCTURED, dbType: $dbType, columns: $columns);
+    }
+
+    public static function date(): DateTimeColumn
+    {
+        return new DateTimeColumn(ColumnType::DATE);
+    }
+
+    public static function datetimeWithTimezone(?int $size = 0): DateTimeColumn
+    {
+        return new DateTimeColumn(ColumnType::DATETIMETZ, size: $size);
+    }
+
+    public static function datetime(?int $size = 0): DateTimeColumn
+    {
+        return new DateTimeColumn(ColumnType::DATETIME, size: $size);
+    }
+
+    public static function int4Range(): RangeColumn
+    {
+        return new RangeColumn(dbType: 'int4range');
+    }
+
+    public static function int8Range(): RangeColumn
+    {
+        return new RangeColumn(dbType: 'int8range');
+    }
+
+    public static function numRange(): RangeColumn
+    {
+        return new RangeColumn(dbType: 'numrange');
+    }
+
+    public static function tsRange(): RangeColumn
+    {
+        return new RangeColumn(dbType: 'tsrange');
+    }
+
+    public static function tsTzRange(): RangeColumn
+    {
+        return new RangeColumn(dbType: 'tstzrange');
+    }
+
+    public static function dateRange(): RangeColumn
+    {
+        return new RangeColumn(dbType: 'daterange');
     }
 }

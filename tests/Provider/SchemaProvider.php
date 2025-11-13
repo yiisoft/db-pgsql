@@ -14,6 +14,7 @@ use Yiisoft\Db\Pgsql\Column\BinaryColumn;
 use Yiisoft\Db\Pgsql\Column\BitColumn;
 use Yiisoft\Db\Pgsql\Column\BooleanColumn;
 use Yiisoft\Db\Pgsql\Column\IntegerColumn;
+use Yiisoft\Db\Pgsql\Column\RangeColumn;
 use Yiisoft\Db\Schema\Column\DateTimeColumn;
 use Yiisoft\Db\Schema\Column\DoubleColumn;
 use Yiisoft\Db\Schema\Column\JsonColumn;
@@ -191,6 +192,12 @@ final class SchemaProvider extends \Yiisoft\Db\Tests\Provider\SchemaProvider
                             notNull: false,
                         ),
                     ),
+                    'intrange_col' => new RangeColumn(dbType: 'int4range'),
+                    'bigintrange_col' => new RangeColumn(dbType: 'int8range'),
+                    'numrange_col' => new RangeColumn(dbType: 'numrange'),
+                    'daterange_col' => new RangeColumn(dbType: 'daterange'),
+                    'tsrange_col' => new RangeColumn(dbType: 'tsrange'),
+                    'tstzrange_col' => new RangeColumn(dbType: 'tstzrange'),
                 ],
                 'tableName' => 'type',
             ],
