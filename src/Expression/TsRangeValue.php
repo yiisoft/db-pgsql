@@ -10,9 +10,9 @@ use Yiisoft\Db\Expression\ExpressionInterface;
 final class TsRangeValue implements ExpressionInterface
 {
     public function __construct(
-        public readonly ?DateTimeImmutable $lower,
-        public readonly ?DateTimeImmutable $upper,
-        public readonly bool $includeLower,
-        public readonly bool $includeUpper,
+        public readonly ?DateTimeImmutable $lower = null,
+        public readonly ?DateTimeImmutable $upper = null,
+        public readonly bool $includeLower = true,
+        public readonly bool $includeUpper = true,
     ) {}
 }

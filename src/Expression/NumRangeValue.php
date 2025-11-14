@@ -9,9 +9,9 @@ use Yiisoft\Db\Expression\ExpressionInterface;
 final class NumRangeValue implements ExpressionInterface
 {
     public function __construct(
-        public readonly ?float $lower,
-        public readonly ?float $upper,
-        public readonly bool $includeLower,
-        public readonly bool $includeUpper,
+        public readonly ?float $lower = null,
+        public readonly ?float $upper = null,
+        public readonly bool $includeLower = true,
+        public readonly bool $includeUpper = true,
     ) {}
 }

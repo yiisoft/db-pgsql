@@ -9,9 +9,9 @@ use Yiisoft\Db\Expression\ExpressionInterface;
 final class Int4RangeValue implements ExpressionInterface
 {
     public function __construct(
-        public readonly ?int $lower,
-        public readonly ?int $upper,
-        public readonly bool $includeLower,
-        public readonly bool $includeUpper,
+        public readonly ?int $lower = null,
+        public readonly ?int $upper = null,
+        public readonly bool $includeLower = true,
+        public readonly bool $includeUpper = true,
     ) {}
 }
