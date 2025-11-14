@@ -13,8 +13,13 @@ use Yiisoft\Db\Pgsql\Column\BigBitColumn;
 use Yiisoft\Db\Pgsql\Column\BinaryColumn;
 use Yiisoft\Db\Pgsql\Column\BitColumn;
 use Yiisoft\Db\Pgsql\Column\BooleanColumn;
+use Yiisoft\Db\Pgsql\Column\DateRangeColumn;
+use Yiisoft\Db\Pgsql\Column\Int4RangeColumn;
+use Yiisoft\Db\Pgsql\Column\Int8RangeColumn;
 use Yiisoft\Db\Pgsql\Column\IntegerColumn;
-use Yiisoft\Db\Pgsql\Column\RangeColumn;
+use Yiisoft\Db\Pgsql\Column\NumRangeColumn;
+use Yiisoft\Db\Pgsql\Column\TsRangeColumn;
+use Yiisoft\Db\Pgsql\Column\TsTzRangeColumn;
 use Yiisoft\Db\Schema\Column\DateTimeColumn;
 use Yiisoft\Db\Schema\Column\DoubleColumn;
 use Yiisoft\Db\Schema\Column\JsonColumn;
@@ -192,12 +197,12 @@ final class SchemaProvider extends \Yiisoft\Db\Tests\Provider\SchemaProvider
                             notNull: false,
                         ),
                     ),
-                    'intrange_col' => new RangeColumn(dbType: 'int4range'),
-                    'bigintrange_col' => new RangeColumn(dbType: 'int8range'),
-                    'numrange_col' => new RangeColumn(dbType: 'numrange'),
-                    'daterange_col' => new RangeColumn(dbType: 'daterange'),
-                    'tsrange_col' => new RangeColumn(dbType: 'tsrange'),
-                    'tstzrange_col' => new RangeColumn(dbType: 'tstzrange'),
+                    'intrange_col' => new Int4RangeColumn(dbType: 'int4range'),
+                    'bigintrange_col' => new Int8RangeColumn(dbType: 'int8range'),
+                    'numrange_col' => new NumRangeColumn(dbType: 'numrange'),
+                    'daterange_col' => new DateRangeColumn(dbType: 'daterange'),
+                    'tsrange_col' => new TsRangeColumn(dbType: 'tsrange'),
+                    'tstzrange_col' => new TsTzRangeColumn(dbType: 'tstzrange'),
                 ],
                 'tableName' => 'type',
             ],

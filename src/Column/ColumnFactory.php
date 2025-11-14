@@ -91,12 +91,12 @@ final class ColumnFactory extends AbstractColumnFactory
         'xml' => ColumnType::STRING,
         'json' => ColumnType::JSON,
         'jsonb' => ColumnType::JSON,
-        'int4range' => PgsqlColumnType::RANGE,
-        'int8range' => PgsqlColumnType::RANGE,
-        'numrange' => PgsqlColumnType::RANGE,
-        'tsrange' => PgsqlColumnType::RANGE,
-        'tstzrange' => PgsqlColumnType::RANGE,
-        'daterange' => PgsqlColumnType::RANGE,
+        'int4range' => PgsqlColumnType::INT4RANGE,
+        'int8range' => PgsqlColumnType::INT8RANGE,
+        'numrange' => PgsqlColumnType::NUMRANGE,
+        'tsrange' => PgsqlColumnType::TSRANGE,
+        'tstzrange' => PgsqlColumnType::TSTZRANGE,
+        'daterange' => PgsqlColumnType::DATERANGE,
     ];
 
     public function fromType(string $type, array $info = []): ColumnInterface
@@ -135,7 +135,12 @@ final class ColumnFactory extends AbstractColumnFactory
             ColumnType::BINARY => BinaryColumn::class,
             ColumnType::ARRAY => ArrayColumn::class,
             ColumnType::STRUCTURED => StructuredColumn::class,
-            PgsqlColumnType::RANGE => RangeColumn::class,
+            PgsqlColumnType::INT4RANGE => Int4RangeColumn::class,
+            PgsqlColumnType::INT8RANGE => Int8RangeColumn::class,
+            PgsqlColumnType::NUMRANGE => NumRangeColumn::class,
+            PgsqlColumnType::TSRANGE => TsRangeColumn::class,
+            PgsqlColumnType::TSTZRANGE => TsTzRangeColumn::class,
+            PgsqlColumnType::DATERANGE => DateRangeColumn::class,
             default => parent::getColumnClass($type, $info),
         };
     }
@@ -143,7 +148,12 @@ final class ColumnFactory extends AbstractColumnFactory
     protected function isType(string $type): bool
     {
         return match ($type) {
-            PgsqlColumnType::RANGE => true,
+            PgsqlColumnType::INT4RANGE,
+            PgsqlColumnType::INT8RANGE,
+            PgsqlColumnType::NUMRANGE,
+            PgsqlColumnType::TSRANGE,
+            PgsqlColumnType::TSTZRANGE,
+            PgsqlColumnType::DATERANGE => true,
             default => parent::isType($type),
         };
     }

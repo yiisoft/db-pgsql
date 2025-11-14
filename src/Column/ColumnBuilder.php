@@ -81,33 +81,33 @@ final class ColumnBuilder extends \Yiisoft\Db\Schema\Column\ColumnBuilder
         return new DateTimeColumn(ColumnType::DATETIME, size: $size);
     }
 
-    public static function int4Range(): RangeColumn
+    public static function int4Range(): Int4RangeColumn
     {
-        return new RangeColumn(dbType: 'int4range');
+        return new Int4RangeColumn();
     }
 
-    public static function int8Range(): RangeColumn
+    public static function int8Range(): Int8RangeColumn
     {
-        return new RangeColumn(dbType: 'int8range');
+        return new Int8RangeColumn();
     }
 
-    public static function numRange(): RangeColumn
+    public static function numRange(): NumRangeColumn
     {
-        return new RangeColumn(dbType: 'numrange');
+        return new NumRangeColumn();
     }
 
-    public static function tsRange(): RangeColumn
+    public static function tsRange(): TsRangeColumn
     {
-        return new RangeColumn(dbType: 'tsrange');
+        return new TsRangeColumn();
     }
 
-    public static function tsTzRange(): RangeColumn
+    public static function tsTzRange(): TsTzRangeColumn
     {
-        return new RangeColumn(dbType: 'tstzrange');
+        return new TsTzRangeColumn();
     }
 
-    public static function dateRange(): RangeColumn
+    public static function dateRange(): DateRangeColumn
     {
-        return new RangeColumn(dbType: 'daterange');
+        return new DateRangeColumn();
     }
 }
