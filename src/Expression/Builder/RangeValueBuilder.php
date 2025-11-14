@@ -6,7 +6,7 @@ namespace Yiisoft\Db\Pgsql\Expression\Builder;
 
 use Yiisoft\Db\Expression\ExpressionBuilderInterface;
 use Yiisoft\Db\Expression\ExpressionInterface;
-use Yiisoft\Db\Pgsql\Column\ColumnBuilder;
+use Yiisoft\Db\Pgsql\Column\RangeBoundColumnFactory;
 use Yiisoft\Db\Pgsql\Expression\DateRangeValue;
 use Yiisoft\Db\Pgsql\Expression\Int4RangeValue;
 use Yiisoft\Db\Pgsql\Expression\Int8RangeValue;
@@ -29,12 +29,12 @@ final class RangeValueBuilder implements ExpressionBuilderInterface
     public function build(ExpressionInterface $expression, array &$params = []): string
     {
         $column = match ($expression::class) {
-            Int4RangeValue::class => ColumnBuilder::integer(),
-            Int8RangeValue::class => ColumnBuilder::bigint(),
-            NumRangeValue::class => ColumnBuilder::decimal(null, null),
-            TsRangeValue::class => ColumnBuilder::datetime(null),
-            TsTzRangeValue::class => ColumnBuilder::datetimeWithTimezone(null),
-            DateRangeValue::class => ColumnBuilder::date(),
+            Int4RangeValue::class => RangeBoundColumnFactory::int4(),
+            Int8RangeValue::class => RangeBoundColumnFactory::int8(),
+            NumRangeValue::class => RangeBoundColumnFactory::num(),
+            TsRangeValue::class => RangeBoundColumnFactory::ts(),
+            TsTzRangeValue::class => RangeBoundColumnFactory::tsTz(),
+            DateRangeValue::class => RangeBoundColumnFactory::date(),
         };
 
         return ($expression->includeLower ? '[' : '(')

@@ -44,12 +44,12 @@ final class RangeColumn extends AbstractColumn
         [$lower, $upper] = $value;
 
         $column = match ($dbType) {
-            'int4range' => ColumnBuilder::integer(),
-            'int8range' => ColumnBuilder::bigint(),
-            'numrange' => ColumnBuilder::decimal(null, null),
-            'tsrange' => ColumnBuilder::datetime(null),
-            'tstzrange' => ColumnBuilder::datetimeWithTimezone(null),
-            'daterange' => ColumnBuilder::date(),
+            'int4range' => RangeBoundColumnFactory::int4(),
+            'int8range' => RangeBoundColumnFactory::int8(),
+            'numrange' => RangeBoundColumnFactory::num(),
+            'tsrange' => RangeBoundColumnFactory::ts(),
+            'tstzrange' => RangeBoundColumnFactory::tsTz(),
+            'daterange' => RangeBoundColumnFactory::date(),
             default => $this->throwNotSupportedDbType($dbType),
         };
 
@@ -83,7 +83,7 @@ final class RangeColumn extends AbstractColumn
 
         switch ($dbType) {
             case 'int4range':
-                $column = ColumnBuilder::integer();
+                $column = RangeBoundColumnFactory::int4();
                 return new Int4RangeValue(
                     $column->phpTypecast($lower),
                     $column->phpTypecast($upper),
@@ -91,7 +91,7 @@ final class RangeColumn extends AbstractColumn
                     $includeUpper,
                 );
             case 'int8range':
-                $column = ColumnBuilder::bigint();
+                $column = RangeBoundColumnFactory::int8();
                 return new Int8RangeValue(
                     $column->phpTypecast($lower),
                     $column->phpTypecast($upper),
@@ -99,7 +99,7 @@ final class RangeColumn extends AbstractColumn
                     $includeUpper,
                 );
             case 'numrange':
-                $column = ColumnBuilder::decimal(null, null);
+                $column = RangeBoundColumnFactory::num();
                 return new NumRangeValue(
                     $column->phpTypecast($lower),
                     $column->phpTypecast($upper),
@@ -107,7 +107,7 @@ final class RangeColumn extends AbstractColumn
                     $includeUpper,
                 );
             case 'tsrange':
-                $column = ColumnBuilder::datetime(null);
+                $column = RangeBoundColumnFactory::ts();
                 return new TsRangeValue(
                     $column->phpTypecast($lower),
                     $column->phpTypecast($upper),
@@ -115,7 +115,7 @@ final class RangeColumn extends AbstractColumn
                     $includeUpper,
                 );
             case 'tstzrange':
-                $column = ColumnBuilder::datetimeWithTimezone(null);
+                $column = RangeBoundColumnFactory::tstz();
                 return new TsTzRangeValue(
                     $column->phpTypecast($lower),
                     $column->phpTypecast($upper),
@@ -123,7 +123,7 @@ final class RangeColumn extends AbstractColumn
                     $includeUpper,
                 );
             case 'daterange':
-                $column = ColumnBuilder::date();
+                $column = RangeBoundColumnFactory::date();
                 return new DateRangeValue(
                     $column->phpTypecast($lower),
                     $column->phpTypecast($upper),
