@@ -83,7 +83,7 @@ abstract class AbstractRangeColumn extends AbstractColumn
     private function prepareBoundValue(mixed $value): string
     {
         return match (gettype($value)) {
-            'NULL' => 'NULL',
+            'NULL' => '',
             'double',
             'integer' => (string) $value,
             'string' => $value,
