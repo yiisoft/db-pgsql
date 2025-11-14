@@ -39,7 +39,7 @@ abstract class AbstractRangeColumn extends AbstractColumn
             . $this->prepareBoundValue($boundColumn->dbTypecast($lower))
             . ','
             . $this->prepareBoundValue($boundColumn->dbTypecast($upper))
-            . ')';
+            . ']';
     }
 
     public function phpTypecast(mixed $value): mixed
