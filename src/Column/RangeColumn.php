@@ -46,9 +46,9 @@ final class RangeColumn extends AbstractColumn
         $column = match ($dbType) {
             'int4range' => ColumnBuilder::integer(),
             'int8range' => ColumnBuilder::bigint(),
-            'numrange' => ColumnBuilder::decimal(),
-            'tsrange' => ColumnBuilder::datetime(),
-            'tstzrange' => ColumnBuilder::datetimeWithTimezone(),
+            'numrange' => ColumnBuilder::decimal(null, null),
+            'tsrange' => ColumnBuilder::datetime(null),
+            'tstzrange' => ColumnBuilder::datetimeWithTimezone(null),
             'daterange' => ColumnBuilder::date(),
             default => $this->throwNotSupportedDbType($dbType),
         };
@@ -99,7 +99,7 @@ final class RangeColumn extends AbstractColumn
                     $includeUpper,
                 );
             case 'numrange':
-                $column = ColumnBuilder::decimal();
+                $column = ColumnBuilder::decimal(null, null);
                 return new NumRangeValue(
                     $column->phpTypecast($lower),
                     $column->phpTypecast($upper),
@@ -107,7 +107,7 @@ final class RangeColumn extends AbstractColumn
                     $includeUpper,
                 );
             case 'tsrange':
-                $column = ColumnBuilder::datetime();
+                $column = ColumnBuilder::datetime(null);
                 return new TsRangeValue(
                     $column->phpTypecast($lower),
                     $column->phpTypecast($upper),
@@ -115,7 +115,7 @@ final class RangeColumn extends AbstractColumn
                     $includeUpper,
                 );
             case 'tstzrange':
-                $column = ColumnBuilder::datetimeWithTimezone();
+                $column = ColumnBuilder::datetimeWithTimezone(null);
                 return new TsTzRangeValue(
                     $column->phpTypecast($lower),
                     $column->phpTypecast($upper),

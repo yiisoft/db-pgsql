@@ -31,9 +31,9 @@ final class RangeValueBuilder implements ExpressionBuilderInterface
         $column = match ($expression::class) {
             Int4RangeValue::class => ColumnBuilder::integer(),
             Int8RangeValue::class => ColumnBuilder::bigint(),
-            NumRangeValue::class => ColumnBuilder::decimal(),
-            TsRangeValue::class => ColumnBuilder::datetime(),
-            TsTzRangeValue::class => ColumnBuilder::datetimeWithTimezone(),
+            NumRangeValue::class => ColumnBuilder::decimal(null, null),
+            TsRangeValue::class => ColumnBuilder::datetime(null),
+            TsTzRangeValue::class => ColumnBuilder::datetimeWithTimezone(null),
             DateRangeValue::class => ColumnBuilder::date(),
         };
 
