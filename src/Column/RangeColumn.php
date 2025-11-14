@@ -77,8 +77,8 @@ final class RangeColumn extends AbstractColumn
         }
 
         $dbType = $this->getDbType();
-        $lower = $matches['lower'] ? trim($matches['lower'], '"') : null;
-        $upper = $matches['upper'] ? trim($matches['upper'], '"') : null;
+        $lower = $matches['lower'] === '' ? null : trim($matches['lower'], '"');
+        $upper = $matches['upper'] === '' ? null : trim($matches['upper'], '"');
         $includeLower = $matches['open'] === '[';
         $includeUpper = $matches['close'] === ']';
 
