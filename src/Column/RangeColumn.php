@@ -63,12 +63,13 @@ final class RangeColumn extends AbstractColumn
 
     public function phpTypecast(mixed $value): mixed
     {
+        /**
+         * @var string|null $value We expect `phpTypecast()` to only receive the value that the database returns, which
+         * in this case is `null` or a `string`. To avoid extra checks.
+         */
+
         if ($value === null || $value === 'empty') {
             return null;
-        }
-
-        if (!is_string($value)) {
-            $this->throwWrongTypeException(gettype($value));
         }
 
         if (!preg_match('/^(?P<open>\[|\()(?P<lower>[^,]*),(?P<upper>[^\)\]]*)(?P<close>\)|\])$/', $value, $matches)) {
