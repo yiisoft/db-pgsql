@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Yiisoft\Db\Pgsql\Tests;
 
 use PHPUnit\Framework\Attributes\DataProviderExternal;
+use Throwable;
 use Yiisoft\Db\Exception\NotSupportedException;
 use Yiisoft\Db\Expression\ExpressionInterface;
 use Yiisoft\Db\Pgsql\Tests\Provider\CommandProvider;
@@ -28,12 +29,16 @@ final class CommandTest extends CommonCommandTest
 
         $command = $db->createCommand();
 
-        $this->expectException(NotSupportedException::class);
-        $this->expectExceptionMessage(
-            'Yiisoft\Db\Pgsql\DDLQueryBuilder::addDefaultValue is not supported by PostgreSQL.',
-        );
+        $exception = null;
+        try {
+            $command->addDefaultValue('{{table}}', '{{name}}', 'column', 'value');
+        } catch (Throwable $exception) {}
 
-        $command->addDefaultValue('{{table}}', '{{name}}', 'column', 'value');
+        $this->assertInstanceOf(NotSupportedException::class, $exception);
+        $this->assertSame(
+            'Yiisoft\Db\Pgsql\DDLQueryBuilder::addDefaultValue is not supported by PostgreSQL.',
+            $exception->getMessage(),
+        );
 
         $db->close();
     }
