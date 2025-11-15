@@ -59,6 +59,8 @@ final class JsonValueBuilderTest extends TestCase
 
         $this->assertSame(':qp0', $builder->build($expression, $params));
         $this->assertEquals([':qp0' => new Param($expected, DataType::STRING)], $params);
+
+        $db->close();
     }
 
     public function testBuildArrayValue(): void
@@ -78,6 +80,8 @@ final class JsonValueBuilderTest extends TestCase
 
         $this->assertSame('array_to_json(ARRAY[1,2,3]::int[])::jsonb', $builder->build($expression, $params));
         $this->assertSame([], $params);
+
+        $db->close();
     }
 
     public function testBuildNull(): void
@@ -91,6 +95,8 @@ final class JsonValueBuilderTest extends TestCase
 
         $this->assertSame('NULL', $builder->build($expression, $params));
         $this->assertSame([], $params);
+
+        $db->close();
     }
 
     public function testBuildQueryExpression(): void
@@ -109,6 +115,8 @@ final class JsonValueBuilderTest extends TestCase
 
         $this->assertSame('(SELECT "json_field" FROM "json_table")::jsonb', $builder->build($expression, $params));
         $this->assertSame([], $params);
+
+        $db->close();
     }
 
     public function testBuildWithType(): void
@@ -122,5 +130,7 @@ final class JsonValueBuilderTest extends TestCase
 
         $this->assertSame(':qp0::jsonb', $builder->build($expression, $params));
         $this->assertEquals([':qp0' => new Param('[1,2,3]', DataType::STRING)], $params);
+
+        $db->close();
     }
 }

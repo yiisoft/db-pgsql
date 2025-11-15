@@ -17,6 +17,20 @@ use Yiisoft\Db\Pgsql\Builder\JsonOverlapsBuilder;
 use Yiisoft\Db\Pgsql\Builder\LikeBuilder;
 use Yiisoft\Db\Pgsql\Builder\StructuredValueBuilder;
 use Yiisoft\Db\Pgsql\Builder\JsonValueBuilder;
+use Yiisoft\Db\Pgsql\Expression\Builder\DateRangeValueBuilder;
+use Yiisoft\Db\Pgsql\Expression\Builder\Int4RangeValueBuilder;
+use Yiisoft\Db\Pgsql\Expression\Builder\Int8RangeValueBuilder;
+use Yiisoft\Db\Pgsql\Expression\Builder\MultiRangeValueBuilder;
+use Yiisoft\Db\Pgsql\Expression\Builder\NumRangeValueBuilder;
+use Yiisoft\Db\Pgsql\Expression\Builder\TsRangeValueBuilder;
+use Yiisoft\Db\Pgsql\Expression\Builder\TsTzRangeValueBuilder;
+use Yiisoft\Db\Pgsql\Expression\DateRangeValue;
+use Yiisoft\Db\Pgsql\Expression\Int4RangeValue;
+use Yiisoft\Db\Pgsql\Expression\Int8RangeValue;
+use Yiisoft\Db\Pgsql\Expression\MultiRangeValue;
+use Yiisoft\Db\Pgsql\Expression\NumRangeValue;
+use Yiisoft\Db\Pgsql\Expression\TsRangeValue;
+use Yiisoft\Db\Pgsql\Expression\TsTzRangeValue;
 use Yiisoft\Db\QueryBuilder\AbstractDQLQueryBuilder;
 use Yiisoft\Db\QueryBuilder\Condition\Like;
 use Yiisoft\Db\QueryBuilder\Condition\ArrayOverlaps;
@@ -41,6 +55,13 @@ final class DQLQueryBuilder extends AbstractDQLQueryBuilder
             NotLike::class => LikeBuilder::class,
             CaseX::class => CaseXBuilder::class,
             ArrayMerge::class => ArrayMergeBuilder::class,
+            DateRangeValue::class => DateRangeValueBuilder::class,
+            Int4RangeValue::class => Int4RangeValueBuilder::class,
+            Int8RangeValue::class => Int8RangeValueBuilder::class,
+            NumRangeValue::class => NumRangeValueBuilder::class,
+            TsRangeValue::class => TsRangeValueBuilder::class,
+            TsTzRangeValue::class => TsTzRangeValueBuilder::class,
+            MultiRangeValue::class => MultiRangeValueBuilder::class,
         ];
     }
 }

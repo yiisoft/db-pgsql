@@ -166,7 +166,13 @@ CREATE TABLE "type" (
   textarray2_col text[][],
   json_col json DEFAULT '{"a":1}',
   jsonb_col jsonb,
-  jsonarray_col json[]
+  jsonarray_col json[],
+  intrange_col int4range,
+  bigintrange_col int8range,
+  numrange_col numrange,
+  daterange_col daterange,
+  tsrange_col tsrange,
+  tstzrange_col tstzrange
 );
 
 CREATE TABLE "bool_values" (

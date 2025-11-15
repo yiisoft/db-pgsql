@@ -57,6 +57,7 @@
 - Chg #447: Update expression namespaces according to changes in `yiisoft/db` package (@Tigrov)
 - Bug #456: Fix typecasting bit columns' values with big size (@Tigrov)
 - Chg #460: Throw exception on "unsigned" column usage (@vjik)
+- New #307: Add range and multirange columns support (@vjik, @Gerych1984)
 
 ## 1.3.0 March 21, 2024
 

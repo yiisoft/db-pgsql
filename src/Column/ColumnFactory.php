@@ -6,6 +6,7 @@ namespace Yiisoft\Db\Pgsql\Column;
 
 use Yiisoft\Db\Constant\ColumnType;
 use Yiisoft\Db\Expression\Expression;
+use Yiisoft\Db\Pgsql\Constant\PgsqlColumnType;
 use Yiisoft\Db\Schema\Column\AbstractColumnFactory;
 use Yiisoft\Db\Schema\Column\ColumnInterface;
 
@@ -23,8 +24,7 @@ final class ColumnFactory extends AbstractColumnFactory
      *
      * @link https://www.postgresql.org/docs/current/datatype.html#DATATYPE-TABLE
      *
-     * @var string[]
-     * @psalm-var array<string, ColumnType::*>
+     * @inheritdoc
      */
     protected const TYPE_MAP = [
         'bool' => ColumnType::BOOLEAN,
@@ -91,6 +91,18 @@ final class ColumnFactory extends AbstractColumnFactory
         'xml' => ColumnType::STRING,
         'json' => ColumnType::JSON,
         'jsonb' => ColumnType::JSON,
+        'int4range' => PgsqlColumnType::INT4RANGE,
+        'int8range' => PgsqlColumnType::INT8RANGE,
+        'numrange' => PgsqlColumnType::NUMRANGE,
+        'tsrange' => PgsqlColumnType::TSRANGE,
+        'tstzrange' => PgsqlColumnType::TSTZRANGE,
+        'daterange' => PgsqlColumnType::DATERANGE,
+        'int4multirange' => PgsqlColumnType::INT4MULTIRANGE,
+        'int8multirange' => PgsqlColumnType::INT8MULTIRANGE,
+        'nummultirange' => PgsqlColumnType::NUMMULTIRANGE,
+        'tsmultirange' => PgsqlColumnType::TSMULTIRANGE,
+        'tstzmultirange' => PgsqlColumnType::TSTZMULTIRANGE,
+        'datemultirange' => PgsqlColumnType::DATEMULTIRANGE,
     ];
 
     public function fromType(string $type, array $info = []): ColumnInterface
@@ -129,7 +141,38 @@ final class ColumnFactory extends AbstractColumnFactory
             ColumnType::BINARY => BinaryColumn::class,
             ColumnType::ARRAY => ArrayColumn::class,
             ColumnType::STRUCTURED => StructuredColumn::class,
+            PgsqlColumnType::INT4RANGE => Int4RangeColumn::class,
+            PgsqlColumnType::INT8RANGE => Int8RangeColumn::class,
+            PgsqlColumnType::NUMRANGE => NumRangeColumn::class,
+            PgsqlColumnType::TSRANGE => TsRangeColumn::class,
+            PgsqlColumnType::TSTZRANGE => TsTzRangeColumn::class,
+            PgsqlColumnType::DATERANGE => DateRangeColumn::class,
+            PgsqlColumnType::INT4MULTIRANGE => Int4MultiRangeColumn::class,
+            PgsqlColumnType::INT8MULTIRANGE => Int8MultiRangeColumn::class,
+            PgsqlColumnType::NUMMULTIRANGE => NumMultiRangeColumn::class,
+            PgsqlColumnType::TSMULTIRANGE => TsMultiRangeColumn::class,
+            PgsqlColumnType::TSTZMULTIRANGE => TsTzMultiRangeColumn::class,
+            PgsqlColumnType::DATEMULTIRANGE => DateMultiRangeColumn::class,
             default => parent::getColumnClass($type, $info),
+        };
+    }
+
+    protected function isType(string $type): bool
+    {
+        return match ($type) {
+            PgsqlColumnType::INT4RANGE,
+            PgsqlColumnType::INT8RANGE,
+            PgsqlColumnType::NUMRANGE,
+            PgsqlColumnType::TSRANGE,
+            PgsqlColumnType::TSTZRANGE,
+            PgsqlColumnType::DATERANGE,
+            PgsqlColumnType::INT4MULTIRANGE,
+            PgsqlColumnType::INT8MULTIRANGE,
+            PgsqlColumnType::NUMMULTIRANGE,
+            PgsqlColumnType::TSMULTIRANGE,
+            PgsqlColumnType::TSTZMULTIRANGE,
+            PgsqlColumnType::DATEMULTIRANGE => true,
+            default => parent::isType($type),
         };
     }
 

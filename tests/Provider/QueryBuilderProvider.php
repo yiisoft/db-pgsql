@@ -457,7 +457,7 @@ final class QueryBuilderProvider extends \Yiisoft\Db\Tests\Provider\QueryBuilder
         ];
 
         $db = self::getDb();
-        $serverVersion = self::getDb()->getServerInfo()->getVersion();
+        $serverVersion = $db->getServerInfo()->getVersion();
         $db->close();
 
         if (version_compare($serverVersion, '13', '<')) {
