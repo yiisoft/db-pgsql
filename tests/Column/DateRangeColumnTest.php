@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Column;
+namespace Yiisoft\Db\Pgsql\Tests\Column;
 
 use DateTimeImmutable;
 use PHPUnit\Framework\Attributes\DataProvider;
