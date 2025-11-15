@@ -23,7 +23,6 @@ final class TsTzRangeValueBuilder extends AbstractRangeValueBuilder
             $expression->upper,
             $expression->includeLower,
             $expression->includeUpper,
-            $params,
         );
     }
 

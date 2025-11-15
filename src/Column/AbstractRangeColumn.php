@@ -12,13 +12,16 @@ use Yiisoft\Db\Schema\Column\ColumnInterface;
 
 use function gettype;
 use function is_array;
+use function is_string;
 use function sprintf;
 
 abstract class AbstractRangeColumn extends AbstractColumn
 {
     public function dbTypecast(mixed $value): mixed
     {
-        if ($value === null || $value instanceof ExpressionInterface) {
+        if ($value === null
+            || is_string($value)
+            || $value instanceof ExpressionInterface) {
             return $value;
         }
 

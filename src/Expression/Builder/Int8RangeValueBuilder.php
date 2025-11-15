@@ -23,7 +23,6 @@ final class Int8RangeValueBuilder extends AbstractRangeValueBuilder
             $expression->upper,
             $expression->includeLower,
             $expression->includeUpper,
-            $params,
         );
     }
 

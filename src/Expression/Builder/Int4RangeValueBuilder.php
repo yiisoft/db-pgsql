@@ -23,7 +23,6 @@ final class Int4RangeValueBuilder extends AbstractRangeValueBuilder
             $expression->upper,
             $expression->includeLower,
             $expression->includeUpper,
-            $params,
         );
     }
 

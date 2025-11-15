@@ -23,7 +23,6 @@ final class NumRangeValueBuilder extends AbstractRangeValueBuilder
             $expression->upper,
             $expression->includeLower,
             $expression->includeUpper,
-            $params,
         );
     }
 
