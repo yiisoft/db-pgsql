@@ -107,9 +107,9 @@ final class TsRangeColumnTest extends TestCase
 
         $db->createCommand()->insert('tbl_test', ['col' => $value])->execute();
 
-        $db->close();
-
         $result = $db->select('col')->from('tbl_test')->where(['id' => 3])->one();
+
+        $db->close();
 
         $this->assertIsArray($result);
         $this->assertSame($expectedColumnValue, $result['col']);
