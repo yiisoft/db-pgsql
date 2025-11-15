@@ -32,7 +32,8 @@ final class CommandTest extends CommonCommandTest
         $exception = null;
         try {
             $command->addDefaultValue('{{table}}', '{{name}}', 'column', 'value');
-        } catch (Throwable $exception) {}
+        } catch (Throwable $exception) {
+        }
 
         $this->assertInstanceOf(NotSupportedException::class, $exception);
         $this->assertSame(

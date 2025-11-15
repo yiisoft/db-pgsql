@@ -163,7 +163,8 @@ final class QueryBuilderTest extends CommonQueryBuilderTest
         $exception = null;
         try {
             $command->execute();
-        } catch (Throwable $exception) {}
+        } catch (Throwable $exception) {
+        }
 
         $this->assertInstanceOf(IntegrityException::class, $exception);
         $this->assertStringStartsWith(
