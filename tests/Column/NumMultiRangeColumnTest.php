@@ -35,7 +35,7 @@ final class NumMultiRangeColumnTest extends TestCase
             [
                 new NumRangeValue(1.5, 5.5),
                 new NumRangeValue(2.5, 8.5, false, false),
-            ]
+            ],
         ];
         yield ['{[1.5,3.5],[7.5,9.5]}', [new NumRangeValue(1.5, 3.5), new NumRangeValue(7.5, 9.5)]];
         yield ['{[1.5,5.5],[10.5,15.5),[20.5,25.5)}', new MultiRangeValue('[1.5,5.5]', '[10.5,15.5)', '[20.5,25.5)')];
@@ -45,7 +45,7 @@ final class NumMultiRangeColumnTest extends TestCase
             new MultiRangeValue(
                 new NumRangeValue(1.5, 5.5),
                 new NumRangeValue(2.5, 8.5, false, false),
-            )
+            ),
         ];
     }
 

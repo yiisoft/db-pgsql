@@ -63,7 +63,7 @@ abstract class AbstractMultiRangeColumn extends AbstractColumn
 
         $rangeColumn = $this->getRangeColumn();
         return array_map(
-            static fn(string $range): mixed => $rangeColumn->phpTypecast($range),
+            $rangeColumn->phpTypecast(...),
             $matches[1],
         );
     }

@@ -34,7 +34,7 @@ trait TestTrait
             $currentVersion = $db->getServerInfo()->getVersion();
             if (version_compare($currentVersion, $minVersion, '<')) {
                 $this->markTestSkipped(
-                    "This test requires at least PostgreSQL version $minVersion. Current version is $currentVersion."
+                    "This test requires at least PostgreSQL version $minVersion. Current version is $currentVersion.",
                 );
             }
         }

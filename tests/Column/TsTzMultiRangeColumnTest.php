@@ -53,14 +53,14 @@ final class TsTzMultiRangeColumnTest extends TestCase
             [
                 new TsTzRangeValue(new DateTimeImmutable('2024-01-01 10:00:00+00'), new DateTimeImmutable('2024-01-01 15:00:00+00')),
                 new TsTzRangeValue(new DateTimeImmutable('2024-01-02 10:00:00+00'), new DateTimeImmutable('2024-01-02 15:00:00+00'), false, false),
-            ]
+            ],
         ];
         yield [
             '{["2024-01-01 10:00:00+00","2024-01-01 13:00:00+00"],["2024-01-02 10:00:00+00","2024-01-02 13:00:00+00"]}',
             [
                 new TsTzRangeValue(new DateTimeImmutable('2024-01-01 10:00:00+00'), new DateTimeImmutable('2024-01-01 13:00:00+00')),
                 new TsTzRangeValue(new DateTimeImmutable('2024-01-02 10:00:00+00'), new DateTimeImmutable('2024-01-02 13:00:00+00')),
-            ]
+            ],
         ];
         yield [
             '{["2024-01-01 10:00:00+00","2024-01-01 15:00:00+00"],["2024-01-02 10:00:00+00","2024-01-02 15:00:00+00"),["2024-01-03 10:00:00+00","2024-01-03 15:00:00+00")}',
@@ -72,7 +72,7 @@ final class TsTzMultiRangeColumnTest extends TestCase
             new MultiRangeValue(
                 new TsTzRangeValue(new DateTimeImmutable('2024-01-01 10:00:00+00'), new DateTimeImmutable('2024-01-01 15:00:00+00')),
                 new TsTzRangeValue(new DateTimeImmutable('2024-01-02 10:00:00+00'), new DateTimeImmutable('2024-01-02 15:00:00+00'), false, false),
-            )
+            ),
         ];
     }
 

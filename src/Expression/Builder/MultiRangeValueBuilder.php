@@ -18,8 +18,7 @@ final class MultiRangeValueBuilder implements ExpressionBuilderInterface
 {
     public function __construct(
         private readonly QueryBuilderInterface $queryBuilder,
-    ) {
-    }
+    ) {}
 
     public function build(ExpressionInterface $expression, array &$params = []): string
     {

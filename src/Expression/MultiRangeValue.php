@@ -15,7 +15,7 @@ final class MultiRangeValue implements ExpressionInterface
     public readonly array $ranges;
 
     public function __construct(
-        string|ExpressionInterface ...$ranges
+        string|ExpressionInterface ...$ranges,
     ) {
         $this->ranges = $ranges;
     }
