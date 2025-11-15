@@ -653,6 +653,8 @@ final class QueryBuilderTest extends CommonQueryBuilderTest
         $result = $db->select($arrayMerge)->scalar();
 
         $this->assertSame($expectedResult, $result);
+
+        $db->close();
     }
 
     #[DataProviderExternal(QueryBuilderProvider::class, 'upsertWithMultiOperandFunctions')]
