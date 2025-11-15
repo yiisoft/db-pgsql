@@ -26,9 +26,18 @@ trait TestTrait
         $db->close();
     }
 
-    protected function getConnection(bool $fixture = false): Connection
+    protected function getConnection(bool $fixture = false, ?string $minVersion = null): Connection
     {
         $db = new Connection($this->getDriver(), DbHelper::getSchemaCache());
+
+        if ($minVersion !== null) {
+            $currentVersion = $db->getServerInfo()->getVersion();
+            if (version_compare($currentVersion, $minVersion, '<')) {
+                $this->markTestSkipped(
+                    "This test requires at least PostgreSQL version $minVersion. Current version is $currentVersion."
+                );
+            }
+        }
 
         if ($fixture) {
             DbHelper::loadFixture($db, __DIR__ . "/Fixture/$this->fixture");

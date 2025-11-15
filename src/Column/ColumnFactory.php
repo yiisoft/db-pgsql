@@ -97,6 +97,12 @@ final class ColumnFactory extends AbstractColumnFactory
         'tsrange' => PgsqlColumnType::TSRANGE,
         'tstzrange' => PgsqlColumnType::TSTZRANGE,
         'daterange' => PgsqlColumnType::DATERANGE,
+        'int4multirange' => PgsqlColumnType::INT4MULTIRANGE,
+        'int8multirange' => PgsqlColumnType::INT8MULTIRANGE,
+        'nummultirange' => PgsqlColumnType::NUMMULTIRANGE,
+        'tsmultirange' => PgsqlColumnType::TSMULTIRANGE,
+        'tstzmultirange' => PgsqlColumnType::TSTZMULTIRANGE,
+        'datemultirange' => PgsqlColumnType::DATEMULTIRANGE,
     ];
 
     public function fromType(string $type, array $info = []): ColumnInterface
@@ -141,6 +147,12 @@ final class ColumnFactory extends AbstractColumnFactory
             PgsqlColumnType::TSRANGE => TsRangeColumn::class,
             PgsqlColumnType::TSTZRANGE => TsTzRangeColumn::class,
             PgsqlColumnType::DATERANGE => DateRangeColumn::class,
+            PgsqlColumnType::INT4MULTIRANGE => Int4MultiRangeColumn::class,
+            PgsqlColumnType::INT8MULTIRANGE => Int8MultiRangeColumn::class,
+            PgsqlColumnType::NUMMULTIRANGE => NumMultiRangeColumn::class,
+            PgsqlColumnType::TSMULTIRANGE => TsMultiRangeColumn::class,
+            PgsqlColumnType::TSTZMULTIRANGE => TsTzMultiRangeColumn::class,
+            PgsqlColumnType::DATEMULTIRANGE => DateMultiRangeColumn::class,
             default => parent::getColumnClass($type, $info),
         };
     }
@@ -153,7 +165,13 @@ final class ColumnFactory extends AbstractColumnFactory
             PgsqlColumnType::NUMRANGE,
             PgsqlColumnType::TSRANGE,
             PgsqlColumnType::TSTZRANGE,
-            PgsqlColumnType::DATERANGE => true,
+            PgsqlColumnType::DATERANGE,
+            PgsqlColumnType::INT4MULTIRANGE,
+            PgsqlColumnType::INT8MULTIRANGE,
+            PgsqlColumnType::NUMMULTIRANGE,
+            PgsqlColumnType::TSMULTIRANGE,
+            PgsqlColumnType::TSTZMULTIRANGE,
+            PgsqlColumnType::DATEMULTIRANGE => true,
             default => parent::isType($type),
         };
     }

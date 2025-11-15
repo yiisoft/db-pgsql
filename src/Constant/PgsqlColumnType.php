@@ -12,4 +12,10 @@ final class PgsqlColumnType
     public const TSRANGE = 'tsrange';
     public const TSTZRANGE = 'tstzrange';
     public const DATERANGE = 'daterange';
+    public const INT4MULTIRANGE = 'int4multirange';
+    public const INT8MULTIRANGE = 'int8multirange';
+    public const NUMMULTIRANGE = 'nummultirange';
+    public const TSMULTIRANGE = 'tsmultirange';
+    public const TSTZMULTIRANGE = 'tstzmultirange';
+    public const DATEMULTIRANGE = 'datemultirange';
 }

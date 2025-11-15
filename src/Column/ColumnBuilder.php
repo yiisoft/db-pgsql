@@ -110,4 +110,34 @@ final class ColumnBuilder extends \Yiisoft\Db\Schema\Column\ColumnBuilder
     {
         return new DateRangeColumn();
     }
+
+    public static function int4MultiRange(): Int4MultiRangeColumn
+    {
+        return new Int4MultiRangeColumn();
+    }
+
+    public static function int8MultiRange(): Int8MultiRangeColumn
+    {
+        return new Int8MultiRangeColumn();
+    }
+
+    public static function numMultiRange(): NumMultiRangeColumn
+    {
+        return new NumMultiRangeColumn();
+    }
+
+    public static function tsMultiRange(): TsMultiRangeColumn
+    {
+        return new TsMultiRangeColumn();
+    }
+
+    public static function tsTzMultiRange(): TsTzMultiRangeColumn
+    {
+        return new TsTzMultiRangeColumn();
+    }
+
+    public static function dateMultiRange(): DateMultiRangeColumn
+    {
+        return new DateMultiRangeColumn();
+    }
 }
