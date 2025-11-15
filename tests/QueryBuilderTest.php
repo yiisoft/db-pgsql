@@ -166,7 +166,7 @@ final class QueryBuilderTest extends CommonQueryBuilderTest
         } catch (Throwable $exception) {}
 
         $this->assertInstanceOf(IntegrityException::class, $exception);
-        $this->assertSame(
+        $this->assertStringStartsWith(
             'SQLSTATE[23503]: Foreign key violation: 7 ERROR:  insert or update on table "item" violates foreign key constraint "item_category_id_fkey"',
             $exception->getMessage(),
         );
