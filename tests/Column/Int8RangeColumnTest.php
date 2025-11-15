@@ -77,7 +77,7 @@ final class Int8RangeColumnTest extends TestCase
                 array_map(
                     static fn(string $value): string => "('$value')",
                     $values,
-                )
+                ),
             );
             $db
                 ->createCommand("INSERT INTO tbl_test (col) VALUES $valuesClause")

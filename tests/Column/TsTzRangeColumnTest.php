@@ -19,26 +19,26 @@ final class TsTzRangeColumnTest extends TestCase
     {
         yield [
             '["2024-01-01 10:00:00+00","2024-01-01 10:00:00+00"]',
-            '["2024-01-01 10:00:00+00","2024-01-01 15:00:00+05"]'
+            '["2024-01-01 10:00:00+00","2024-01-01 15:00:00+05"]',
         ];
         yield [
             '("2024-01-01 10:00:00+00","2024-01-01 15:00:00+00")',
-            '("2024-01-01 10:00:00+00","2024-01-01 15:00:00+00")'
+            '("2024-01-01 10:00:00+00","2024-01-01 15:00:00+00")',
         ];
         yield [
             '["2024-01-01 10:00:00+00","2024-01-01 15:00:00+00")',
-            '["2024-01-01 10:00:00+00","2024-01-01 15:00:00+00")'
+            '["2024-01-01 10:00:00+00","2024-01-01 15:00:00+00")',
         ];
         yield [
             '("2024-01-01 10:00:00+00","2024-01-01 15:00:00+00"]',
-            '("2024-01-01 10:00:00+00","2024-01-01 15:00:00+00"]'
+            '("2024-01-01 10:00:00+00","2024-01-01 15:00:00+00"]',
         ];
         yield [
             '["2024-01-01 10:00:00+00","2024-01-01 15:00:00+00"]',
             new TsTzRangeValue(
                 new DateTimeImmutable('2024-01-01 10:00:00+00'),
-                new DateTimeImmutable('2024-01-01 15:00:00+00')
-            )
+                new DateTimeImmutable('2024-01-01 15:00:00+00'),
+            ),
         ];
         yield [
             '("2024-01-01 10:00:00+00","2024-01-01 15:00:00+00")',
@@ -46,48 +46,48 @@ final class TsTzRangeColumnTest extends TestCase
                 new DateTimeImmutable('2024-01-01 10:00:00+00'),
                 new DateTimeImmutable('2024-01-01 15:00:00+00'),
                 false,
-                false
-            )
+                false,
+            ),
         ];
         yield [
             '["2024-01-01 10:00:00+00",)',
-            '["2024-01-01 10:00:00+00",)'
+            '["2024-01-01 10:00:00+00",)',
         ];
         yield [
             '["2024-01-01 10:00:00+00",)',
-            new TsTzRangeValue(new DateTimeImmutable('2024-01-01 10:00:00+00'), null)
+            new TsTzRangeValue(new DateTimeImmutable('2024-01-01 10:00:00+00'), null),
         ];
         yield [
             '["2024-01-01 10:00:00+00",)',
-            new TsTzRangeValue(new DateTimeImmutable('2024-01-01 10:00:00+00'), null, true, false)
+            new TsTzRangeValue(new DateTimeImmutable('2024-01-01 10:00:00+00'), null, true, false),
         ];
         yield [
             '(,"2024-01-10 10:00:00+00"]',
-            '(,"2024-01-10 10:00:00+00"]'
+            '(,"2024-01-10 10:00:00+00"]',
         ];
         yield [
             '(,"2024-01-10 10:00:00+00"]',
-            new TsTzRangeValue(null, new DateTimeImmutable('2024-01-10 10:00:00+00'), false, true)
+            new TsTzRangeValue(null, new DateTimeImmutable('2024-01-10 10:00:00+00'), false, true),
         ];
         yield [
             '(,)',
-            '(,)'
+            '(,)',
         ];
         yield [
             '(,)',
-            new TsTzRangeValue(null, null)
+            new TsTzRangeValue(null, null),
         ];
         yield [
             '(,)',
-            new TsTzRangeValue(null, null, false, false)
+            new TsTzRangeValue(null, null, false, false),
         ];
         yield [
             'empty',
-            '("2024-01-07 10:00:00+00","2024-01-07 10:00:00+00")'
+            '("2024-01-07 10:00:00+00","2024-01-07 10:00:00+00")',
         ];
         yield [
             'empty',
-            'empty'
+            'empty',
         ];
         yield [
             'empty',
@@ -95,8 +95,8 @@ final class TsTzRangeColumnTest extends TestCase
                 new DateTimeImmutable('2024-01-10 10:00:00+00'),
                 new DateTimeImmutable('2024-01-10 10:00:00+00'),
                 false,
-                false
-            )
+                false,
+            ),
         ];
     }
 
@@ -138,7 +138,7 @@ final class TsTzRangeColumnTest extends TestCase
                 array_map(
                     static fn(string $value): string => "('$value')",
                     $values,
-                )
+                ),
             );
             $db
                 ->createCommand("INSERT INTO tbl_test (col) VALUES $valuesClause")

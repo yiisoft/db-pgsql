@@ -25,8 +25,8 @@ final class DateRangeColumnTest extends TestCase
             '[2024-01-01,2024-01-06)',
             new DateRangeValue(
                 new DateTimeImmutable('2024-01-01'),
-                new DateTimeImmutable('2024-01-05')
-            )
+                new DateTimeImmutable('2024-01-05'),
+            ),
         ];
         yield [
             '[2024-01-02,2024-01-05)',
@@ -34,31 +34,31 @@ final class DateRangeColumnTest extends TestCase
                 new DateTimeImmutable('2024-01-01'),
                 new DateTimeImmutable('2024-01-05'),
                 false,
-                false
-            )
+                false,
+            ),
         ];
         yield ['[2024-01-01,)', '[2024-01-01,)'];
         yield [
             '[2024-01-01,)',
-            new DateRangeValue(new DateTimeImmutable('2024-01-01'), null)
+            new DateRangeValue(new DateTimeImmutable('2024-01-01'), null),
         ];
         yield [
             '[2024-01-01,)',
-            new DateRangeValue(new DateTimeImmutable('2024-01-01'), null, true, false)
+            new DateRangeValue(new DateTimeImmutable('2024-01-01'), null, true, false),
         ];
         yield ['(,2024-01-11)', '(,2024-01-10]'];
         yield [
             '(,2024-01-11)',
-            new DateRangeValue(null, new DateTimeImmutable('2024-01-10'), false, true)
+            new DateRangeValue(null, new DateTimeImmutable('2024-01-10'), false, true),
         ];
         yield ['(,)', '(,)'];
         yield [
             '(,)',
-            new DateRangeValue(null, null)
+            new DateRangeValue(null, null),
         ];
         yield [
             '(,)',
-            new DateRangeValue(null, null, false, false)
+            new DateRangeValue(null, null, false, false),
         ];
         yield ['empty', '(2024-01-07,2024-01-07)'];
         yield ['empty', 'empty'];
@@ -68,8 +68,8 @@ final class DateRangeColumnTest extends TestCase
                 new DateTimeImmutable('2024-01-10'),
                 new DateTimeImmutable('2024-01-10'),
                 false,
-                false
-            )
+                false,
+            ),
         ];
     }
 
@@ -111,7 +111,7 @@ final class DateRangeColumnTest extends TestCase
                 array_map(
                     static fn(string $value): string => "('$value')",
                     $values,
-                )
+                ),
             );
             $db
                 ->createCommand("INSERT INTO tbl_test (col) VALUES $valuesClause")
