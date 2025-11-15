@@ -636,7 +636,7 @@ final class QueryBuilderTest extends CommonQueryBuilderTest
             [2, 1, 3],
             new ArrayValue([6, 5, 7]),
             $stringParam,
-            self::getDb()->select(new ArrayValue([10, 9])),
+            $db->select(new ArrayValue([10, 9])),
         ))->type($type)->ordered();
         $params = [];
 
