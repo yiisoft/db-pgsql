@@ -6,7 +6,6 @@ namespace Yiisoft\Db\Pgsql\Tests\Support;
 
 use Yiisoft\Db\Pgsql\Connection;
 use Yiisoft\Db\Pgsql\Driver;
-use Yiisoft\Db\Pgsql\Dsn;
 use Yiisoft\Db\Pgsql\Tests\TestConnection;
 use Yiisoft\Db\Tests\Support\DbHelper;
 
