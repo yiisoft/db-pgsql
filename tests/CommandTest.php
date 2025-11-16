@@ -231,11 +231,14 @@ final class CommandTest extends CommonCommandTest
 
     public function testShowDatabases(): void
     {
-        $db = self::getDb();
+        $db = TestConnection::get();
 
-        $this->assertSame([self::getDatabaseName()], $db->createCommand()->showDatabases());
+        $databases = $db->createCommand()->showDatabases();
 
-        $db->close();
+        $this->assertSame(
+            [TestConnection::databaseName()],
+            $databases,
+        );
     }
 
     #[DataProviderExternal(CommandProvider::class, 'createIndex')]

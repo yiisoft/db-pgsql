@@ -9,6 +9,7 @@ use PHPUnit\Framework\TestCase;
 use Yiisoft\Db\Pgsql\Connection;
 use Yiisoft\Db\Pgsql\Expression\Int4RangeValue;
 use Yiisoft\Db\Pgsql\Tests\Support\TestTrait;
+use Yiisoft\Db\Pgsql\Tests\TestConnection;
 
 final class Int4RangeColumnTest extends TestCase
 {
@@ -48,8 +49,6 @@ final class Int4RangeColumnTest extends TestCase
 
         $result = $db->select('col')->from('tbl_test')->where(['id' => 3])->one();
 
-        $db->close();
-
         $this->assertIsArray($result);
         $this->assertSame($expectedColumnValue, $result['col']);
     }
@@ -59,7 +58,7 @@ final class Int4RangeColumnTest extends TestCase
      */
     private function createConnection(array $values = []): Connection
     {
-        $db = $this->getConnection();
+        $db = TestConnection::get();
 
         $db->createCommand('DROP TABLE IF EXISTS tbl_test')->execute();
         $db->createCommand(

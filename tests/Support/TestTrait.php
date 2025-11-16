@@ -7,6 +7,7 @@ namespace Yiisoft\Db\Pgsql\Tests\Support;
 use Yiisoft\Db\Pgsql\Connection;
 use Yiisoft\Db\Pgsql\Driver;
 use Yiisoft\Db\Pgsql\Dsn;
+use Yiisoft\Db\Pgsql\Tests\TestConnection;
 use Yiisoft\Db\Tests\Support\DbHelper;
 
 use function preg_replace;
@@ -26,18 +27,9 @@ trait TestTrait
         $db->close();
     }
 
-    protected function getConnection(bool $fixture = false, ?string $minVersion = null): Connection
+    protected function getConnection(bool $fixture = false): Connection
     {
-        $db = new Connection($this->getDriver(), DbHelper::getSchemaCache());
-
-        if ($minVersion !== null) {
-            $currentVersion = $db->getServerInfo()->getVersion();
-            if (version_compare($currentVersion, $minVersion, '<')) {
-                $this->markTestSkipped(
-                    "This test requires at least PostgreSQL version $minVersion. Current version is $currentVersion.",
-                );
-            }
-        }
+        $db = TestConnection::create($this->getDsn());
 
         if ($fixture) {
             DbHelper::loadFixture($db, __DIR__ . "/Fixture/$this->fixture");
@@ -48,25 +40,13 @@ trait TestTrait
 
     protected static function getDb(): Connection
     {
-        $dsn = (string) new Dsn(
-            host: self::getHost(),
-            databaseName: self::getDatabaseName(),
-            port: self::getPort(),
-        );
-        $driver = new Driver($dsn, self::getUsername(), self::getPassword());
-        $driver->charset('utf8');
-
-        return new Connection($driver, DbHelper::getSchemaCache());
+        return TestConnection::create();
     }
 
     protected function getDsn(): string
     {
         if ($this->dsn === '') {
-            $this->dsn = (string) new Dsn(
-                host: self::getHost(),
-                databaseName: self::getDatabaseName(),
-                port: self::getPort(),
-            );
+            $this->dsn = TestConnection::dsn();
         }
 
         return $this->dsn;
@@ -94,34 +74,16 @@ trait TestTrait
 
     protected function getDriver(): Driver
     {
-        $driver = new Driver($this->getDsn(), self::getUsername(), self::getPassword());
-        $driver->charset('utf8');
-
-        return $driver;
+        return TestConnection::createDriver();
     }
 
-    private static function getDatabaseName(): string
+    protected function ensureMinPostgreSqlVersion(string $version): void
     {
-        return getenv('YII_PGSQL_DATABASE') ?: 'yiitest';
-    }
-
-    private static function getHost(): string
-    {
-        return getenv('YII_PGSQL_HOST') ?: '127.0.0.1';
-    }
-
-    private static function getPort(): string
-    {
-        return getenv('YII_PGSQL_PORT') ?: '5432';
-    }
-
-    private static function getUsername(): string
-    {
-        return getenv('YII_PGSQL_USER') ?: 'root';
-    }
-
-    private static function getPassword(): string
-    {
-        return getenv('YII_PGSQL_PASSWORD') ?: 'root';
+        $currentVersion = TestConnection::get()->getServerInfo()->getVersion();
+        if (version_compare($currentVersion, $version, '<')) {
+            $this->markTestSkipped(
+                "This test requires at least PostgreSQL version $version. Current version is $currentVersion.",
+            );
+        }
     }
 }

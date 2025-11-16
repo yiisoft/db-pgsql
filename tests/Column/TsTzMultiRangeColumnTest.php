@@ -11,6 +11,7 @@ use Yiisoft\Db\Pgsql\Connection;
 use Yiisoft\Db\Pgsql\Expression\MultiRangeValue;
 use Yiisoft\Db\Pgsql\Expression\TsTzRangeValue;
 use Yiisoft\Db\Pgsql\Tests\Support\TestTrait;
+use Yiisoft\Db\Pgsql\Tests\TestConnection;
 
 final class TsTzMultiRangeColumnTest extends TestCase
 {
@@ -85,8 +86,6 @@ final class TsTzMultiRangeColumnTest extends TestCase
 
         $result = $db->select('col')->from('tbl_test')->where(['id' => 3])->one();
 
-        $db->close();
-
         $this->assertIsArray($result);
         $this->assertSame($expectedColumnValue, $result['col']);
     }
@@ -96,7 +95,8 @@ final class TsTzMultiRangeColumnTest extends TestCase
      */
     private function createConnection(array $values = []): Connection
     {
-        $db = $this->getConnection(minVersion: '14.0');
+        $db = TestConnection::get();
+        $this->ensureMinPostgreSqlVersion('14.0');
 
         $db->createCommand('DROP TABLE IF EXISTS tbl_test')->execute();
         $db->createCommand(
