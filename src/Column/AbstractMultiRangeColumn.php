@@ -57,7 +57,7 @@ abstract class AbstractMultiRangeColumn extends AbstractColumn
             return [];
         }
 
-        if (preg_match('/^{([\[\(][^,]*,[^\)\]]*[\)\]],?)+}$/', $value) !== 1) {
+        if (preg_match('/^{([\[\(][^,]*,[^\)\]]*[\)\]])(?:,(?1))*}$/', $value) !== 1) {
             throw new NotSupportedException('Unsupported multirange format');
         }
 
