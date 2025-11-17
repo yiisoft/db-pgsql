@@ -9,7 +9,7 @@ use Throwable;
 use Yiisoft\Db\Exception\NotSupportedException;
 use Yiisoft\Db\Expression\ExpressionInterface;
 use Yiisoft\Db\Pgsql\Tests\Provider\CommandProvider;
-use Yiisoft\Db\Pgsql\Tests\Support\TestTrait;
+use Yiisoft\Db\Pgsql\Tests\Support\IntegrationTestTrait;
 use Yiisoft\Db\Tests\Common\CommonCommandTest;
 
 use function serialize;
@@ -19,13 +19,11 @@ use function serialize;
  */
 final class CommandTest extends CommonCommandTest
 {
-    use TestTrait;
-
-    protected string $upsertTestCharCast = 'CAST([[address]] AS VARCHAR(255))';
+    use IntegrationTestTrait;
 
     public function testAddDefaultValue(): void
     {
-        $db = $this->getConnection();
+        $db = $this->getSharedConnection();
 
         $command = $db->createCommand();
 
@@ -58,7 +56,8 @@ final class CommandTest extends CommonCommandTest
 
     public function testBooleanValuesInsert(): void
     {
-        $db = $this->getConnection(true);
+        $db = $this->getSharedConnection();
+        $this->loadFixture();;
 
         $command = $db->createCommand();
         $command->insert('{{bool_values}}', ['bool_col' => true]);
@@ -91,7 +90,8 @@ final class CommandTest extends CommonCommandTest
 
     public function testBooleanValuesBatchInsert(): void
     {
-        $db = $this->getConnection(true);
+        $db = $this->getSharedConnection();
+        $this->loadFixture();;
 
         $command = $db->createCommand();
         $command->insertBatch('{{bool_values}}', [[true], [false]], ['bool_col']);
@@ -119,7 +119,8 @@ final class CommandTest extends CommonCommandTest
 
     public function testDelete(): void
     {
-        $db = $this->getConnection(true);
+        $db = $this->getSharedConnection();
+        $this->loadFixture();;
 
         $command = $db->createCommand();
         $command->delete('{{customer}}', ['id' => 2])->execute();
@@ -140,7 +141,7 @@ final class CommandTest extends CommonCommandTest
 
     public function testDropDefaultValue(): void
     {
-        $db = $this->getConnection();
+        $db = $this->getSharedConnection();
 
         $command = $db->createCommand();
 
@@ -165,7 +166,7 @@ final class CommandTest extends CommonCommandTest
      */
     public function testSaveSerializedObject(): void
     {
-        $db = $this->getConnection();
+        $db = $this->getSharedConnection();
 
         $command = $db->createCommand();
         $command = $command->insert(
@@ -209,7 +210,8 @@ final class CommandTest extends CommonCommandTest
 
     public function testInsertReturningPksUuid(): void
     {
-        $db = $this->getConnection(true);
+        $db = $this->getSharedConnection();
+        $this->loadFixture();;
 
         $command = $db->createCommand();
         $result = $command->insertReturningPks(
@@ -245,5 +247,10 @@ final class CommandTest extends CommonCommandTest
     public function testCreateIndex(array $columns, array $indexColumns, ?string $indexType, ?string $indexMethod): void
     {
         parent::testCreateIndex($columns, $indexColumns, $indexType, $indexMethod);
+    }
+
+    protected function getUpsertTestCharCast(): string
+    {
+        return 'CAST([[address]] AS VARCHAR(255))';
     }
 }
