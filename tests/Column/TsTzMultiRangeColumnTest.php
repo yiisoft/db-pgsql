@@ -90,6 +90,35 @@ final class TsTzMultiRangeColumnTest extends TestCase
         $this->assertSame($expectedColumnValue, $result['col']);
     }
 
+    public static function dataPhpTypecast(): iterable
+    {
+        yield 'empty' => [[], '{}'];
+        yield [
+            [
+                new TsTzRangeValue(new DateTimeImmutable('2024-01-01 10:00:00+00'), new DateTimeImmutable('2024-01-01 15:00:00+00'), true, true),
+                new TsTzRangeValue(new DateTimeImmutable('2024-01-02 10:00:00+00'), new DateTimeImmutable('2024-01-02 15:00:00+00'), true, false),
+            ],
+            '{["2024-01-01 10:00:00+00","2024-01-01 15:00:00+00"],["2024-01-02 10:00:00+00","2024-01-02 15:00:00+00")}',
+        ];
+        yield [
+            [
+                new TsTzRangeValue(null, new DateTimeImmutable('2024-01-01 15:00:00+00'), false, true),
+                new TsTzRangeValue(new DateTimeImmutable('2024-01-02 10:00:00+00'), null, true, false),
+            ],
+            '{[,"2024-01-01 15:00:00+00"],["2024-01-02 10:00:00+00",)}',
+        ];
+    }
+
+    #[DataProvider('dataPhpTypecast')]
+    public function testPhpTypecast(array $expected, string $value): void
+    {
+        $db = $this->createConnection([$value]);
+
+        $result = $db->select('col')->from('tbl_test')->where(['id' => 1])->withTypecasting()->one();
+
+        $this->assertEquals($expected, $result['col']);
+    }
+
     /**
      * @psalm-param list<string> $values
      */

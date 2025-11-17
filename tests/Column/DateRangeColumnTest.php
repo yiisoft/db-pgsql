@@ -87,6 +87,33 @@ final class DateRangeColumnTest extends TestCase
         $this->assertSame($expectedColumnValue, $result['col']);
     }
 
+    public static function dataPhpTypecast(): iterable
+    {
+        yield 'empty' => [null, 'empty'];
+        yield [
+            new DateRangeValue(new DateTimeImmutable('2024-01-01'), new DateTimeImmutable('2024-01-06'), true, false),
+            '[2024-01-01,2024-01-05]',
+        ];
+        yield [
+            new DateRangeValue(null, new DateTimeImmutable('2024-01-06'), false, false),
+            '(,2024-01-05]',
+        ];
+        yield [
+            new DateRangeValue(new DateTimeImmutable('2024-01-06'), null, true, false),
+            '(2024-01-05,)',
+        ];
+    }
+
+    #[DataProvider('dataPhpTypecast')]
+    public function testPhpTypecast(mixed $expected, string $value): void
+    {
+        $db = $this->createConnection([$value]);
+
+        $result = $db->select('col')->from('tbl_test')->where(['id' => 1])->withTypecasting()->one();
+
+        $this->assertEquals($expected, $result['col']);
+    }
+
     /**
      * @psalm-param list<string> $values
      */

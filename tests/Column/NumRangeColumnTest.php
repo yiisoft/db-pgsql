@@ -53,6 +53,33 @@ final class NumRangeColumnTest extends TestCase
         $this->assertSame($expectedColumnValue, $result['col']);
     }
 
+    public static function dataPhpTypecast(): iterable
+    {
+        yield 'empty' => [null, 'empty'];
+        yield [
+            new NumRangeValue(1.5, 5.5, true, true),
+            '[1.5,5.5]',
+        ];
+        yield [
+            new NumRangeValue(null, 5.5, false, true),
+            '(,5.5]',
+        ];
+        yield [
+            new NumRangeValue(5.5, null, false, false),
+            '(5.5,)',
+        ];
+    }
+
+    #[DataProvider('dataPhpTypecast')]
+    public function testPhpTypecast(mixed $expected, string $value): void
+    {
+        $db = $this->createConnection([$value]);
+
+        $result = $db->select('col')->from('tbl_test')->where(['id' => 1])->withTypecasting()->one();
+
+        $this->assertEquals($expected, $result['col']);
+    }
+
     /**
      * @psalm-param list<string> $values
      */

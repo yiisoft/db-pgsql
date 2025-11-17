@@ -57,14 +57,16 @@ abstract class AbstractMultiRangeColumn extends AbstractColumn
             return [];
         }
 
-        if (!preg_match_all('/^{(([\[\(][^,]*,[^\)\]]*[\)\]]),?)+}$/U', $value, $matches)) {
+        if (preg_match('/^{([\[\(][^,]*,[^\)\]]*[\)\]],?)+}$/', $value) !== 1) {
             throw new NotSupportedException('Unsupported multirange format');
         }
+
+        preg_match_all('/[\[\(][^,]*,[^\)\]]*[\)\]]/', $value, $matches);
 
         $rangeColumn = $this->getRangeColumn();
         return array_map(
             $rangeColumn->phpTypecast(...),
-            $matches[1],
+            $matches[0],
         );
     }
 

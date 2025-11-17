@@ -63,6 +63,35 @@ final class Int4MultiRangeColumnTest extends TestCase
         $this->assertSame($expectedColumnValue, $result['col']);
     }
 
+    public static function dataPhpTypecast(): iterable
+    {
+        yield 'empty' => [[], '{}'];
+        yield [
+            [
+                new Int4RangeValue(1, 6, true, false),
+                new Int4RangeValue(10, 20, true, false),
+            ],
+            '{[1,5],[10,20)}',
+        ];
+        yield [
+            [
+                new Int4RangeValue(null, 6, false, false),
+                new Int4RangeValue(10, null, true, false),
+            ],
+            '{[,5],[10,)}',
+        ];
+    }
+
+    #[DataProvider('dataPhpTypecast')]
+    public function testPhpTypecast(array $expected, string $value): void
+    {
+        $db = $this->createConnection([$value]);
+
+        $result = $db->select('col')->from('tbl_test')->where(['id' => 1])->withTypecasting()->one();
+
+        $this->assertEquals($expected, $result['col']);
+    }
+
     /**
      * @psalm-param list<string> $values
      */

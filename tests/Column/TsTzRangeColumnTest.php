@@ -114,6 +114,33 @@ final class TsTzRangeColumnTest extends TestCase
         $this->assertSame($expectedColumnValue, $result['col']);
     }
 
+    public static function dataPhpTypecast(): iterable
+    {
+        yield 'empty' => [null, 'empty'];
+        yield [
+            new TsTzRangeValue(new DateTimeImmutable('2024-01-01 10:00:00+00'), new DateTimeImmutable('2024-01-01 15:00:00+00'), true, true),
+            '["2024-01-01 10:00:00+00","2024-01-01 15:00:00+00"]',
+        ];
+        yield [
+            new TsTzRangeValue(null, new DateTimeImmutable('2024-01-01 15:00:00+00'), false, true),
+            '(,"2024-01-01 15:00:00+00"]',
+        ];
+        yield [
+            new TsTzRangeValue(new DateTimeImmutable('2024-01-01 15:00:00+00'), null, false, false),
+            '("2024-01-01 15:00:00+00",)',
+        ];
+    }
+
+    #[DataProvider('dataPhpTypecast')]
+    public function testPhpTypecast(mixed $expected, string $value): void
+    {
+        $db = $this->createConnection([$value]);
+
+        $result = $db->select('col')->from('tbl_test')->where(['id' => 1])->withTypecasting()->one();
+
+        $this->assertEquals($expected, $result['col']);
+    }
+
     /**
      * @psalm-param list<string> $values
      */

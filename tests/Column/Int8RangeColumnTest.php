@@ -53,6 +53,33 @@ final class Int8RangeColumnTest extends TestCase
         $this->assertSame($expectedColumnValue, $result['col']);
     }
 
+    public static function dataPhpTypecast(): iterable
+    {
+        yield 'empty' => [null, 'empty'];
+        yield [
+            new Int8RangeValue(1, 6, true, false),
+            '[1,5]',
+        ];
+        yield [
+            new Int8RangeValue(null, 6, false, false),
+            '(,5]',
+        ];
+        yield [
+            new Int8RangeValue(6, null, true, false),
+            '(5,)',
+        ];
+    }
+
+    #[DataProvider('dataPhpTypecast')]
+    public function testPhpTypecast(mixed $expected, string $value): void
+    {
+        $db = $this->createConnection([$value]);
+
+        $result = $db->select('col')->from('tbl_test')->where(['id' => 1])->withTypecasting()->one();
+
+        $this->assertEquals($expected, $result['col']);
+    }
+
     /**
      * @psalm-param list<string> $values
      */

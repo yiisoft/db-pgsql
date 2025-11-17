@@ -115,6 +115,35 @@ final class DateMultiRangeColumnTest extends TestCase
         $this->assertSame($expectedColumnValue, $result['col']);
     }
 
+    public static function dataPhpTypecast(): iterable
+    {
+        yield 'empty' => [[], '{}'];
+        yield [
+            [
+                new DateRangeValue(new DateTimeImmutable('2024-01-01'), new DateTimeImmutable('2024-01-06'), true, false),
+                new DateRangeValue(new DateTimeImmutable('2024-01-10'), new DateTimeImmutable('2024-01-20'), true, false),
+            ],
+            '{[2024-01-01,2024-01-05],[2024-01-10,2024-01-20)}',
+        ];
+        yield [
+            [
+                new DateRangeValue(null, new DateTimeImmutable('2024-01-06'), false, false),
+                new DateRangeValue(new DateTimeImmutable('2024-01-10'), null, true, false),
+            ],
+            '{[,2024-01-05],[2024-01-10,)}',
+        ];
+    }
+
+    #[DataProvider('dataPhpTypecast')]
+    public function testPhpTypecast(array $expected, string $value): void
+    {
+        $db = $this->createConnection([$value]);
+
+        $result = $db->select('col')->from('tbl_test')->where(['id' => 1])->withTypecasting()->one();
+
+        $this->assertEquals($expected, $result['col']);
+    }
+
     /**
      * @psalm-param list<string> $values
      */
