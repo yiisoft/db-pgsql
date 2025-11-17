@@ -7,34 +7,33 @@ namespace Yiisoft\Db\Pgsql\Expression\Builder;
 use Yiisoft\Db\Exception\NotSupportedException;
 use Yiisoft\Db\Expression\ExpressionBuilderInterface;
 use Yiisoft\Db\Expression\ExpressionInterface;
+use Yiisoft\Db\Pgsql\Expression\DateRangeValue;
+use Yiisoft\Db\Pgsql\Expression\Int4RangeValue;
+use Yiisoft\Db\Pgsql\Expression\Int8RangeValue;
+use Yiisoft\Db\Pgsql\Expression\NumRangeValue;
+use Yiisoft\Db\Pgsql\Expression\TsRangeValue;
+use Yiisoft\Db\Pgsql\Expression\TsTzRangeValue;
 use Yiisoft\Db\Schema\Column\ColumnInterface;
 
 /**
- * @template T as ExpressionInterface
+ * @template T as DateRangeValue|Int4RangeValue|Int8RangeValue|NumRangeValue|TsRangeValue|TsTzRangeValue
  * @implements ExpressionBuilderInterface<T>
  */
 abstract class AbstractRangeValueBuilder implements ExpressionBuilderInterface
 {
-    abstract protected function getBoundColumn(): ColumnInterface;
-
-    /**
-     * @throws NotSupportedException
-     */
-    final protected function buildRange(
-        mixed $lower,
-        mixed $upper,
-        bool $includeLower,
-        bool $includeUpper,
-    ): string {
+    final public function build(ExpressionInterface $expression, array &$params = []): string
+    {
         $column = $this->getBoundColumn();
         return '\''
-            . ($includeLower ? '[' : '(')
-            . $this->prepareBoundValue($lower, $column)
+            . ($expression->includeLower ? '[' : '(')
+            . $this->prepareBoundValue($expression->lower, $column)
             . ','
-            . $this->prepareBoundValue($upper, $column)
-            . ($includeUpper ? ']' : ')')
+            . $this->prepareBoundValue($expression->upper, $column)
+            . ($expression->includeUpper ? ']' : ')')
             . '\'';
     }
+
+    abstract protected function getBoundColumn(): ColumnInterface;
 
     /**
      * @throws NotSupportedException
