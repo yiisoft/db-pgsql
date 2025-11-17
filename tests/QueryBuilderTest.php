@@ -6,6 +6,7 @@ namespace Yiisoft\Db\Pgsql\Tests;
 
 use PHPUnit\Framework\Attributes\DataProviderExternal;
 use PHPUnit\Framework\Attributes\TestWith;
+use Throwable;
 use Yiisoft\Db\Constant\DataType;
 use Yiisoft\Db\Driver\Pdo\PdoConnectionInterface;
 use Yiisoft\Db\Exception\IntegrityException;
@@ -55,8 +56,6 @@ final class QueryBuilderTest extends CommonQueryBuilderTest
         );
 
         $qb->addDefaultValue('T_constraints_1', 'CN_pk', 'C_default', 1);
-
-        $db->close();
     }
 
     #[DataProviderExternal(QueryBuilderProvider::class, 'alterColumn')]
@@ -135,7 +134,6 @@ final class QueryBuilderTest extends CommonQueryBuilderTest
     public function testCheckIntegrity(): void
     {
         $db = $this->getConnection();
-
         $qb = $db->getQueryBuilder();
 
         $this->assertSame(
@@ -162,12 +160,17 @@ final class QueryBuilderTest extends CommonQueryBuilderTest
 
         $db->createCommand()->checkIntegrity('public', 'item')->execute();
 
-        $this->expectException(IntegrityException::class);
-        $this->expectExceptionMessage(
-            'SQLSTATE[23503]: Foreign key violation: 7 ERROR:  insert or update on table "item" violates foreign key constraint "item_category_id_fkey"',
-        );
+        $exception = null;
+        try {
+            $command->execute();
+        } catch (Throwable $exception) {
+        }
 
-        $command->execute();
+        $this->assertInstanceOf(IntegrityException::class, $exception);
+        $this->assertStringStartsWith(
+            'SQLSTATE[23503]: Foreign key violation: 7 ERROR:  insert or update on table "item" violates foreign key constraint "item_category_id_fkey"',
+            $exception->getMessage(),
+        );
 
         $db->close();
     }
@@ -175,7 +178,6 @@ final class QueryBuilderTest extends CommonQueryBuilderTest
     public function testCreateTable(): void
     {
         $db = $this->getConnection();
-
         $qb = $db->getQueryBuilder();
 
         $this->assertSame(
@@ -212,7 +214,6 @@ final class QueryBuilderTest extends CommonQueryBuilderTest
     public function testDropCommentFromColumn(): void
     {
         $db = $this->getConnection(true);
-
         $qb = $db->getQueryBuilder();
 
         $this->assertSame(
@@ -228,7 +229,6 @@ final class QueryBuilderTest extends CommonQueryBuilderTest
     public function testDropDefaultValue(): void
     {
         $db = $this->getConnection(true);
-
         $qb = $db->getQueryBuilder();
 
         $this->expectException(NotSupportedException::class);
@@ -237,14 +237,11 @@ final class QueryBuilderTest extends CommonQueryBuilderTest
         );
 
         $qb->dropDefaultValue('T_constraints_1', 'CN_pk');
-
-        $db->close();
     }
 
     public function testDropIndex(): void
     {
         $db = $this->getConnection();
-
         $qb = $db->getQueryBuilder();
 
         $this->assertSame(
@@ -369,7 +366,6 @@ final class QueryBuilderTest extends CommonQueryBuilderTest
         $this->setFixture('pgsql12.sql');
 
         $db = $this->getConnection(true);
-
         $qb = $db->getQueryBuilder();
 
         $this->assertSame(
@@ -640,7 +636,7 @@ final class QueryBuilderTest extends CommonQueryBuilderTest
             [2, 1, 3],
             new ArrayValue([6, 5, 7]),
             $stringParam,
-            self::getDb()->select(new ArrayValue([10, 9])),
+            $db->select(new ArrayValue([10, 9])),
         ))->type($type)->ordered();
         $params = [];
 
@@ -653,6 +649,8 @@ final class QueryBuilderTest extends CommonQueryBuilderTest
         $result = $db->select($arrayMerge)->scalar();
 
         $this->assertSame($expectedResult, $result);
+
+        $db->close();
     }
 
     #[DataProviderExternal(QueryBuilderProvider::class, 'upsertWithMultiOperandFunctions')]

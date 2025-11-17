@@ -75,7 +75,7 @@ final class SchemaTest extends CommonSchemaTest
             $command->dropTable('type_range')->execute();
         }
 
-        $command->createTable('type_range', ['id' => 'int', 'during tsrange'])->execute();
+        $command->createTable('type_range', ['id' => 'int', 'during point'])->execute();
 
         $table = $schema->getTableSchema('type_range', true);
 

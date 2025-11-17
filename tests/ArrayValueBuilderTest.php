@@ -178,5 +178,7 @@ final class ArrayValueBuilderTest extends TestCase
 
         $this->assertSame($expected, $builder->build($expression, $params));
         Assert::arraysEquals($expectedParams, $params);
+
+        $db->close();
     }
 }
