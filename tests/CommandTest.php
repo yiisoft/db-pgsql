@@ -57,7 +57,8 @@ final class CommandTest extends CommonCommandTest
     public function testBooleanValuesInsert(): void
     {
         $db = $this->getSharedConnection();
-        $this->loadFixture();;
+        $this->loadFixture();
+        ;
 
         $command = $db->createCommand();
         $command->insert('{{bool_values}}', ['bool_col' => true]);
@@ -91,7 +92,8 @@ final class CommandTest extends CommonCommandTest
     public function testBooleanValuesBatchInsert(): void
     {
         $db = $this->getSharedConnection();
-        $this->loadFixture();;
+        $this->loadFixture();
+        ;
 
         $command = $db->createCommand();
         $command->insertBatch('{{bool_values}}', [[true], [false]], ['bool_col']);
@@ -120,7 +122,8 @@ final class CommandTest extends CommonCommandTest
     public function testDelete(): void
     {
         $db = $this->getSharedConnection();
-        $this->loadFixture();;
+        $this->loadFixture();
+        ;
 
         $command = $db->createCommand();
         $command->delete('{{customer}}', ['id' => 2])->execute();
@@ -211,7 +214,8 @@ final class CommandTest extends CommonCommandTest
     public function testInsertReturningPksUuid(): void
     {
         $db = $this->getSharedConnection();
-        $this->loadFixture();;
+        $this->loadFixture();
+        ;
 
         $command = $db->createCommand();
         $result = $command->insertReturningPks(
