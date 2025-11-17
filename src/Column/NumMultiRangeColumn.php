@@ -8,6 +8,8 @@ use Yiisoft\Db\Schema\Column\ColumnInterface;
 
 final class NumMultiRangeColumn extends AbstractMultiRangeColumn
 {
+    protected const DEFAULT_TYPE = PgsqlColumnType::NUMMULTIRANGE;
+
     protected function getRangeColumn(): ColumnInterface
     {
         return new NumRangeColumn();
