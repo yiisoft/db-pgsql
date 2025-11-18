@@ -6,15 +6,14 @@ namespace Yiisoft\Db\Pgsql\Tests\Column;
 
 use DateTimeImmutable;
 use PHPUnit\Framework\Attributes\DataProvider;
-use PHPUnit\Framework\TestCase;
 use Yiisoft\Db\Pgsql\Connection;
 use Yiisoft\Db\Pgsql\Expression\DateRangeValue;
-use Yiisoft\Db\Pgsql\Tests\Support\TestTrait;
-use Yiisoft\Db\Pgsql\Tests\TestConnection;
+use Yiisoft\Db\Pgsql\Tests\Support\IntegrationTestTrait;
+use Yiisoft\Db\Tests\Support\IntegrationTestCase;
 
-final class DateRangeColumnTest extends TestCase
+final class DateRangeColumnTest extends IntegrationTestCase
 {
-    use TestTrait;
+    use IntegrationTestTrait;
 
     public static function dataBase(): iterable
     {
@@ -77,7 +76,7 @@ final class DateRangeColumnTest extends TestCase
     #[DataProvider('dataBase')]
     public function testBase(mixed $expectedColumnValue, mixed $value): void
     {
-        $db = $this->createConnection(['[2024-01-01,2024-01-10)', '(2024-01-20,2024-01-30]']);
+        $db = $this->prepareConnection(['[2024-01-01,2024-01-10)', '(2024-01-20,2024-01-30]']);
 
         $db->createCommand()->insert('tbl_test', ['col' => $value])->execute();
 
@@ -107,7 +106,7 @@ final class DateRangeColumnTest extends TestCase
     #[DataProvider('dataPhpTypecast')]
     public function testPhpTypecast(mixed $expected, string $value): void
     {
-        $db = $this->createConnection([$value]);
+        $db = $this->prepareConnection([$value]);
 
         $result = $db->select('col')->from('tbl_test')->where(['id' => 1])->withTypecasting()->one();
 
@@ -117,9 +116,9 @@ final class DateRangeColumnTest extends TestCase
     /**
      * @psalm-param list<string> $values
      */
-    private function createConnection(array $values = []): Connection
+    private function prepareConnection(array $values = []): Connection
     {
-        $db = TestConnection::get();
+        $db = $this->getSharedConnection();
 
         $db->createCommand('DROP TABLE IF EXISTS tbl_test')->execute();
         $db->createCommand(

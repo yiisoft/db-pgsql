@@ -7,14 +7,14 @@ namespace Yiisoft\Db\Pgsql\Tests;
 use Yiisoft\Db\Pgsql\Connection;
 use Yiisoft\Db\Pgsql\Driver;
 use Yiisoft\Db\Pgsql\Dsn;
-use Yiisoft\Db\Tests\Support\DbHelper;
+use Yiisoft\Db\Tests\Support\TestHelper;
 
 final class TestConnection
 {
     private static ?string $dsn = null;
     private static ?Connection $connection = null;
 
-    public static function get(): Connection
+    public static function getShared(): Connection
     {
         $db = self::$connection ??= self::create();
         $db->getSchema()->refresh();
@@ -32,7 +32,7 @@ final class TestConnection
 
     public static function create(?string $dsn = null): Connection
     {
-        return new Connection(self::createDriver($dsn), DbHelper::getSchemaCache());
+        return new Connection(self::createDriver($dsn), TestHelper::createMemorySchemaCache());
     }
 
     public static function createDriver(?string $dsn = null): Driver

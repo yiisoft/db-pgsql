@@ -10,7 +10,6 @@ use Yiisoft\Db\Pgsql\Column\ArrayColumn;
 use Yiisoft\Db\Pgsql\Column\ColumnFactory;
 use Yiisoft\Db\Pgsql\Tests\Provider\ColumnFactoryProvider;
 use Yiisoft\Db\Pgsql\Tests\Support\IntegrationTestTrait;
-use Yiisoft\Db\Pgsql\Tests\Support\TestTrait;
 use Yiisoft\Db\Schema\Column\ColumnInterface;
 use Yiisoft\Db\Tests\Common\CommonColumnFactoryTest;
 

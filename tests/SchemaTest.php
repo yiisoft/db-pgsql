@@ -19,7 +19,7 @@ use Yiisoft\Db\Schema\Column\ColumnInterface;
 use Yiisoft\Db\Schema\SchemaInterface;
 use Yiisoft\Db\Schema\TableSchemaInterface;
 use Yiisoft\Db\Tests\Common\CommonSchemaTest;
-use Yiisoft\Db\Tests\Support\DbHelper;
+use Yiisoft\Db\Tests\Support\TestHelper;
 
 /**
  * @group pgsql
@@ -317,7 +317,7 @@ final class SchemaTest extends CommonSchemaTest
                 ),
             )
             ->willReturn($commandMock);
-        $schema = new Schema($mockDb, DbHelper::getSchemaCache());
+        $schema = new Schema($mockDb, TestHelper::createMemorySchemaCache());
         $schema->getTableSchema($tableName);
     }
 
@@ -404,7 +404,7 @@ final class SchemaTest extends CommonSchemaTest
     public function testNotConnectionPDO(): void
     {
         $db = $this->createMock(ConnectionInterface::class);
-        $schema = new Schema($db, DbHelper::getSchemaCache());
+        $schema = new Schema($db, TestHelper::createMemorySchemaCache());
 
         $this->expectException(NotSupportedException::class);
         $this->expectExceptionMessage('Only PDO connections are supported.');

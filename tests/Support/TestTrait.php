@@ -78,7 +78,7 @@ trait TestTrait
 
     protected function ensureMinPostgreSqlVersion(string $version): void
     {
-        $currentVersion = TestConnection::get()->getServerInfo()->getVersion();
+        $currentVersion = TestConnection::getShared()->getServerInfo()->getVersion();
         if (version_compare($currentVersion, $version, '<')) {
             $this->markTestSkipped(
                 "This test requires at least PostgreSQL version $version. Current version is $currentVersion.",

@@ -8,11 +8,8 @@ use PDO;
 use Yiisoft\Db\Connection\ConnectionInterface;
 use Yiisoft\Db\Pgsql\Column\ColumnBuilder;
 use Yiisoft\Db\Pgsql\Column\ColumnFactory;
-use Yiisoft\Db\Pgsql\Connection;
 use Yiisoft\Db\Pgsql\Tests\Support\IntegrationTestTrait;
-use Yiisoft\Db\Pgsql\Tests\Support\TestTrait;
 use Yiisoft\Db\Tests\Common\CommonConnectionTest;
-use Yiisoft\Db\Tests\Support\DbHelper;
 use Yiisoft\Db\Transaction\TransactionInterface;
 
 /**

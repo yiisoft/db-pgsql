@@ -5,16 +5,15 @@ declare(strict_types=1);
 namespace Yiisoft\Db\Pgsql\Tests\Column;
 
 use PHPUnit\Framework\Attributes\DataProvider;
-use PHPUnit\Framework\TestCase;
 use Yiisoft\Db\Pgsql\Connection;
 use Yiisoft\Db\Pgsql\Expression\MultiRangeValue;
 use Yiisoft\Db\Pgsql\Expression\NumRangeValue;
-use Yiisoft\Db\Pgsql\Tests\Support\TestTrait;
-use Yiisoft\Db\Pgsql\Tests\TestConnection;
+use Yiisoft\Db\Pgsql\Tests\Support\IntegrationTestTrait;
+use Yiisoft\Db\Tests\Support\IntegrationTestCase;
 
-final class NumMultiRangeColumnTest extends TestCase
+final class NumMultiRangeColumnTest extends IntegrationTestCase
 {
-    use TestTrait;
+    use IntegrationTestTrait;
 
     public static function dataBase(): iterable
     {
@@ -53,7 +52,7 @@ final class NumMultiRangeColumnTest extends TestCase
     #[DataProvider('dataBase')]
     public function testBase(mixed $expectedColumnValue, mixed $value): void
     {
-        $db = $this->createConnection(['{[1.5,10.5),[20.5,30.5]}', '{[40.5,50.5)}']);
+        $db = $this->prepareConnection(['{[1.5,10.5),[20.5,30.5]}', '{[40.5,50.5)}']);
 
         $db->createCommand()->insert('tbl_test', ['col' => $value])->execute();
 
@@ -85,7 +84,7 @@ final class NumMultiRangeColumnTest extends TestCase
     #[DataProvider('dataPhpTypecast')]
     public function testPhpTypecast(array $expected, string $value): void
     {
-        $db = $this->createConnection([$value]);
+        $db = $this->prepareConnection([$value]);
 
         $result = $db->select('col')->from('tbl_test')->where(['id' => 1])->withTypecasting()->one();
 
@@ -95,9 +94,9 @@ final class NumMultiRangeColumnTest extends TestCase
     /**
      * @psalm-param list<string> $values
      */
-    private function createConnection(array $values = []): Connection
+    private function prepareConnection(array $values = []): Connection
     {
-        $db = TestConnection::get();
+        $db = $this->getSharedConnection();
         $this->ensureMinPostgreSqlVersion('14.0');
 
         $db->createCommand('DROP TABLE IF EXISTS tbl_test')->execute();

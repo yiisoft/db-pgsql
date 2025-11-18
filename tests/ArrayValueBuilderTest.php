@@ -6,7 +6,6 @@ namespace Yiisoft\Db\Pgsql\Tests;
 
 use ArrayIterator;
 use PHPUnit\Framework\Attributes\DataProvider;
-use PHPUnit\Framework\TestCase;
 use Yiisoft\Db\Constant\ColumnType;
 use Yiisoft\Db\Constant\DataType;
 use Yiisoft\Db\Expression\Value\ArrayValue;
@@ -18,19 +17,20 @@ use Yiisoft\Db\Pgsql\Builder\ArrayValueBuilder;
 use Yiisoft\Db\Pgsql\Column\ColumnBuilder;
 use Yiisoft\Db\Pgsql\Data\LazyArray;
 use Yiisoft\Db\Pgsql\Data\StructuredLazyArray;
-use Yiisoft\Db\Pgsql\Tests\Support\TestTrait;
+use Yiisoft\Db\Pgsql\Tests\Support\IntegrationTestTrait;
 use Yiisoft\Db\Query\Query;
 use Yiisoft\Db\Schema\Column\ColumnInterface;
 use Yiisoft\Db\Schema\Data\JsonLazyArray;
 use Yiisoft\Db\Schema\Data\LazyArrayInterface;
 use Yiisoft\Db\Tests\Support\Assert;
+use Yiisoft\Db\Tests\Support\IntegrationTestCase;
 
 /**
  * @group pgsql
  */
-final class ArrayValueBuilderTest extends TestCase
+final class ArrayValueBuilderTest extends IntegrationTestCase
 {
-    use TestTrait;
+    use IntegrationTestTrait;
 
     public static function buildProvider(): array
     {
@@ -127,16 +127,6 @@ final class ArrayValueBuilderTest extends TestCase
                 'ARRAY[NULL,ROW(11.11,:qp0),ROW(NULL,NULL)]',
                 [':qp0' => new Param('USD', DataType::STRING)],
             ],
-            'Query w/o type' => [
-                (new Query(self::getDb()))->select('id')->from('users')->where(['active' => 1]),
-                null,
-                'ARRAY(SELECT "id" FROM "users" WHERE "active" = 1)',
-            ],
-            'Query' => [
-                [(new Query(self::getDb()))->select('id')->from('users')->where(['active' => 1])],
-                'integer[][]',
-                'ARRAY[ARRAY(SELECT "id" FROM "users" WHERE "active" = 1)::integer[]]::integer[][]',
-            ],
             'bool' => [
                 [[[true], [false, null]], [['t', 'f'], null], null],
                 'bool[][][]',
@@ -169,7 +159,7 @@ final class ArrayValueBuilderTest extends TestCase
         string $expected,
         array $expectedParams = [],
     ): void {
-        $db = $this->getConnection();
+        $db = $this->getSharedConnection();
         $qb = $db->getQueryBuilder();
 
         $params = [];
@@ -178,7 +168,40 @@ final class ArrayValueBuilderTest extends TestCase
 
         $this->assertSame($expected, $builder->build($expression, $params));
         Assert::arraysEquals($expectedParams, $params);
+    }
 
-        $db->close();
+    public function testBuildWithQuery(): void
+    {
+        $db = $this->getSharedConnection();
+        $queryBuilder = $db->getQueryBuilder();
+
+        $params = [];
+        $builder = new ArrayValueBuilder($queryBuilder);
+        $expression = new ArrayValue(
+            $db->select('id')->from('users')->where(['active' => 1]),
+        );
+
+        $result = $builder->build($expression, $params);
+
+        $this->assertSame('ARRAY(SELECT "id" FROM "users" WHERE "active" = 1)', $result);
+        $this->assertSame([], $params);
+    }
+
+    public function testBuildWithArrayOfQuery(): void
+    {
+        $db = $this->getSharedConnection();
+        $queryBuilder = $db->getQueryBuilder();
+
+        $params = [];
+        $builder = new ArrayValueBuilder($queryBuilder);
+        $expression = new ArrayValue(
+            [$db->select('id')->from('users')->where(['active' => 1])],
+            'integer[][]',
+        );
+
+        $result = $builder->build($expression, $params);
+
+        $this->assertSame('ARRAY[ARRAY(SELECT "id" FROM "users" WHERE "active" = 1)::integer[]]::integer[][]', $result);
+        $this->assertSame([], $params);
     }
 }

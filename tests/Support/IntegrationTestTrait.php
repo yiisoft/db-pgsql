@@ -4,17 +4,24 @@ declare(strict_types=1);
 
 namespace Yiisoft\Db\Pgsql\Tests\Support;
 
-use Yiisoft\Db\Cache\SchemaCache;
 use Yiisoft\Db\Pgsql\Connection;
 use Yiisoft\Db\Pgsql\Driver;
 use Yiisoft\Db\Pgsql\Dsn;
-use Yiisoft\Test\Support\SimpleCache\MemorySimpleCache;
+use Yiisoft\Db\Tests\Support\TestHelper;
 
 trait IntegrationTestTrait
 {
     use BaseTestTrait;
 
     protected function createConnection(): Connection
+    {
+        return new Connection(
+            $this->createDriver(),
+            TestHelper::createMemorySchemaCache(),
+        );
+    }
+
+    protected function createDriver(): Driver
     {
         $host = getenv('YII_PGSQL_HOST') ?: '127.0.0.1';
         $databaseName = getenv('YII_PGSQL_DATABASE') ?: 'yiitest';
@@ -31,11 +38,7 @@ trait IntegrationTestTrait
         $driver = new Driver($dsn, $username, $password);
         $driver->charset('utf8');
 
-        $schemaCache = new SchemaCache(
-            new MemorySimpleCache(),
-        );
-
-        return new Connection($driver, $schemaCache);
+        return $driver;
     }
 
     protected function getDefaultFixture(): string
