@@ -14,7 +14,7 @@ use Yiisoft\Db\Expression\Expression;
 use Yiisoft\Db\Pgsql\Schema;
 use Yiisoft\Db\Pgsql\Tests\Provider\SchemaProvider;
 use Yiisoft\Db\Pgsql\Tests\Provider\StructuredTypeProvider;
-use Yiisoft\Db\Pgsql\Tests\Support\TestTrait;
+use Yiisoft\Db\Pgsql\Tests\Support\IntegrationTestTrait;
 use Yiisoft\Db\Schema\Column\ColumnInterface;
 use Yiisoft\Db\Schema\SchemaInterface;
 use Yiisoft\Db\Schema\TableSchemaInterface;
@@ -26,11 +26,12 @@ use Yiisoft\Db\Tests\Support\DbHelper;
  */
 final class SchemaTest extends CommonSchemaTest
 {
-    use TestTrait;
+    use IntegrationTestTrait;
 
     public function testBooleanDefaultValues(): void
     {
-        $db = $this->getConnection(true);
+        $db = $this->getSharedConnection();
+        $this->loadFixture();
 
         $schema = $db->getSchema();
         $table = $schema->getTableSchema('bool_values');
@@ -44,14 +45,12 @@ final class SchemaTest extends CommonSchemaTest
         $this->assertNotNull($columnFalse);
         $this->assertTrue($columnTrue->getDefaultValue());
         $this->assertFalse($columnFalse->getDefaultValue());
-
-        $db->close();
     }
 
     #[DataProviderExternal(SchemaProvider::class, 'columns')]
     public function testColumns(array $columns, string $tableName): void
     {
-        $db = $this->getConnection();
+        $db = $this->getSharedConnection();
 
         if (version_compare($db->getServerInfo()->getVersion(), '10', '>')) {
             if ($tableName === 'type') {
@@ -60,13 +59,11 @@ final class SchemaTest extends CommonSchemaTest
         }
 
         $this->assertTableColumns($columns, $tableName);
-
-        $db->close();
     }
 
     public function testColumnTypeMapNoExist(): void
     {
-        $db = $this->getConnection();
+        $db = $this->getSharedConnection();
 
         $command = $db->createCommand();
         $schema = $db->getSchema();
@@ -82,19 +79,14 @@ final class SchemaTest extends CommonSchemaTest
         $this->assertNotNull($table);
         $this->assertNotNull($table->getColumn('during'));
         $this->assertSame('string', $table->getColumn('during')?->getType());
-
-        $db->close();
     }
 
     public function testGeneratedValues(): void
     {
-        $this->fixture = 'pgsql12.sql';
+        $this->ensureMinPostgreSqlVersion('12.0');
 
-        if (version_compare($this->getConnection()->getServerInfo()->getVersion(), '12.0', '<')) {
-            $this->markTestSkipped('PostgresSQL < 12.0 does not support GENERATED AS IDENTITY columns.');
-        }
-
-        $db = $this->getConnection(true);
+        $db = $this->getSharedConnection();
+        $this->loadFixture(__DIR__ . '/Support/Fixture/pgsql12.sql');
 
         $schema = $db->getSchema();
         $table = $schema->getTableSchema('generated');
@@ -104,24 +96,20 @@ final class SchemaTest extends CommonSchemaTest
         $this->assertTrue($table->getColumn('id_primary')?->isAutoIncrement());
         $this->assertTrue($table->getColumn('id_primary')?->isAutoIncrement());
         $this->assertTrue($table->getColumn('id_default')?->isAutoIncrement());
-
-        $db->close();
     }
 
     public function testGetDefaultSchema(): void
     {
-        $db = $this->getConnection();
+        $db = $this->getSharedConnection();
 
         $schema = $db->getSchema();
 
         $this->assertSame('public', $schema->getDefaultSchema());
-
-        $db->close();
     }
 
     public function testGetSchemaDefaultValues(): void
     {
-        $db = $this->getConnection();
+        $db = $this->getSharedConnection();
 
         $this->expectException(NotSupportedException::class);
         $this->expectExceptionMessage(
@@ -133,7 +121,8 @@ final class SchemaTest extends CommonSchemaTest
 
     public function testGetSchemaNames(): void
     {
-        $db = $this->getConnection(true);
+        $db = $this->getSharedConnection();
+        $this->loadFixture();
 
         $expectedSchemas = ['public', 'schema1', 'schema2'];
         $schema = $db->getSchema();
@@ -144,13 +133,12 @@ final class SchemaTest extends CommonSchemaTest
         foreach ($expectedSchemas as $schema) {
             $this->assertContains($schema, $schemas);
         }
-
-        $db->close();
     }
 
     public function testGetTableSchemasNotSchemaDefault(): void
     {
-        $db = $this->getConnection(true);
+        $db = $this->getSharedConnection();
+        $this->loadFixture();
 
         $schema = $db->getSchema();
         $tables = $schema->getTableSchemas('schema1');
@@ -160,8 +148,6 @@ final class SchemaTest extends CommonSchemaTest
         foreach ($tables as $table) {
             $this->assertInstanceOf(TableSchemaInterface::class, $table);
         }
-
-        $db->close();
     }
 
     /**
@@ -169,7 +155,7 @@ final class SchemaTest extends CommonSchemaTest
      */
     public function testParenthesisDefaultValue(): void
     {
-        $db = $this->getConnection();
+        $db = $this->getSharedConnection();
 
         $command = $db->createCommand();
         $schema = $db->getSchema();
@@ -197,30 +183,24 @@ final class SchemaTest extends CommonSchemaTest
         $this->assertTrue($column->isNotNull());
         $this->assertEquals('numeric', $column->getDbType());
         $this->assertEquals(0, $column->getDefaultValue());
-
-        $db->close();
     }
 
     public function testPartitionedTable(): void
     {
-        $this->fixture = 'pgsql10.sql';
+        $this->ensureMinPostgreSqlVersion('10.0');
 
-        if (version_compare($this->getConnection()->getServerInfo()->getVersion(), '10.0', '<')) {
-            $this->markTestSkipped('PostgresSQL < 10.0 does not support PARTITION BY clause.');
-        }
-
-        $db = $this->getConnection(true);
+        $db = $this->getSharedConnection();
+        $this->loadFixture(__DIR__ . '/Support/Fixture/pgsql10.sql');
 
         $schema = $db->getSchema();
 
         $this->assertNotNull($schema->getTableSchema('partitioned'));
-
-        $db->close();
     }
 
     public function testSequenceName(): void
     {
-        $db = $this->getConnection(true);
+        $db = $this->getSharedConnection();
+        $this->loadFixture();
 
         $command = $db->createCommand();
         $schema = $db->getSchema();
@@ -250,8 +230,6 @@ final class SchemaTest extends CommonSchemaTest
 
         $this->assertNotNull($tableSchema);
         $this->assertEquals($sequenceName, $tableSchema->getSequenceName());
-
-        $db->close();
     }
 
     #[DataProviderExternal(SchemaProvider::class, 'tableSchemaCacheWithTablePrefixes')]
@@ -261,7 +239,7 @@ final class SchemaTest extends CommonSchemaTest
         string $testTablePrefix,
         string $testTableName,
     ): void {
-        $db = $this->getConnection();
+        $db = $this->getSharedConnection();
 
         $schema = $db->getSchema();
         $schema->enableCache(true);
@@ -291,8 +269,6 @@ final class SchemaTest extends CommonSchemaTest
         $this->assertInstanceOf(TableSchemaInterface::class, $testRefreshedTable);
         $this->assertSame($refreshedTable, $testRefreshedTable);
         $this->assertNotSame($testNoCacheTable, $testRefreshedTable);
-
-        $db->close();
     }
 
     #[DataProviderExternal(SchemaProvider::class, 'constraints')]
@@ -320,7 +296,7 @@ final class SchemaTest extends CommonSchemaTest
         string $expectedTableName,
         string $expectedSchemaName = '',
     ): void {
-        $db = $this->getConnection();
+        $db = $this->getSharedConnection();
 
         $commandMock = $this->createMock(CommandInterface::class);
         $commandMock->method('queryAll')->willReturn([]);
@@ -343,8 +319,6 @@ final class SchemaTest extends CommonSchemaTest
             ->willReturn($commandMock);
         $schema = new Schema($mockDb, DbHelper::getSchemaCache());
         $schema->getTableSchema($tableName);
-
-        $db->close();
     }
 
     /**
@@ -352,7 +326,7 @@ final class SchemaTest extends CommonSchemaTest
      */
     public function testTimestampNullDefaultValue(): void
     {
-        $db = $this->getConnection();
+        $db = $this->getSharedConnection();
 
         $command = $db->createCommand();
         $schema = $db->getSchema();
@@ -374,8 +348,6 @@ final class SchemaTest extends CommonSchemaTest
 
         $this->assertNotNull($column);
         $this->assertNull($column->getDefaultValue());
-
-        $db->close();
     }
 
     public function testWorkWithDefaultValueConstraint(): void
@@ -421,13 +393,12 @@ final class SchemaTest extends CommonSchemaTest
 
     public function testCustomTypeInNonDefaultSchema()
     {
-        $db = $this->getConnection(true);
+        $db = $this->getSharedConnection();
+        $this->loadFixture();
 
         $schema = $db->getSchema()->getTableSchema('schema2.custom_type_test_table');
         $this->assertEquals('my_type', $schema->getColumn('test_type')->getDbType());
         $this->assertEquals('schema2.my_type2', $schema->getColumn('test_type2')->getDbType());
-
-        $db->close();
     }
 
     public function testNotConnectionPDO(): void
@@ -443,7 +414,7 @@ final class SchemaTest extends CommonSchemaTest
 
     public function testDomainType(): void
     {
-        $db = $this->getConnection();
+        $db = $this->getSharedConnection();
 
         $command = $db->createCommand();
         $schema = $db->getSchema();
@@ -469,13 +440,12 @@ final class SchemaTest extends CommonSchemaTest
         $command->insert('test_domain_type', ['sex' => 'm'])->execute();
         $sex = $command->setSql('SELECT sex FROM test_domain_type')->queryScalar();
         $this->assertEquals('m', $sex);
-
-        $db->close();
     }
 
     public function testGetViewNames(): void
     {
-        $db = $this->getConnection(true);
+        $db = $this->getSharedConnection();
+        $this->loadFixture();
 
         $schema = $db->getSchema();
         $views = $schema->getViewNames();
@@ -490,8 +460,6 @@ final class SchemaTest extends CommonSchemaTest
             ],
             $views,
         );
-
-        $db->close();
     }
 
     #[DataProviderExternal(StructuredTypeProvider::class, 'columns')]
@@ -502,13 +470,11 @@ final class SchemaTest extends CommonSchemaTest
 
     public function testTableIndexes(): void
     {
-        $this->fixture = 'pgsql11.sql';
+        $this->ensureMinPostgreSqlVersion('11.0');
 
-        if (version_compare($this->getConnection()->getServerInfo()->getVersion(), '11.0', '<')) {
-            $this->markTestSkipped('PostgresSQL < 11.0 does not support INCLUDE clause.');
-        }
+        $db = $this->getSharedConnection();
+        $this->loadFixture(__DIR__ . '/Support/Fixture/pgsql11.sql');
 
-        $db = $this->getConnection(true);
         $schema = $db->getSchema();
 
         $tableIndexes = $schema->getTableIndexes('table_index');
@@ -523,8 +489,6 @@ final class SchemaTest extends CommonSchemaTest
             ],
             $tableIndexes,
         );
-
-        $db->close();
     }
 
     #[DataProviderExternal(SchemaProvider::class, 'resultColumns')]
