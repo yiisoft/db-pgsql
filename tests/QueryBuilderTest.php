@@ -577,7 +577,7 @@ final class QueryBuilderTest extends CommonQueryBuilderTest
     #[DataProviderExternal(QueryBuilderProvider::class, 'multiOperandFunctionBuilder')]
     public function testMultiOperandFunctionBuilder(
         string $class,
-        array $operands,
+        Closure|array $operands,
         string $expectedSql,
         array|string|int $expectedResult,
         array $expectedParams = [],

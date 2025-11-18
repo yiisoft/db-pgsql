@@ -13,6 +13,7 @@ use Yiisoft\Db\Expression\Statement\CaseX;
 use Yiisoft\Db\Expression\Expression;
 use Yiisoft\Db\Expression\Function\ArrayMerge;
 use Yiisoft\Db\Expression\Value\Param;
+use Yiisoft\Db\Expression\Value\Value;
 use Yiisoft\Db\Pgsql\Column\ColumnBuilder;
 use Yiisoft\Db\Pgsql\Column\IntegerColumn;
 use Yiisoft\Db\Query\Query;
@@ -61,10 +62,10 @@ final class QueryBuilderProvider extends \Yiisoft\Db\Tests\Provider\QueryBuilder
         return [
             ...parent::buildCondition(),
             /**
-            * adding conditions for ILIKE i.e. case insensitive LIKE.
-            *
-            * {@see https://www.postgresql.org/docs/8.3/static/functions-matching.html#FUNCTIONS-LIKE}
-            */
+             * adding conditions for ILIKE i.e. case insensitive LIKE.
+             *
+             * {@see https://www.postgresql.org/docs/8.3/static/functions-matching.html#FUNCTIONS-LIKE}
+             */
             /* empty values */
             [['like', 'name', [], 'caseSensitive' => false], '0=1', []],
             [['not like', 'name', [], 'caseSensitive' => false], '', []],
@@ -90,7 +91,8 @@ final class QueryBuilderProvider extends \Yiisoft\Db\Tests\Provider\QueryBuilder
             ],
             [
                 ['like', 'name', ['heyho', 'abc'], 'conjunction' => LikeConjunction::Or, 'caseSensitive' => false],
-                '"name" ILIKE :qp0 OR "name" ILIKE :qp1', [':qp0' => new Param('%heyho%', DataType::STRING), ':qp1' => new Param('%abc%', DataType::STRING)],
+                '"name" ILIKE :qp0 OR "name" ILIKE :qp1',
+                [':qp0' => new Param('%heyho%', DataType::STRING), ':qp1' => new Param('%abc%', DataType::STRING)],
             ],
             [
                 ['not like', 'name', ['heyho', 'abc'], 'conjunction' => LikeConjunction::Or, 'caseSensitive' => false],
@@ -101,10 +103,10 @@ final class QueryBuilderProvider extends \Yiisoft\Db\Tests\Provider\QueryBuilder
             /* Checks to verity that operators work correctly */
             [['@>', 'id', new ArrayValue([1])], '"id" @> ARRAY[1]::int[]', []],
             [['<@', 'id', new ArrayValue([1])], '"id" <@ ARRAY[1]::int[]', []],
-            [['=', 'id',  new ArrayValue([1])], '"id" = ARRAY[1]::int[]', []],
+            [['=', 'id', new ArrayValue([1])], '"id" = ARRAY[1]::int[]', []],
             [['<>', 'id', new ArrayValue([1])], '"id" <> ARRAY[1]::int[]', []],
-            [['>', 'id',  new ArrayValue([1])], '"id" > ARRAY[1]::int[]', []],
-            [['<', 'id',  new ArrayValue([1])], '"id" < ARRAY[1]::int[]', []],
+            [['>', 'id', new ArrayValue([1])], '"id" > ARRAY[1]::int[]', []],
+            [['<', 'id', new ArrayValue([1])], '"id" < ARRAY[1]::int[]', []],
             [['>=', 'id', new ArrayValue([1])], '"id" >= ARRAY[1]::int[]', []],
             [['<=', 'id', new ArrayValue([1])], '"id" <= ARRAY[1]::int[]', []],
             [['&&', 'id', new ArrayValue([1])], '"id" && ARRAY[1]::int[]', []],
@@ -382,9 +384,9 @@ final class QueryBuilderProvider extends \Yiisoft\Db\Tests\Provider\QueryBuilder
 
         $data['null'][1] = 0;
         $data['expression'][0] = new Expression("'{0,1,2,7}'");
-        $data['query expression'][0] = (new Query(self::getDb()))->select(new ArrayValue([0,1,2,7]));
+        $data['query expression'][0] = (new Query(self::getDb()))->select(new ArrayValue([0, 1, 2, 7]));
         $data[] = [new Expression('ARRAY[0,1,2,7]'), 1];
-        $data[] = [new ArrayValue([0,1,2,7]), 1];
+        $data[] = [new ArrayValue([0, 1, 2, 7]), 1];
 
         return $data;
     }
@@ -537,10 +539,12 @@ final class QueryBuilderProvider extends \Yiisoft\Db\Tests\Provider\QueryBuilder
                     when1: new WhenThen(['column_name' => 1], 'a'),
                     when2: new WhenThen(
                         new Equals('column_name', 2),
-                        $db->select(new Expression(
-                            ':pv2::text',
-                            [':pv2' => $param = new Param('b', DataType::STRING)],
-                        )),
+                        $db->select(
+                            new Expression(
+                                ':pv2::text',
+                                [':pv2' => $param = new Param('b', DataType::STRING)],
+                            )
+                        ),
                     ),
                 ),
                 'CASE WHEN "column_name" = 1 THEN :qp0 WHEN "column_name" = 2 THEN (SELECT :pv2::text) END',
@@ -616,52 +620,59 @@ final class QueryBuilderProvider extends \Yiisoft\Db\Tests\Provider\QueryBuilder
         ];
     }
 
-    public static function multiOperandFunctionBuilder(): array
+    public static function multiOperandFunctionBuilder(): iterable
     {
-        $data = parent::multiOperandFunctionBuilder();
+        $data = iterator_to_array(parent::multiOperandFunctionBuilder());
 
-        $stringQuery = self::getDb()->select(new Expression("'longest'::text"));
-        $stringQuerySql = "(SELECT 'longest'::text)";
-        $stringParam = new Param('{3,4,5}', DataType::STRING);
+//        $db = self::getDb();
+//        $serverVersion = $db->getServerInfo()->getVersion();
+//        $db->close();
+//
+//        if (version_compare($serverVersion, '10', '<')) {
+//            unset($data['Longest with 1 operand'], $data['Shortest with 1 operand']);
+//        }
 
-        $db = self::getDb();
-        $serverVersion = $db->getServerInfo()->getVersion();
-        $db->close();
-
-        if (version_compare($serverVersion, '10', '<')) {
-            unset($data['Longest with 1 operand'], $data['Shortest with 1 operand']);
-        }
-
-        $data['Longest with 3 operands'][1][1] = $stringQuery;
-        $data['Longest with 3 operands'][2] = "(SELECT value FROM (SELECT :qp0 AS value UNION SELECT $stringQuerySql"
+        $data['Longest with 3 operands'][1] = static fn(ConnectionInterface $db) => [
+            new Value('short'),
+            $db->select(new Expression("'longest'::text")),
+            new Param('string', DataType::STRING),
+        ];
+        $data['Longest with 3 operands'][2] = "(SELECT value FROM (SELECT :qp0 AS value UNION SELECT (SELECT 'longest'::text)"
             . ' AS value UNION SELECT :qp1 AS value) AS t ORDER BY LENGTH(value) DESC LIMIT 1)';
-        $data['Shortest with 3 operands'][1][1] = $stringQuery;
-        $data['Shortest with 3 operands'][2] = "(SELECT value FROM (SELECT :qp0 AS value UNION SELECT $stringQuerySql"
+        $data['Shortest with 3 operands'][1] = static fn(Connectioninterface $db) => [
+            new Value('short'),
+            $db->select(new Expression("'longest'::text")),
+            new Param('string', DataType::STRING),
+        ];
+        $data['Shortest with 3 operands'][2] = "(SELECT value FROM (SELECT :qp0 AS value UNION SELECT (SELECT 'longest'::text)"
             . ' AS value UNION SELECT :qp1 AS value) AS t ORDER BY LENGTH(value) ASC LIMIT 1)';
 
-        return [
-            ...$data,
-            'ArrayMerge with 1 operand' => [
-                ArrayMerge::class,
-                [[1, 2, 3]],
-                '(ARRAY[1,2,3]::int[])',
+        yield from $data;
+        yield 'ArrayMerge with 1 operand' => [
+            ArrayMerge::class,
+            [[1, 2, 3]],
+            '(ARRAY[1,2,3]::int[])',
+            [1, 2, 3],
+        ];
+        yield 'ArrayMerge with 2 operands' => [
+            ArrayMerge::class,
+            [[1, 2, 3], new Param('{3,4,5}', DataType::STRING)],
+            'ARRAY(SELECT DISTINCT UNNEST(ARRAY[1,2,3]::int[] || :qp0))',
+            [1, 2, 3, 4, 5],
+            [':qp0' => new Param('{3,4,5}', DataType::STRING)],
+        ];
+        yield 'ArrayMerge with 4 operands' => [
+            ArrayMerge::class,
+            static fn(ConnectionInterface $db) => [
                 [1, 2, 3],
+                new ArrayValue([5, 6, 7]),
+                new Param('{3,4,5}', DataType::STRING),
+                $db->select(new ArrayValue([9, 10]))
             ],
-            'ArrayMerge with 2 operands' => [
-                ArrayMerge::class,
-                [[1, 2, 3], $stringParam],
-                'ARRAY(SELECT DISTINCT UNNEST(ARRAY[1,2,3]::int[] || :qp0))',
-                [1, 2, 3, 4, 5],
-                [':qp0' => $stringParam],
-            ],
-            'ArrayMerge with 4 operands' => [
-                ArrayMerge::class,
-                [[1, 2, 3], new ArrayValue([5, 6, 7]), $stringParam, self::getDb()->select(new ArrayValue([9, 10]))],
-                'ARRAY(SELECT DISTINCT UNNEST(ARRAY[1,2,3]::int[] || ARRAY[5,6,7]::int[] || :qp0 || (SELECT ARRAY[9,10]::int[])))',
-                [1, 2, 3, 4, 5, 6, 7, 9, 10],
-                [
-                    ':qp0' => $stringParam,
-                ],
+            'ARRAY(SELECT DISTINCT UNNEST(ARRAY[1,2,3]::int[] || ARRAY[5,6,7]::int[] || :qp0 || (SELECT ARRAY[9,10]::int[])))',
+            [1, 2, 3, 4, 5, 6, 7, 9, 10],
+            [
+                ':qp0' => new Param('{3,4,5}', DataType::STRING),
             ],
         ];
     }
