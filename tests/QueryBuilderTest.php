@@ -8,7 +8,6 @@ use PHPUnit\Framework\Attributes\DataProviderExternal;
 use PHPUnit\Framework\Attributes\TestWith;
 use Throwable;
 use Yiisoft\Db\Constant\DataType;
-use Yiisoft\Db\Driver\Pdo\PdoConnectionInterface;
 use Yiisoft\Db\Exception\IntegrityException;
 use Yiisoft\Db\Exception\NotSupportedException;
 use Yiisoft\Db\Expression\Value\ArrayValue;
@@ -20,7 +19,7 @@ use Yiisoft\Db\Expression\Value\Param;
 use Yiisoft\Db\Pgsql\Column\ArrayColumn;
 use Yiisoft\Db\Pgsql\Column\IntegerColumn;
 use Yiisoft\Db\Pgsql\Tests\Provider\QueryBuilderProvider;
-use Yiisoft\Db\Pgsql\Tests\Support\TestTrait;
+use Yiisoft\Db\Pgsql\Tests\Support\IntegrationTestTrait;
 use Yiisoft\Db\Query\Query;
 use Yiisoft\Db\Query\QueryInterface;
 use Yiisoft\Db\QueryBuilder\Condition\ArrayOverlaps;
@@ -28,16 +27,12 @@ use Yiisoft\Db\QueryBuilder\Condition\JsonOverlaps;
 use Yiisoft\Db\Schema\Column\ColumnInterface;
 use Yiisoft\Db\Tests\Common\CommonQueryBuilderTest;
 
-use function version_compare;
-
 /**
  * @group pgsql
  */
 final class QueryBuilderTest extends CommonQueryBuilderTest
 {
-    use TestTrait;
-
-    protected PdoConnectionInterface $db;
+    use IntegrationTestTrait;
 
     public function getBuildColumnDefinitionProvider(): array
     {
@@ -46,7 +41,7 @@ final class QueryBuilderTest extends CommonQueryBuilderTest
 
     public function testAddDefaultValue(): void
     {
-        $db = $this->getConnection();
+        $db = $this->getSharedConnection();
 
         $qb = $db->getQueryBuilder();
 
@@ -133,7 +128,7 @@ final class QueryBuilderTest extends CommonQueryBuilderTest
 
     public function testCheckIntegrity(): void
     {
-        $db = $this->getConnection();
+        $db = $this->getSharedConnection();
         $qb = $db->getQueryBuilder();
 
         $this->assertSame(
@@ -142,13 +137,12 @@ final class QueryBuilderTest extends CommonQueryBuilderTest
             SQL . ' ',
             $qb->checkIntegrity('public', 'item'),
         );
-
-        $db->close();
     }
 
     public function testCheckIntegrityExecute(): void
     {
-        $db = $this->getConnection(true);
+        $db = $this->getSharedConnection();
+        $this->loadFixture();
 
         $db->createCommand()->checkIntegrity('public', 'item', false)->execute();
         $command = $db->createCommand(
@@ -171,13 +165,11 @@ final class QueryBuilderTest extends CommonQueryBuilderTest
             'SQLSTATE[23503]: Foreign key violation: 7 ERROR:  insert or update on table "item" violates foreign key constraint "item_category_id_fkey"',
             $exception->getMessage(),
         );
-
-        $db->close();
     }
 
     public function testCreateTable(): void
     {
-        $db = $this->getConnection();
+        $db = $this->getSharedConnection();
         $qb = $db->getQueryBuilder();
 
         $this->assertSame(
@@ -201,8 +193,6 @@ final class QueryBuilderTest extends CommonQueryBuilderTest
                 ],
             ),
         );
-
-        $db->close();
     }
 
     #[DataProviderExternal(QueryBuilderProvider::class, 'delete')]
@@ -213,7 +203,8 @@ final class QueryBuilderTest extends CommonQueryBuilderTest
 
     public function testDropCommentFromColumn(): void
     {
-        $db = $this->getConnection(true);
+        $db = $this->getSharedConnection();
+        $this->loadFixture();
         $qb = $db->getQueryBuilder();
 
         $this->assertSame(
@@ -222,13 +213,12 @@ final class QueryBuilderTest extends CommonQueryBuilderTest
             SQL,
             $qb->dropCommentFromColumn('customer', 'id'),
         );
-
-        $db->close();
     }
 
     public function testDropDefaultValue(): void
     {
-        $db = $this->getConnection(true);
+        $db = $this->getSharedConnection();
+        $this->loadFixture();
         $qb = $db->getQueryBuilder();
 
         $this->expectException(NotSupportedException::class);
@@ -241,7 +231,7 @@ final class QueryBuilderTest extends CommonQueryBuilderTest
 
     public function testDropIndex(): void
     {
-        $db = $this->getConnection();
+        $db = $this->getSharedConnection();
         $qb = $db->getQueryBuilder();
 
         $this->assertSame(
@@ -285,8 +275,6 @@ final class QueryBuilderTest extends CommonQueryBuilderTest
             SQL,
             $qb->dropIndex('{{%schema.table}}', 'index'),
         );
-
-        $db->close();
     }
 
     #[DataProviderExternal(QueryBuilderProvider::class, 'insert')]
@@ -313,7 +301,7 @@ final class QueryBuilderTest extends CommonQueryBuilderTest
 
     public function testRenameTable(): void
     {
-        $db = $this->getConnection();
+        $db = $this->getSharedConnection();
 
         $qb = $db->getQueryBuilder();
 
@@ -323,13 +311,12 @@ final class QueryBuilderTest extends CommonQueryBuilderTest
             SQL,
             $qb->renameTable('alpha', 'alpha-test'),
         );
-
-        $db->close();
     }
 
     public function testResetSequence(): void
     {
-        $db = $this->getConnection(true);
+        $db = $this->getSharedConnection();
+        $this->loadFixture();
 
         $qb = $db->getQueryBuilder();
 
@@ -353,19 +340,15 @@ final class QueryBuilderTest extends CommonQueryBuilderTest
             SQL,
             $qb->resetSequence('item', '1'),
         );
-
-        $db->close();
     }
 
     public function testResetSequencePgsql12(): void
     {
-        if (version_compare($this->getConnection()->getServerInfo()->getVersion(), '12.0', '<')) {
-            $this->markTestSkipped('PostgreSQL < 12.0 does not support GENERATED AS IDENTITY columns.');
-        }
+        $this->ensureMinPostgreSqlVersion('12.0');
 
-        $this->setFixture('pgsql12.sql');
+        $db = $this->getSharedConnection();
+        $this->loadFixture(__DIR__ . '/Support/Fixture/pgsql12.sql');
 
-        $db = $this->getConnection(true);
         $qb = $db->getQueryBuilder();
 
         $this->assertSame(
@@ -388,13 +371,11 @@ final class QueryBuilderTest extends CommonQueryBuilderTest
             SQL,
             $qb->resetSequence('item', '1'),
         );
-
-        $db->close();
     }
 
     public function testTruncateTable(): void
     {
-        $db = $this->getConnection();
+        $db = $this->getSharedConnection();
 
         $qb = $db->getQueryBuilder();
         $sql = $qb->truncateTable('customer');
@@ -414,8 +395,6 @@ final class QueryBuilderTest extends CommonQueryBuilderTest
             SQL,
             $sql,
         );
-
-        $db->close();
     }
 
     #[DataProviderExternal(QueryBuilderProvider::class, 'update')]
@@ -462,7 +441,7 @@ final class QueryBuilderTest extends CommonQueryBuilderTest
 
     public function testArrayOverlapsBuilder(): void
     {
-        $db = $this->getConnection();
+        $db = $this->getSharedConnection();
         $qb = $db->getQueryBuilder();
 
         $params = [];
@@ -477,13 +456,11 @@ final class QueryBuilderTest extends CommonQueryBuilderTest
 
         $this->assertSame('column::int[] && ARRAY[1,2,3]::int[]', $sql);
         $this->assertSame([], $params);
-
-        $db->close();
     }
 
     public function testJsonOverlapsBuilder(): void
     {
-        $db = $this->getConnection();
+        $db = $this->getSharedConnection();
         $qb = $db->getQueryBuilder();
 
         $params = [];
@@ -494,14 +471,12 @@ final class QueryBuilderTest extends CommonQueryBuilderTest
             $sql,
         );
         $this->assertSame([], $params);
-
-        $db->close();
     }
 
     #[DataProviderExternal(QueryBuilderProvider::class, 'overlapsCondition')]
     public function testOverlapsCondition(iterable|ExpressionInterface $values, int $expectedCount): void
     {
-        $db = $this->getConnection();
+        $db = $this->getSharedConnection();
         $query = new Query($db);
 
         $count = $query
@@ -524,14 +499,12 @@ final class QueryBuilderTest extends CommonQueryBuilderTest
             ->count();
 
         $this->assertSame($expectedCount, $count);
-
-        $db->close();
     }
 
     #[DataProviderExternal(QueryBuilderProvider::class, 'overlapsCondition')]
     public function testOverlapsConditionOperator(iterable|ExpressionInterface $values, int $expectedCount): void
     {
-        $db = $this->getConnection();
+        $db = $this->getSharedConnection();
         $query = new Query($db);
 
         $count = $query
@@ -554,8 +527,6 @@ final class QueryBuilderTest extends CommonQueryBuilderTest
             ->count();
 
         $this->assertSame($expectedCount, $count);
-
-        $db->close();
     }
 
     #[DataProviderExternal(QueryBuilderProvider::class, 'buildColumnDefinition')]
@@ -628,7 +599,7 @@ final class QueryBuilderTest extends CommonQueryBuilderTest
         string $typeHint,
         string $expectedResult,
     ): void {
-        $db = $this->getConnection();
+        $db = $this->getSharedConnection();
         $qb = $db->getQueryBuilder();
 
         $stringParam = new Param('{4,3,5}', DataType::STRING);
@@ -649,8 +620,6 @@ final class QueryBuilderTest extends CommonQueryBuilderTest
         $result = $db->select($arrayMerge)->scalar();
 
         $this->assertSame($expectedResult, $result);
-
-        $db->close();
     }
 
     #[DataProviderExternal(QueryBuilderProvider::class, 'upsertWithMultiOperandFunctions')]
