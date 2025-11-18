@@ -11,8 +11,6 @@ use Yiisoft\Db\Tests\Support\TestHelper;
 
 trait IntegrationTestTrait
 {
-    use BaseTestTrait;
-
     protected function createConnection(): Connection
     {
         return new Connection(
@@ -54,5 +52,10 @@ trait IntegrationTestTrait
                 "This test requires at least PostgreSQL version $version. Current version is $currentVersion.",
             );
         }
+    }
+
+    protected function replaceQuotes(string $sql): string
+    {
+        return str_replace(['\\[', '\\]'], ['[', ']'], preg_replace('/(\[\[)|((?<!(\[))]])/', '"', $sql));
     }
 }
