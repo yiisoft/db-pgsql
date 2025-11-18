@@ -6,15 +6,15 @@ namespace Yiisoft\Db\Pgsql\Tests;
 
 use PHPUnit\Framework\Attributes\DataProviderExternal;
 use Yiisoft\Db\Pgsql\Tests\Provider\ColumnBuilderProvider;
-use Yiisoft\Db\Pgsql\Tests\Support\TestTrait;
-use Yiisoft\Db\Tests\AbstractColumnBuilderTest;
+use Yiisoft\Db\Pgsql\Tests\Support\IntegrationTestTrait;
+use Yiisoft\Db\Tests\Common\CommonColumnBuilderTest;
 
 /**
  * @group pgsql
  */
-final class ColumnBuilderTest extends AbstractColumnBuilderTest
+final class ColumnBuilderTest extends CommonColumnBuilderTest
 {
-    use TestTrait;
+    use IntegrationTestTrait;
 
     #[DataProviderExternal(ColumnBuilderProvider::class, 'buildingMethods')]
     public function testBuildingMethods(
