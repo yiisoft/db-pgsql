@@ -4,24 +4,22 @@ declare(strict_types=1);
 
 namespace Yiisoft\Db\Pgsql\Tests;
 
+use PHPUnit\Framework\Attributes\DataProviderExternal;
 use Psr\Log\LoggerAwareInterface;
 use Yiisoft\Db\Driver\Pdo\AbstractPdoCommand;
 use Yiisoft\Db\Driver\Pdo\PdoCommandInterface;
-use Yiisoft\Db\Pgsql\Tests\Support\TestTrait;
+use Yiisoft\Db\Pgsql\Tests\Provider\CommandPdoProvider;
+use Yiisoft\Db\Pgsql\Tests\Support\IntegrationTestTrait;
 use Yiisoft\Db\Tests\Common\CommonPdoCommandTest;
 
 /**
  * @group pgsql
- *
- * @psalm-suppress PropertyNotSetInConstructor
  */
 final class PdoCommandTest extends CommonPdoCommandTest
 {
-    use TestTrait;
+    use IntegrationTestTrait;
 
-    /**
-     * @dataProvider \Yiisoft\Db\Pgsql\Tests\Provider\CommandPDOProvider::bindParam
-     */
+    #[DataProviderExternal(CommandPdoProvider::class, 'bindParam')]
     public function testBindParam(
         string $field,
         string $name,
@@ -35,11 +33,12 @@ final class PdoCommandTest extends CommonPdoCommandTest
     }
 
     /**
-     * {@link https://github.com/yiisoft/db-pgsql/issues/1}
+     * @link https://github.com/yiisoft/db-pgsql/issues/1
      */
     public function testInsertAndReadToArrayColumn(): void
     {
-        $db = $this->getConnection(true);
+        $db = $this->getSharedConnection();
+        $this->loadFixture();
 
         $arrValue = [1, 2, 3, 4];
         $insertedData = $db->createCommand()->insertReturningPks('{{%table_with_array_col}}', ['array_col' => $arrValue]);
@@ -53,13 +52,12 @@ final class PdoCommandTest extends CommonPdoCommandTest
         $column = $db->getTableSchema('{{%table_with_array_col}}')->getColumn('array_col');
 
         $this->assertSame($arrValue, $column->phpTypecast($selectData['array_col']));
-
-        $db->close();
     }
 
     public function testCommandLogging(): void
     {
-        $db = $this->getConnection(true);
+        $db = $this->getSharedConnection();
+        $this->loadFixture();
 
         $sql = 'SELECT * FROM "customer" LIMIT 1';
 
@@ -92,7 +90,5 @@ final class PdoCommandTest extends CommonPdoCommandTest
         $sql = 'INSERT INTO "customer" ("name", "email") VALUES (\'test\', \'email@email\') RETURNING "id"';
         $command->setLogger($this->createQueryLogger($sql, ['Yiisoft\Db\Driver\Pdo\AbstractPdoCommand::insertReturningPks']));
         $command->insertReturningPks('{{%customer}}', ['name' => 'test', 'email' => 'email@email']);
-
-        $db->close();
     }
 }
