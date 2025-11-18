@@ -475,10 +475,14 @@ final class QueryBuilderTest extends CommonQueryBuilderTest
     }
 
     #[DataProviderExternal(QueryBuilderProvider::class, 'overlapsCondition')]
-    public function testOverlapsCondition(iterable|ExpressionInterface $values, int $expectedCount): void
+    public function testOverlapsCondition(Closure|iterable|ExpressionInterface $values, int $expectedCount): void
     {
         $db = $this->getSharedConnection();
         $query = new Query($db);
+
+        if ($values instanceof Closure) {
+            $values = $values($db);
+        }
 
         $count = $query
             ->from('array_and_json_types')
@@ -503,10 +507,14 @@ final class QueryBuilderTest extends CommonQueryBuilderTest
     }
 
     #[DataProviderExternal(QueryBuilderProvider::class, 'overlapsCondition')]
-    public function testOverlapsConditionOperator(iterable|ExpressionInterface $values, int $expectedCount): void
+    public function testOverlapsConditionOperator(Closure|iterable|ExpressionInterface $values, int $expectedCount): void
     {
         $db = $this->getSharedConnection();
         $query = new Query($db);
+
+        if ($values instanceof Closure) {
+            $values = $values($db);
+        }
 
         $count = $query
             ->from('array_and_json_types')
@@ -531,7 +539,7 @@ final class QueryBuilderTest extends CommonQueryBuilderTest
     }
 
     #[DataProviderExternal(QueryBuilderProvider::class, 'buildColumnDefinition')]
-    public function testBuildColumnDefinition(string $expected, ColumnInterface|string $column): void
+    public function testBuildColumnDefinition(string $expected, Closure|ColumnInterface|string $column): void
     {
         parent::testBuildColumnDefinition($expected, $column);
     }
@@ -566,7 +574,7 @@ final class QueryBuilderTest extends CommonQueryBuilderTest
 
     #[DataProviderExternal(QueryBuilderProvider::class, 'lengthBuilder')]
     public function testLengthBuilder(
-        string|ExpressionInterface $operand,
+        Closure|string|ExpressionInterface $operand,
         string $expectedSql,
         int $expectedResult,
         array $expectedParams = [],

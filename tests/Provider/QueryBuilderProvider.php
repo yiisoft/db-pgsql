@@ -16,7 +16,7 @@ use Yiisoft\Db\Expression\Value\Param;
 use Yiisoft\Db\Expression\Value\Value;
 use Yiisoft\Db\Pgsql\Column\ColumnBuilder;
 use Yiisoft\Db\Pgsql\Column\IntegerColumn;
-use Yiisoft\Db\Query\Query;
+use Yiisoft\Db\Pgsql\Tests\TestConnection;
 use Yiisoft\Db\QueryBuilder\Condition\Equals;
 use Yiisoft\Db\QueryBuilder\Condition\LikeConjunction;
 
@@ -268,7 +268,7 @@ final class QueryBuilderProvider extends \Yiisoft\Db\Tests\Provider\QueryBuilder
                 3 => 'INSERT INTO "T_upsert" ("email", "ts") VALUES (:qp0, extract(epoch from now()) * 1000) ON CONFLICT DO NOTHING',
             ],
             'query, values and expressions with update part' => [
-                1 => (new Query(self::getDb()))
+                1 => static fn(ConnectionInterface $db) => $db
                     ->select(
                         [
                             'email' => new Expression(':phEmail', [':phEmail' => 'dynamic@example.com']),
@@ -280,7 +280,7 @@ final class QueryBuilderProvider extends \Yiisoft\Db\Tests\Provider\QueryBuilder
                     . 'ON CONFLICT ("email") DO UPDATE SET "ts"=0, "orders"=EXCLUDED.orders + 1',
             ],
             'query, values and expressions without update part' => [
-                1 => (new Query(self::getDb()))
+                1 => static fn(ConnectionInterface $db) => $db
                     ->select(
                         [
                             'email' => new Expression(':phEmail', [':phEmail' => 'dynamic@example.com']),
@@ -384,7 +384,7 @@ final class QueryBuilderProvider extends \Yiisoft\Db\Tests\Provider\QueryBuilder
 
         $data['null'][1] = 0;
         $data['expression'][0] = new Expression("'{0,1,2,7}'");
-        $data['query expression'][0] = (new Query(self::getDb()))->select(new ArrayValue([0, 1, 2, 7]));
+        $data['query expression'][0] =  static fn(ConnectionInterface $db) => $db->select(new ArrayValue([0, 1, 2, 7]));
         $data[] = [new Expression('ARRAY[0,1,2,7]'), 1];
         $data[] = [new ArrayValue([0, 1, 2, 7]), 1];
 
@@ -455,9 +455,7 @@ final class QueryBuilderProvider extends \Yiisoft\Db\Tests\Provider\QueryBuilder
             ColumnBuilder::string()->collation('C'),
         ];
 
-        $db = self::getDb();
-        $serverVersion = $db->getServerInfo()->getVersion();
-        $db->close();
+        $serverVersion = TestConnection::getShared()->getServerInfo()->getVersion();
 
         if (version_compare($serverVersion, '13', '<')) {
             $uuidExpression = "uuid_in(overlay(overlay(md5(now()::text || random()::text) placing '4' from 13) placing"
@@ -529,21 +527,20 @@ final class QueryBuilderProvider extends \Yiisoft\Db\Tests\Provider\QueryBuilder
     {
         $data = parent::caseXBuilder();
 
-        $db = self::getDb();
-        $serverVersion = $db->getServerInfo()->getVersion();
-        $db->close();
+        $serverVersion = TestConnection::getShared()->getServerInfo()->getVersion();
 
         if (version_compare($serverVersion, '10', '<')) {
+            $param = new Param('b', DataType::STRING);
             $data['without case expression'] = [
-                new CaseX(
+                static fn(ConnectionInterface $db) => new CaseX(
                     when1: new WhenThen(['column_name' => 1], 'a'),
                     when2: new WhenThen(
                         new Equals('column_name', 2),
                         $db->select(
                             new Expression(
                                 ':pv2::text',
-                                [':pv2' => $param = new Param('b', DataType::STRING)],
-                            )
+                                [':pv2' => $param],
+                            ),
                         ),
                     ),
                 ),
@@ -613,8 +610,8 @@ final class QueryBuilderProvider extends \Yiisoft\Db\Tests\Provider\QueryBuilder
         return [
             ...parent::lengthBuilder(),
             'query' => [
-                self::getDb()->select(new Expression("'four'::text")),
-                self::replaceQuotes("LENGTH((SELECT 'four'::text))"),
+                static fn(ConnectionInterface $db) => $db->select(new Expression("'four'::text")),
+                "LENGTH((SELECT 'four'::text))",
                 4,
             ],
         ];
@@ -624,13 +621,10 @@ final class QueryBuilderProvider extends \Yiisoft\Db\Tests\Provider\QueryBuilder
     {
         $data = iterator_to_array(parent::multiOperandFunctionBuilder());
 
-//        $db = self::getDb();
-//        $serverVersion = $db->getServerInfo()->getVersion();
-//        $db->close();
-//
-//        if (version_compare($serverVersion, '10', '<')) {
-//            unset($data['Longest with 1 operand'], $data['Shortest with 1 operand']);
-//        }
+        $serverVersion = TestConnection::getShared()->getServerInfo()->getVersion();
+        if (version_compare($serverVersion, '10', '<')) {
+            unset($data['Longest with 1 operand'], $data['Shortest with 1 operand']);
+        }
 
         $data['Longest with 3 operands'][1] = static fn(ConnectionInterface $db) => [
             new Value('short'),
@@ -667,7 +661,7 @@ final class QueryBuilderProvider extends \Yiisoft\Db\Tests\Provider\QueryBuilder
                 [1, 2, 3],
                 new ArrayValue([5, 6, 7]),
                 new Param('{3,4,5}', DataType::STRING),
-                $db->select(new ArrayValue([9, 10]))
+                $db->select(new ArrayValue([9, 10])),
             ],
             'ARRAY(SELECT DISTINCT UNNEST(ARRAY[1,2,3]::int[] || ARRAY[5,6,7]::int[] || :qp0 || (SELECT ARRAY[9,10]::int[])))',
             [1, 2, 3, 4, 5, 6, 7, 9, 10],
