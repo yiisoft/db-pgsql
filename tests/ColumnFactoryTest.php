@@ -9,23 +9,24 @@ use Yiisoft\Db\Constant\ColumnType;
 use Yiisoft\Db\Pgsql\Column\ArrayColumn;
 use Yiisoft\Db\Pgsql\Column\ColumnFactory;
 use Yiisoft\Db\Pgsql\Tests\Provider\ColumnFactoryProvider;
+use Yiisoft\Db\Pgsql\Tests\Support\IntegrationTestTrait;
 use Yiisoft\Db\Pgsql\Tests\Support\TestTrait;
 use Yiisoft\Db\Schema\Column\ColumnInterface;
-use Yiisoft\Db\Tests\AbstractColumnFactoryTest;
+use Yiisoft\Db\Tests\Common\CommonColumnFactoryTest;
 
 /**
  * @group pgsql
  */
-final class ColumnFactoryTest extends AbstractColumnFactoryTest
+final class ColumnFactoryTest extends CommonColumnFactoryTest
 {
-    use TestTrait;
+    use IntegrationTestTrait;
 
     #[DataProviderExternal(ColumnFactoryProvider::class, 'dbTypes')]
     public function testFromDbType(string $dbType, string $expectedType, string $expectedInstanceOf): void
     {
         parent::testFromDbType($dbType, $expectedType, $expectedInstanceOf);
 
-        $db = $this->getConnection();
+        $db = $this->getSharedConnection();
         $columnFactory = $db->getColumnFactory();
 
         // For array type
@@ -35,8 +36,6 @@ final class ColumnFactoryTest extends AbstractColumnFactoryTest
         $this->assertInstanceOf($expectedInstanceOf, $column->getColumn());
         $this->assertSame($expectedType, $column->getColumn()->getType());
         $this->assertSame($dbType, $column->getColumn()->getDbType());
-
-        $db->close();
     }
 
     #[DataProviderExternal(ColumnFactoryProvider::class, 'definitions')]
@@ -56,7 +55,7 @@ final class ColumnFactoryTest extends AbstractColumnFactoryTest
     {
         parent::testFromType($type, $expectedType, $expectedInstanceOf);
 
-        $db = $this->getConnection();
+        $db = $this->getSharedConnection();
         $columnFactory = $db->getColumnFactory();
 
         // For array type
