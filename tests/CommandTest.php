@@ -60,7 +60,6 @@ final class CommandTest extends CommonCommandTest
     {
         $db = $this->getSharedConnection();
         $this->loadFixture();
-        ;
 
         $command = $db->createCommand();
         $command->insert('{{bool_values}}', ['bool_col' => true]);
@@ -95,7 +94,6 @@ final class CommandTest extends CommonCommandTest
     {
         $db = $this->getSharedConnection();
         $this->loadFixture();
-        ;
 
         $command = $db->createCommand();
         $command->insertBatch('{{bool_values}}', [[true], [false]], ['bool_col']);
@@ -125,7 +123,6 @@ final class CommandTest extends CommonCommandTest
     {
         $db = $this->getSharedConnection();
         $this->loadFixture();
-        ;
 
         $command = $db->createCommand();
         $command->delete('{{customer}}', ['id' => 2])->execute();
@@ -216,7 +213,6 @@ final class CommandTest extends CommonCommandTest
     {
         $db = $this->getSharedConnection();
         $this->loadFixture();
-        ;
 
         $command = $db->createCommand();
         $result = $command->insertReturningPks(
