@@ -198,7 +198,7 @@ final class CommandTest extends CommonCommandTest
         string $table,
         array $columns,
         array|ExpressionInterface|string $conditions,
-        Closure $from,
+        Closure|array|ExpressionInterface|string|null $from,
         array $params,
         array $expectedValues,
         int $expectedCount,
