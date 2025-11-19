@@ -48,7 +48,7 @@ final class SchemaTest extends CommonSchemaTest
     }
 
     #[DataProviderExternal(SchemaProvider::class, 'columns')]
-    public function testColumns(array $columns, string $tableName): void
+    public function testColumns(array $columns, string $tableName, ?string $dump = null): void
     {
         $db = $this->getSharedConnection();
 
@@ -58,7 +58,7 @@ final class SchemaTest extends CommonSchemaTest
             }
         }
 
-        $this->assertTableColumns($columns, $tableName);
+        $this->assertTableColumns($columns, $tableName, $dump);
     }
 
     public function testColumnTypeMapNoExist(): void
