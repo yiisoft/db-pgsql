@@ -167,11 +167,12 @@ final class CommandTest extends CommonCommandTest
     }
 
     /**
-     * {@link https://github.com/yiisoft/yii2/issues/11498}
+     * @link https://github.com/yiisoft/yii2/issues/11498
      */
     public function testSaveSerializedObject(): void
     {
         $db = $this->getSharedConnection();
+        $this->loadFixture();
 
         $command = $db->createCommand();
         $command = $command->insert(
@@ -190,8 +191,6 @@ final class CommandTest extends CommonCommandTest
         $command->update('{{type}}', ['blob_col' => serialize($db)], ['char_col' => 'serialize']);
 
         $this->assertSame(1, $command->execute());
-
-        $db->close();
     }
 
     #[DataProviderExternal(CommandProvider::class, 'update')]
