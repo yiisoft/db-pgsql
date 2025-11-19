@@ -525,7 +525,7 @@ final class QueryBuilderProvider extends \Yiisoft\Db\Tests\Provider\QueryBuilder
 
     public static function caseXBuilder(): array
     {
-        $data = parent::caseXBuilder();
+        $data = iterator_to_array(parent::caseXBuilder());
 
         $serverVersion = TestConnection::getShared()->getServerInfo()->getVersion();
 
