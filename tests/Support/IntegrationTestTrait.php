@@ -5,8 +5,6 @@ declare(strict_types=1);
 namespace Yiisoft\Db\Pgsql\Tests\Support;
 
 use Yiisoft\Db\Pgsql\Connection;
-use Yiisoft\Db\Pgsql\Driver;
-use Yiisoft\Db\Pgsql\Dsn;
 use Yiisoft\Db\Tests\Support\TestHelper;
 
 trait IntegrationTestTrait
@@ -14,29 +12,9 @@ trait IntegrationTestTrait
     protected function createConnection(): Connection
     {
         return new Connection(
-            $this->createDriver(),
+            TestConnection::createDriver(),
             TestHelper::createMemorySchemaCache(),
         );
-    }
-
-    protected function createDriver(): Driver
-    {
-        $host = getenv('YII_PGSQL_HOST') ?: '127.0.0.1';
-        $databaseName = getenv('YII_PGSQL_DATABASE') ?: 'yiitest';
-        $port = getenv('YII_PGSQL_PORT') ?: '5432';
-        $username = getenv('YII_PGSQL_USER') ?: 'root';
-        $password = getenv('YII_PGSQL_PASSWORD') ?: 'root';
-
-        $dsn = new Dsn(
-            host: $host,
-            databaseName: $databaseName,
-            port: $port,
-        );
-
-        $driver = new Driver($dsn, $username, $password);
-        $driver->charset('utf8');
-
-        return $driver;
     }
 
     protected function getDefaultFixture(): string
