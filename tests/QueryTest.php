@@ -4,21 +4,16 @@ declare(strict_types=1);
 
 namespace Yiisoft\Db\Pgsql\Tests;
 
-use Throwable;
-use Yiisoft\Db\Exception\Exception;
-use Yiisoft\Db\Exception\InvalidConfigException;
-use Yiisoft\Db\Pgsql\Tests\Support\TestTrait;
+use Yiisoft\Db\Pgsql\Tests\Support\IntegrationTestTrait;
 use Yiisoft\Db\Query\Query;
 use Yiisoft\Db\Tests\Common\CommonQueryTest;
 
 /**
  * @group pgsql
- *
- * @psalm-suppress PropertyNotSetInConstructor
  */
 final class QueryTest extends CommonQueryTest
 {
-    use TestTrait;
+    use IntegrationTestTrait;
 
     /**
      * Ensure no ambiguous column error occurs on indexBy with JOIN.
@@ -27,7 +22,8 @@ final class QueryTest extends CommonQueryTest
      */
     public function testAmbiguousColumnIndexBy(): void
     {
-        $db = $this->getConnection(true);
+        $db = $this->getSharedConnection();
+        $this->loadFixture();
 
         $selectExpression = "(customer.name || ' in ' || p.description) AS name";
 
@@ -39,18 +35,12 @@ final class QueryTest extends CommonQueryTest
             ->column();
 
         $this->assertSame([1 => 'user1 in profile customer 1', 3 => 'user3 in profile customer 3'], $result);
-
-        $db->close();
     }
 
-    /**
-     * @throws Exception
-     * @throws InvalidConfigException
-     * @throws Throwable
-     */
     public function testBooleanValues(): void
     {
-        $db = $this->getConnection(true);
+        $db = $this->getSharedConnection();
+        $this->loadFixture();
 
         $command = $db->createCommand();
         $command->insertBatch('bool_values', [[true], [false]], ['bool_col'])->execute();
@@ -75,7 +65,5 @@ final class QueryTest extends CommonQueryTest
             1,
             (new Query($db))->from('bool_values')->where('bool_col = :bool_col', ['bool_col' => false])->count(),
         );
-
-        $db->close();
     }
 }

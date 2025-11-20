@@ -6,7 +6,6 @@ namespace Yiisoft\Db\Pgsql\Tests;
 
 use ArrayIterator;
 use PHPUnit\Framework\Attributes\DataProvider;
-use PHPUnit\Framework\TestCase;
 use Yiisoft\Db\Constant\DataType;
 use Yiisoft\Db\Expression\Value\ArrayValue;
 use Yiisoft\Db\Expression\Value\JsonValue;
@@ -15,16 +14,17 @@ use Yiisoft\Db\Pgsql\Builder\JsonValueBuilder;
 use Yiisoft\Db\Pgsql\Column\IntegerColumn;
 use Yiisoft\Db\Pgsql\Data\LazyArray;
 use Yiisoft\Db\Pgsql\Data\StructuredLazyArray;
-use Yiisoft\Db\Pgsql\Tests\Support\TestTrait;
+use Yiisoft\Db\Pgsql\Tests\Support\IntegrationTestTrait;
 use Yiisoft\Db\Query\Query;
 use Yiisoft\Db\Schema\Data\JsonLazyArray;
+use Yiisoft\Db\Tests\Support\IntegrationTestCase;
 
 /**
  * @group pgsql
  */
-final class JsonValueBuilderTest extends TestCase
+final class JsonValueBuilderTest extends IntegrationTestCase
 {
-    use TestTrait;
+    use IntegrationTestTrait;
 
     public static function buildProvider(): array
     {
@@ -50,7 +50,7 @@ final class JsonValueBuilderTest extends TestCase
     #[DataProvider('buildProvider')]
     public function testBuild(mixed $value, string $expected): void
     {
-        $db = $this->getConnection();
+        $db = $this->getSharedConnection();
         $qb = $db->getQueryBuilder();
 
         $params = [];
@@ -59,13 +59,11 @@ final class JsonValueBuilderTest extends TestCase
 
         $this->assertSame(':qp0', $builder->build($expression, $params));
         $this->assertEquals([':qp0' => new Param($expected, DataType::STRING)], $params);
-
-        $db->close();
     }
 
     public function testBuildArrayValue(): void
     {
-        $db = $this->getConnection();
+        $db = $this->getSharedConnection();
         $qb = $db->getQueryBuilder();
 
         $params = [];
@@ -80,13 +78,11 @@ final class JsonValueBuilderTest extends TestCase
 
         $this->assertSame('array_to_json(ARRAY[1,2,3]::int[])::jsonb', $builder->build($expression, $params));
         $this->assertSame([], $params);
-
-        $db->close();
     }
 
     public function testBuildNull(): void
     {
-        $db = $this->getConnection();
+        $db = $this->getSharedConnection();
         $qb = $db->getQueryBuilder();
 
         $params = [];
@@ -95,13 +91,11 @@ final class JsonValueBuilderTest extends TestCase
 
         $this->assertSame('NULL', $builder->build($expression, $params));
         $this->assertSame([], $params);
-
-        $db->close();
     }
 
     public function testBuildQueryExpression(): void
     {
-        $db = $this->getConnection();
+        $db = $this->getSharedConnection();
         $qb = $db->getQueryBuilder();
 
         $params = [];
@@ -115,13 +109,11 @@ final class JsonValueBuilderTest extends TestCase
 
         $this->assertSame('(SELECT "json_field" FROM "json_table")::jsonb', $builder->build($expression, $params));
         $this->assertSame([], $params);
-
-        $db->close();
     }
 
     public function testBuildWithType(): void
     {
-        $db = $this->getConnection();
+        $db = $this->getSharedConnection();
         $qb = $db->getQueryBuilder();
 
         $params = [];
@@ -130,7 +122,5 @@ final class JsonValueBuilderTest extends TestCase
 
         $this->assertSame(':qp0::jsonb', $builder->build($expression, $params));
         $this->assertEquals([':qp0' => new Param('[1,2,3]', DataType::STRING)], $params);
-
-        $db->close();
     }
 }

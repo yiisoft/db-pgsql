@@ -22,7 +22,8 @@ use Yiisoft\Db\Pgsql\Column\ColumnBuilder;
 use Yiisoft\Db\Pgsql\Column\IntegerColumn;
 use Yiisoft\Db\Pgsql\Column\StructuredColumn;
 use Yiisoft\Db\Pgsql\Tests\Provider\ColumnProvider;
-use Yiisoft\Db\Pgsql\Tests\Support\TestTrait;
+use Yiisoft\Db\Pgsql\Tests\Support\IntegrationTestTrait;
+use Yiisoft\Db\Pgsql\Tests\Support\TestConnection;
 use Yiisoft\Db\Query\Query;
 use Yiisoft\Db\Schema\Column\ColumnInterface;
 use Yiisoft\Db\Schema\Column\DoubleColumn;
@@ -39,11 +40,12 @@ use function str_repeat;
  */
 final class ColumnTest extends CommonColumnTest
 {
-    use TestTrait;
+    use IntegrationTestTrait;
 
     public function testSelectWithPhpTypecasting(): void
     {
-        $db = $this->getConnection(true);
+        $db = $this->getSharedConnection();
+        $this->loadFixture();
 
         $sql = <<<SQL
             SELECT
@@ -103,25 +105,24 @@ final class ColumnTest extends CommonColumnTest
             ->queryColumn();
 
         $this->assertSame([2.5, 3.3], $result);
-
-        $db->close();
     }
 
     public function testDbTypeCastJson(): void
     {
-        $db = $this->getConnection(true);
+        $db = $this->getSharedConnection();
+        $this->loadFixture();
+
         $schema = $db->getSchema();
         $tableSchema = $schema->getTableSchema('type');
 
         $this->assertEquals(new JsonValue('', 'json'), $tableSchema->getColumn('json_col')->dbTypecast(''));
         $this->assertEquals(new JsonValue('', 'jsonb'), $tableSchema->getColumn('jsonb_col')->dbTypecast(''));
-
-        $db->close();
     }
 
     public function testBoolDefault(): void
     {
-        $db = $this->getConnection(true);
+        $db = $this->getSharedConnection();
+        $this->loadFixture();
 
         $command = $db->createCommand();
         $schema = $db->getSchema();
@@ -165,13 +166,13 @@ final class ColumnTest extends CommonColumnTest
             [null, true, true, true, true, true, true, false, false, false, false, false, false],
             $tableSchema->getColumn('default_array')->getDefaultValue(),
         );
-
-        $db->close();
     }
 
     public function testPrimaryKeyOfView()
     {
-        $db = $this->getConnection(true);
+        $db = $this->getSharedConnection();
+        $this->loadFixture();
+
         $schema = $db->getSchema();
         $tableSchema = $schema->getTableSchema('T_constraints_2_view');
 
@@ -181,13 +182,13 @@ final class ColumnTest extends CommonColumnTest
         $this->assertFalse($tableSchema->getColumn('C_index_1')->isPrimaryKey());
         $this->assertFalse($tableSchema->getColumn('C_index_2_1')->isPrimaryKey());
         $this->assertFalse($tableSchema->getColumn('C_index_2_2')->isPrimaryKey());
-
-        $db->close();
     }
 
     public function testStructuredType(): void
     {
-        $db = $this->getConnection(true);
+        $db = $this->getSharedConnection();
+        $this->loadFixture();
+
         $command = $db->createCommand();
         $schema = $db->getSchema();
         $tableSchema = $schema->getTableSchema('test_structured_type');
@@ -268,13 +269,13 @@ final class ColumnTest extends CommonColumnTest
             $priceArray2->dbTypecast([null, null]),
             'Double array of null values',
         );
-
-        $db->close();
     }
 
     public function testColumnInstance()
     {
-        $db = $this->getConnection(true);
+        $db = $this->getSharedConnection();
+        $this->loadFixture();
+
         $schema = $db->getSchema();
         $tableSchema = $schema->getTableSchema('type');
 
@@ -288,8 +289,6 @@ final class ColumnTest extends CommonColumnTest
         $this->assertInstanceOf(ArrayColumn::class, $tableSchema->getColumn('intarray_col'));
         $this->assertInstanceOf(IntegerColumn::class, $tableSchema->getColumn('intarray_col')->getColumn());
         $this->assertInstanceOf(JsonColumn::class, $tableSchema->getColumn('json_col'));
-
-        $db->close();
     }
 
     #[DataProviderExternal(ColumnProvider::class, 'predefinedTypes')]
@@ -409,5 +408,14 @@ final class ColumnTest extends CommonColumnTest
         $this->assertSame([['a' => 1, 'b' => null, 'c' => [1, 3, 5]]], $result['json_col']);
         $this->assertSame([1, 2, 3], $result['jsonb_col']);
         $this->assertSame([[[',', 'null', true, 'false', 'f']]], $result['jsonarray_col']);
+    }
+
+    protected function createTimestampDefaultValue(): mixed
+    {
+        return new Expression(
+            version_compare(TestConnection::getServerVersion(), '10', '<')
+                ? 'now()'
+                : 'CURRENT_TIMESTAMP',
+        );
     }
 }

@@ -4,15 +4,17 @@ declare(strict_types=1);
 
 namespace Yiisoft\Db\Pgsql\Tests;
 
+use PHPUnit\Framework\Attributes\DataProviderExternal;
 use Yiisoft\Db\Pgsql\SqlParser;
-use Yiisoft\Db\Tests\AbstractSqlParserTest;
+use Yiisoft\Db\Pgsql\Tests\Provider\SqlParserProvider;
+use Yiisoft\Db\Tests\Common\CommonSqlParserTest;
 
 /**
  * @group pgsql
  */
-final class SqlParserTest extends AbstractSqlParserTest
+final class SqlParserTest extends CommonSqlParserTest
 {
-    /** @dataProvider \Yiisoft\Db\Pgsql\Tests\Provider\SqlParserProvider::getNextPlaceholder */
+    #[DataProviderExternal(SqlParserProvider::class, 'getNextPlaceholder')]
     public function testGetNextPlaceholder(string $sql, ?string $expectedPlaceholder, ?int $expectedPosition): void
     {
         parent::testGetNextPlaceholder($sql, $expectedPlaceholder, $expectedPosition);

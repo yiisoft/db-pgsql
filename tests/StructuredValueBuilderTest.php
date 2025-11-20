@@ -6,7 +6,6 @@ namespace Yiisoft\Db\Pgsql\Tests;
 
 use ArrayIterator;
 use PHPUnit\Framework\Attributes\DataProvider;
-use PHPUnit\Framework\TestCase;
 use Yiisoft\Db\Constant\DataType;
 use Yiisoft\Db\Expression\Value\Param;
 use Yiisoft\Db\Expression\Value\StructuredValue;
@@ -14,18 +13,20 @@ use Yiisoft\Db\Pgsql\Builder\StructuredValueBuilder;
 use Yiisoft\Db\Pgsql\Column\ColumnBuilder;
 use Yiisoft\Db\Pgsql\Data\LazyArray;
 use Yiisoft\Db\Pgsql\Data\StructuredLazyArray;
-use Yiisoft\Db\Pgsql\Tests\Support\TestTrait;
+use Yiisoft\Db\Pgsql\Tests\Support\IntegrationTestTrait;
+use Yiisoft\Db\Pgsql\Tests\Support\TestConnection;
 use Yiisoft\Db\Query\Query;
 use Yiisoft\Db\Schema\Column\AbstractStructuredColumn;
 use Yiisoft\Db\Schema\Data\JsonLazyArray;
 use Yiisoft\Db\Tests\Support\Assert;
+use Yiisoft\Db\Tests\Support\IntegrationTestCase;
 
 /**
  * @group pgsql
  */
-final class StructuredValueBuilderTest extends TestCase
+final class StructuredValueBuilderTest extends IntegrationTestCase
 {
-    use TestTrait;
+    use IntegrationTestTrait;
 
     public static function buildProvider(): array
     {
@@ -77,13 +78,13 @@ final class StructuredValueBuilderTest extends TestCase
                 [':qp0' => new Param('USD', DataType::STRING)],
             ],
             'Query w/o type' => [
-                (new Query(self::getDb()))->select('price')->from('product')->where(['id' => 1]),
+                (new Query(TestConnection::getShared()))->select('price')->from('product')->where(['id' => 1]),
                 null,
                 '(SELECT "price" FROM "product" WHERE "id" = 1)',
                 [],
             ],
             'Query' => [
-                (new Query(self::getDb()))->select('price')->from('product')->where(['id' => 1]),
+                (new Query(TestConnection::getShared()))->select('price')->from('product')->where(['id' => 1]),
                 'currency_money',
                 '(SELECT "price" FROM "product" WHERE "id" = 1)::currency_money',
                 [],
@@ -137,7 +138,7 @@ final class StructuredValueBuilderTest extends TestCase
         string $expected,
         array $expectedParams,
     ): void {
-        $db = $this->getConnection();
+        $db = $this->getSharedConnection();
         $qb = $db->getQueryBuilder();
 
         $params = [];

@@ -8,14 +8,9 @@ use Yiisoft\Db\Expression\Value\ArrayValue;
 use Yiisoft\Db\Expression\Value\JsonValue;
 use Yiisoft\Db\Pgsql\Column\ColumnBuilder;
 use Yiisoft\Db\Pgsql\IndexMethod;
-use Yiisoft\Db\Pgsql\Tests\Support\TestTrait;
 
 final class CommandProvider extends \Yiisoft\Db\Tests\Provider\CommandProvider
 {
-    use TestTrait;
-
-    protected static string $driverName = 'pgsql';
-
     public static function batchInsert(): array
     {
         $batchInsert = parent::batchInsert();
