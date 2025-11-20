@@ -15,6 +15,7 @@ use Yiisoft\Db\Pgsql\Schema;
 use Yiisoft\Db\Pgsql\Tests\Provider\SchemaProvider;
 use Yiisoft\Db\Pgsql\Tests\Provider\StructuredTypeProvider;
 use Yiisoft\Db\Pgsql\Tests\Support\IntegrationTestTrait;
+use Yiisoft\Db\Pgsql\Tests\Support\TestConnection;
 use Yiisoft\Db\Schema\Column\ColumnInterface;
 use Yiisoft\Db\Schema\SchemaInterface;
 use Yiisoft\Db\Schema\TableSchemaInterface;
@@ -50,9 +51,7 @@ final class SchemaTest extends CommonSchemaTest
     #[DataProviderExternal(SchemaProvider::class, 'columns')]
     public function testColumns(array $columns, string $tableName, ?string $dump = null): void
     {
-        $db = $this->getSharedConnection();
-
-        if (version_compare($db->getServerInfo()->getVersion(), '10', '>')) {
+        if (version_compare(TestConnection::getServerVersion(), '10', '>')) {
             if ($tableName === 'type') {
                 $columns['timestamp_default']->defaultValue(new Expression('CURRENT_TIMESTAMP'));
             }

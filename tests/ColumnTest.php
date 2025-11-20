@@ -413,7 +413,7 @@ final class ColumnTest extends CommonColumnTest
     protected function createTimestampDefaultValue(): mixed
     {
         return new Expression(
-            version_compare(TestConnection::getShared()->getServerInfo()->getVersion(), '10', '<')
+            version_compare(TestConnection::getServerVersion(), '10', '<')
                 ? 'now()'
                 : 'CURRENT_TIMESTAMP',
         );

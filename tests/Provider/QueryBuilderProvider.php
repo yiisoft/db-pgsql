@@ -455,9 +455,7 @@ final class QueryBuilderProvider extends \Yiisoft\Db\Tests\Provider\QueryBuilder
             ColumnBuilder::string()->collation('C'),
         ];
 
-        $serverVersion = TestConnection::getShared()->getServerInfo()->getVersion();
-
-        if (version_compare($serverVersion, '13', '<')) {
+        if (version_compare(TestConnection::getServerVersion(), '13', '<')) {
             $uuidExpression = "uuid_in(overlay(overlay(md5(now()::text || random()::text) placing '4' from 13) placing"
                 . ' to_hex(floor(4 * random() + 8)::int)::text from 17)::cstring)';
 
@@ -527,9 +525,7 @@ final class QueryBuilderProvider extends \Yiisoft\Db\Tests\Provider\QueryBuilder
     {
         $data = iterator_to_array(parent::caseXBuilder());
 
-        $serverVersion = TestConnection::getShared()->getServerInfo()->getVersion();
-
-        if (version_compare($serverVersion, '10', '<')) {
+        if (version_compare(TestConnection::getServerVersion(), '10', '<')) {
             $param = new Param('b', DataType::STRING);
             $data['without case expression'] = [
                 static fn(ConnectionInterface $db) => new CaseX(
@@ -621,8 +617,7 @@ final class QueryBuilderProvider extends \Yiisoft\Db\Tests\Provider\QueryBuilder
     {
         $data = iterator_to_array(parent::multiOperandFunctionBuilder());
 
-        $serverVersion = TestConnection::getShared()->getServerInfo()->getVersion();
-        if (version_compare($serverVersion, '10', '<')) {
+        if (version_compare(TestConnection::getServerVersion(), '10', '<')) {
             unset($data['Longest with 1 operand'], $data['Shortest with 1 operand']);
         }
 
