@@ -23,6 +23,7 @@ use Yiisoft\Db\Pgsql\Column\IntegerColumn;
 use Yiisoft\Db\Pgsql\Column\StructuredColumn;
 use Yiisoft\Db\Pgsql\Tests\Provider\ColumnProvider;
 use Yiisoft\Db\Pgsql\Tests\Support\IntegrationTestTrait;
+use Yiisoft\Db\Pgsql\Tests\Support\TestConnection;
 use Yiisoft\Db\Query\Query;
 use Yiisoft\Db\Schema\Column\ColumnInterface;
 use Yiisoft\Db\Schema\Column\DoubleColumn;
@@ -407,5 +408,14 @@ final class ColumnTest extends CommonColumnTest
         $this->assertSame([['a' => 1, 'b' => null, 'c' => [1, 3, 5]]], $result['json_col']);
         $this->assertSame([1, 2, 3], $result['jsonb_col']);
         $this->assertSame([[[',', 'null', true, 'false', 'f']]], $result['jsonarray_col']);
+    }
+
+    protected function createTimestampDefaultValue(): mixed
+    {
+        return new Expression(
+            version_compare(TestConnection::getShared()->getServerInfo()->getVersion(), '10', '<')
+                ? 'now()'
+                : 'CURRENT_TIMESTAMP',
+        );
     }
 }
