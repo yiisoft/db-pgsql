@@ -14,6 +14,7 @@ use Yiisoft\Db\Expression\Expression;
 use Yiisoft\Db\Pgsql\Schema;
 use Yiisoft\Db\Pgsql\Tests\Provider\SchemaProvider;
 use Yiisoft\Db\Pgsql\Tests\Provider\StructuredTypeProvider;
+use Yiisoft\Db\Pgsql\Tests\Support\Fixture\FixtureDump;
 use Yiisoft\Db\Pgsql\Tests\Support\IntegrationTestTrait;
 use Yiisoft\Db\Pgsql\Tests\Support\TestConnection;
 use Yiisoft\Db\Schema\Column\ColumnInterface;
@@ -85,7 +86,7 @@ final class SchemaTest extends CommonSchemaTest
         $this->ensureMinPostgreSqlVersion('12.0');
 
         $db = $this->getSharedConnection();
-        $this->loadFixture(__DIR__ . '/Support/Fixture/pgsql12.sql');
+        $this->loadFixture(FixtureDump::V12);
 
         $schema = $db->getSchema();
         $table = $schema->getTableSchema('generated');
@@ -189,7 +190,7 @@ final class SchemaTest extends CommonSchemaTest
         $this->ensureMinPostgreSqlVersion('10.0');
 
         $db = $this->getSharedConnection();
-        $this->loadFixture(__DIR__ . '/Support/Fixture/pgsql10.sql');
+        $this->loadFixture(FixtureDump::V10);
 
         $schema = $db->getSchema();
 
@@ -472,7 +473,7 @@ final class SchemaTest extends CommonSchemaTest
         $this->ensureMinPostgreSqlVersion('11.0');
 
         $db = $this->getSharedConnection();
-        $this->loadFixture(__DIR__ . '/Support/Fixture/pgsql11.sql');
+        $this->loadFixture(FixtureDump::V11);
 
         $schema = $db->getSchema();
 

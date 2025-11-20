@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Yiisoft\Db\Pgsql\Tests\Support;
 
 use Yiisoft\Db\Pgsql\Connection;
+use Yiisoft\Db\Pgsql\Tests\Support\Fixture\FixtureDump;
 use Yiisoft\Db\Tests\Support\TestHelper;
 
 trait IntegrationTestTrait
@@ -19,7 +20,7 @@ trait IntegrationTestTrait
 
     protected function getDefaultFixture(): string
     {
-        return __DIR__ . '/Fixture/pgsql.sql';
+        return FixtureDump::DEFAULT;
     }
 
     protected function ensureMinPostgreSqlVersion(string $version): void

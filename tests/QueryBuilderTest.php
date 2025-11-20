@@ -20,6 +20,7 @@ use Yiisoft\Db\Expression\Value\Param;
 use Yiisoft\Db\Pgsql\Column\ArrayColumn;
 use Yiisoft\Db\Pgsql\Column\IntegerColumn;
 use Yiisoft\Db\Pgsql\Tests\Provider\QueryBuilderProvider;
+use Yiisoft\Db\Pgsql\Tests\Support\Fixture\FixtureDump;
 use Yiisoft\Db\Pgsql\Tests\Support\IntegrationTestTrait;
 use Yiisoft\Db\Query\Query;
 use Yiisoft\Db\Query\QueryInterface;
@@ -348,7 +349,7 @@ final class QueryBuilderTest extends CommonQueryBuilderTest
         $this->ensureMinPostgreSqlVersion('12.0');
 
         $db = $this->getSharedConnection();
-        $this->loadFixture(__DIR__ . '/Support/Fixture/pgsql12.sql');
+        $this->loadFixture(FixtureDump::V12);
 
         $qb = $db->getQueryBuilder();
 
