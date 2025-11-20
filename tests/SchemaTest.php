@@ -232,45 +232,6 @@ final class SchemaTest extends CommonSchemaTest
         $this->assertEquals($sequenceName, $tableSchema->getSequenceName());
     }
 
-    #[DataProviderExternal(SchemaProvider::class, 'tableSchemaCacheWithTablePrefixes')]
-    public function testTableSchemaCacheWithTablePrefixes(
-        string $tablePrefix,
-        string $tableName,
-        string $testTablePrefix,
-        string $testTableName,
-    ): void {
-        $db = $this->getSharedConnection();
-
-        $schema = $db->getSchema();
-        $schema->enableCache(true);
-        $db->setTablePrefix($tablePrefix);
-        $noCacheTable = $schema->getTableSchema($tableName, true);
-
-        $this->assertInstanceOf(TableSchemaInterface::class, $noCacheTable);
-
-        /* Compare */
-        $db->setTablePrefix($testTablePrefix);
-        $testNoCacheTable = $schema->getTableSchema($testTableName);
-
-        $this->assertSame($noCacheTable, $testNoCacheTable);
-
-        $db->setTablePrefix($tablePrefix);
-        $schema->refreshTableSchema($tableName);
-        $refreshedTable = $schema->getTableSchema($tableName);
-
-        $this->assertInstanceOf(TableSchemaInterface::class, $refreshedTable);
-        $this->assertNotSame($noCacheTable, $refreshedTable);
-
-        /* Compare */
-        $db->setTablePrefix($testTablePrefix);
-        $schema->refreshTableSchema($testTablePrefix);
-        $testRefreshedTable = $schema->getTableSchema($testTableName);
-
-        $this->assertInstanceOf(TableSchemaInterface::class, $testRefreshedTable);
-        $this->assertSame($refreshedTable, $testRefreshedTable);
-        $this->assertNotSame($testNoCacheTable, $testRefreshedTable);
-    }
-
     #[DataProviderExternal(SchemaProvider::class, 'constraints')]
     #[DataProviderExternal(SchemaProvider::class, 'constraintsOfView')]
     public function testTableSchemaConstraints(string $tableName, string $type, mixed $expected): void
