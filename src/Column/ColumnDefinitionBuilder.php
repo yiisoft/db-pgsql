@@ -122,6 +122,7 @@ final class ColumnDefinitionBuilder extends AbstractColumnDefinitionBuilder
                 ColumnType::DATE => 'date',
                 ColumnType::STRUCTURED => 'jsonb',
                 ColumnType::JSON => 'jsonb',
+                ColumnType::ENUM => 'enum',
                 default => 'varchar',
             },
             'timestamp without time zone' => 'timestamp',
