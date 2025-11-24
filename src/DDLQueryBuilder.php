@@ -6,11 +6,8 @@ namespace Yiisoft\Db\Pgsql;
 
 use Throwable;
 use Yiisoft\Db\Exception\NotSupportedException;
-use Yiisoft\Db\Expression\ExpressionInterface;
 use Yiisoft\Db\QueryBuilder\AbstractDDLQueryBuilder;
 use Yiisoft\Db\Schema\Column\ColumnInterface;
-
-use Yiisoft\Db\Schema\Column\EnumColumn;
 
 use function array_diff;
 use function explode;
