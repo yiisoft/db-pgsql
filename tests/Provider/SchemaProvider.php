@@ -252,6 +252,7 @@ final class SchemaProvider extends \Yiisoft\Db\Tests\Provider\SchemaProvider
                         scale: 0,
                     ),
                     'C_check' => new StringColumn(
+                        check: '("C_check")::text <> \'\'::text',
                         dbType: 'varchar',
                         size: 255,
                     ),
