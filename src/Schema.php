@@ -33,6 +33,7 @@ use function substr;
  * Implements the PostgreSQL Server specific schema, supporting PostgreSQL Server version 9.6 and above.
  *
  * @psalm-type ColumnArray = array{
+ *   check: string|null,
  *   column_name: string,
  *   data_type: string,
  *   type_type: string|null,
@@ -311,6 +312,7 @@ final class Schema extends AbstractPdoSchema
                 a.atttypmod
             ) AS scale,
             ct.contype,
+            pg_get_constraintdef(chk.oid) AS "check",
             COALESCE(NULLIF(a.attndims, 0), NULLIF(t.typndims, 0), (t.typcategory='A')::int) AS dimension,
             co.collname AS collation,
             nco.nspname AS collation_schema
@@ -332,6 +334,15 @@ final class Schema extends AbstractPdoSchema
                     AND rw.ev_action ~ ('.* :resno ' || a.attnum || ' :resname \S+ :ressortgroupref \d+ :resorigtbl '
                         || ct.conrelid || ' :resorigcol (?:'
                         || replace(substr(ct.conkey::text, 2, length(ct.conkey::text) - 2), ',', '|') || ') .*')
+                )
+            LEFT JOIN pg_constraint chk ON (chk.contype = 'c' AND cardinality(chk.conkey) = 1)
+                AND (
+                    chk.conrelid = c.oid AND a.attnum = ANY (chk.conkey)
+                    OR rw.ev_action IS NOT NULL AND chk.conrelid != 0
+                    AND strpos(rw.ev_action, ':resorigtbl ' || chk.conrelid || ' ') > 0
+                    AND rw.ev_action ~ ('.* :resno ' || a.attnum || ' :resname \S+ :ressortgroupref \d+ :resorigtbl '
+                        || chk.conrelid || ' :resorigcol (?:'
+                        || replace(substr(chk.conkey::text, 2, length(chk.conkey::text) - 2), ',', '|') || ') .*')
                 )
             LEFT JOIN (pg_collation co JOIN pg_namespace nco ON co.collnamespace = nco.oid)
                 ON a.attcollation = co.oid AND (nco.nspname != 'pg_catalog' OR co.collname != 'default')
@@ -510,6 +521,7 @@ final class Schema extends AbstractPdoSchema
 
         $columnInfo = [
             'autoIncrement' => (bool) $info['is_autoinc'],
+            'check' => !empty($info['check']) ? substr($info['check'], 8, -2) : null,
             'collation' => $collation,
             'comment' => $info['column_comment'],
             'dbType' => $dbType,
