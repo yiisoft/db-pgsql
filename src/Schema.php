@@ -692,7 +692,7 @@ final class Schema extends AbstractPdoSchema
         preg_match_all(
             "~ANY\s*\(\s*\(?\s*ARRAY\s*\[(?:[^'\]]+|'(?:''|[^'])*')*~i",
             $check,
-            $block
+            $block,
         );
 
         if (empty($block[0][0])) {
