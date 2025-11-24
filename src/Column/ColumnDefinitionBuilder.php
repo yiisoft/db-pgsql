@@ -10,7 +10,6 @@ use Yiisoft\Db\QueryBuilder\AbstractColumnDefinitionBuilder;
 use Yiisoft\Db\Schema\Column\AbstractArrayColumn;
 use Yiisoft\Db\Schema\Column\CollatableColumnInterface;
 use Yiisoft\Db\Schema\Column\ColumnInterface;
-use Yiisoft\Db\Schema\Column\EnumColumn;
 
 use function str_repeat;
 use function version_compare;
