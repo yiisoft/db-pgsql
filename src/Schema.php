@@ -696,7 +696,7 @@ final class Schema extends AbstractPdoSchema
         );
 
         if (empty($block[0][0])) {
-            return [];
+            return null;
         }
 
         preg_match_all("~'((?:''|[^'])*)'~", $block[0][0], $matches);
