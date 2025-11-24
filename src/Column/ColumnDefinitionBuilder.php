@@ -87,7 +87,7 @@ final class ColumnDefinitionBuilder extends AbstractColumnDefinitionBuilder
         if ($column instanceof EnumColumn && $column->getDbType() === null) {
             $check = $column->getCheck();
             $name = $column->getName();
-            $items = $column->getEnumValues();
+            $items = $column->getValues();
             if (empty($check) && !empty($name) && !empty($items)) {
                 $itemsList = implode(
                     ',',
