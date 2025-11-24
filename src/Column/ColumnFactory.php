@@ -91,7 +91,6 @@ final class ColumnFactory extends AbstractColumnFactory
         'xml' => ColumnType::STRING,
         'json' => ColumnType::JSON,
         'jsonb' => ColumnType::JSON,
-        'enum' => ColumnType::ENUM,
         'int4range' => PgsqlColumnType::INT4RANGE,
         'int8range' => PgsqlColumnType::INT8RANGE,
         'numrange' => PgsqlColumnType::NUMRANGE,

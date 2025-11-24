@@ -4,12 +4,15 @@ declare(strict_types=1);
 
 namespace Yiisoft\Db\Pgsql\Column;
 
+use LogicException;
 use Yiisoft\Db\Constant\ColumnType;
 use Yiisoft\Db\Exception\NotSupportedException;
 use Yiisoft\Db\QueryBuilder\AbstractColumnDefinitionBuilder;
 use Yiisoft\Db\Schema\Column\AbstractArrayColumn;
 use Yiisoft\Db\Schema\Column\CollatableColumnInterface;
 use Yiisoft\Db\Schema\Column\ColumnInterface;
+
+use Yiisoft\Db\Schema\Column\EnumColumn;
 
 use function str_repeat;
 use function version_compare;
@@ -81,6 +84,28 @@ final class ColumnDefinitionBuilder extends AbstractColumnDefinitionBuilder
         return parent::buildType($column);
     }
 
+    protected function buildCheck(ColumnInterface $column): string
+    {
+        if ($column instanceof EnumColumn && $column->getDbType() === null) {
+            $check = $column->getCheck();
+            $name = $column->getName();
+            $items = $column->getEnumValues();
+            if (empty($check) && !empty($name) && !empty($items)) {
+                $itemsList = implode(
+                    ',',
+                    array_map(
+                        fn(string $item): string => $this->queryBuilder->getQuoter()->quoteValue($item),
+                        $items
+                    ),
+                );
+                return " CHECK($name IN ($itemsList))";
+            }
+        }
+
+        return parent::buildCheck($column);
+    }
+
+
     protected function buildCollate(ColumnInterface $column): string
     {
         if (!$column instanceof CollatableColumnInterface || empty($column->getCollation())) {
@@ -122,7 +147,7 @@ final class ColumnDefinitionBuilder extends AbstractColumnDefinitionBuilder
                 ColumnType::DATE => 'date',
                 ColumnType::STRUCTURED => 'jsonb',
                 ColumnType::JSON => 'jsonb',
-                ColumnType::ENUM => 'enum',
+                ColumnType::ENUM => throw new LogicException('PostgreSQL does not support ENUM column type directly. Use a custom type instead.'),
                 default => 'varchar',
             },
             'timestamp without time zone' => 'timestamp',
