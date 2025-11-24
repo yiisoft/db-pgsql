@@ -82,27 +82,6 @@ final class ColumnDefinitionBuilder extends AbstractColumnDefinitionBuilder
         return parent::buildType($column);
     }
 
-    protected function buildCheck(ColumnInterface $column): string
-    {
-        if ($column instanceof EnumColumn && $column->getDbType() === null) {
-            $check = $column->getCheck();
-            $name = $column->getName();
-            $items = $column->getValues();
-            if (empty($check) && !empty($name) && !empty($items)) {
-                $itemsList = implode(
-                    ',',
-                    array_map(
-                        fn(string $item): string => $this->queryBuilder->getQuoter()->quoteValue($item),
-                        $items,
-                    ),
-                );
-                return " CHECK($name IN ($itemsList))";
-            }
-        }
-
-        return parent::buildCheck($column);
-    }
-
     protected function buildCollate(ColumnInterface $column): string
     {
         if (!$column instanceof CollatableColumnInterface || empty($column->getCollation())) {
