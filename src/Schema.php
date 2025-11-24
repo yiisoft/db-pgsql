@@ -527,7 +527,7 @@ final class Schema extends AbstractPdoSchema
             'dbType' => $dbType,
             'enumValues' => $info['enum_values'] !== null
                 ? explode(',', str_replace(["''"], ["'"], $info['enum_values']))
-                : null,
+                : $this->tryGetEnumValuesFromCheck($info['check']),
             'name' => $info['column_name'],
             'notNull' => !$info['is_nullable'],
             'primaryKey' => $info['contype'] === 'p',
@@ -678,5 +678,32 @@ final class Schema extends AbstractPdoSchema
         }
 
         return $result[$returnType];
+    }
+
+    /**
+     * @psalm-return list<string>|null
+     */
+    private function tryGetEnumValuesFromCheck(?string $check): ?array
+    {
+        if ($check === null) {
+            return null;
+        }
+
+        preg_match_all(
+            "~ANY\s*\(\s*\(?\s*ARRAY\s*\[(?:[^'\]]+|'(?:''|[^'])*')*~i",
+            $check,
+            $block
+        );
+
+        if (empty($block[0][0])) {
+            return [];
+        }
+
+        preg_match_all("~'((?:''|[^'])*)'~", $block[0][0], $matches);
+
+        return array_map(
+            static fn($v) => str_replace("''", "'", $v),
+            $matches[1] ?? [],
+        );
     }
 }

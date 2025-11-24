@@ -147,7 +147,7 @@ final class ColumnDefinitionBuilder extends AbstractColumnDefinitionBuilder
                 ColumnType::DATE => 'date',
                 ColumnType::STRUCTURED => 'jsonb',
                 ColumnType::JSON => 'jsonb',
-                ColumnType::ENUM => throw new LogicException('PostgreSQL does not support ENUM column type directly. Use a custom type instead.'),
+                ColumnType::ENUM => 'varchar',
                 default => 'varchar',
             },
             'timestamp without time zone' => 'timestamp',
