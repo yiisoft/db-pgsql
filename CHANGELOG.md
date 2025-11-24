@@ -58,6 +58,7 @@
 - Bug #456: Fix typecasting bit columns' values with big size (@Tigrov)
 - Chg #460: Throw exception on "unsigned" column usage (@vjik)
 - New #307: Add range and multirange columns support (@vjik, @Gerych1984)
+- Enh #464: Load column's check expressions for table schema (@Tigrov)
 
 ## 1.3.0 March 21, 2024
 
