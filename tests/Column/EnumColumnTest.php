@@ -14,6 +14,7 @@ final class EnumColumnTest extends CommonEnumColumnTest
     use IntegrationTestTrait;
 
     #[TestWith(['INTEGER CHECK (status IN (1, 2, 3))'])]
+    #[TestWith(["TEXT CHECK (status != 'abc')"])]
     public function testNonEnumCheck(string $columnDefinition): void
     {
         $this->dropTable('test_enum_table');
