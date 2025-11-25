@@ -690,7 +690,7 @@ final class Schema extends AbstractPdoSchema
         }
 
         preg_match_all(
-            "~ANY\s*\(\s*\(?\s*ARRAY\s*\[(?:[^'\]]+|'(?:''|[^'])*')*~i",
+            "~ANY\s*\(\s*\(?\s*ARRAY\s*\[(?:[^'\]]+|'(?:''|[^'])*')*\]\s*\)\s*::\s*(?:text|varchar|character varying)\s*\[~i",
             $check,
             $block,
         );
