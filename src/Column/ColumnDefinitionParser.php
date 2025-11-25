@@ -4,17 +4,17 @@ declare(strict_types=1);
 
 namespace Yiisoft\Db\Pgsql\Column;
 
+use Yiisoft\Db\Syntax\AbstractColumnDefinitionParser;
+
 use function preg_match;
 use function preg_replace;
 use function strlen;
-use function strtolower;
 use function substr;
-use function substr_count;
 
 /**
  * Parses column definition string. For example, `string(255)` or `int unsigned`.
  */
-final class ColumnDefinitionParser extends \Yiisoft\Db\Syntax\ColumnDefinitionParser
+final class ColumnDefinitionParser extends AbstractColumnDefinitionParser
 {
     private const TYPE_PATTERN = '/^(?:('
         . 'time(?:stamp)?\s*(?:\((\d+)\))? with(?:out)? time zone'
@@ -24,32 +24,50 @@ final class ColumnDefinitionParser extends \Yiisoft\Db\Syntax\ColumnDefinitionPa
         . '|\w*'
         . ')(?:\(([^)]+)\))?)(\[[\d\[\]]*\])?\s*/i';
 
-    public function parse(string $definition): array
+    protected function parseDefinition(string $definition): array
     {
         preg_match(self::TYPE_PATTERN, $definition, $matches);
 
         /** @var string $type */
         $type = $matches[3] ?? preg_replace('/\s*\(\d+\)/', '', $matches[1]);
-        $type = strtolower($type);
-        $info = ['type' => $type];
 
-        $typeDetails = $matches[4] ?? $matches[2] ?? '';
+        return [
+            $type,
+            $matches[4] ?? $matches[2] ?? null,
+            $matches[5] ?? null,
+            substr($definition, strlen($matches[0])),
+        ];
+    }
 
-        if ($typeDetails !== '') {
-            if ($type === 'enum') {
-                $info += $this->enumInfo($typeDetails);
-            } else {
-                $info += $this->sizeInfo($typeDetails);
-            }
-        }
-
-        if (isset($matches[5])) {
-            /** @psalm-var positive-int */
-            $info['dimension'] = substr_count($matches[5], '[');
-        }
-
-        $extra = substr($definition, strlen($matches[0]));
-
-        return $info + $this->extraInfo($extra);
+    protected function parseTypeParams(string $type, string $params): array
+    {
+        return match ($type) {
+            'bit varying',
+            'bit',
+            'bpchar',
+            'char',
+            'character varying',
+            'character',
+            'decimal',
+            'double precision',
+            'float4',
+            'float8',
+            'int',
+            'interval',
+            'numeric',
+            'real',
+            'string',
+            'time with time zone',
+            'time without time zone',
+            'time',
+            'timestamp with time zone',
+            'timestamp without time zone',
+            'timestamp',
+            'timestamptz',
+            'timetz',
+            'varbit',
+            'varchar' => $this->parseSizeInfo($params),
+            default => [],
+        };
     }
 }
