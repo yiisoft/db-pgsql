@@ -22,7 +22,7 @@ final class ColumnDefinitionParser extends \Yiisoft\Db\Syntax\ColumnDefinitionPa
         . '(?:character|bit) varying'
         . '|double precision'
         . '|\w*'
-        . ')(?:\(([^)]+)\))?)(\[[\d\[\]]*\])?\s*/i';
+        . ")(?:\(((?:'[^']*'|[^)])+)\))?)(\[[\d\[\]]*\])?\s*/i";
 
     public function parse(string $definition): array
     {
