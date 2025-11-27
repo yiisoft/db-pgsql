@@ -22,7 +22,7 @@ final class ColumnDefinitionParser extends AbstractColumnDefinitionParser
         . '(?:character|bit) varying'
         . '|double precision'
         . '|\w*'
-        . ')(?:\(([^)]+)\))?)(\[[\d\[\]]*\])?\s*/i';
+        . ")(?:\(((?:'[^']*'|[^)])+)\))?)(\[[\d\[\]]*\])?\s*/i";
 
     protected function parseDefinition(string $definition): array
     {
