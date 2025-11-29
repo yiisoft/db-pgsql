@@ -60,6 +60,7 @@
 - New #307: Add range and multirange columns support (@vjik, @Gerych1984)
 - Enh #464: Load column's check expressions for table schema (@Tigrov)
 - Bug #467: Fix column definition parsing in cases with parentheses (@vjik)
+- New #465: Add enumeration column type support (@vjik)
 
 ## 1.3.0 March 21, 2024
 
