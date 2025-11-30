@@ -44,7 +44,7 @@ use function substr;
  *   column_default: string|null,
  *   is_autoinc: bool|string,
  *   sequence_name: string|null,
- *   enum_values: string|null,
+ *   values: string|null,
  *   size: int|string|null,
  *   scale: int|string|null,
  *   contype: string|null,
@@ -292,7 +292,7 @@ final class Schema extends AbstractPdoSchema
                     )::varchar[],
                 ',')
                 ELSE NULL
-            END AS enum_values,
+            END AS values,
             COALESCE(
                 information_schema._pg_char_max_length(
                     COALESCE(td.oid, tb.oid, a.atttypid),
@@ -467,7 +467,7 @@ final class Schema extends AbstractPdoSchema
                             )::varchar[],
                         ',')
                         ELSE NULL
-                    END AS enum_values
+                    END AS values
                 FROM pg_type AS t
                 LEFT JOIN pg_type AS t2 ON t.typcategory='A' AND t2.oid = t.typelem OR t.typbasetype > 0 AND t2.oid = t.typbasetype
                 LEFT JOIN pg_namespace AS ns ON ns.oid = COALESCE(t2.typnamespace, t.typnamespace)
@@ -486,8 +486,8 @@ final class Schema extends AbstractPdoSchema
                 }
 
                 $columnInfo['type'] = ColumnType::STRUCTURED;
-            } elseif (!empty($typeInfo['enum_values'])) {
-                $columnInfo['enumValues'] = explode(',', str_replace(["''"], ["'"], $typeInfo['enum_values']));
+            } elseif (!empty($typeInfo['values'])) {
+                $columnInfo['values'] = explode(',', str_replace(["''"], ["'"], $typeInfo['values']));
             }
         }
 
@@ -525,9 +525,9 @@ final class Schema extends AbstractPdoSchema
             'collation' => $collation,
             'comment' => $info['column_comment'],
             'dbType' => $dbType,
-            'enumValues' => $info['enum_values'] !== null
-                ? explode(',', str_replace(["''"], ["'"], $info['enum_values']))
-                : null,
+            'values' => $info['values'] !== null
+                ? explode(',', str_replace(["''"], ["'"], $info['values']))
+                : $this->tryGetEnumValuesFromCheck($info['check']),
             'name' => $info['column_name'],
             'notNull' => !$info['is_nullable'],
             'primaryKey' => $info['contype'] === 'p',
@@ -678,5 +678,32 @@ final class Schema extends AbstractPdoSchema
         }
 
         return $result[$returnType];
+    }
+
+    /**
+     * @psalm-return list<string>|null
+     */
+    private function tryGetEnumValuesFromCheck(?string $check): ?array
+    {
+        if ($check === null) {
+            return null;
+        }
+
+        preg_match_all(
+            "~ANY\s*\(\(ARRAY\[('(?:''|[^'])*'[^,\]]*)(?:,\s*(?1))*~",
+            $check,
+            $block,
+        );
+
+        if (empty($block[0][0])) {
+            return null;
+        }
+
+        preg_match_all("~'((?:''|[^'])*)'~", $block[0][0], $matches);
+
+        return array_map(
+            static fn($v) => str_replace("''", "'", $v),
+            $matches[1] ?? [],
+        );
     }
 }
