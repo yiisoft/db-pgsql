@@ -32,7 +32,7 @@
 - New #384: Add `IndexMethod` class (@Tigrov)
 - Bug #387: Explicitly mark nullable parameters (@vjik)
 - Enh #386, #449: Refactor array, structured and JSON expression builders (@Tigrov)
-- Chg #388: Change supported PHP versions to `8.1 - 8.4` (@Tigrov)
+- Chg #388, #469: Change supported PHP versions to `8.1 - 8.5` (@Tigrov, @vjik)
 - Enh #388: Minor refactoring (@Tigrov)
 - Chg #390: Remove `yiisoft/json` dependency (@Tigrov)
 - Enh #393, #430: Refactor according changes in `db` package (@Tigrov)

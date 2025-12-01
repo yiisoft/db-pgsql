@@ -26,7 +26,7 @@ Driver supports PostgreSQL 9 or higher.
 
 ## Requirements
 
-- PHP 8.1 - 8.4.
+- PHP 8.1 - 8.5.
 - `pdo_pgsql` PHP extension.
 
 ## Installation
