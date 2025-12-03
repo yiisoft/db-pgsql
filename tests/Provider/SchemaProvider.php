@@ -87,12 +87,12 @@ final class SchemaProvider extends \Yiisoft\Db\Tests\Provider\SchemaProvider
                         dbType: 'bytea',
                         defaultValue: 'a binary value',
                     ),
-                    'numeric_col' => new DoubleColumn(
+                    'numeric_col' => new StringColumn(
                         ColumnType::DECIMAL,
                         dbType: 'numeric',
-                        size: 5,
                         scale: 2,
-                        defaultValue: 33.22,
+                        size: 5,
+                        defaultValue: '33.22',
                     ),
                     'timestamp_col' => new DateTimeColumn(
                         dbType: 'timestamp',
@@ -148,16 +148,16 @@ final class SchemaProvider extends \Yiisoft\Db\Tests\Provider\SchemaProvider
                     ),
                     'numericarray_col' => new ArrayColumn(
                         dbType: 'numeric',
-                        size: 5,
                         scale: 2,
+                        size: 5,
                         dimension: 1,
-                        column: new DoubleColumn(
+                        column: new StringColumn(
                             ColumnType::DECIMAL,
                             dbType: 'numeric',
                             name: 'numericarray_col',
                             notNull: false,
-                            size: 5,
                             scale: 2,
+                            size: 5,
                         ),
                     ),
                     'varchararray_col' => new ArrayColumn(
@@ -375,7 +375,7 @@ final class SchemaProvider extends \Yiisoft\Db\Tests\Provider\SchemaProvider
                 'len' => -1,
                 'precision' => -1,
             ]],
-            [new DoubleColumn(ColumnType::DECIMAL, dbType: 'numeric', name: 'numeric_col', size: 5, scale: 2), [
+            [new StringColumn(ColumnType::DECIMAL, dbType: 'numeric', name: 'numeric_col', scale: 2, size: 5), [
                 'pgsql:oid' => 1700,
                 'pgsql:table_oid' => 40133105,
                 'table' => 'type',
@@ -463,7 +463,7 @@ final class SchemaProvider extends \Yiisoft\Db\Tests\Provider\SchemaProvider
                 'len' => 4,
                 'precision' => -1,
             ]],
-            [new DoubleColumn(ColumnType::DECIMAL, dbType: 'numeric', name: '2.5'), [
+            [new StringColumn(ColumnType::DECIMAL, dbType: 'numeric', name: '2.5'), [
                 'pgsql:oid' => 1700,
                 'pgsql:table_oid' => 0,
                 'native_type' => 'numeric',

@@ -65,7 +65,7 @@ final class ColumnTest extends CommonColumnTest
         $expected = [
             'null' => null,
             1 => 1,
-            '2.5' => 2.5,
+            '2.5' => '2.5',
             'true' => true,
             'false' => false,
             'string' => 'string',
@@ -73,7 +73,7 @@ final class ColumnTest extends CommonColumnTest
             'enum2' => 'VAL2',
             'intarray' => [1, 2, 3],
             'jsonb' => ['a' => 1],
-            'composite' => ['value' => 10.0, 'currency_code' => 'USD'],
+            'composite' => ['value' => '10.00', 'currency_code' => 'USD'],
         ];
 
         $result = $db->createCommand($sql)
@@ -98,13 +98,13 @@ final class ColumnTest extends CommonColumnTest
             ->withPhpTypecasting()
             ->queryScalar();
 
-        $this->assertSame(2.5, $result);
+        $this->assertSame('2.5', $result);
 
         $result = $db->createCommand('SELECT 2.5 UNION SELECT 3.3')
             ->withPhpTypecasting()
             ->queryColumn();
 
-        $this->assertSame([2.5, 3.3], $result);
+        $this->assertSame(['2.5', '3.3'], $result);
     }
 
     public function testDbTypeCastJson(): void
@@ -193,21 +193,28 @@ final class ColumnTest extends CommonColumnTest
         $schema = $db->getSchema();
         $tableSchema = $schema->getTableSchema('test_structured_type');
 
-        $command->insert('test_structured_type', [
-            'price_col' => ['value' => 10.0, 'currency_code' => 'USD'],
-            'price_array' => [
-                null,
-                ['value' => 11.11, 'currency_code' => 'USD'],
-                ['value' => null, 'currency_code' => null],
-            ],
-            'price_array2' => [[
-                ['value' => 123.45, 'currency_code' => 'USD'],
-            ]],
-            'range_price_col' => [
-                'price_from' => ['value' => 1000.0, 'currency_code' => 'USD'],
-                'price_to' => ['value' => 2000.0, 'currency_code' => 'USD'],
-            ],
-        ])->execute();
+        $command
+            ->insert(
+                'test_structured_type',
+                [
+                    'price_col' => ['value' => 10.0, 'currency_code' => 'USD'],
+                    'price_array' => [
+                        null,
+                        ['value' => 11.11, 'currency_code' => 'USD'],
+                        ['value' => null, 'currency_code' => null],
+                    ],
+                    'price_array2' => [
+                        [
+                            ['value' => 123.45, 'currency_code' => 'USD'],
+                        ],
+                    ],
+                    'range_price_col' => [
+                        'price_from' => ['value' => 1000.0, 'currency_code' => 'USD'],
+                        'price_to' => ['value' => 2000.0, 'currency_code' => 'USD'],
+                    ],
+                ],
+            )
+            ->execute();
 
         $query = (new Query($db))->from('test_structured_type')->one();
 
@@ -217,26 +224,26 @@ final class ColumnTest extends CommonColumnTest
         $priceArray2PhpType = $tableSchema->getColumn('price_array2')->phpTypecast($query['price_array2']);
         $rangePriceColPhpType = $tableSchema->getColumn('range_price_col')->phpTypecast($query['range_price_col']);
 
-        $this->assertSame(['value' => 10.0, 'currency_code' => 'USD'], $priceColPhpType);
-        $this->assertSame(['value' => 5.0, 'currency_code' => 'USD'], $priceDefaultPhpType);
+        $this->assertSame(['value' => '10.00', 'currency_code' => 'USD'], $priceColPhpType);
+        $this->assertSame(['value' => '5.00', 'currency_code' => 'USD'], $priceDefaultPhpType);
         $this->assertSame(
             [
                 null,
-                ['value' => 11.11, 'currency_code' => 'USD'],
+                ['value' => '11.11', 'currency_code' => 'USD'],
                 ['value' => null, 'currency_code' => null],
             ],
             $priceArrayPhpType,
         );
         $this->assertSame(
             [[
-                ['value' => 123.45, 'currency_code' => 'USD'],
+                ['value' => '123.45', 'currency_code' => 'USD'],
             ]],
             $priceArray2PhpType,
         );
         $this->assertSame(
             [
-                'price_from' => ['value' => 1000.0, 'currency_code' => 'USD'],
-                'price_to' => ['value' => 2000.0, 'currency_code' => 'USD'],
+                'price_from' => ['value' => '1000.00', 'currency_code' => 'USD'],
+                'price_to' => ['value' => '2000.00', 'currency_code' => 'USD'],
             ],
             $rangePriceColPhpType,
         );
@@ -251,16 +258,31 @@ final class ColumnTest extends CommonColumnTest
                 [null, null],
                 new ArrayColumn(
                     dbType: 'currency_money_structured',
-                    dimension: 2,
                     name: 'price_array2',
                     notNull: false,
+                    dimension: 2,
                     column: new StructuredColumn(
                         dbType: 'currency_money_structured',
                         name: 'price_array2',
                         notNull: false,
                         columns: [
-                            'value' => new DoubleColumn(ColumnType::DECIMAL, dbType: 'numeric', name: 'value', notNull: false, scale: 2, size: 10, defaultValue: null),
-                            'currency_code' => new StringColumn(ColumnType::CHAR, dbType: 'bpchar', name: 'currency_code', notNull: false, size: 3, defaultValue: null),
+                            'value' => new StringColumn(
+                                ColumnType::DECIMAL,
+                                dbType: 'numeric',
+                                name: 'value',
+                                notNull: false,
+                                scale: 2,
+                                size: 10,
+                                defaultValue: null,
+                            ),
+                            'currency_code' => new StringColumn(
+                                ColumnType::CHAR,
+                                dbType: 'bpchar',
+                                name: 'currency_code',
+                                notNull: false,
+                                size: 3,
+                                defaultValue: null,
+                            ),
                         ],
                     ),
                     defaultValue: null,
@@ -400,9 +422,9 @@ final class ColumnTest extends CommonColumnTest
         $this->assertFalse($result['bool_col']);
         $this->assertSame(0b0110_0100, $result['bit_col']);
         $this->assertSame(0b1_1100_1000, $result['varbit_col']);
-        $this->assertSame(33.22, $result['numeric_col']);
+        $this->assertSame('33.22', $result['numeric_col']);
         $this->assertSame([1, -2, null, 42], $result['intarray_col']);
-        $this->assertSame([null, 1.2, -2.2, null, null], $result['numericarray_col']);
+        $this->assertSame([null, '1.20', '-2.20', null, null], $result['numericarray_col']);
         $this->assertSame(['', 'some text', '""', '\\\\', '[",","null",true,"false","f"]', null], $result['varchararray_col']);
         $this->assertNull($result['textarray2_col']);
         $this->assertSame([['a' => 1, 'b' => null, 'c' => [1, 3, 5]]], $result['json_col']);

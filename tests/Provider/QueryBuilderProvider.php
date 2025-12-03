@@ -209,9 +209,9 @@ final class QueryBuilderProvider extends \Yiisoft\Db\Tests\Provider\QueryBuilder
                 ['order_id' => 1, 'item_id' => 1, 'quantity' => 1, 'subtotal' => 1.0],
                 [],
                 <<<SQL
-                INSERT INTO {{%order_item}} ("order_id", "item_id", "quantity", "subtotal") VALUES (1, 1, 1, 1) RETURNING "order_id", "item_id"
+                INSERT INTO {{%order_item}} ("order_id", "item_id", "quantity", "subtotal") VALUES (1, 1, 1, :qp0) RETURNING "order_id", "item_id"
                 SQL,
-                [],
+                [':qp0' => new Param('1', DataType::STRING)],
             ],
         ];
     }
@@ -349,9 +349,9 @@ final class QueryBuilderProvider extends \Yiisoft\Db\Tests\Provider\QueryBuilder
                 ['id_1' => 1, 'id_2' => 2.5, 'type' => 'Test'],
                 true,
                 ['id_1', 'id_2'],
-                'INSERT INTO "notauto_pk" ("id_1", "id_2", "type") VALUES (1, 2.5, :qp0)'
+                'INSERT INTO "notauto_pk" ("id_1", "id_2", "type") VALUES (1, :qp0, :qp1)'
                 . ' ON CONFLICT ("id_1", "id_2") DO UPDATE SET "type"=EXCLUDED."type" RETURNING "id_1", "id_2"',
-                [':qp0' => new Param('Test', DataType::STRING)],
+                [':qp0' => new Param('2.5', DataType::STRING), ':qp1' => new Param('Test', DataType::STRING)],
             ],
             'no return columns' => [
                 'type',
