@@ -19,24 +19,24 @@ final class StructuredTypeProvider
             [
                 [
                     'id' => new IntegerColumn(
+                        autoIncrement: true,
                         dbType: 'int4',
                         primaryKey: true,
                         notNull: true,
-                        autoIncrement: true,
-                        sequenceName: 'test_structured_type_id_seq',
                         scale: 0,
+                        sequenceName: 'test_structured_type_id_seq',
                     ),
                     'price_col' => new StructuredColumn(
                         dbType: 'currency_money_structured',
                         defaultValue: null,
                         columns: [
-                            'value' => new DoubleColumn(
+                            'value' => new StringColumn(
                                 ColumnType::DECIMAL,
                                 dbType: 'numeric',
                                 name: 'value',
                                 notNull: false,
-                                size: 10,
                                 scale: 2,
+                                size: 10,
                                 defaultValue: null,
                             ),
                             'currency_code' => new StringColumn(
@@ -51,24 +51,24 @@ final class StructuredTypeProvider
                     ),
                     'price_default' => new StructuredColumn(
                         dbType: 'currency_money_structured',
-                        defaultValue: ['value' => 5.0, 'currency_code' => 'USD'],
+                        defaultValue: ['value' => '5.00', 'currency_code' => 'USD'],
                         columns: [
-                            'value' => new DoubleColumn(
+                            'value' => new StringColumn(
                                 ColumnType::DECIMAL,
                                 dbType: 'numeric',
-                                defaultValue: 5.0,
                                 name: 'value',
                                 notNull: false,
-                                size: 10,
                                 scale: 2,
+                                size: 10,
+                                defaultValue: '5.00',
                             ),
                             'currency_code' => new StringColumn(
                                 ColumnType::CHAR,
                                 dbType: 'bpchar',
-                                defaultValue: 'USD',
                                 name: 'currency_code',
                                 notNull: false,
                                 size: 3,
+                                defaultValue: 'USD',
                             ),
                         ],
                     ),
@@ -76,20 +76,22 @@ final class StructuredTypeProvider
                         dbType: 'currency_money_structured',
                         defaultValue: [
                             null,
-                            ['value' => 10.55, 'currency_code' => 'USD'],
-                            ['value' => -1.0, 'currency_code' => null],
+                            ['value' => '10.55', 'currency_code' => 'USD'],
+                            ['value' => '-1.00', 'currency_code' => null],
                         ],
                         dimension: 1,
                         column: new StructuredColumn(
                             dbType: 'currency_money_structured',
+                            name: 'price_array',
+                            notNull: false,
                             columns: [
-                                'value' => new DoubleColumn(
+                                'value' => new StringColumn(
                                     ColumnType::DECIMAL,
                                     dbType: 'numeric',
                                     name: 'value',
                                     notNull: false,
-                                    size: 10,
                                     scale: 2,
+                                    size: 10,
                                     defaultValue: null,
                                 ),
                                 'currency_code' => new StringColumn(
@@ -101,8 +103,6 @@ final class StructuredTypeProvider
                                     defaultValue: null,
                                 ),
                             ],
-                            name: 'price_array',
-                            notNull: false,
                         ),
                     ),
                     'price_array2' => new ArrayColumn(
@@ -110,14 +110,16 @@ final class StructuredTypeProvider
                         dimension: 2,
                         column: new StructuredColumn(
                             dbType: 'currency_money_structured',
+                            name: 'price_array2',
+                            notNull: false,
                             columns: [
-                                'value' => new DoubleColumn(
+                                'value' => new StringColumn(
                                     ColumnType::DECIMAL,
                                     dbType: 'numeric',
                                     name: 'value',
                                     notNull: false,
-                                    size: 10,
                                     scale: 2,
+                                    size: 10,
                                     defaultValue: null,
                                 ),
                                 'currency_code' => new StringColumn(
@@ -129,29 +131,29 @@ final class StructuredTypeProvider
                                     defaultValue: null,
                                 ),
                             ],
-                            name: 'price_array2',
-                            notNull: false,
                         ),
                     ),
                     'range_price_col' => new StructuredColumn(
                         dbType: 'range_price_structured',
                         defaultValue: [
-                            'price_from' => ['value' => 0.0, 'currency_code' => 'USD'],
-                            'price_to' => ['value' => 100.0, 'currency_code' => 'USD'],
+                            'price_from' => ['value' => '0.00', 'currency_code' => 'USD'],
+                            'price_to' => ['value' => '100.00', 'currency_code' => 'USD'],
                         ],
                         columns: [
                             'price_from' => new StructuredColumn(
                                 dbType: 'currency_money_structured',
-                                defaultValue: ['value' => 0.0, 'currency_code' => 'USD'],
+                                name: 'price_from',
+                                notNull: false,
+                                defaultValue: ['value' => '0.00', 'currency_code' => 'USD'],
                                 columns: [
-                                    'value' => new DoubleColumn(
+                                    'value' => new StringColumn(
                                         ColumnType::DECIMAL,
                                         dbType: 'numeric',
                                         name: 'value',
                                         notNull: false,
-                                        size: 10,
                                         scale: 2,
-                                        defaultValue: 0.0,
+                                        size: 10,
+                                        defaultValue: '0.00'
                                     ),
                                     'currency_code' => new StringColumn(
                                         ColumnType::CHAR,
@@ -162,21 +164,21 @@ final class StructuredTypeProvider
                                         defaultValue: 'USD',
                                     ),
                                 ],
-                                name: 'price_from',
-                                notNull: false,
                             ),
                             'price_to' => new StructuredColumn(
                                 dbType: 'currency_money_structured',
-                                defaultValue: ['value' => 100.0, 'currency_code' => 'USD'],
+                                name: 'price_to',
+                                notNull: false,
+                                defaultValue: ['value' => '100.00', 'currency_code' => 'USD'],
                                 columns: [
-                                    'value' => new DoubleColumn(
+                                    'value' => new StringColumn(
                                         ColumnType::DECIMAL,
                                         dbType: 'numeric',
                                         name: 'value',
                                         notNull: false,
-                                        size: 10,
                                         scale: 2,
-                                        defaultValue: 100.0,
+                                        size: 10,
+                                        defaultValue: '100.00',
                                     ),
                                     'currency_code' => new StringColumn(
                                         ColumnType::CHAR,
@@ -187,8 +189,6 @@ final class StructuredTypeProvider
                                         defaultValue: 'USD',
                                     ),
                                 ],
-                                name: 'price_to',
-                                notNull: false,
                             ),
                         ],
                     ),
