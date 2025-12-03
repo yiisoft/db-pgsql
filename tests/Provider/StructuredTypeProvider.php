@@ -8,7 +8,6 @@ use Yiisoft\Db\Constant\ColumnType;
 use Yiisoft\Db\Pgsql\Column\ArrayColumn;
 use Yiisoft\Db\Pgsql\Column\IntegerColumn;
 use Yiisoft\Db\Pgsql\Column\StructuredColumn;
-use Yiisoft\Db\Schema\Column\DoubleColumn;
 use Yiisoft\Db\Schema\Column\StringColumn;
 
 final class StructuredTypeProvider
@@ -153,7 +152,7 @@ final class StructuredTypeProvider
                                         notNull: false,
                                         scale: 2,
                                         size: 10,
-                                        defaultValue: '0.00'
+                                        defaultValue: '0.00',
                                     ),
                                     'currency_code' => new StringColumn(
                                         ColumnType::CHAR,

@@ -206,13 +206,13 @@ final class ColumnTest extends CommonColumnTest
                     'price_array2' => [
                         [
                             ['value' => 123.45, 'currency_code' => 'USD'],
-                        ]
+                        ],
                     ],
                     'range_price_col' => [
                         'price_from' => ['value' => 1000.0, 'currency_code' => 'USD'],
                         'price_to' => ['value' => 2000.0, 'currency_code' => 'USD'],
                     ],
-                ]
+                ],
             )
             ->execute();
 
