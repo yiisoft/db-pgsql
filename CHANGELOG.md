@@ -61,6 +61,7 @@
 - Enh #464: Load column's check expressions for table schema (@Tigrov)
 - Bug #467: Fix column definition parsing in cases with parentheses (@vjik)
 - New #465: Add enumeration column type support (@vjik)
+- New #471: Add source of column information (@Tigrov)
 
 ## 1.3.0 March 21, 2024
 
