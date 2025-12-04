@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Yiisoft\Db\Pgsql;
 
+use Yiisoft\Db\Constant\ColumnInfoSource;
 use Yiisoft\Db\Constant\ColumnType;
 use Yiisoft\Db\Constant\ReferentialAction;
 use Yiisoft\Db\Constraint\Check;
@@ -422,7 +423,7 @@ final class Schema extends AbstractPdoSchema
 
         $dbType = $metadata['native_type'];
 
-        $columnInfo = ['fromResult' => true];
+        $columnInfo = ['source' => ColumnInfoSource::QUERY_RESULT];
 
         if (!empty($metadata['table'])) {
             $columnInfo['table'] = $metadata['table'];
@@ -534,6 +535,7 @@ final class Schema extends AbstractPdoSchema
             'scale' => $info['scale'] !== null ? (int) $info['scale'] : null,
             'schema' => $info['schema'],
             'size' => $info['size'] !== null ? (int) $info['size'] : null,
+            'source' => ColumnInfoSource::TABLE_SCHEMA,
             'table' => $info['table'],
             'unique' => $info['contype'] === 'u',
         ];
