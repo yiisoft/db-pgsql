@@ -1,5 +1,9 @@
 # PostgreSQL driver for Yii Database Change Log
 
+## 2.0.1 under development
+
+- no changes in this release.
+
 ## 2.0.0 December 05, 2025
 
 - New #307: Add range and multirange columns support (@vjik, @Gerych1984)
