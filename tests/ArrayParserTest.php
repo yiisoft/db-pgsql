@@ -9,8 +9,6 @@ use Yiisoft\Db\Pgsql\Data\ArrayParser;
 
 /**
  * @group pgsql
- *
- * @psalm-suppress PropertyNotSetInConstructor
  */
 final class ArrayParserTest extends TestCase
 {

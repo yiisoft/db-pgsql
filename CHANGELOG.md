@@ -59,6 +59,7 @@
 - Chg #460: Throw exception on "unsigned" column usage (@vjik)
 - New #307: Add range and multirange columns support (@vjik, @Gerych1984)
 - Enh #464: Load column's check expressions for table schema (@Tigrov)
+- Chg #466: Refactor `ColumnDefinitionParser` (@vjik)
 - Bug #467: Fix column definition parsing in cases with parentheses (@vjik)
 - New #465: Add enumeration column type support (@vjik)
 - New #471: Add source of column information (@Tigrov)
