@@ -4,7 +4,11 @@ declare(strict_types=1);
 
 namespace Yiisoft\Db\Pgsql\Data;
 
-use function in_array;
+use function preg_match;
+use function strcspn;
+use function stripcslashes;
+use function strlen;
+use function substr;
 
 /**
  * Array representation to PHP array parser for PostgreSQL Server.
@@ -64,16 +68,10 @@ final class ArrayParser
      */
     private function parseQuotedString(string $value, int &$i): string
     {
-        for ($result = '', ++$i;; ++$i) {
-            if ($value[$i] === '\\') {
-                ++$i;
-            } elseif ($value[$i] === '"') {
-                ++$i;
-                return $result;
-            }
+        preg_match('/"((?>[^"\\\\]+|\\\\.)*)"/As', $value, $matches, 0, $i);
+        $i += strlen($matches[0]);
 
-            $result .= $value[$i];
-        }
+        return stripcslashes($matches[1]);
     }
 
     /**
@@ -81,14 +79,10 @@ final class ArrayParser
      */
     private function parseUnquotedString(string $value, int &$i): ?string
     {
-        for ($result = '';; ++$i) {
-            if (in_array($value[$i], [',', '}'], true)) {
-                return $result !== 'NULL'
-                    ? $result
-                    : null;
-            }
+        $length = strcspn($value, ',}', $i);
+        $result = substr($value, $i, $length);
+        $i += $length;
 
-            $result .= $value[$i];
-        }
+        return $result !== 'NULL' ? $result : null;
     }
 }
