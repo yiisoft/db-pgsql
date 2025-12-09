@@ -68,7 +68,7 @@ final class ArrayParser
      */
     private function parseQuotedString(string $value, int &$i): string
     {
-        preg_match('/"((?>[^"\\\\]+|\\\\.)*)"/As', $value, $matches, 0, $i);
+        preg_match('/"((?>[^"\\\\]+|\\\\.)*)"/', $value, $matches, 0, $i);
         $i += strlen($matches[0]);
 
         return stripcslashes($matches[1]);
