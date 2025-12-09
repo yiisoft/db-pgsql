@@ -43,6 +43,11 @@ final class ArrayParserTest extends TestCase
             ['[",","null",true,"false","f"]'],
             '{"[\",\",\"null\",true,\"false\",\"f\"]"}',
         ];
+        // Multibyte strings
+        yield [
+            ['我', '👍🏻', 'multibyte строка我👍🏻', 'נטשופ צרכנות'],
+            '{我,👍🏻,"multibyte строка我👍🏻","נטשופ צרכנות"}',
+        ];
         // Similar cases can be in default values
         yield [null, "'{one,two}'::text[]"];
     }
