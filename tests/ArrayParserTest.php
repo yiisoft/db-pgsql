@@ -26,6 +26,10 @@ final class ArrayParserTest extends TestCase
         $this->assertSame([[0 => 'text'], [0 => null], [0 => '1']], $arrayParse->parse('{{text},{NULL},{1}}'));
         $this->assertSame([0 => ''], $arrayParse->parse('{""}'));
         $this->assertSame(
+            [0 => ',', 1 => '}', 2 => 'NULL', 3 => 't', 4 => 'f'],
+            $arrayParse->parse('{",","}","NULL",t,f}'),
+        );
+        $this->assertSame(
             [0 => '[",","null",true,"false","f"]'],
             $arrayParse->parse('{"[\",\",\"null\",true,\"false\",\"f\"]"}'),
         );
