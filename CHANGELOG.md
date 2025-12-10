@@ -2,7 +2,7 @@
 
 ## 2.0.1 under development
 
-- no changes in this release.
+- Enh #477: Improve performance of `ArrayParser::parse()` method (@Tigrov)
 
 ## 2.0.0 December 05, 2025
 
