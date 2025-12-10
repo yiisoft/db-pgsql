@@ -6,7 +6,7 @@ namespace Yiisoft\Db\Pgsql\Data;
 
 use function preg_match;
 use function strcspn;
-use function stripcslashes;
+use function stripslashes;
 use function strlen;
 use function substr;
 
@@ -71,7 +71,7 @@ final class ArrayParser
         preg_match('/(?>[^"\\\\]+|\\\\.)*/', $value, $matches, 0, $i + 1);
         $i += strlen($matches[0]) + 2;
 
-        return stripcslashes($matches[0]);
+        return stripslashes($matches[0]);
     }
 
     /**
