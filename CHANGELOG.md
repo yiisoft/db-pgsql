@@ -2,7 +2,8 @@
 
 ## 2.0.1 under development
 
-- Enh #477: Improve performance of `ArrayParser::parse()` method (@Tigrov)
+- Enh #477, #478: Improve performance of `ArrayParser::parse()` method (@Tigrov)
+- Enh #478: Improve performance of `StructuredParser::parse()` method (@Tigrov)
 
 ## 2.0.0 December 05, 2025
 
