@@ -8,6 +8,8 @@ use Yiisoft\Db\Constant\ColumnType;
 use Yiisoft\Db\Schema\Column\DateTimeColumn;
 use Yiisoft\Db\Schema\Column\DoubleColumn;
 
+use const PHP_INT_SIZE;
+
 /**
  * @internal
  */

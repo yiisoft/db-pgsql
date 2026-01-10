@@ -23,6 +23,8 @@ use Yiisoft\Db\Schema\TableSchemaInterface;
 use Yiisoft\Db\Tests\Common\CommonSchemaTest;
 use Yiisoft\Db\Tests\Support\TestHelper;
 
+use function count;
+
 /**
  * @group pgsql
  */

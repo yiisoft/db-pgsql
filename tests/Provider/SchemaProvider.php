@@ -26,6 +26,8 @@ use Yiisoft\Db\Schema\Column\JsonColumn;
 use Yiisoft\Db\Schema\Column\StringColumn;
 use Yiisoft\Db\Tests\Support\Assert;
 
+use function sprintf;
+
 final class SchemaProvider extends \Yiisoft\Db\Tests\Provider\SchemaProvider
 {
     public static function columns(): array

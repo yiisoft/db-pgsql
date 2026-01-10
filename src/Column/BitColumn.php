@@ -9,6 +9,7 @@ use Yiisoft\Db\Expression\ExpressionInterface;
 use Yiisoft\Db\Schema\Column\AbstractColumn;
 
 use function bindec;
+use function is_string;
 
 final class BitColumn extends AbstractColumn
 {

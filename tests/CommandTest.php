@@ -15,6 +15,7 @@ use Yiisoft\Db\Pgsql\Tests\Support\TestConnection;
 use Yiisoft\Db\Tests\Common\CommonCommandTest;
 
 use function serialize;
+use function strlen;
 
 /**
  * @group pgsql
