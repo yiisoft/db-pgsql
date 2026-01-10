@@ -628,7 +628,7 @@ final class QueryBuilderProvider extends \Yiisoft\Db\Tests\Provider\QueryBuilder
         ];
         $data['Longest with 3 operands'][2] = "(SELECT value FROM (SELECT :qp0 AS value UNION SELECT (SELECT 'longest'::text)"
             . ' AS value UNION SELECT :qp1 AS value) AS t ORDER BY LENGTH(value) DESC LIMIT 1)';
-        $data['Shortest with 3 operands'][1] = static fn(Connectioninterface $db) => [
+        $data['Shortest with 3 operands'][1] = static fn(ConnectionInterface $db) => [
             new Value('short'),
             $db->select(new Expression("'longest'::text")),
             new Param('string', DataType::STRING),
