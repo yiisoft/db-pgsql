@@ -11,7 +11,6 @@ use Yiisoft\Db\Pgsql\Column\ColumnBuilder;
 use Yiisoft\Db\Pgsql\Column\ColumnFactory;
 use Yiisoft\Db\QueryBuilder\QueryBuilderInterface;
 use Yiisoft\Db\Schema\Column\ColumnFactoryInterface;
-use Yiisoft\Db\Schema\Quoter;
 use Yiisoft\Db\Schema\QuoterInterface;
 use Yiisoft\Db\Schema\SchemaInterface;
 use Yiisoft\Db\Transaction\TransactionInterface;
