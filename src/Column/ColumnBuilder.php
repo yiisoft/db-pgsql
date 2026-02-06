@@ -9,6 +9,8 @@ use Yiisoft\Db\Schema\Column\ColumnInterface;
 use Yiisoft\Db\Schema\Column\DateTimeColumn;
 use Yiisoft\Db\Schema\Column\DoubleColumn;
 
+use const PHP_INT_SIZE;
+
 final class ColumnBuilder extends \Yiisoft\Db\Schema\Column\ColumnBuilder
 {
     public static function boolean(): BooleanColumn
