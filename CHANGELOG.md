@@ -1,12 +1,12 @@
 # PostgreSQL driver for Yii Database Change Log
 
-## 2.0.1 under development
+## 2.0.1 February 07, 2026
 
 - Enh #477, #478: Improve performance of `ArrayParser::parse()` method (@Tigrov)
 - Enh #478: Improve performance of `StructuredParser::parse()` method (@Tigrov)
-- Bug #481: Fix quoting array column names (@Tigrov)
 - Enh #479: Explicitly import functions and constants in "use" section (@mspirkov)
 - Enh #480: Remove unnecessary files from Composer package (@mspirkov)
+- Bug #481: Fix quoting array column names (@Tigrov)
 
 ## 2.0.0 December 05, 2025
 
