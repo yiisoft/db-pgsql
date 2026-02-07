@@ -8,7 +8,7 @@ use Yiisoft\Db\Syntax\AbstractSqlParser;
 
 final class SqlParser extends AbstractSqlParser
 {
-    /** @var string Identifier symbols, equals to `[$\w]` in regular expressions */
+    /** @var string Identifier characters, equivalent to `[$\w]` in regular expressions */
     private const IDENTIFIER_CHARS = '$' . self::WORD_CHARS;
 
     public function getNextPlaceholder(?int &$position = null): ?string
@@ -70,7 +70,7 @@ final class SqlParser extends AbstractSqlParser
     }
 
     /**
-     * Skips an identifier. Equals to `[$\w]+` in regular expressions.
+     * Skips an identifier. Equivalent to `[$\w]*` in regular expressions.
      */
     private function skipIdentifier(): void
     {
