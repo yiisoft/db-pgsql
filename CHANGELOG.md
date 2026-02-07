@@ -4,6 +4,7 @@
 
 - Enh #477, #478: Improve performance of `ArrayParser::parse()` method (@Tigrov)
 - Enh #478: Improve performance of `StructuredParser::parse()` method (@Tigrov)
+- Bug #481: Fix quoting array column names (@Tigrov)
 - Enh #479: Explicitly import functions and constants in "use" section (@mspirkov)
 - Enh #480: Remove unnecessary files from Composer package (@mspirkov)
 

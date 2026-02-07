@@ -16,6 +16,12 @@ final class QuoterTest extends CommonQuoterTest
 {
     use IntegrationTestTrait;
 
+    #[DataProviderExternal(QuoterProvider::class, 'columnNames')]
+    public function testQuoteColumnName(string $columnName, string $expected): void
+    {
+        parent::testQuoteColumnName($columnName, $expected);
+    }
+
     #[DataProviderExternal(QuoterProvider::class, 'tableNameParts')]
     public function testGetTableNameParts(string $tableName, array $expected): void
     {
