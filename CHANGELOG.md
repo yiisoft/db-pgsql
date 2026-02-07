@@ -1,5 +1,9 @@
 # PostgreSQL driver for Yii Database Change Log
 
+## 2.0.2 under development
+
+- no changes in this release.
+
 ## 2.0.1 February 07, 2026
 
 - Enh #477, #478: Improve performance of `ArrayParser::parse()` method (@Tigrov)
