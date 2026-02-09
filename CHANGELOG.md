@@ -2,7 +2,7 @@
 
 ## 2.0.2 under development
 
-- no changes in this release.
+- Enh #482: Improve performance of `SqlParser::getNextPlaceholder()` method (@Tigrov)
 
 ## 2.0.1 February 07, 2026
 
