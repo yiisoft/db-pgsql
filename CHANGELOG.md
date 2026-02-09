@@ -2,7 +2,7 @@
 
 ## 2.0.2 under development
 
-- Enh #482: Improve performance of `SqlParser::getNextPlaceholder()` method (@Tigrov)
+- Enh #482, #483: Improve performance of `SqlParser::getNextPlaceholder()` method (@Tigrov, @vjik)
 
 ## 2.0.1 February 07, 2026
 
@@ -10,7 +10,7 @@
 - Enh #478: Improve performance of `StructuredParser::parse()` method (@Tigrov)
 - Enh #479: Explicitly import functions and constants in "use" section (@mspirkov)
 - Enh #480: Remove unnecessary files from Composer package (@mspirkov)
-- Bug #481, #482: Fix quoting array column names (@Tigrov, @vjik)
+- Bug #481: Fix quoting array column names (@Tigrov)
 
 ## 2.0.0 December 05, 2025
 
