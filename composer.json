@@ -34,8 +34,7 @@
         "php": "8.1 - 8.5",
         "ext-pdo": "*",
         "ext-pdo_pgsql": "*",
-        "yiisoft/db": "^2.0.1",
-
+        "yiisoft/db": "^2.0.1"
     },
     "require-dev": {
         "bamarni/composer-bin-plugin": "^1.8.3",
