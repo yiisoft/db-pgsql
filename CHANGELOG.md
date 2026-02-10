@@ -3,6 +3,7 @@
 ## 2.0.2 under development
 
 - Enh #482: Improve performance of `SqlParser::getNextPlaceholder()` method (@Tigrov)
+- Chg #483: Bump `yiisoft/db` version to `^2.0.1` (@vjik)
 
 ## 2.0.1 February 07, 2026
 
