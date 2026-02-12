@@ -474,6 +474,18 @@ final class QueryBuilderProvider extends \Yiisoft\Db\Tests\Provider\QueryBuilder
             ['timestamptz', 'timestamp with time zone'],
             ['time(3)', 'time(3) without time zone'],
             ['timetz(0)', 'time(0) with time zone'],
+            ['int4range', ColumnBuilder::int4Range()],
+            ['int8range', ColumnBuilder::int8Range()],
+            ['numrange', ColumnBuilder::numRange()],
+            ['tsrange', ColumnBuilder::tsRange()],
+            ['tstzrange', ColumnBuilder::tsTzRange()],
+            ['daterange', ColumnBuilder::dateRange()],
+            ['int4multirange', ColumnBuilder::int4MultiRange()],
+            ['int8multirange', ColumnBuilder::int8MultiRange()],
+            ['nummultirange', ColumnBuilder::numMultiRange()],
+            ['tsmultirange', ColumnBuilder::tsMultiRange()],
+            ['tstzmultirange', ColumnBuilder::tsTzMultiRange()],
+            ['datemultirange', ColumnBuilder::dateMultiRange()],
         ];
     }
 

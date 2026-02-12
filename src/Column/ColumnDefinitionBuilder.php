@@ -6,6 +6,7 @@ namespace Yiisoft\Db\Pgsql\Column;
 
 use Yiisoft\Db\Constant\ColumnType;
 use Yiisoft\Db\Exception\NotSupportedException;
+use Yiisoft\Db\Pgsql\Constant\PgsqlColumnType;
 use Yiisoft\Db\QueryBuilder\AbstractColumnDefinitionBuilder;
 use Yiisoft\Db\Schema\Column\AbstractArrayColumn;
 use Yiisoft\Db\Schema\Column\CollatableColumnInterface;
@@ -123,6 +124,18 @@ final class ColumnDefinitionBuilder extends AbstractColumnDefinitionBuilder
                 ColumnType::STRUCTURED => 'jsonb',
                 ColumnType::JSON => 'jsonb',
                 ColumnType::ENUM => 'varchar',
+                PgsqlColumnType::INT4RANGE => 'int4range',
+                PgsqlColumnType::INT8RANGE => 'int8range',
+                PgsqlColumnType::NUMRANGE => 'numrange',
+                PgsqlColumnType::TSRANGE => 'tsrange',
+                PgsqlColumnType::TSTZRANGE => 'tstzrange',
+                PgsqlColumnType::DATERANGE => 'daterange',
+                PgsqlColumnType::INT4MULTIRANGE => 'int4multirange',
+                PgsqlColumnType::INT8MULTIRANGE => 'int8multirange',
+                PgsqlColumnType::NUMMULTIRANGE => 'nummultirange',
+                PgsqlColumnType::TSMULTIRANGE => 'tsmultirange',
+                PgsqlColumnType::TSTZMULTIRANGE => 'tstzmultirange',
+                PgsqlColumnType::DATEMULTIRANGE => 'datemultirange',
                 default => 'varchar',
             },
             'timestamp without time zone' => 'timestamp',
