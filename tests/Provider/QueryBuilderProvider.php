@@ -455,13 +455,28 @@ final class QueryBuilderProvider extends \Yiisoft\Db\Tests\Provider\QueryBuilder
             ColumnBuilder::string()->collation('C'),
         ];
 
-        if (version_compare(TestConnection::getServerVersion(), '13', '<')) {
+        $serverVersion = TestConnection::getServerVersion();
+
+        if (version_compare($serverVersion, '13', '<')) {
             $uuidExpression = "uuid_in(overlay(overlay(md5(now()::text || random()::text) placing '4' from 13) placing"
                 . ' to_hex(floor(4 * random() + 8)::int)::text from 17)::cstring)';
 
             $values[PseudoType::UUID_PK][0] = "uuid PRIMARY KEY DEFAULT $uuidExpression";
             $values[PseudoType::UUID_PK_SEQ][0] = "uuid PRIMARY KEY DEFAULT $uuidExpression";
             $values['uuidPrimaryKey()'][0] = "uuid PRIMARY KEY DEFAULT $uuidExpression";
+        }
+
+        if (version_compare($serverVersion, '14', '>=')) {
+            $multiRangeTypes = [
+                ['int4multirange', ColumnBuilder::int4MultiRange()],
+                ['int8multirange', ColumnBuilder::int8MultiRange()],
+                ['nummultirange', ColumnBuilder::numMultiRange()],
+                ['tsmultirange', ColumnBuilder::tsMultiRange()],
+                ['tstzmultirange', ColumnBuilder::tsTzMultiRange()],
+                ['datemultirange', ColumnBuilder::dateMultiRange()],
+            ];
+        } else {
+            $multiRangeTypes = [];
         }
 
         return [
@@ -474,6 +489,13 @@ final class QueryBuilderProvider extends \Yiisoft\Db\Tests\Provider\QueryBuilder
             ['timestamptz', 'timestamp with time zone'],
             ['time(3)', 'time(3) without time zone'],
             ['timetz(0)', 'time(0) with time zone'],
+            ['int4range', ColumnBuilder::int4Range()],
+            ['int8range', ColumnBuilder::int8Range()],
+            ['numrange', ColumnBuilder::numRange()],
+            ['tsrange', ColumnBuilder::tsRange()],
+            ['tstzrange', ColumnBuilder::tsTzRange()],
+            ['daterange', ColumnBuilder::dateRange()],
+            ...$multiRangeTypes,
         ];
     }
 
