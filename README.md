@@ -34,7 +34,7 @@ Driver supports PostgreSQL 9 or higher.
 The package could be installed with [Composer](https://getcomposer.org):
 
 ```shell
-composer require yiisoft/db-pgsql
+composer require yiisoft/db-pgsql:2.*
 ```
 
 > [!IMPORTANT]
