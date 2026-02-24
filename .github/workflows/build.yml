@@ -56,4 +56,4 @@ jobs:
       pgsql: ${{ matrix.pgsql }}
       php: >-
         [${{ matrix.php }}]
-
+      codecov-php: ${{ matrix.php }}
