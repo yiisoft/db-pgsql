@@ -58,7 +58,7 @@ abstract class AbstractMultiRangeColumn extends AbstractColumn
      *
      * @return ?(Int4RangeValue|Int8RangeValue|NumRangeValue|TsRangeValue|TsTzRangeValue|DateRangeValue)[]
      */
-    public function phpTypecast(mixed $value): ?array
+    public function phpTypecast(mixed $value): mixed
     {
         /**
          * @var string|null $value We expect `phpTypecast()` to only receive the value that the database returns, which
