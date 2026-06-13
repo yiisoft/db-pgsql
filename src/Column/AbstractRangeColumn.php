@@ -21,6 +21,9 @@ use function is_array;
 use function is_string;
 use function sprintf;
 
+/**
+ * @template T of ExpressionInterface
+ */
 abstract class AbstractRangeColumn extends AbstractColumn
 {
     /**
@@ -60,6 +63,8 @@ abstract class AbstractRangeColumn extends AbstractColumn
      * @inheritDoc
      *
      * @return null|Int4RangeValue|Int8RangeValue|NumRangeValue|TsRangeValue|TsTzRangeValue|DateRangeValue
+     *
+     * @psalm-return ?T
      */
     public function phpTypecast(mixed $value): mixed
     {
@@ -90,6 +95,8 @@ abstract class AbstractRangeColumn extends AbstractColumn
      * @throws NotSupportedException
      *
      * @return Int4RangeValue|Int8RangeValue|NumRangeValue|TsRangeValue|TsTzRangeValue|DateRangeValue
+     *
+     * @psalm-return T
      */
     abstract protected function createRangeValue(
         ?string $lower,

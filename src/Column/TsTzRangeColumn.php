@@ -8,13 +8,15 @@ use Yiisoft\Db\Pgsql\Constant\PgsqlColumnType;
 use Yiisoft\Db\Pgsql\Expression\TsTzRangeValue;
 use Yiisoft\Db\Schema\Column\DateTimeColumn;
 
+/**
+ * @extends AbstractRangeColumn<TsTzRangeValue>
+ */
 final class TsTzRangeColumn extends AbstractRangeColumn
 {
     protected const DEFAULT_TYPE = PgsqlColumnType::TSTZRANGE;
 
     public function phpTypecast(mixed $value): ?TsTzRangeValue
     {
-        /** @psalm-suppress InvalidReturnStatement */
         return parent::phpTypecast($value);
     }
 

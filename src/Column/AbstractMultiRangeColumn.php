@@ -20,6 +20,9 @@ use function gettype;
 use function is_array;
 use function is_string;
 
+/**
+ * @template T of ExpressionInterface
+ */
 abstract class AbstractMultiRangeColumn extends AbstractColumn
 {
     /**
@@ -57,6 +60,8 @@ abstract class AbstractMultiRangeColumn extends AbstractColumn
      * @inheritDoc
      *
      * @return ?(Int4RangeValue|Int8RangeValue|NumRangeValue|TsRangeValue|TsTzRangeValue|DateRangeValue)[]
+     *
+     * @psalm-return ?T[]
      */
     public function phpTypecast(mixed $value): mixed
     {
@@ -81,7 +86,7 @@ abstract class AbstractMultiRangeColumn extends AbstractColumn
 
         $rangeColumn = $this->getRangeColumn();
 
-        /** @var (Int4RangeValue|Int8RangeValue|NumRangeValue|TsRangeValue|TsTzRangeValue|DateRangeValue)[] */
+        /** @psalm-var T[] */
         return array_map(
             $rangeColumn->phpTypecast(...),
             $matches[0],
