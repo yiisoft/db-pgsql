@@ -12,6 +12,11 @@ final class TsTzRangeColumn extends AbstractRangeColumn
 {
     protected const DEFAULT_TYPE = PgsqlColumnType::TSTZRANGE;
 
+    public function phpTypecast(mixed $value): ?TsTzRangeValue
+    {
+        return parent::phpTypecast($value);
+    }
+
     protected function getBoundColumn(): DateTimeColumn
     {
         return RangeBoundColumnFactory::tsTz();

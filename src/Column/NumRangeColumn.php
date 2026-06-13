@@ -12,6 +12,11 @@ final class NumRangeColumn extends AbstractRangeColumn
 {
     protected const DEFAULT_TYPE = PgsqlColumnType::NUMRANGE;
 
+    public function phpTypecast(mixed $value): ?NumRangeValue
+    {
+        return parent::phpTypecast($value);
+    }
+
     protected function getBoundColumn(): DoubleColumn
     {
         return RangeBoundColumnFactory::num();

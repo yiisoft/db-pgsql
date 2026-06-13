@@ -12,6 +12,11 @@ final class DateRangeColumn extends AbstractRangeColumn
 {
     protected const DEFAULT_TYPE = PgsqlColumnType::DATERANGE;
 
+    public function phpTypecast(mixed $value): ?DateRangeValue
+    {
+        return parent::phpTypecast($value);
+    }
+
     protected function getBoundColumn(): DateTimeColumn
     {
         return RangeBoundColumnFactory::date();

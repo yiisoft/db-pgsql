@@ -11,6 +11,11 @@ final class Int8RangeColumn extends AbstractRangeColumn
 {
     protected const DEFAULT_TYPE = PgsqlColumnType::INT8RANGE;
 
+    public function phpTypecast(mixed $value): ?Int8RangeValue
+    {
+        return parent::phpTypecast($value);
+    }
+
     protected function getBoundColumn(): BigIntColumn|IntegerColumn
     {
         return RangeBoundColumnFactory::int8();
