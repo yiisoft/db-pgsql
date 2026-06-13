@@ -13,6 +13,7 @@ final class Int8RangeColumn extends AbstractRangeColumn
 
     public function phpTypecast(mixed $value): ?Int8RangeValue
     {
+        /** @psalm-suppress InvalidReturnStatement */
         return parent::phpTypecast($value);
     }
 

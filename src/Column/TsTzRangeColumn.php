@@ -14,6 +14,7 @@ final class TsTzRangeColumn extends AbstractRangeColumn
 
     public function phpTypecast(mixed $value): ?TsTzRangeValue
     {
+        /** @psalm-suppress InvalidReturnStatement */
         return parent::phpTypecast($value);
     }
 

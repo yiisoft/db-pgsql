@@ -14,6 +14,7 @@ final class DateRangeColumn extends AbstractRangeColumn
 
     public function phpTypecast(mixed $value): ?DateRangeValue
     {
+        /** @psalm-suppress InvalidReturnStatement */
         return parent::phpTypecast($value);
     }
 

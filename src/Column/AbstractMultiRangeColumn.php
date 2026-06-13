@@ -9,6 +9,12 @@ use Yiisoft\Db\Expression\ExpressionInterface;
 use Yiisoft\Db\Pgsql\Expression\MultiRangeValue;
 use Yiisoft\Db\Schema\Column\AbstractColumn;
 use Yiisoft\Db\Schema\Column\ColumnInterface;
+use Yiisoft\Db\Pgsql\Expression\DateRangeValue;
+use Yiisoft\Db\Pgsql\Expression\Int4RangeValue;
+use Yiisoft\Db\Pgsql\Expression\Int8RangeValue;
+use Yiisoft\Db\Pgsql\Expression\NumRangeValue;
+use Yiisoft\Db\Pgsql\Expression\TsRangeValue;
+use Yiisoft\Db\Pgsql\Expression\TsTzRangeValue;
 
 use function gettype;
 use function is_array;
@@ -16,6 +22,11 @@ use function is_string;
 
 abstract class AbstractMultiRangeColumn extends AbstractColumn
 {
+    /**
+     * @inheritDoc
+     *
+     * @return string|ExpressionInterface|MultiRangeValue|null
+     */
     public function dbTypecast(mixed $value): mixed
     {
         if ($value === null
@@ -42,7 +53,12 @@ abstract class AbstractMultiRangeColumn extends AbstractColumn
         return new MultiRangeValue(...$ranges);
     }
 
-    public function phpTypecast(mixed $value): mixed
+    /**
+     * @inheritDoc
+     *
+     * @return ?(Int4RangeValue|Int8RangeValue|NumRangeValue|TsRangeValue|TsTzRangeValue|DateRangeValue)[]
+     */
+    public function phpTypecast(mixed $value): ?array
     {
         /**
          * @var string|null $value We expect `phpTypecast()` to only receive the value that the database returns, which
@@ -64,6 +80,8 @@ abstract class AbstractMultiRangeColumn extends AbstractColumn
         preg_match_all('/[\[\(][^,]*,[^\)\]]*[\)\]]/', $value, $matches);
 
         $rangeColumn = $this->getRangeColumn();
+
+        /** @var (Int4RangeValue|Int8RangeValue|NumRangeValue|TsRangeValue|TsTzRangeValue|DateRangeValue)[] */
         return array_map(
             $rangeColumn->phpTypecast(...),
             $matches[0],

@@ -7,6 +7,12 @@ namespace Yiisoft\Db\Pgsql\Column;
 use InvalidArgumentException;
 use Yiisoft\Db\Exception\NotSupportedException;
 use Yiisoft\Db\Expression\ExpressionInterface;
+use Yiisoft\Db\Pgsql\Expression\DateRangeValue;
+use Yiisoft\Db\Pgsql\Expression\Int4RangeValue;
+use Yiisoft\Db\Pgsql\Expression\Int8RangeValue;
+use Yiisoft\Db\Pgsql\Expression\NumRangeValue;
+use Yiisoft\Db\Pgsql\Expression\TsRangeValue;
+use Yiisoft\Db\Pgsql\Expression\TsTzRangeValue;
 use Yiisoft\Db\Schema\Column\AbstractColumn;
 use Yiisoft\Db\Schema\Column\ColumnInterface;
 
@@ -17,6 +23,11 @@ use function sprintf;
 
 abstract class AbstractRangeColumn extends AbstractColumn
 {
+    /**
+     * @inheritDoc
+     *
+     * @return string|ExpressionInterface|null
+     */
     public function dbTypecast(mixed $value): mixed
     {
         if ($value === null
@@ -45,6 +56,11 @@ abstract class AbstractRangeColumn extends AbstractColumn
             . ']';
     }
 
+    /**
+     * @inheritDoc
+     *
+     * @return null|Int4RangeValue|Int8RangeValue|NumRangeValue|TsRangeValue|TsTzRangeValue|DateRangeValue
+     */
     public function phpTypecast(mixed $value): mixed
     {
         /**
@@ -56,7 +72,7 @@ abstract class AbstractRangeColumn extends AbstractColumn
             return null;
         }
 
-        if (!preg_match('/^(?P<open>\[|\()(?P<lower>[^,]*),(?P<upper>[^\)\]]*)(?P<close>\)|\])$/', $value, $matches)) {
+        if (!preg_match('/^(?P<open>[\[\(])(?P<lower>[^,]*),(?P<upper>[^\)\]]*)(?P<close>[\)\]])$/', $value, $matches)) {
             throw new NotSupportedException('Unsupported range format.');
         }
 
@@ -72,6 +88,8 @@ abstract class AbstractRangeColumn extends AbstractColumn
 
     /**
      * @throws NotSupportedException
+     *
+     * @return Int4RangeValue|Int8RangeValue|NumRangeValue|TsRangeValue|TsTzRangeValue|DateRangeValue
      */
     abstract protected function createRangeValue(
         ?string $lower,

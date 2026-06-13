@@ -14,6 +14,7 @@ final class NumRangeColumn extends AbstractRangeColumn
 
     public function phpTypecast(mixed $value): ?NumRangeValue
     {
+        /** @psalm-suppress InvalidReturnStatement */
         return parent::phpTypecast($value);
     }
 
