@@ -56,7 +56,7 @@ abstract class AbstractRangeColumn extends AbstractColumn
     /**
      * @inheritDoc
      *
-     * @return null|ExpressionInterface
+     * @return ?ExpressionInterface
      *
      * @psalm-return ?T
      */
