@@ -15,8 +15,16 @@ use function is_array;
 use function is_string;
 use function sprintf;
 
+/**
+ * @template T of ExpressionInterface
+ */
 abstract class AbstractRangeColumn extends AbstractColumn
 {
+    /**
+     * @inheritDoc
+     *
+     * @return string|ExpressionInterface|null
+     */
     public function dbTypecast(mixed $value): mixed
     {
         if ($value === null
@@ -45,6 +53,13 @@ abstract class AbstractRangeColumn extends AbstractColumn
             . ']';
     }
 
+    /**
+     * @inheritDoc
+     *
+     * @return ?ExpressionInterface
+     *
+     * @psalm-return ?T
+     */
     public function phpTypecast(mixed $value): mixed
     {
         /**
@@ -56,7 +71,7 @@ abstract class AbstractRangeColumn extends AbstractColumn
             return null;
         }
 
-        if (!preg_match('/^(?P<open>\[|\()(?P<lower>[^,]*),(?P<upper>[^\)\]]*)(?P<close>\)|\])$/', $value, $matches)) {
+        if (!preg_match('/^(?P<open>[\[\(])(?P<lower>[^,]*),(?P<upper>[^\)\]]*)(?P<close>[\)\]])$/', $value, $matches)) {
             throw new NotSupportedException('Unsupported range format.');
         }
 
@@ -72,6 +87,8 @@ abstract class AbstractRangeColumn extends AbstractColumn
 
     /**
      * @throws NotSupportedException
+     *
+     * @psalm-return T
      */
     abstract protected function createRangeValue(
         ?string $lower,

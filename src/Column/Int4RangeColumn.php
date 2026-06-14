@@ -7,9 +7,17 @@ namespace Yiisoft\Db\Pgsql\Column;
 use Yiisoft\Db\Pgsql\Constant\PgsqlColumnType;
 use Yiisoft\Db\Pgsql\Expression\Int4RangeValue;
 
+/**
+ * @extends AbstractRangeColumn<Int4RangeValue>
+ */
 final class Int4RangeColumn extends AbstractRangeColumn
 {
     protected const DEFAULT_TYPE = PgsqlColumnType::INT4RANGE;
+
+    public function phpTypecast(mixed $value): ?Int4RangeValue
+    {
+        return parent::phpTypecast($value);
+    }
 
     protected function getBoundColumn(): IntegerColumn
     {

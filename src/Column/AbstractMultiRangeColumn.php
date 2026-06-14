@@ -14,8 +14,16 @@ use function gettype;
 use function is_array;
 use function is_string;
 
+/**
+ * @template T of ExpressionInterface
+ */
 abstract class AbstractMultiRangeColumn extends AbstractColumn
 {
+    /**
+     * @inheritDoc
+     *
+     * @return string|ExpressionInterface|MultiRangeValue|null
+     */
     public function dbTypecast(mixed $value): mixed
     {
         if ($value === null
@@ -42,6 +50,13 @@ abstract class AbstractMultiRangeColumn extends AbstractColumn
         return new MultiRangeValue(...$ranges);
     }
 
+    /**
+     * @inheritDoc
+     *
+     * @return ?ExpressionInterface[]
+     *
+     * @psalm-return ?T[]
+     */
     public function phpTypecast(mixed $value): mixed
     {
         /**
@@ -64,11 +79,16 @@ abstract class AbstractMultiRangeColumn extends AbstractColumn
         preg_match_all('/[\[\(][^,]*,[^\)\]]*[\)\]]/', $value, $matches);
 
         $rangeColumn = $this->getRangeColumn();
+
+        /** @psalm-var T[] */
         return array_map(
             $rangeColumn->phpTypecast(...),
             $matches[0],
         );
     }
 
+    /**
+     * @psalm-return AbstractRangeColumn<T>
+     */
     abstract protected function getRangeColumn(): ColumnInterface;
 }

@@ -8,9 +8,17 @@ use Yiisoft\Db\Pgsql\Constant\PgsqlColumnType;
 use Yiisoft\Db\Pgsql\Expression\NumRangeValue;
 use Yiisoft\Db\Schema\Column\DoubleColumn;
 
+/**
+ * @extends AbstractRangeColumn<NumRangeValue>
+ */
 final class NumRangeColumn extends AbstractRangeColumn
 {
     protected const DEFAULT_TYPE = PgsqlColumnType::NUMRANGE;
+
+    public function phpTypecast(mixed $value): ?NumRangeValue
+    {
+        return parent::phpTypecast($value);
+    }
 
     protected function getBoundColumn(): DoubleColumn
     {

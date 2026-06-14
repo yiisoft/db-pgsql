@@ -8,17 +8,29 @@ use Yiisoft\Db\Pgsql\Constant\PgsqlColumnType;
 use Yiisoft\Db\Pgsql\Expression\DateRangeValue;
 use Yiisoft\Db\Schema\Column\DateTimeColumn;
 
+/**
+ * @extends AbstractRangeColumn<DateRangeValue>
+ */
 final class DateRangeColumn extends AbstractRangeColumn
 {
     protected const DEFAULT_TYPE = PgsqlColumnType::DATERANGE;
+
+    public function phpTypecast(mixed $value): ?DateRangeValue
+    {
+        return parent::phpTypecast($value);
+    }
 
     protected function getBoundColumn(): DateTimeColumn
     {
         return RangeBoundColumnFactory::date();
     }
 
-    protected function createRangeValue(?string $lower, ?string $upper, bool $includeLower, bool $includeUpper): DateRangeValue
-    {
+    protected function createRangeValue(
+        ?string $lower,
+        ?string $upper,
+        bool $includeLower,
+        bool $includeUpper,
+    ): DateRangeValue {
         $column = $this->getBoundColumn();
         return new DateRangeValue(
             $column->phpTypecast($lower),
