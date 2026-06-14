@@ -7,12 +7,6 @@ namespace Yiisoft\Db\Pgsql\Column;
 use InvalidArgumentException;
 use Yiisoft\Db\Exception\NotSupportedException;
 use Yiisoft\Db\Expression\ExpressionInterface;
-use Yiisoft\Db\Pgsql\Expression\DateRangeValue;
-use Yiisoft\Db\Pgsql\Expression\Int4RangeValue;
-use Yiisoft\Db\Pgsql\Expression\Int8RangeValue;
-use Yiisoft\Db\Pgsql\Expression\NumRangeValue;
-use Yiisoft\Db\Pgsql\Expression\TsRangeValue;
-use Yiisoft\Db\Pgsql\Expression\TsTzRangeValue;
 use Yiisoft\Db\Schema\Column\AbstractColumn;
 use Yiisoft\Db\Schema\Column\ColumnInterface;
 
@@ -62,7 +56,7 @@ abstract class AbstractRangeColumn extends AbstractColumn
     /**
      * @inheritDoc
      *
-     * @return null|Int4RangeValue|Int8RangeValue|NumRangeValue|TsRangeValue|TsTzRangeValue|DateRangeValue
+     * @return null|ExpressionInterface
      *
      * @psalm-return ?T
      */
@@ -93,8 +87,6 @@ abstract class AbstractRangeColumn extends AbstractColumn
 
     /**
      * @throws NotSupportedException
-     *
-     * @return Int4RangeValue|Int8RangeValue|NumRangeValue|TsRangeValue|TsTzRangeValue|DateRangeValue
      *
      * @psalm-return T
      */

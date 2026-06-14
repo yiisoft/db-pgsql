@@ -9,12 +9,6 @@ use Yiisoft\Db\Expression\ExpressionInterface;
 use Yiisoft\Db\Pgsql\Expression\MultiRangeValue;
 use Yiisoft\Db\Schema\Column\AbstractColumn;
 use Yiisoft\Db\Schema\Column\ColumnInterface;
-use Yiisoft\Db\Pgsql\Expression\DateRangeValue;
-use Yiisoft\Db\Pgsql\Expression\Int4RangeValue;
-use Yiisoft\Db\Pgsql\Expression\Int8RangeValue;
-use Yiisoft\Db\Pgsql\Expression\NumRangeValue;
-use Yiisoft\Db\Pgsql\Expression\TsRangeValue;
-use Yiisoft\Db\Pgsql\Expression\TsTzRangeValue;
 
 use function gettype;
 use function is_array;
@@ -59,7 +53,7 @@ abstract class AbstractMultiRangeColumn extends AbstractColumn
     /**
      * @inheritDoc
      *
-     * @return ?(Int4RangeValue|Int8RangeValue|NumRangeValue|TsRangeValue|TsTzRangeValue|DateRangeValue)[]
+     * @return ?ExpressionInterface[]
      *
      * @psalm-return ?T[]
      */
@@ -93,5 +87,8 @@ abstract class AbstractMultiRangeColumn extends AbstractColumn
         );
     }
 
+    /**
+     * @psalm-return AbstractRangeColumn<T>
+     */
     abstract protected function getRangeColumn(): ColumnInterface;
 }
