@@ -21,13 +21,13 @@ final class NumRangeValue implements ExpressionInterface
         $lower = $this->lower === null || $this->includeLower
             ? $this->lower
             : throw new RuntimeException(
-                'Lower bound cannot be determined from the excluded values of a numeric range.',
+                'Lower bound cannot be determined from the excluded value of a numeric range.',
             );
 
         $upper = $this->upper === null || $this->includeUpper
             ? $this->upper
             : throw new RuntimeException(
-                'Upper bound cannot be determined from the excluded values of a numeric range.',
+                'Upper bound cannot be determined from the excluded value of a numeric range.',
             );
 
         return [$lower, $upper];
