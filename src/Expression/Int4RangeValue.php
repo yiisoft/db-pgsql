@@ -14,4 +14,17 @@ final class Int4RangeValue implements ExpressionInterface
         public readonly bool $includeLower = true,
         public readonly bool $includeUpper = true,
     ) {}
+
+    public function getBounds(): array
+    {
+        $lower = $this->lower === null || $this->includeLower
+            ? $this->lower
+            : $this->lower + 1;
+
+        $upper = $this->upper === null || $this->includeUpper
+            ? $this->upper
+            : $this->upper - 1;
+
+        return [$lower, $upper];
+    }
 }
