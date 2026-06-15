@@ -5,9 +5,11 @@ declare(strict_types=1);
 namespace Yiisoft\Db\Pgsql\Expression;
 
 use DateTimeImmutable;
-use Yiisoft\Db\Expression\ExpressionInterface;
 
-final class TsTzRangeValue implements ExpressionInterface
+/**
+ * @implements RangeValueInterface<DateTimeImmutable>
+ */
+final class TsTzRangeValue implements RangeValueInterface
 {
     public function __construct(
         public readonly ?DateTimeImmutable $lower = null,

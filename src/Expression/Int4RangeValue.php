@@ -4,9 +4,10 @@ declare(strict_types=1);
 
 namespace Yiisoft\Db\Pgsql\Expression;
 
-use Yiisoft\Db\Expression\ExpressionInterface;
-
-final class Int4RangeValue implements ExpressionInterface
+/**
+ * @implements RangeValueInterface<int>
+ */
+final class Int4RangeValue implements RangeValueInterface
 {
     public function __construct(
         public readonly ?int $lower = null,

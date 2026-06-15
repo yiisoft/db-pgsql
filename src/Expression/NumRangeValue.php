@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace Yiisoft\Db\Pgsql\Expression;
 
-use Yiisoft\Db\Expression\ExpressionInterface;
 use RuntimeException;
 
-final class NumRangeValue implements ExpressionInterface
+/**
+ * @implements RangeValueInterface<int|float>
+ */
+final class NumRangeValue implements RangeValueInterface
 {
     public function __construct(
         public readonly int|float|null $lower = null,

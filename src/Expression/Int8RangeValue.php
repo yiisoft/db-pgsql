@@ -4,13 +4,15 @@ declare(strict_types=1);
 
 namespace Yiisoft\Db\Pgsql\Expression;
 
-use Yiisoft\Db\Expression\ExpressionInterface;
 use InvalidArgumentException;
 
 use const PHP_INT_MAX;
 use const PHP_INT_MIN;
 
-final class Int8RangeValue implements ExpressionInterface
+/**
+ * @implements RangeValueInterface<int|string>
+ */
+final class Int8RangeValue implements RangeValueInterface
 {
     public function __construct(
         public readonly int|string|null $lower = null,
