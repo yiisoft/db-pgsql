@@ -29,7 +29,7 @@ final class Int8RangeValue implements RangeValueInterface
                 PHP_INT_MIN <= $this->lower && $this->lower < PHP_INT_MAX
                 ? (int) $this->lower + 1
                 : throw new RuntimeException(
-                    'Lower bound cannot be determined from the excluded value of a bigint range.'
+                    'Lower bound cannot be determined from the excluded value of a bigint range.',
                 )
             );
 
@@ -39,7 +39,7 @@ final class Int8RangeValue implements RangeValueInterface
                 PHP_INT_MIN < $this->upper && $this->upper <= PHP_INT_MAX
                 ? (int) $this->upper - 1
                 : throw new RuntimeException(
-                    'Upper bound cannot be determined from the excluded value of a bigint range.'
+                    'Upper bound cannot be determined from the excluded value of a bigint range.',
                 )
             );
 
