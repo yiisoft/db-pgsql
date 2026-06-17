@@ -5,11 +5,9 @@ declare(strict_types=1);
 namespace Yiisoft\Db\Pgsql\Expression;
 
 use DateTimeImmutable;
+use Yiisoft\Db\Expression\ExpressionInterface;
 
-/**
- * @implements RangeValueInterface<DateTimeImmutable>
- */
-final class TsRangeValue implements RangeValueInterface
+final class TsRangeValue implements ExpressionInterface
 {
     public function __construct(
         public readonly ?DateTimeImmutable $lower = null,
@@ -18,6 +16,11 @@ final class TsRangeValue implements RangeValueInterface
         public readonly bool $includeUpper = true,
     ) {}
 
+    /**
+     * Returns the lower and upper bounds of a range, inclusive.
+     *
+     * @psalm-return array{0: ?DateTimeImmutable, 1: ?DateTimeImmutable}
+     */
     public function getBounds(): array
     {
         $lower = $this->lower === null || $this->includeLower

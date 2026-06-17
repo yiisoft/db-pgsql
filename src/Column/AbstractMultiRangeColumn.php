@@ -7,7 +7,6 @@ namespace Yiisoft\Db\Pgsql\Column;
 use Yiisoft\Db\Exception\NotSupportedException;
 use Yiisoft\Db\Expression\ExpressionInterface;
 use Yiisoft\Db\Pgsql\Expression\MultiRangeValue;
-use Yiisoft\Db\Pgsql\Expression\RangeValueInterface;
 use Yiisoft\Db\Schema\Column\AbstractColumn;
 use Yiisoft\Db\Schema\Column\ColumnInterface;
 
@@ -16,7 +15,7 @@ use function is_array;
 use function is_string;
 
 /**
- * @template T of RangeValueInterface
+ * @template T of ExpressionInterface
  */
 abstract class AbstractMultiRangeColumn extends AbstractColumn
 {
@@ -54,7 +53,7 @@ abstract class AbstractMultiRangeColumn extends AbstractColumn
     /**
      * @inheritDoc
      *
-     * @return ?RangeValueInterface[]
+     * @return ?ExpressionInterface[]
      *
      * @psalm-return ?T[]
      */

@@ -5,11 +5,9 @@ declare(strict_types=1);
 namespace Yiisoft\Db\Pgsql\Expression;
 
 use RuntimeException;
+use Yiisoft\Db\Expression\ExpressionInterface;
 
-/**
- * @implements RangeValueInterface<int|float>
- */
-final class NumRangeValue implements RangeValueInterface
+final class NumRangeValue implements ExpressionInterface
 {
     public function __construct(
         public readonly int|float|null $lower = null,
@@ -18,6 +16,11 @@ final class NumRangeValue implements RangeValueInterface
         public readonly bool $includeUpper = true,
     ) {}
 
+    /**
+     * Returns the lower and upper bounds of a range, inclusive.
+     *
+     * @psalm-return array{0: int|float|null, 1: int|float|null}
+     */
     public function getBounds(): array
     {
         $lower = $this->lower === null || $this->includeLower

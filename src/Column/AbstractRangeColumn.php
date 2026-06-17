@@ -7,7 +7,6 @@ namespace Yiisoft\Db\Pgsql\Column;
 use InvalidArgumentException;
 use Yiisoft\Db\Exception\NotSupportedException;
 use Yiisoft\Db\Expression\ExpressionInterface;
-use Yiisoft\Db\Pgsql\Expression\RangeValueInterface;
 use Yiisoft\Db\Schema\Column\AbstractColumn;
 use Yiisoft\Db\Schema\Column\ColumnInterface;
 
@@ -17,7 +16,7 @@ use function is_string;
 use function sprintf;
 
 /**
- * @template T of RangeValueInterface
+ * @template T of ExpressionInterface
  */
 abstract class AbstractRangeColumn extends AbstractColumn
 {
@@ -57,7 +56,7 @@ abstract class AbstractRangeColumn extends AbstractColumn
     /**
      * @inheritDoc
      *
-     * @return ?RangeValueInterface
+     * @return ?ExpressionInterface
      *
      * @psalm-return ?T
      */
@@ -88,8 +87,6 @@ abstract class AbstractRangeColumn extends AbstractColumn
 
     /**
      * @throws NotSupportedException
-     *
-     * @return RangeValueInterface
      *
      * @psalm-return T
      */

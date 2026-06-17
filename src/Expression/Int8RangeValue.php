@@ -5,14 +5,12 @@ declare(strict_types=1);
 namespace Yiisoft\Db\Pgsql\Expression;
 
 use RuntimeException;
+use Yiisoft\Db\Expression\ExpressionInterface;
 
 use const PHP_INT_MAX;
 use const PHP_INT_MIN;
 
-/**
- * @implements RangeValueInterface<int|string>
- */
-final class Int8RangeValue implements RangeValueInterface
+final class Int8RangeValue implements ExpressionInterface
 {
     public function __construct(
         public readonly int|string|null $lower = null,
@@ -21,6 +19,11 @@ final class Int8RangeValue implements RangeValueInterface
         public readonly bool $includeUpper = true,
     ) {}
 
+    /**
+     * Returns the lower and upper bounds of a range, inclusive.
+     *
+     * @psalm-return array{0: int|string|null, 1: int|string|null}
+     */
     public function getBounds(): array
     {
         $lower = $this->lower === null || $this->includeLower
