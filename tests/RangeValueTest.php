@@ -34,7 +34,7 @@ final class RangeValueTest extends TestCase
             new Int4RangeValue(null, null, false, false),
             [null, null],
         ];
-        yield 'int8 inclusive string bounds' => [
+        yield 'int8 inclusive beyond bounds' => [
             new Int8RangeValue(PHP_INT_MIN, PHP_INT_MAX),
             [PHP_INT_MIN, PHP_INT_MAX],
         ];
