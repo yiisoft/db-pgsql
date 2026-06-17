@@ -6,6 +6,7 @@
 - Chg #483: Bump `yiisoft/db` version to `^2.0.1` (@vjik)
 - Bug #484: Fix building range-type column definitions (@Tigrov)
 - Enh #489: Clarify return type of `phpTypecast()` methods for range columns (@Tigrov)
+- New #492: Add `getBounds()` method to range values (@Tigrov)
 
 ## 2.0.1 February 07, 2026
 

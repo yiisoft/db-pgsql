@@ -15,4 +15,22 @@ final class TsRangeValue implements ExpressionInterface
         public readonly bool $includeLower = true,
         public readonly bool $includeUpper = true,
     ) {}
+
+    /**
+     * Returns the lower and upper bounds of a range, inclusive.
+     *
+     * @psalm-return array{0: ?DateTimeImmutable, 1: ?DateTimeImmutable}
+     */
+    public function getBounds(): array
+    {
+        $lower = $this->lower === null || $this->includeLower
+            ? $this->lower
+            : $this->lower->modify('+1 second');
+
+        $upper = $this->upper === null || $this->includeUpper
+            ? $this->upper
+            : $this->upper->modify('-1 second');
+
+        return [$lower, $upper];
+    }
 }
