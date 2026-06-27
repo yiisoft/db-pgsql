@@ -32,7 +32,7 @@ final class ArrayOverlapsBuilder implements ExpressionBuilderInterface
     public function build(ExpressionInterface $expression, array &$params = []): string
     {
         $column = $expression->column instanceof ExpressionInterface
-            ? $this->queryBuilder->buildExpression($expression->column)
+            ? $this->queryBuilder->buildExpression($expression->column, $params)
             : $this->queryBuilder->getQuoter()->quoteColumnName($expression->column);
         $values = $expression->values;
 
