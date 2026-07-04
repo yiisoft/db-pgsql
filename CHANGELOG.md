@@ -7,6 +7,7 @@
 - Bug #484: Fix building range-type column definitions (@Tigrov)
 - Enh #489: Clarify return type of `phpTypecast()` methods for range columns (@Tigrov)
 - New #492: Add `getBounds()` method to range values (@Tigrov)
+- Bug #495: Add missed parameters for building expressions in `ArrayOverlapsBuilder` and `JsonOverlapsBuilder` classes (@Tigrov)
 
 ## 2.0.1 February 07, 2026
 
