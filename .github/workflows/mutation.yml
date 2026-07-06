@@ -14,6 +14,9 @@ on:
 
 name: mutation test
 
+permissions:
+  contents: read
+
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
@@ -38,7 +41,7 @@ jobs:
 
     services:
       postgres:
-        image: postgres:17
+        image: postgres:17 # zizmor: ignore[unpinned-images]
         env:
           POSTGRES_USER: root
           POSTGRES_PASSWORD: root
@@ -49,10 +52,12 @@ jobs:
 
     steps:
       - name: Checkout.
-        uses: actions/checkout@v7
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+        with:
+          persist-credentials: false
 
       - name: Install PHP with extensions.
-        uses: shivammathur/setup-php@v2
+        uses: shivammathur/setup-php@b604ade2a87db23f8871b7182e69ec5e75effb45
         with:
           php-version: ${{ matrix.php }}
           extensions: ${{ env.EXTENSIONS }}
@@ -60,7 +65,7 @@ jobs:
           coverage: pcov
 
       - name: Install Composer dependencies
-        uses: ramsey/composer-install@v4
+        uses: ramsey/composer-install@a8d0d959dab41457692a5e2041bd9b757a119e3f
 
       - name: Install db.
         uses: yiisoft/actions/install-packages@master
