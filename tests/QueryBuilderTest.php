@@ -539,6 +539,39 @@ final class QueryBuilderTest extends CommonQueryBuilderTest
         $this->assertSame($expectedCount, $count);
     }
 
+    public function testArrayOverlapsWithExpressionColumnParams(): void
+    {
+        $db = $this->getSharedConnection();
+        $qb = $db->getQueryBuilder();
+        $params = [];
+
+        $sql = $qb->buildExpression(
+            new ArrayOverlaps(new Expression('array_remove(column, :empty)', [':empty' => null]), [1, 2, 3]),
+            $params,
+        );
+
+        $this->assertSame('array_remove(column, :empty)::int[] && ARRAY[1,2,3]::int[]', $sql);
+        $this->assertSame([':empty' => null], $params);
+    }
+
+    public function testJsonOverlapsWithExpressionColumnParams(): void
+    {
+        $db = $this->getSharedConnection();
+        $qb = $db->getQueryBuilder();
+        $params = [];
+
+        $sql = $qb->buildExpression(
+            new JsonOverlaps(new Expression('jsonb_path_query_array(column, :path)', [':path' => '$[*]']), [1, 2, 3]),
+            $params,
+        );
+
+        $this->assertSame(
+            'ARRAY(SELECT jsonb_array_elements_text(jsonb_path_query_array(column, :path)::jsonb))::int[] && ARRAY[1,2,3]::int[]',
+            $sql,
+        );
+        $this->assertSame([':path' => '$[*]'], $params);
+    }
+
     #[DataProviderExternal(QueryBuilderProvider::class, 'buildColumnDefinition')]
     public function testBuildColumnDefinition(string $expected, Closure|ColumnInterface|string $column): void
     {
