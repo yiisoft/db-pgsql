@@ -1,17 +1,17 @@
 name: GitHub Actions Security Analysis with zizmor 🌈
 
 on:
-  push:
-    paths:
-      - '.github/**.yml'
-      - '.github/**.yaml'
   pull_request:
-    paths:
+    paths: &paths
       - '.github/**.yml'
       - '.github/**.yaml'
+  push:
+    branches: [ 'master' ]
+    paths: *paths
 
 permissions:
-  contents: read
+  actions: read # Required by zizmor when reading workflow metadata through the API
+  contents: read # Required to read workflow files
 
 jobs:
   zizmor:
