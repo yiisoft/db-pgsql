@@ -1,20 +1,15 @@
+name: Static analysis
+
 on:
   pull_request:
-    paths:
+    paths: &paths
       - 'src/**'
       - '.github/workflows/static.yml'
       - 'psalm*.xml'
       - 'composer.json'
-
   push:
     branches: ['master']
-    paths:
-      - 'src/**'
-      - '.github/workflows/static.yml'
-      - 'psalm*.xml'
-      - 'composer.json'
-
-name: Static analysis
+    paths: *paths
 
 permissions:
   contents: read

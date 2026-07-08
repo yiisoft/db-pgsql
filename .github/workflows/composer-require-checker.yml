@@ -1,20 +1,15 @@
+name: Composer require checker
+
 on:
   pull_request:
-    paths:
+    paths: &paths
       - 'src/**'
       - '.github/workflows/composer-require-checker.yml'
       - 'composer.json'
       - 'composer-require-checker.json'
-
   push:
     branches: ['master']
-    paths:
-      - 'src/**'
-      - '.github/workflows/composer-require-checker.yml'
-      - 'composer.json'
-      - 'composer-require-checker.json'
-
-name: Composer require checker
+    paths: *paths
 
 permissions:
   contents: read

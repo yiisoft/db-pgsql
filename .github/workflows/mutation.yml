@@ -1,18 +1,14 @@
+name: mutation test
+
 on:
   pull_request:
-    paths:
+    paths: &paths
       - 'src/**'
       - '.github/workflows/mutation.yml'
       - 'composer.json'
-
   push:
     branches: ['master']
-    paths:
-      - 'src/**'
-      - '.github/workflows/mutation.yml'
-      - 'composer.json'
-
-name: mutation test
+    paths: *paths
 
 permissions:
   contents: read
@@ -52,12 +48,12 @@ jobs:
 
     steps:
       - name: Checkout.
-        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
         with:
           persist-credentials: false
 
       - name: Install PHP with extensions.
-        uses: shivammathur/setup-php@b604ade2a87db23f8871b7182e69ec5e75effb45
+        uses: shivammathur/setup-php@34a5396826718e0013f08e3e639d1c315d5f6b23 # 2.35.0
         with:
           php-version: ${{ matrix.php }}
           extensions: ${{ env.EXTENSIONS }}
@@ -65,7 +61,7 @@ jobs:
           coverage: pcov
 
       - name: Install Composer dependencies
-        uses: ramsey/composer-install@a8d0d959dab41457692a5e2041bd9b757a119e3f
+        uses: ramsey/composer-install@a8d0d959dab41457692a5e2041bd9b757a119e3f # 3.2.1
 
       - name: Install db.
         uses: yiisoft/actions/install-packages@master
