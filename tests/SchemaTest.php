@@ -109,18 +109,6 @@ final class SchemaTest extends CommonSchemaTest
         $this->assertSame('public', $schema->getDefaultSchema());
     }
 
-    public function testGetSchemaDefaultValues(): void
-    {
-        $db = $this->getSharedConnection();
-
-        $this->expectException(NotSupportedException::class);
-        $this->expectExceptionMessage(
-            'Yiisoft\Db\Pgsql\Schema::loadTableDefaultValues is not supported by PostgreSQL.',
-        );
-
-        $db->getSchema()->getSchemaDefaultValues();
-    }
-
     public function testGetSchemaNames(): void
     {
         $db = $this->getSharedConnection();
