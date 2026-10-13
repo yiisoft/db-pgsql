@@ -66,4 +66,11 @@ final class QueryTest extends CommonQueryTest
             (new Query($db))->from('bool_values')->where('bool_col = :bool_col', ['bool_col' => false])->count(),
         );
     }
+
+    public static function dataIdentifierColumnName(): iterable
+    {
+        yield from parent::dataIdentifierColumnName();
+        yield 'quote: a"b' => ['a"b'];
+        yield 'quote: "a"' => ['"a"'];
+    }
 }
