@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Yiisoft\Db\Pgsql\Tests;
 
 use Closure;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\DataProviderExternal;
 use PHPUnit\Framework\Attributes\TestWith;
 use Throwable;
@@ -17,6 +18,7 @@ use Yiisoft\Db\Expression\Expression;
 use Yiisoft\Db\Expression\ExpressionInterface;
 use Yiisoft\Db\Expression\Function\ArrayMerge;
 use Yiisoft\Db\Expression\Value\Param;
+use Yiisoft\Db\Expression\Value\Identifier;
 use Yiisoft\Db\Pgsql\Column\ArrayColumn;
 use Yiisoft\Db\Pgsql\Column\IntegerColumn;
 use Yiisoft\Db\Pgsql\Tests\Provider\QueryBuilderProvider;
@@ -675,5 +677,28 @@ final class QueryBuilderTest extends CommonQueryBuilderTest
         array $expectedParams = [],
     ): void {
         parent::testUpsertWithMultiOperandFunctions($initValues, $insertValues, $updateValues, $expectedSql, $expectedResult, $expectedParams);
+    }
+
+    public static function dataBuildIdentifier(): iterable
+    {
+        yield ['name', '"name"'];
+        yield ['t.name', '"t"."name"'];
+        yield ['s.t.name', '"s"."t"."name"'];
+        yield [['t', 'na.me'], '"t"."na.me"'];
+        yield ['LOWER(name)', '"LOWER(name)"'];
+        yield ['[[name]]', '"[[name]]"'];
+        yield ['{{%t}}.name', '"{{%t}}"."name"'];
+        yield ['*', '"*"'];
+        yield ['arr[1]', '"arr[1]"'];
+        yield ['a"b', '"a""b"'];
+        yield ['"a" DESC; DROP TABLE t; --', '"""a"" DESC; DROP TABLE t; --"'];
+    }
+
+    #[DataProvider('dataBuildIdentifier')]
+    public function testBuildIdentifier(string|array $name, string $expected): void
+    {
+        $qb = $this->getSharedConnection()->getQueryBuilder();
+
+        $this->assertSame($expected, $qb->buildExpression(new Identifier($name)));
     }
 }
